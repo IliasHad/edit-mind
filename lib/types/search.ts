@@ -1,31 +1,23 @@
 import z from 'zod'
 import { searchSuggestionSchema, VideoMetadataSummarySchema } from '../conveyor/schemas/app-schema'
-import { ShotType, AspectRatio } from '.'
+import { AspectRatio } from '.';
 
 export interface VideoSearchParams {
-  action: string
+  action: string | null
   emotions: string[]
-  shot_type: ShotType | null
-  aspect_ratio: AspectRatio | null
+  shot_type?: string | null
+  aspect_ratio: string | null
   duration: number | null
   description: string
   outputFilename: string
   objects: string[]
   camera?: string
-  transcriptionQuery?: string
+  transcriptionQuery: string | null
   detectedText?: string
 }
 
-export type SearchQuery = {
+export type SearchQuery = VideoSearchParams & {
   faces?: string[]
-  emotions?: string[]
-  shot_type?: ShotType | null
-  aspect_ratio?: AspectRatio | null
-  description?: string
-  objects?: string[]
-  camera?: string
-  transcriptionQuery?: string
-  detectedText?: string
 }
 
 export type SearchSuggestion = z.infer<typeof searchSuggestionSchema>

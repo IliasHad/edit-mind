@@ -17,7 +17,7 @@ import {
   queryCollection,
   updateMetadata,
 } from '@/lib/services/vectorDb'
-import { generateActionFromPrompt } from '@/lib/services/gemini'
+import { generateActionFromPrompt } from '@/lib/services/llm'
 import { stitchVideos } from '@/lib/utils/sticher'
 import { exportToFcpXml } from '@/lib/utils/fcpxml'
 import { convertTimeToWords } from '@/lib/utils/time'

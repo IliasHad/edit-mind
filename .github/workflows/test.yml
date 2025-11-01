@@ -1,0 +1,188 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      clear_cache:
+        description: 'Clear model cache and re-download'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  MODEL_NAME: Llama-3.2-3B-Instruct-Q4_K_M.gguf
+  MODEL_PATH: models/Llama-3.2-3B-Instruct-Q4_K_M.gguf
+  MODEL_URL: https://huggingface.co/hugging-quants/Llama-3.2-3B-Instruct-Q4_K_M-GGUF/resolve/main/llama-3.2-3b-instruct-q4_k_m.gguf
+  CACHE_VERSION: v1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          
+          # Remove unnecessary software
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          
+          echo "Disk space after cleanup:"
+          df -h
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version
+          
+      - name: Setup Python 3.12.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.8'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('python/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+
+      - name: Create virtual environment and install dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r python/requirements.txt
+
+      - name: Run Python unit tests
+        run: |
+          .venv/bin/python -m unittest discover python/tests
+        timeout-minutes: 15
+
+      - name: Setup Node.js 22+
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          check-latest: true
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Create models directory
+        run: mkdir -p models
+
+      # Restore cache (90-day retention with stable key)
+      - name: Restore model from cache
+        if: github.event.inputs.clear_cache != 'true'
+        id: cache-model-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.MODEL_PATH }}
+          key: llama-model-${{ runner.os }}-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            llama-model-${{ runner.os }}-
+
+      - name: Cache status
+        run: |
+          if [ "${{ steps.cache-model-restore.outputs.cache-hit }}" == "true" ]; then
+            echo "✅ Model loaded from cache"
+          else
+            echo "⚠️  Model not in cache, will download"
+          fi
+
+      - name: Download model
+        if: steps.cache-model-restore.outputs.cache-hit != 'true' || github.event.inputs.clear_cache == 'true'
+        run: |
+          echo "Disk space before download:"
+          df -h
+          
+          # Remove existing file if forcing re-download
+          [ -f "${{ env.MODEL_PATH }}" ] && rm "${{ env.MODEL_PATH }}"
+          
+          # Download with comprehensive retry logic
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES..."
+            
+            if curl -L \
+              --fail \
+              --retry 3 \
+              --retry-delay 5 \
+              --connect-timeout 30 \
+              --max-time 3600 \
+              -o "${{ env.MODEL_PATH }}" \
+              -# \
+              "${{ env.MODEL_URL }}"; then
+              echo "✅ Download successful"
+              echo "Disk space after download:"
+              df -h
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⚠️  Download failed, retrying in 10 seconds..."
+                sleep 10
+              else
+                echo "❌ Download failed after $MAX_RETRIES attempts"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Save model to cache
+        if: steps.cache-model-restore.outputs.cache-hit != 'true' || github.event.inputs.clear_cache == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.MODEL_PATH }}
+          key: llama-model-${{ runner.os }}-${{ env.CACHE_VERSION }}
+
+      - name: Install Chroma
+        run: pip install chromadb
+
+      - name: Start Chroma DB
+        run: |
+          chroma run --host localhost --port 8000 --path .chroma_db &
+          for i in {1..30}; do
+            if nc -z localhost 8000; then
+              echo "✅ Chroma is ready"
+              break
+            fi
+            echo "Waiting for Chroma to start..."
+            sleep 2
+          done
+
+      - name: Run Node tests
+        run: npm test
+        env:
+          NODE_ENV: test
+        timeout-minutes: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore

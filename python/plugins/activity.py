@@ -23,7 +23,7 @@ class ActivityPlugin(AnalyzerPlugin):
 
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
-        self.activities = []
+        self.activities: List[Activity] = []
 
     def setup(self):
         """No setup required for this plugin."""
@@ -191,10 +191,10 @@ class ActivityPlugin(AnalyzerPlugin):
             )
         return None
 
-    def get_results(self) -> Any:
+    def get_results(self) -> List[Activity]:
         """Returns the final analysis results from the plugin."""
         return self.activities
 
-    def get_summary(self) -> Any:
+    def get_summary(self) -> None:
         """Returns a summary of the analysis results."""
         return None

@@ -1,44 +1,51 @@
-import 'dotenv/config'
 import { ChromaClient, Collection } from 'chromadb'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import { EmbeddingInput, CollectionStatistics } from '../types/vector'
 import { Video, VideoWithScenes } from '../types/video'
 import { Scene } from '../types/scene'
 import { SearchQuery } from '../types/search'
 import { metadataToScene, sceneToVectorFormat } from '../utils/embed'
-
-import { GEMINI_API_KEY, CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME, EMBEDDING_MODEL } from '@/lib/constants'
+import { CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME } from '@/lib/constants'
 
 let client: ChromaClient | null = null
 let collection: Collection | null = null
 
+const initialize = async (name: string = COLLECTION_NAME): Promise<void> => {
+  if (client && collection) return
+
+  try {
+    client = new ChromaClient({
+      path: `http://${CHROMA_HOST}:${CHROMA_PORT}`,
+    })
+
+    await client.heartbeat()
+
+    collection = await client.getOrCreateCollection({
+      name,
+      embeddingFunction: undefined, // Default Chroma embeddings
+    })
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        status: 'error',
+        message: `Initialization failed: ${error instanceof Error ? error.message : String(error)}`,
+        hint: 'Make sure ChromaDB server is running. Start it with: docker run -p 8000:8000 chromadb/chroma',
+      })
+    )
+    throw error
+  }
+}
+
 async function embedDocuments(documents: EmbeddingInput[]): Promise<void> {
   try {
     await initialize()
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY environment variable not set.')
-    }
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-    const model = genAI.getGenerativeModel({ model: EMBEDDING_MODEL })
+    if (!collection) throw new Error('Collection not initialized')
 
-    const ids: string[] = []
-    const embeddings: number[][] = []
-    const metadatas: Record<string, any>[] = []
-    const documentTexts: string[] = []
+    const ids = documents.map((d) => d.id)
+    const metadatas = documents.map((d) => d.metadata || {})
+    const documentTexts = documents.map((d) => d.text)
 
-    for (const doc of documents) {
-      const result = await model.embedContent(doc.text)
-      const embedding = result.embedding
-
-      ids.push(doc.id)
-      embeddings.push(embedding.values)
-      metadatas.push(doc.metadata || {})
-      documentTexts.push(doc.text)
-    }
-
-    await collection?.add({
+    await collection.add({
       ids,
-      embeddings,
       metadatas,
       documents: documentTexts,
     })
@@ -83,34 +90,6 @@ async function getStatistics(): Promise<CollectionStatistics> {
     return statistics
   } catch (error) {
     console.error('Error getting statistics:', error)
-    throw error
-  }
-}
-
-const initialize = async (): Promise<void> => {
-  if (client && collection) {
-    return
-  }
-
-  try {
-    client = new ChromaClient({
-      path: `http://${CHROMA_HOST}:${CHROMA_PORT}`,
-    })
-
-    await client.heartbeat()
-
-    collection = await client.getOrCreateCollection({
-      name: COLLECTION_NAME,
-      embeddingFunction: undefined,
-    })
-  } catch (error) {
-    console.error(
-      JSON.stringify({
-        status: 'error',
-        message: `Initialization failed: ${error instanceof Error ? error.message : String(error)}`,
-        hint: 'Make sure ChromaDB server is running. Start it with: docker run -p 8000:8000 chromadb/chroma',
-      })
-    )
     throw error
   }
 }
@@ -330,7 +309,6 @@ async function filterExistingVideos(videoSources: string[]): Promise<string[]> {
 }
 
 async function getByVideoSource(videoSource: string): Promise<Scene[]> {
-
   try {
     await initialize()
     if (!collection) {
@@ -374,23 +352,13 @@ async function updateDocuments(scene: Scene): Promise<void> {
       return
     }
 
-    const currentMetadata = metadataToScene(existing.metadatas?.[0], scene.id)
-    const currentDocument = existing.documents?.[0] || ''
-    const currentEmbedding = existing.embeddings?.[0]
-
-    const newMetadata: Scene = scene ? { ...currentMetadata, ...scene } : currentMetadata
-
-    await collection.delete({ ids: [scene.id] })
-
-    await collection.add({
+    await collection.update({
       ids: [scene.id],
-      embeddings: [currentEmbedding],
       metadatas: [
         {
-          ...sceneToVectorFormat(newMetadata, 1).metadata,
+          ...sceneToVectorFormat(scene).metadata,
         },
       ],
-      documents: [currentDocument],
     })
   } catch (error) {
     console.error('Error updating documents:', error)
@@ -411,5 +379,5 @@ export {
   filterExistingVideos,
   updateDocuments,
   updateMetadata,
-  getByVideoSource
+  getByVideoSource,
 }

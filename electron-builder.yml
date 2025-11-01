@@ -10,12 +10,14 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   - "!python/.venv/**" 
+  -  "node_modules/node-llama-cpp/**/*"
 
 asarUnpack:
   - resources/**
   - node_modules/ffmpeg-static/**/*
   - node_modules/ffprobe-static/**/*
   - node_modules/exiftool-vendored/**/*
+  -  "node_modules/node-llama-cpp/**/*"
 win:
   executableName: ElectronReactApp
 nsis:
