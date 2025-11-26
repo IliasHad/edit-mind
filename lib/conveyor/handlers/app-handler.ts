@@ -17,7 +17,7 @@ import {
   queryCollection,
   updateMetadata,
 } from '@/lib/services/vectorDb'
-import { generateActionFromPrompt } from '@/lib/services/gemini'
+import { generateActionFromPrompt } from '@/lib/services/llm'
 import { stitchVideos } from '@/lib/utils/sticher'
 import { exportToFcpXml } from '@/lib/utils/fcpxml'
 import { convertTimeToWords } from '@/lib/utils/time'
@@ -43,7 +43,7 @@ export const registerAppHandlers = (app: App, webContents: WebContents) => {
     try {
       const faces = prompt?.match(/@(\w+)/g)?.map((name: string) => name.substring(1)) || []
 
-      const { shot_type, emotions, description, aspect_ratio, objects, duration, camera, transcriptionQuery } =
+      const { shot_type, emotions, description, aspect_ratio, objects, duration, camera, transcriptionQuery, action } =
         await generateActionFromPrompt(prompt)
 
       const results = await queryCollection({
@@ -55,6 +55,7 @@ export const registerAppHandlers = (app: App, webContents: WebContents) => {
         objects,
         camera,
         transcriptionQuery,
+        action,
       })
       return { results, duration, aspect_ratio, faces }
     } catch (e) {
@@ -255,7 +256,7 @@ export const registerAppHandlers = (app: App, webContents: WebContents) => {
     }
   })
 
-  handle('reindexAllFaces', async (jsonFile, faceId, name) => {
+  handle('reindexAllFaces', async (jsonFile, _faceId, _name) => {
     const unknownFacesDir = path.join(process.cwd(), 'analysis_results', 'unknown_faces')
 
     try {
@@ -270,7 +271,7 @@ export const registerAppHandlers = (app: App, webContents: WebContents) => {
       return new Promise<{ success: boolean }>((resolve, reject) => {
         pythonService.reindexFaces(
           (_progress) => {
-            console.log(_progress)
+            // TODO: add logic here
           },
           (_result) => {
             resolve({ success: true })

@@ -77,10 +77,9 @@ export const embedScenes = async (scenes: Scene[], videoFullPath: string, catego
         scene.aspect_ratio = aspectRatio
         scene.category = category
         scene.duration = duration
-        return sceneToVectorFormat(scene, i + index)
+        return sceneToVectorFormat(scene, index)
       })
 
-      console.log(embeddingInputs)
       await embedDocuments(embeddingInputs)
     }
   } catch (err) {
@@ -112,15 +111,21 @@ export const metadataToScene = (metadata: Record<string, any> | null, id: string
     }
   }
 
-  let emotions: Array<{ name: string; emotion: string }> = []
-  try {
-    const emotionsStr = metadata.emotions as string
-    if (emotionsStr) {
-      emotions = JSON.parse(emotionsStr)
-    }
-  } catch {
-    emotions = []
-  }
+  const emotions: Array<{ name: string; emotion: string }> =
+    metadata.emotions
+      ?.split(',')
+      ?.map((f: string) => {
+        try {
+          const emotionStr = f.trim()
+          if (emotionStr) {
+            return JSON.parse(emotionStr) as { name: string; emotion: string }
+          }
+          return null
+        } catch {
+          return null
+        }
+      })
+      .filter(Boolean) || []
 
   const faces = metadata.faces
     ? (metadata.faces as string)
@@ -159,10 +164,11 @@ export const metadataToScene = (metadata: Record<string, any> | null, id: string
     detectedText,
     location: metadata.location?.toString() || 'N/A',
     duration: metadata.duration,
+    aspect_ratio: metadata.aspect_ratio,
   }
 }
 
-export const sceneToVectorFormat = (scene: Scene, sceneIndex: number) => {
+export const sceneToVectorFormat = (scene: Scene, sceneIndex?: number) => {
   const faces = scene.faces?.join(', ') || ''
   const objects = scene.objects?.join(', ') || ''
   const emotionsText =
@@ -175,18 +181,16 @@ export const sceneToVectorFormat = (scene: Scene, sceneIndex: number) => {
   const text =
     `Scene with ${faces}, objects: ${objects}. Emotions: ${emotionsText}. ${scene.transcription || ''}`.trim()
 
-  const metadata: Record<string, any> = {
+  const metadata: Record<string, string | number | null> = {
     source: scene.source,
     thumbnailUrl: scene.thumbnailUrl || '',
     startTime: scene.startTime,
     endTime: scene.endTime,
     type: 'scene',
-    faces: Array.isArray(scene.faces) ? scene.faces.join(', ') : JSON.stringify(scene.faces || []),
-    objects: Array.isArray(scene.objects) ? scene.objects.join(', ') : JSON.stringify(scene.objects || []),
+    faces: scene.faces.join(', '),
+    objects: scene.objects.join(', '),
     transcription: scene.transcription || '',
-    emotions: Array.isArray(scene.emotions)
-      ? scene.emotions.map((e) => JSON.stringify(e)).join(', ')
-      : JSON.stringify(scene.emotions || []),
+    emotions: scene.emotions.map((e) => JSON.stringify(e)).join(', '),
     description: scene.description || '',
     shot_type: scene.shot_type || 'long-shot',
     detectedText: detectedText,
@@ -195,11 +199,18 @@ export const sceneToVectorFormat = (scene: Scene, sceneIndex: number) => {
     dominantColorHex: scene.dominantColorHex,
     dominantColorName: scene.dominantColorName,
     camera: scene.camera,
-    duration: scene.duration,
+    duration: scene.duration || null,
   }
 
+  if (sceneIndex) {
+    return {
+      id: `${path.basename(scene.source)}_scene_${sceneIndex}`,
+      text,
+      metadata,
+    }
+  }
   return {
-    id: `${path.basename(scene.source)}_scene_${sceneIndex}`,
+    id: scene.id,
     text,
     metadata,
   }

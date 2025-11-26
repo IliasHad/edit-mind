@@ -1,0 +1,1345 @@
+{
+    "text": " EditMind, the next generation of intelligent video editing. EditMind is a powerful desktop app that uses AI to understand your videos, just like a human editor would. With advanced object detection, face recognition, and emotion analysis, EditMind indexes every frame of your footage. This means you can search your video library using natural language. Ask things like, show me clips where Sarah is smiling, or find all shots with a car in the background. EditMind instantly finds what you're looking for. No scrubbing, no guessing. But it doesn't stop there. Using AI-assisted editing, EditMind can automatically generate rough cuts based on your creative direction. Just describe the scene you want, and it pieces together the right moments in seconds. Designed for filmmakers, content creators, and production teams, EditMind turns hours of raw footage into an organized, searchable, and fun video.",
+    "segments": [
+        {
+            "id": 0,
+            "seek": 0,
+            "start": 0.0,
+            "end": 3.66,
+            "text": " EditMind, the next generation of intelligent video editing.",
+            "tokens": [
+                50365,
+                33241,
+                44,
+                471,
+                11,
+                264,
+                958,
+                5125,
+                295,
+                13232,
+                960,
+                10000,
+                13,
+                50557
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " EditMind,",
+                    "start": 0.0,
+                    "end": 0.6,
+                    "probability": 0.9331901470820109
+                },
+                {
+                    "word": " the",
+                    "start": 0.78,
+                    "end": 1.12,
+                    "probability": 0.9980148077011108
+                },
+                {
+                    "word": " next",
+                    "start": 1.12,
+                    "end": 1.32,
+                    "probability": 0.9989104270935059
+                },
+                {
+                    "word": " generation",
+                    "start": 1.32,
+                    "end": 1.68,
+                    "probability": 0.9990143775939941
+                },
+                {
+                    "word": " of",
+                    "start": 1.68,
+                    "end": 2.14,
+                    "probability": 0.9998941421508789
+                },
+                {
+                    "word": " intelligent",
+                    "start": 2.14,
+                    "end": 2.6,
+                    "probability": 0.9924730062484741
+                },
+                {
+                    "word": " video",
+                    "start": 2.6,
+                    "end": 3.1,
+                    "probability": 0.9998996257781982
+                },
+                {
+                    "word": " editing.",
+                    "start": 3.1,
+                    "end": 3.66,
+                    "probability": 0.9996688365936279
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "seek": 0,
+            "start": 4.86,
+            "end": 9.24,
+            "text": " EditMind is a powerful desktop app that uses AI to understand your videos,",
+            "tokens": [
+                50613,
+                33241,
+                44,
+                471,
+                307,
+                257,
+                4005,
+                14502,
+                724,
+                300,
+                4960,
+                7318,
+                281,
+                1223,
+                428,
+                2145,
+                11,
+                50837
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " EditMind",
+                    "start": 4.86,
+                    "end": 5.46,
+                    "probability": 0.9995566407839457
+                },
+                {
+                    "word": " is",
+                    "start": 5.46,
+                    "end": 5.66,
+                    "probability": 0.9997041821479797
+                },
+                {
+                    "word": " a",
+                    "start": 5.66,
+                    "end": 5.78,
+                    "probability": 0.9997170567512512
+                },
+                {
+                    "word": " powerful",
+                    "start": 5.78,
+                    "end": 6.16,
+                    "probability": 0.9997751116752625
+                },
+                {
+                    "word": " desktop",
+                    "start": 6.16,
+                    "end": 6.54,
+                    "probability": 0.9996614456176758
+                },
+                {
+                    "word": " app",
+                    "start": 6.54,
+                    "end": 6.92,
+                    "probability": 0.99925297498703
+                },
+                {
+                    "word": " that",
+                    "start": 6.92,
+                    "end": 7.18,
+                    "probability": 0.9997277855873108
+                },
+                {
+                    "word": " uses",
+                    "start": 7.18,
+                    "end": 7.48,
+                    "probability": 0.9996919631958008
+                },
+                {
+                    "word": " AI",
+                    "start": 7.48,
+                    "end": 7.88,
+                    "probability": 0.9956135749816895
+                },
+                {
+                    "word": " to",
+                    "start": 7.88,
+                    "end": 8.2,
+                    "probability": 0.9998425245285034
+                },
+                {
+                    "word": " understand",
+                    "start": 8.2,
+                    "end": 8.6,
+                    "probability": 0.9998985528945923
+                },
+                {
+                    "word": " your",
+                    "start": 8.6,
+                    "end": 8.88,
+                    "probability": 0.9998923540115356
+                },
+                {
+                    "word": " videos,",
+                    "start": 8.88,
+                    "end": 9.24,
+                    "probability": 0.9998466968536377
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "seek": 0,
+            "start": 9.48,
+            "end": 11.16,
+            "text": " just like a human editor would.",
+            "tokens": [
+                50855,
+                445,
+                411,
+                257,
+                1952,
+                9839,
+                576,
+                13,
+                50931
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " just",
+                    "start": 9.48,
+                    "end": 9.96,
+                    "probability": 0.9997124075889587
+                },
+                {
+                    "word": " like",
+                    "start": 9.96,
+                    "end": 10.18,
+                    "probability": 0.999963641166687
+                },
+                {
+                    "word": " a",
+                    "start": 10.18,
+                    "end": 10.36,
+                    "probability": 0.9998078942298889
+                },
+                {
+                    "word": " human",
+                    "start": 10.36,
+                    "end": 10.58,
+                    "probability": 0.9998225569725037
+                },
+                {
+                    "word": " editor",
+                    "start": 10.58,
+                    "end": 10.86,
+                    "probability": 0.999437153339386
+                },
+                {
+                    "word": " would.",
+                    "start": 10.86,
+                    "end": 11.16,
+                    "probability": 0.9998407363891602
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "seek": 0,
+            "start": 11.58,
+            "end": 16.02,
+            "text": " With advanced object detection, face recognition, and emotion analysis,",
+            "tokens": [
+                50967,
+                2022,
+                7339,
+                2657,
+                17784,
+                11,
+                1851,
+                11150,
+                11,
+                293,
+                8913,
+                5215,
+                11,
+                51184
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " With",
+                    "start": 11.58,
+                    "end": 12.18,
+                    "probability": 0.9999005794525146
+                },
+                {
+                    "word": " advanced",
+                    "start": 12.18,
+                    "end": 12.54,
+                    "probability": 0.9997290968894958
+                },
+                {
+                    "word": " object",
+                    "start": 12.54,
+                    "end": 12.96,
+                    "probability": 0.9996600151062012
+                },
+                {
+                    "word": " detection,",
+                    "start": 12.96,
+                    "end": 13.48,
+                    "probability": 0.999782145023346
+                },
+                {
+                    "word": " face",
+                    "start": 13.78,
+                    "end": 14.24,
+                    "probability": 0.9998908042907715
+                },
+                {
+                    "word": " recognition,",
+                    "start": 14.24,
+                    "end": 14.64,
+                    "probability": 0.9998708963394165
+                },
+                {
+                    "word": " and",
+                    "start": 14.9,
+                    "end": 15.28,
+                    "probability": 0.9999731779098511
+                },
+                {
+                    "word": " emotion",
+                    "start": 15.28,
+                    "end": 15.5,
+                    "probability": 0.998185932636261
+                },
+                {
+                    "word": " analysis,",
+                    "start": 15.5,
+                    "end": 16.02,
+                    "probability": 0.9999347925186157
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "seek": 0,
+            "start": 16.839999999999996,
+            "end": 19.32,
+            "text": " EditMind indexes every frame of your footage.",
+            "tokens": [
+                51214,
+                33241,
+                44,
+                471,
+                8186,
+                279,
+                633,
+                3920,
+                295,
+                428,
+                9556,
+                13,
+                51339
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " EditMind",
+                    "start": 16.839999999999996,
+                    "end": 17.439999999999998,
+                    "probability": 0.9998577038447062
+                },
+                {
+                    "word": " indexes",
+                    "start": 17.439999999999998,
+                    "end": 18.04,
+                    "probability": 0.9999406933784485
+                },
+                {
+                    "word": " every",
+                    "start": 18.04,
+                    "end": 18.32,
+                    "probability": 0.9998855590820312
+                },
+                {
+                    "word": " frame",
+                    "start": 18.32,
+                    "end": 18.68,
+                    "probability": 0.9999485015869141
+                },
+                {
+                    "word": " of",
+                    "start": 18.68,
+                    "end": 18.9,
+                    "probability": 0.9999830722808838
+                },
+                {
+                    "word": " your",
+                    "start": 18.9,
+                    "end": 19.02,
+                    "probability": 0.9999728202819824
+                },
+                {
+                    "word": " footage.",
+                    "start": 19.02,
+                    "end": 19.32,
+                    "probability": 0.9997889399528503
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "seek": 0,
+            "start": 19.6,
+            "end": 23.02,
+            "text": " This means you can search your video library using natural language.",
+            "tokens": [
+                51368,
+                639,
+                1355,
+                291,
+                393,
+                3164,
+                428,
+                960,
+                6405,
+                1228,
+                3303,
+                2856,
+                13,
+                51526
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " This",
+                    "start": 19.6,
+                    "end": 20.2,
+                    "probability": 0.9998893737792969
+                },
+                {
+                    "word": " means",
+                    "start": 20.2,
+                    "end": 20.42,
+                    "probability": 0.9999814033508301
+                },
+                {
+                    "word": " you",
+                    "start": 20.42,
+                    "end": 20.56,
+                    "probability": 0.9998831748962402
+                },
+                {
+                    "word": " can",
+                    "start": 20.56,
+                    "end": 20.7,
+                    "probability": 0.9999772310256958
+                },
+                {
+                    "word": " search",
+                    "start": 20.7,
+                    "end": 20.98,
+                    "probability": 0.999861478805542
+                },
+                {
+                    "word": " your",
+                    "start": 20.98,
+                    "end": 21.18,
+                    "probability": 0.999916672706604
+                },
+                {
+                    "word": " video",
+                    "start": 21.18,
+                    "end": 21.42,
+                    "probability": 0.9999359846115112
+                },
+                {
+                    "word": " library",
+                    "start": 21.42,
+                    "end": 21.72,
+                    "probability": 0.999934196472168
+                },
+                {
+                    "word": " using",
+                    "start": 21.72,
+                    "end": 22.24,
+                    "probability": 0.9997386336326599
+                },
+                {
+                    "word": " natural",
+                    "start": 22.24,
+                    "end": 22.56,
+                    "probability": 0.9997289776802063
+                },
+                {
+                    "word": " language.",
+                    "start": 22.56,
+                    "end": 23.02,
+                    "probability": 0.9999562501907349
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "seek": 0,
+            "start": 23.28,
+            "end": 26.58,
+            "text": " Ask things like, show me clips where Sarah is smiling,",
+            "tokens": [
+                51554,
+                12320,
+                721,
+                411,
+                11,
+                855,
+                385,
+                13117,
+                689,
+                9519,
+                307,
+                16005,
+                11,
+                51702
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " Ask",
+                    "start": 23.28,
+                    "end": 23.88,
+                    "probability": 0.9990390539169312
+                },
+                {
+                    "word": " things",
+                    "start": 23.88,
+                    "end": 24.16,
+                    "probability": 0.9998902082443237
+                },
+                {
+                    "word": " like,",
+                    "start": 24.16,
+                    "end": 24.5,
+                    "probability": 0.9999305009841919
+                },
+                {
+                    "word": " show",
+                    "start": 24.62,
+                    "end": 25.06,
+                    "probability": 0.9492321014404297
+                },
+                {
+                    "word": " me",
+                    "start": 25.06,
+                    "end": 25.26,
+                    "probability": 0.9999514818191528
+                },
+                {
+                    "word": " clips",
+                    "start": 25.26,
+                    "end": 25.52,
+                    "probability": 0.9998847246170044
+                },
+                {
+                    "word": " where",
+                    "start": 25.52,
+                    "end": 25.76,
+                    "probability": 0.9998977184295654
+                },
+                {
+                    "word": " Sarah",
+                    "start": 25.76,
+                    "end": 26.06,
+                    "probability": 0.9977266192436218
+                },
+                {
+                    "word": " is",
+                    "start": 26.06,
+                    "end": 26.26,
+                    "probability": 0.9999815225601196
+                },
+                {
+                    "word": " smiling,",
+                    "start": 26.26,
+                    "end": 26.58,
+                    "probability": 0.9999479055404663
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "seek": 0,
+            "start": 26.78,
+            "end": 29.82,
+            "text": " or find all shots with a car in the background.",
+            "tokens": [
+                51721,
+                420,
+                915,
+                439,
+                8305,
+                365,
+                257,
+                1032,
+                294,
+                264,
+                3678,
+                13,
+                51863
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.17330643046985972,
+            "compression_ratio": 1.5778546712802768,
+            "no_speech_prob": 0.03279704600572586,
+            "words": [
+                {
+                    "word": " or",
+                    "start": 26.78,
+                    "end": 27.42,
+                    "probability": 0.9993271827697754
+                },
+                {
+                    "word": " find",
+                    "start": 27.42,
+                    "end": 28.2,
+                    "probability": 0.9588591456413269
+                },
+                {
+                    "word": " all",
+                    "start": 28.2,
+                    "end": 28.42,
+                    "probability": 0.999953031539917
+                },
+                {
+                    "word": " shots",
+                    "start": 28.42,
+                    "end": 28.74,
+                    "probability": 0.9997830986976624
+                },
+                {
+                    "word": " with",
+                    "start": 28.74,
+                    "end": 28.98,
+                    "probability": 0.9999325275421143
+                },
+                {
+                    "word": " a",
+                    "start": 28.98,
+                    "end": 29.06,
+                    "probability": 0.9999301433563232
+                },
+                {
+                    "word": " car",
+                    "start": 29.06,
+                    "end": 29.26,
+                    "probability": 0.9999755620956421
+                },
+                {
+                    "word": " in",
+                    "start": 29.26,
+                    "end": 29.4,
+                    "probability": 0.9999504089355469
+                },
+                {
+                    "word": " the",
+                    "start": 29.4,
+                    "end": 29.46,
+                    "probability": 0.9999754428863525
+                },
+                {
+                    "word": " background.",
+                    "start": 29.46,
+                    "end": 29.82,
+                    "probability": 0.9998855590820312
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "seek": 3000,
+            "start": 30.7,
+            "end": 33.06,
+            "text": " EditMind instantly finds what you're looking for.",
+            "tokens": [
+                50410,
+                33241,
+                44,
+                471,
+                13518,
+                10704,
+                437,
+                291,
+                434,
+                1237,
+                337,
+                13,
+                50525
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " EditMind",
+                    "start": 30.7,
+                    "end": 31.34,
+                    "probability": 0.8318758805592855
+                },
+                {
+                    "word": " instantly",
+                    "start": 31.34,
+                    "end": 31.68,
+                    "probability": 0.9960208535194397
+                },
+                {
+                    "word": " finds",
+                    "start": 31.68,
+                    "end": 32.22,
+                    "probability": 0.9985778331756592
+                },
+                {
+                    "word": " what",
+                    "start": 32.22,
+                    "end": 32.4,
+                    "probability": 0.9996426105499268
+                },
+                {
+                    "word": " you're",
+                    "start": 32.4,
+                    "end": 32.54,
+                    "probability": 0.9968902170658112
+                },
+                {
+                    "word": " looking",
+                    "start": 32.54,
+                    "end": 32.74,
+                    "probability": 0.9999096393585205
+                },
+                {
+                    "word": " for.",
+                    "start": 32.74,
+                    "end": 33.06,
+                    "probability": 0.9997441172599792
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "seek": 3000,
+            "start": 33.76,
+            "end": 34.8,
+            "text": " No scrubbing, no guessing.",
+            "tokens": [
+                50553,
+                883,
+                24163,
+                4324,
+                11,
+                572,
+                17939,
+                13,
+                50609
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " No",
+                    "start": 33.48,
+                    "end": 33.8,
+                    "probability": 0.9995943903923035
+                },
+                {
+                    "word": " scrubbing,",
+                    "start": 33.8,
+                    "end": 34.32,
+                    "probability": 0.9989838004112244
+                },
+                {
+                    "word": " no",
+                    "start": 34.32,
+                    "end": 34.44,
+                    "probability": 0.9996366500854492
+                },
+                {
+                    "word": " guessing.",
+                    "start": 34.44,
+                    "end": 34.8,
+                    "probability": 0.999942421913147
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "seek": 3000,
+            "start": 35.02,
+            "end": 36.54,
+            "text": " But it doesn't stop there.",
+            "tokens": [
+                50638,
+                583,
+                309,
+                1177,
+                380,
+                1590,
+                456,
+                13,
+                50702
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " But",
+                    "start": 35.02,
+                    "end": 35.66,
+                    "probability": 0.9995232820510864
+                },
+                {
+                    "word": " it",
+                    "start": 35.66,
+                    "end": 35.76,
+                    "probability": 0.9991700649261475
+                },
+                {
+                    "word": " doesn't",
+                    "start": 35.76,
+                    "end": 36.04,
+                    "probability": 0.9999191761016846
+                },
+                {
+                    "word": " stop",
+                    "start": 36.04,
+                    "end": 36.26,
+                    "probability": 0.9999034404754639
+                },
+                {
+                    "word": " there.",
+                    "start": 36.26,
+                    "end": 36.54,
+                    "probability": 0.9999001026153564
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "seek": 3000,
+            "start": 37.32,
+            "end": 39.24,
+            "text": " Using AI-assisted editing,",
+            "tokens": [
+                50753,
+                11142,
+                7318,
+                12,
+                640,
+                33250,
+                10000,
+                11,
+                50837
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " Using",
+                    "start": 37.32,
+                    "end": 37.96,
+                    "probability": 0.9992561936378479
+                },
+                {
+                    "word": " AI",
+                    "start": 37.96,
+                    "end": 38.36,
+                    "probability": 0.996969997882843
+                },
+                {
+                    "word": "-assisted",
+                    "start": 38.36,
+                    "end": 38.88,
+                    "probability": 0.9978047609329224
+                },
+                {
+                    "word": " editing,",
+                    "start": 38.88,
+                    "end": 39.24,
+                    "probability": 0.9997804760932922
+                }
+            ]
+        },
+        {
+            "id": 12,
+            "seek": 3000,
+            "start": 39.54,
+            "end": 43.58,
+            "text": " EditMind can automatically generate rough cuts based on your creative direction.",
+            "tokens": [
+                50859,
+                33241,
+                44,
+                471,
+                393,
+                6772,
+                8460,
+                5903,
+                9992,
+                2361,
+                322,
+                428,
+                5880,
+                3513,
+                13,
+                51056
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " EditMind",
+                    "start": 39.54,
+                    "end": 40.3,
+                    "probability": 0.9996383786201477
+                },
+                {
+                    "word": " can",
+                    "start": 40.3,
+                    "end": 40.52,
+                    "probability": 0.9998190999031067
+                },
+                {
+                    "word": " automatically",
+                    "start": 40.52,
+                    "end": 40.94,
+                    "probability": 0.9997389912605286
+                },
+                {
+                    "word": " generate",
+                    "start": 40.94,
+                    "end": 41.48,
+                    "probability": 0.9995785355567932
+                },
+                {
+                    "word": " rough",
+                    "start": 41.48,
+                    "end": 41.9,
+                    "probability": 0.9993404746055603
+                },
+                {
+                    "word": " cuts",
+                    "start": 41.9,
+                    "end": 42.2,
+                    "probability": 0.9987733960151672
+                },
+                {
+                    "word": " based",
+                    "start": 42.2,
+                    "end": 42.5,
+                    "probability": 0.9995937943458557
+                },
+                {
+                    "word": " on",
+                    "start": 42.5,
+                    "end": 42.74,
+                    "probability": 0.9999380111694336
+                },
+                {
+                    "word": " your",
+                    "start": 42.74,
+                    "end": 42.92,
+                    "probability": 0.9999257326126099
+                },
+                {
+                    "word": " creative",
+                    "start": 42.92,
+                    "end": 43.22,
+                    "probability": 0.9996322393417358
+                },
+                {
+                    "word": " direction.",
+                    "start": 43.22,
+                    "end": 43.58,
+                    "probability": 0.9996962547302246
+                }
+            ]
+        },
+        {
+            "id": 13,
+            "seek": 3000,
+            "start": 44.519999999999996,
+            "end": 45.9,
+            "text": " Just describe the scene you want,",
+            "tokens": [
+                51091,
+                1449,
+                6786,
+                264,
+                4145,
+                291,
+                528,
+                11,
+                51166
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " Just",
+                    "start": 44.26,
+                    "end": 44.58,
+                    "probability": 0.9995785355567932
+                },
+                {
+                    "word": " describe",
+                    "start": 44.58,
+                    "end": 45.0,
+                    "probability": 0.9999423027038574
+                },
+                {
+                    "word": " the",
+                    "start": 45.0,
+                    "end": 45.22,
+                    "probability": 0.9999079704284668
+                },
+                {
+                    "word": " scene",
+                    "start": 45.22,
+                    "end": 45.46,
+                    "probability": 0.9998990297317505
+                },
+                {
+                    "word": " you",
+                    "start": 45.46,
+                    "end": 45.66,
+                    "probability": 0.9998711347579956
+                },
+                {
+                    "word": " want,",
+                    "start": 45.66,
+                    "end": 45.9,
+                    "probability": 0.9999581575393677
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "seek": 3000,
+            "start": 46.06,
+            "end": 48.84,
+            "text": " and it pieces together the right moments in seconds.",
+            "tokens": [
+                51191,
+                293,
+                309,
+                3755,
+                1214,
+                264,
+                558,
+                6065,
+                294,
+                3949,
+                13,
+                51320
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " and",
+                    "start": 46.06,
+                    "end": 46.62,
+                    "probability": 0.9998290538787842
+                },
+                {
+                    "word": " it",
+                    "start": 46.62,
+                    "end": 46.74,
+                    "probability": 0.9998966455459595
+                },
+                {
+                    "word": " pieces",
+                    "start": 46.74,
+                    "end": 46.98,
+                    "probability": 0.9992784857749939
+                },
+                {
+                    "word": " together",
+                    "start": 46.98,
+                    "end": 47.34,
+                    "probability": 0.999883770942688
+                },
+                {
+                    "word": " the",
+                    "start": 47.34,
+                    "end": 47.72,
+                    "probability": 0.9998600482940674
+                },
+                {
+                    "word": " right",
+                    "start": 47.72,
+                    "end": 47.88,
+                    "probability": 0.9998483657836914
+                },
+                {
+                    "word": " moments",
+                    "start": 47.88,
+                    "end": 48.3,
+                    "probability": 0.9997286200523376
+                },
+                {
+                    "word": " in",
+                    "start": 48.3,
+                    "end": 48.54,
+                    "probability": 0.9956533908843994
+                },
+                {
+                    "word": " seconds.",
+                    "start": 48.54,
+                    "end": 48.84,
+                    "probability": 0.9998482465744019
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "seek": 3000,
+            "start": 49.9,
+            "end": 53.62,
+            "text": " Designed for filmmakers, content creators, and production teams,",
+            "tokens": [
+                51373,
+                12748,
+                292,
+                337,
+                35018,
+                11,
+                2701,
+                16039,
+                11,
+                293,
+                4265,
+                5491,
+                11,
+                51554
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " Designed",
+                    "start": 49.9,
+                    "end": 50.54,
+                    "probability": 0.9991483390331268
+                },
+                {
+                    "word": " for",
+                    "start": 50.54,
+                    "end": 50.6,
+                    "probability": 0.9999561309814453
+                },
+                {
+                    "word": " filmmakers,",
+                    "start": 50.6,
+                    "end": 51.0,
+                    "probability": 0.9989211559295654
+                },
+                {
+                    "word": " content",
+                    "start": 51.46,
+                    "end": 51.98,
+                    "probability": 0.9998670816421509
+                },
+                {
+                    "word": " creators,",
+                    "start": 51.98,
+                    "end": 52.42,
+                    "probability": 0.9998534917831421
+                },
+                {
+                    "word": " and",
+                    "start": 52.6,
+                    "end": 52.88,
+                    "probability": 0.999955415725708
+                },
+                {
+                    "word": " production",
+                    "start": 52.88,
+                    "end": 53.18,
+                    "probability": 0.9998334646224976
+                },
+                {
+                    "word": " teams,",
+                    "start": 53.18,
+                    "end": 53.62,
+                    "probability": 0.9998987913131714
+                }
+            ]
+        },
+        {
+            "id": 16,
+            "seek": 3000,
+            "start": 53.9,
+            "end": 58.18,
+            "text": " EditMind turns hours of raw footage into an organized, searchable,",
+            "tokens": [
+                51571,
+                33241,
+                44,
+                471,
+                4523,
+                2496,
+                295,
+                8936,
+                9556,
+                666,
+                364,
+                9983,
+                11,
+                3164,
+                712,
+                11,
+                51781
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " EditMind",
+                    "start": 53.9,
+                    "end": 54.72,
+                    "probability": 0.9997626741727194
+                },
+                {
+                    "word": " turns",
+                    "start": 54.72,
+                    "end": 54.98,
+                    "probability": 0.9996140599250793
+                },
+                {
+                    "word": " hours",
+                    "start": 54.98,
+                    "end": 55.32,
+                    "probability": 0.9998528957366943
+                },
+                {
+                    "word": " of",
+                    "start": 55.32,
+                    "end": 55.64,
+                    "probability": 0.9999170303344727
+                },
+                {
+                    "word": " raw",
+                    "start": 55.64,
+                    "end": 55.84,
+                    "probability": 0.9867357611656189
+                },
+                {
+                    "word": " footage",
+                    "start": 55.84,
+                    "end": 56.2,
+                    "probability": 0.9997938275337219
+                },
+                {
+                    "word": " into",
+                    "start": 56.2,
+                    "end": 56.54,
+                    "probability": 0.9999097585678101
+                },
+                {
+                    "word": " an",
+                    "start": 56.54,
+                    "end": 56.76,
+                    "probability": 0.9999264478683472
+                },
+                {
+                    "word": " organized,",
+                    "start": 56.76,
+                    "end": 57.22,
+                    "probability": 0.9995367527008057
+                },
+                {
+                    "word": " searchable,",
+                    "start": 57.5,
+                    "end": 58.18,
+                    "probability": 0.9999381899833679
+                }
+            ]
+        },
+        {
+            "id": 17,
+            "seek": 3000,
+            "start": 58.3,
+            "end": 58.7,
+            "text": " and fun video.",
+            "tokens": [
+                51801,
+                293,
+                1019,
+                960,
+                13,
+                51854
+            ],
+            "temperature": 0.0,
+            "avg_logprob": -0.23181006390115488,
+            "compression_ratio": 1.5669014084507042,
+            "no_speech_prob": 3.380340422154404e-05,
+            "words": [
+                {
+                    "word": " and",
+                    "start": 58.3,
+                    "end": 58.7,
+                    "probability": 0.8338812589645386
+                },
+                {
+                    "word": " fun",
+                    "start": 58.7,
+                    "end": 58.7,
+                    "probability": 0.06599029153585434
+                },
+                {
+                    "word": " video.",
+                    "start": 58.7,
+                    "end": 58.7,
+                    "probability": 0.07364847511053085
+                }
+            ]
+        }
+    ],
+    "language": "en"
+}

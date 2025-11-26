@@ -37,7 +37,7 @@ class EmotionDetectionPlugin(AnalyzerPlugin):
             self._add_emotions(frame, frame_analysis['faces'])
         return frame_analysis
 
-    def _add_emotions(self, frame: Any, faces: List[Dict]) -> None:
+    def _add_emotions(self, frame: np.ndarray, faces: List[Dict[str, Any]]) -> None:
         """
         Add emotion data to recognized faces.
         """

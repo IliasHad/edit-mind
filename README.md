@@ -61,19 +61,9 @@ When you add a video, Edit Mind runs a complete **AI-powered local analysis pipe
    - Perform OCR (on-screen text)  
    - Analyze colors and composition  
 4. **🧠 Data Consolidation** — Aligns spoken text with visual content using timestamps.  
-5. **🔍 Vector Embedding & Storage** — All extracted data (transcripts, tags, and metadata) are embedded using **Google Text Embedding Models** and stored locally in **[ChromaDB](https://www.trychroma.com/)**.  
-6. **🗣 Semantic Search Parsing** — When you search in natural language (e.g. _“show me all clips where Ilias looks happy”_), Edit Mind uses **Google Gemini 2.5 Pro** to convert your search prompt into a structured JSON query.  
+5. **🔍 Vector Embedding & Storage** — All extracted data (transcripts, tags, and metadata) are embedded using local models and stored locally in **[ChromaDB](https://www.trychroma.com/)**.  
+6. **🗣 Semantic Search Parsing** — When you search in natural language (e.g. _“show me all clips where Ilias looks happy”_), Edit Mind uses local models to convert your search prompt into a structured JSON query.  
    This query is then executed locally against the ChromaDB vector store to retrieve relevant scenes.
-
----
-
-> 💡 **Privacy by Design:**  
-> All video files, frames, and extracted metadata remain fully **local**.  
-> The only cloud-based component is the **Gemini API call for search prompt interpretation** and **Google text embedding generation** — no raw video are ever uploaded.  
-> In a future update, Edit Mind will include the option to use **offline embedding and query models** for completely disconnected operation.
-
-
----
 
 ## ✨ Features
 
@@ -93,12 +83,15 @@ When you add a video, Edit Mind runs a complete **AI-powered local analysis pipe
 
 ### **v0.2.0**
 - [ ] Advanced search filters (date range, camera type)
-- [ ] Export rough cuts as an Adobe Premiere Pro and Final Cut Pro project
 - [ ] Improved indexing performance
-
+- [ ] Add support for Docker (you can self host it on your sever )
 ### **v0.3.0**
 - [ ] New analysis plugins (e.g., audio event detection)
 - [ ] Plugin documentation and examples
+
+### **v1.0.0**
+- [ ] Export rough cuts as an Adobe Premiere Pro and Final Cut Pro project
+
 
 ### **Future**
 - [ ] Optional cloud sync for indexes
@@ -155,13 +148,24 @@ pip install chromadb
 chroma run --host localhost --port 8000 --path .chroma_db
 ```
 
-### Configuration
 
-Create a `.env` file in the project root:
-```bash
-GEMINI_API_KEY=your_api_key_here
+
+### Downloading Models
+
+Before running the application, you need to download the required AI models for local processing.
+
+1.  Create a `models` directory in the project root.
+2.  Download the following models and place them in the `models` directory:
+
+    - **Llama- (for a prompt to a search query):**
+        - [Llama-3.2-3B-Instruct-Q4_K_M.gguf](https://huggingface.co/hugging-quants/Llama-3.2-3B-Instruct-Q4_K_M-GGUF/resolve/main/llama-3.2-3b-instruct-q4_k_m.gguf)
+
+Your `models` directory should look like this:
+
 ```
-
+/models
+├── Llama-3.2-3B-Instruct-Q4_K_M.gguf
+```
 
 ### Running the Application
 

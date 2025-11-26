@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Union, Optional
 from dataclasses import dataclass, asdict
 import numpy as np
 import cv2
@@ -143,7 +143,7 @@ class DominantColorPlugin(AnalyzerPlugin):
         self.num_colors = config.get('num_dominant_colors', 5)
         self.sample_size = config.get('color_sample_size', 1000)  
         
-        self.frame_colors: List[Dict[str, Any]] = []
+        self.frame_colors: List[Dict[str, Union[int, float, List['ColorInfo']]]] = []
         
     def setup(self):
         try:
@@ -330,7 +330,7 @@ class DominantColorPlugin(AnalyzerPlugin):
         # This will be used in get_results()
         pass
 
-    def get_results(self) -> SceneColorAnalysis:
+    def get_results(self) -> Optional[SceneColorAnalysis]:
         """
         Generate scene-level color analysis.
         """
@@ -464,7 +464,7 @@ class DominantColorPlugin(AnalyzerPlugin):
         else:
             return "mixed"
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> Dict[str, Union[str, float]]:
         """
         Generate a summary of color analysis.
         """
