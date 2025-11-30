@@ -314,6 +314,7 @@ Response: "I'm sorry to hear that! Can you tell me what you're trying to do? I'l
 
 Now respond to the user naturally.
 Response:`
+
 export const YEAR_IN_REVIEW = (stats: YearStats, topVideos: VideoWithScenes[], extraDetails: string) => {
   const enrichedVideos = topVideos.map((v) => {
     const date = v.createdAt ? new Date(v.createdAt) : new Date()
@@ -416,6 +417,21 @@ export const YEAR_IN_REVIEW = (stats: YearStats, topVideos: VideoWithScenes[], e
 
   const words = stats.topWords.filter((f) => f.word.length > 0).join(',')
 
+  const compactVideos = enrichedVideos.map((v) => ({
+    source: v.source,
+    thumbnail: v.thumbnailUrl,
+    duration: v.duration,
+    location: v.locationName || 'Unknown',
+    when: `${v.meta.season} • ${v.meta.formattedDate}`,
+    emotions: v.emotions?.slice(0, 3),
+    faces: v.faces?.slice(0, 3),
+    objects: v.objects?.slice(0, 5),
+    context: v.scenes
+      .slice(0, 3) 
+      .map((s) => s.description?.substring(0, 100)) 
+      .join('. '),
+    aspect_ratio: v.aspect_ratio,
+  }))
   const contextData = {
     userHabits: {
       totalVideos: stats.totalVideos,
@@ -436,21 +452,7 @@ export const YEAR_IN_REVIEW = (stats: YearStats, topVideos: VideoWithScenes[], e
       topEmotions: topEmotions,
       dominantEmotion: dominantEmotion,
     },
-    videos: enrichedVideos.map((v) => ({
-      source: v.source,
-      thumbnail: v.thumbnailUrl,
-      duration: v.duration,
-      location: v.locationName || 'Unknown Location',
-      when: `${v.meta.season} • ${v.meta.formattedDate} at ${v.meta.formattedTime}`,
-      emotions: v.emotions,
-      faces: v.faces,
-      objects: v.objects,
-      context: v.scenes
-        .slice(0, 5)
-        .map((s) => s.description)
-        .join('. '),
-      aspect_ratio: v.aspect_ratio,
-    })),
+    videos: compactVideos,
     mostSpokenWords: words,
   }
 
@@ -458,7 +460,7 @@ export const YEAR_IN_REVIEW = (stats: YearStats, topVideos: VideoWithScenes[], e
 You are an expert creative director generating a personalized "Year in Review" video story.
 
 DATA CONTEXT:
-${JSON.stringify(contextData, null, 2)}
+${JSON.stringify(contextData, null, 0)}
 
 ADDITIONAL INSIGHTS:
 ${extraDetails}
@@ -473,59 +475,115 @@ GENERATION RULES:
    - content: One sentence summary of their year
    - interactiveElements: Empty string ""
 
-2. **SCENES SLIDE** (type: "scenes"):
+2. **OPENING SCENE SLIDE** (type: "openingScene"):
+   - title: "Opening Scene"
+   - content: Describe how the year began based on early videos (tone, time of day, mood)
+   - interactiveElements: Empty string ""
+
+3. **SCENES SLIDE** (type: "scenes"):
    - title: "Your Best Moments"
    - content: Brief intro to the top scenes
    - interactiveElements: Empty string ""
-   - CRITICAL: Include "topScenes" array with 5 scenes, and use 9:16 videos as much as you can but if you don't find them use the videos that you have 
+   - CRITICAL: Include "topScenes" array with 5 scenes, and use 9:16 videos as much as you can but if you don't find them use the videos that you have
 
-3. **CATEGORIES SLIDE** (type: "categories") - PIE CHART:
+4. **CATEGORIES SLIDE** (type: "categories") - PIE CHART:
    - title: "What You Captured Most"
    - content: Comma-separated string of top categories summing to 100%
    - interactiveElements: Empty string ""
 
-4. **OBJECTS SLIDE** (type: "objects"):
+5. **OBJECTS SLIDE** (type: "objects"):
    - title: "Your Most Filmed Items"
    - content: Narrative about most common objects
    - interactiveElements: Empty string ""
 
-5. **FACES SLIDE** (type: "faces"):
+6. **OBJECT STORY SLIDE** (type: "objectStory"):
+   - title: "Objects That Told Your Story"
+   - content: Narrative connecting recurring objects to the user's story
+   - interactiveElements: Empty string ""
+
+7. **FACES SLIDE** (type: "faces"):
    - title: "Your Most Frequent Co-Stars"
    - content: Comma-separated topFaces with counts
    - interactiveElements: Empty string ""
 
-6. **FUN FACTS SLIDE** (type: "funFacts"):
+8. **FUN FACTS SLIDE** (type: "funFacts"):
    - title: "Your Filming Habits"
    - content: Insights with line breaks (\\n)
    - interactiveElements: Empty string ""
 
-7. **LOCATIONS SLIDE** (type: "locations"):
-   - title: "Where You Filmed"
-   - content: Narrative about top filming locations
+9. **WEEKEND PERSONALITY SLIDE** (type: "weekendPersonality"):
+   - title: "Your Weekend Personality"
+   - content: Classify user as Explorer/Homebody/etc based on weekend filming patterns
    - interactiveElements: Empty string ""
 
-8. **MOST SPOKEN WORDS SLIDE** (type: "mostSpokenWords"):
-   - title: "Words You Used Most"
-   - content: Comma-separated words from user input
-   - interactiveElements: Empty string ""
+10. **WEEKDAY ENERGY SLIDE** (type: "weekdayEnergy"):
+    - title: "Day of the Week Energy"
+    - content: Identify most active filming day and characterize it
+    - interactiveElements: Empty string ""
 
-9. **SHARE SLIDE** (type: "share"):
-   - title: "Share Your Story"
-   - content: Call-to-action message
-   - interactiveElements: Empty string ""
+11. **LOCATIONS SLIDE** (type: "locations"):
+    - title: "Where You Filmed"
+    - content: Narrative about top filming locations
+    - interactiveElements: Empty string ""
+
+12. **COLOR TEMPERATURE SLIDE** (type: "colorTemperature"):
+    - title: "Color Temperature"
+    - content: Describe the overall color palette/warmth of their videos
+    - interactiveElements: Empty string ""
+
+13. **MOODBOARD SLIDE** (type: "moodboard"):
+    - title: "Your Cinematic Moodboard"
+    - content: Short descriptive phrases separated by • (e.g., "Summer glow • Calm skies • Evening shadows")
+    - interactiveElements: Empty string ""
+
+14. **YOUR CREATIVE DNA SLIDE** (type: "yourCreativeDNA"):
+    - title: "Your Creative DNA"
+    - content: Describe the unique visual identity across their videos
+    - interactiveElements: Empty string ""
+
+15. **VIBE SCORE SLIDE** (type: "vibeScore"):
+    - title: "Your Vibe Score"
+    - content: Assign a score 1-100 based on emotion variety, energy, and curiosity
+    - interactiveElements: Empty string ""
+
+16. **RARE GEMS SLIDE** (type: "rareGems"):
+    - title: "Your Rare Gems"
+    - content: Highlight unique/one-of-a-kind moments captured
+    - interactiveElements: Empty string ""
+
+17. **MOST SPOKEN WORDS SLIDE** (type: "mostSpokenWords"):
+    - title: "Words You Used Most"
+    - content: Comma-separated words from user input
+    - interactiveElements: Empty string ""
+
+18. **SNAPSHOT OF THE YEAR SLIDE** (type: "snapshotOfTheYear"):
+    - title: "Snapshot of the Year"
+    - content: Describe the one defining image/feeling of their year
+    - interactiveElements: Empty string ""
+
+19. **CLOSING SCENE SLIDE** (type: "closingScene"):
+    - title: "Closing Scene"
+    - content: Describe how the year ended based on recent videos (tone, energy, mood)
+    - interactiveElements: Empty string ""
+
+20. **SHARE SLIDE** (type: "share"):
+    - title: "Share Your Story"
+    - content: Call-to-action message
+    - interactiveElements: Empty string ""
 
 TONE & STYLE:
 - Friendly, celebratory, slightly playful
 - Use emojis sparingly
 - Focus on most unique stats
 - All counts and percentages must match the data
+- Be creative and personalized with the new slides
 
 COMPLETE JSON SCHEMA:
 
 {
   "slides": [
     {
-      "type": "hero" | "scenes" | "categories" | "objects" | "faces" | "funFacts" | "locations" | "mostSpokenWords" | "share",
+      "type": "hero" | "openingScene" | "scenes" | "categories" | "objects" | "objectStory" | "faces" | "funFacts" | "weekendPersonality" | "weekdayEnergy" | "locations" | "colorTemperature" | "moodboard" | "yourCreativeDNA" | "vibeScore" | "rareGems" | "mostSpokenWords" | "snapshotOfTheYear" | "closingScene" | "share",
       "title": string,
       "content": string,
       "interactiveElements": string

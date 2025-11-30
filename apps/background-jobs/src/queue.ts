@@ -52,3 +52,14 @@ export const videoStitcherQueue = new Queue('video-stitcher', {
   },
 })
 
+export const yearInReviewQueue = new Queue('year-in-review', {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+  },
+})

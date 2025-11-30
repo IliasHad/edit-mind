@@ -6,6 +6,9 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths({ ignoreConfigErrors: true })],
+  server: {
+    allowedHosts: ['web', 'localhost', '127.0.0.1'],
+  },
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'app'),

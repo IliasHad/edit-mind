@@ -1,0 +1,192 @@
+{
+  "year": 2025,
+  "data": {
+    "slides": [
+      {
+        "type": "hero",
+        "title": "Your Year as a Creator",
+        "content": "From podcasts to product demos, you spent the year sharing bright ideas and building the future.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "openingScene",
+        "title": "Opening Scene",
+        "content": "Your year kicked off after midnight in March, diving deep into tech entrepreneurship and setting a focused, ambitious tone for the months ahead.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "scenes",
+        "title": "Your Best Moments",
+        "content": "You captured 93 videos this year. Here are a few that told your story.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "categories",
+        "title": "What You Captured Most",
+        "content": "Interviews & Podcasts: 60%, Product Demos: 25%, Promotional Content: 15%",
+        "interactiveElements": ""
+      },
+      {
+        "type": "objects",
+        "title": "Your Most Filmed Items",
+        "content": "Your world was framed by a familiar sight: a potted plant appeared over 10,000 times, becoming the silent co-host to your many tech conversations.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "objectStory",
+        "title": "Objects That Told Your Story",
+        "content": "Your story unfolded from the comfort of a couch, with laptops and cell phones as your tools. It was a year of building and sharing from your creative command center, always with a touch of green in the background.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "faces",
+        "title": "Your Most Frequent Co-Stars",
+        "content": "Ilias (10)",
+        "interactiveElements": ""
+      },
+      {
+        "type": "funFacts",
+        "title": "Your Filming Habits",
+        "content": "Busiest Month: May was your creative peak.\nFavorite Season: You filmed the most during Spring.\nTotal Runtime: You recorded over 562 minutes of footage.\nMarathon Session: Your longest video was a deep 84-minute conversation.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "weekendPersonality",
+        "title": "Your Weekend Personality",
+        "content": "You're a Weekend Creator. With 40% of your filming happening on weekends, you used your free time to dive into your passion projects and share your knowledge with the world.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "weekdayEnergy",
+        "title": "Day of the Week Energy",
+        "content": "Tuesday was your powerhouse day. More than any other, Tuesdays were for hitting 'record' and bringing new ideas to life.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "locations",
+        "title": "Where You Filmed",
+        "content": "You spent most of the year creating from one consistent space, your hub for interviews and demos. But you also captured a unique moment on the road in Kenitra, Morocco.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "colorTemperature",
+        "title": "Color Temperature",
+        "content": "Your videos have an earthy and focused feel, dominated by palettes of Dark Olive Green, black, and gray. This creates a professional, intimate mood perfect for deep conversations.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "moodboard",
+        "title": "Your Cinematic Moodboard",
+        "content": "Focused conversations • On-screen code • Greenery in the background • Late-night insights • The soft glow of a monitor",
+        "interactiveElements": ""
+      },
+      {
+        "type": "yourCreativeDNA",
+        "title": "Your Creative DNA",
+        "content": "You are a Tech Storyteller. Your visual identity is clear and consistent: thoughtful, conversation-driven content that aims to educate and connect with others in the digital space.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "vibeScore",
+        "title": "Your Vibe Score",
+        "content": "72/100. While your videos are calm and focused, your vibe score is high due to the immense intellectual curiosity and consistent creative energy you brought to every recording.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "mostSpokenWords",
+        "title": "Words You Used Most",
+        "content": "Shopify, app, code, developer, waitlist, build, podcast, data, Laravel, React",
+        "interactiveElements": ""
+      },
+      {
+        "type": "snapshotOfTheYear",
+        "title": "Snapshot of the Year",
+        "content": "The defining image of your year is a split-screen interview: two people connecting over technology, sharing ideas from their own spaces, unified by a passion for building something new.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "closingScene",
+        "title": "Closing Scene",
+        "content": "Your year's story closed on a Tuesday evening in August with another deep conversation, ending the year just as it began: driven by curiosity and a passion for sharing knowledge.",
+        "interactiveElements": ""
+      },
+      {
+        "type": "share",
+        "title": "Share Your Story",
+        "content": "Your year was one for the books. Share your creative journey with the world!",
+        "interactiveElements": ""
+      }
+    ],
+    "topScenes": [
+      {
+        "videoSource": "/media/videos/demo.mp4",
+        "thumbnailUrl": "/app/data/.thumbnails/demo.png",
+        "duration": 3623.009524,
+        "description": "A conversation with Wes Bos about building a career in web development.",
+        "faces": [
+   
+        ],
+        "emotions": [],
+        "objects": [
+          "couch",
+          "potted plant",
+          "tennis racket",
+          "cell phone"
+        ],
+        "location": "Unknown Location",
+        "dateDisplay": "Spring • April 26"
+      }
+    ],
+    "topObjects": [
+      {
+        "name": "potted plant",
+        "count": 10377
+      },
+      {
+        "name": "couch",
+        "count": 3449
+      },
+      {
+        "name": "cell phone",
+        "count": 1174
+      },
+      {
+        "name": "chair",
+        "count": 879
+      },
+      {
+        "name": "laptop",
+        "count": 237
+      }
+    ],
+    "topFaces": [
+      {
+        "name": "Ilias",
+        "count": 10
+      }
+    ],
+    "topEmotions": [],
+    "topLocations": [
+      {
+        "name": "Unknown",
+        "count": 19
+      },
+      {
+        "name": "Kenitra, Morocco",
+        "count": 1
+      }
+    ],
+    "mostSpokenWords": [
+      "Shopify",
+      "app",
+      "code",
+      "developer",
+      "waitlist",
+      "build",
+      "podcast",
+      "data",
+      "Laravel",
+      "React"
+    ]
+  }
+}

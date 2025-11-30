@@ -18,7 +18,7 @@ import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearIn
 import { VideoWithScenes } from '@shared/types/video'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
 
-const CONTEXT_WINDOW_LIMIT = 20000 // based on gemini-2.5-pro
+const CONTEXT_WINDOW_LIMIT = 1_000_000 // Gemini 2.0 Flash and 2.5 Flash support 1M tokens
 
 if (!GEMINI_API_KEY) {
   throw new Error('Gemini API key missing')

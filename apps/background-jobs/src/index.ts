@@ -6,11 +6,12 @@ import { ExpressAdapter } from '@bull-board/express'
 import foldersRoute from './routes/folders'
 import stitcherRoute from './routes/stitcher'
 import { config } from './config'
-import { faceMatcherQueue, immichImporterQueue, videoQueue, videoStitcherQueue } from './queue'
+import { faceMatcherQueue, immichImporterQueue, videoQueue, videoStitcherQueue, yearInReviewQueue } from './queue'
 import './jobs/videoIndexer'
 import './jobs/faceMatcher'
 import './jobs/ImmichImporter'
 import './jobs/videoStitcher'
+import './jobs/yearInReview'
 
 import { pythonService } from '@shared/services/pythonService'
 import { initializeWatchers } from './watcher'
@@ -31,6 +32,7 @@ if (process.env.NODE_ENV === 'development') {
       new BullMQAdapter(faceMatcherQueue),
       new BullMQAdapter(immichImporterQueue),
       new BullMQAdapter(videoStitcherQueue),
+      new BullMQAdapter(yearInReviewQueue),
     ],
     serverAdapter,
   })

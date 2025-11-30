@@ -1,0 +1,104 @@
+import {
+  AbsoluteFill,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { SafeArea } from "../components/SafeArea";
+import { GradientBackground } from "../components/GradientBackground";
+
+interface Props {
+  content: string;
+  title: string;
+  year: number;
+}
+
+export const YourCreativeDNASlide: React.FC<Props> = ({ content, title }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const titleProgress = spring({
+    frame: frame - 10,
+    fps,
+    config: { stiffness: 80, damping: 20 },
+  });
+  const titleOpacity = titleProgress;
+  const titleY = interpolate(titleProgress, [0, 1], [30, 0]);
+
+  const contentProgress = spring({
+    frame: frame - 30,
+    fps,
+    config: { stiffness: 80, damping: 20 },
+  });
+  const contentOpacity = contentProgress;
+  const contentY = interpolate(contentProgress, [0, 1], [30, 0]);
+
+  const pulseScale = interpolate(
+    Math.sin(frame / 15),
+    [-1, 1],
+    [0.98, 1.02]
+  );
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: "black" }}>
+      <GradientBackground gradientIndex={3} />
+
+      <SafeArea>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            textAlign: "center",
+            padding: "0 48px",
+          }}
+        >
+          <div
+            style={{
+              opacity: titleOpacity,
+              transform: `translateY(${titleY}px) scale(${pulseScale})`,
+              marginBottom: 40,
+            }}
+          >
+            <h2
+              style={{
+                fontSize: 68,
+                fontWeight: "bold",
+                letterSpacing: "-0.03em",
+                color: "white",
+                lineHeight: 1.2,
+              }}
+            >
+              {title}
+            </h2>
+          </div>
+
+          <div
+            style={{
+              opacity: contentOpacity,
+              transform: `translateY(${contentY}px)`,
+              maxWidth: "850px",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 42,
+                fontWeight: 500,
+                letterSpacing: "-0.01em",
+                color: "rgba(255, 255, 255, 0.9)",
+                lineHeight: 1.5,
+              }}
+            >
+              {content}
+            </p>
+          </div>
+        </div>
+      </SafeArea>
+    </AbsoluteFill>
+  );
+};

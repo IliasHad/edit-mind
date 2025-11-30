@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "rootDirs": [".", "./.react-router/types"],
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"],
+      "@shared/*": ["../shared/*"],
+      "@ui/*": ["../ui/src/*"]
+    },
+  },
+  "exclude": ["remotion.config.ts"]
+}

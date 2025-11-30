@@ -221,7 +221,28 @@ class LocalLLM {
               properties: {
                 type: {
                   type: 'string',
-                  enum: ['hero', 'scenes', 'categories', 'objects', 'funFacts', 'locations', 'share', 'mostSpokenWords', 'faces'],
+                  enum: [
+                    'hero',
+                    'openingScene',
+                    'scenes',
+                    'categories',
+                    'objects',
+                    'objectStory',
+                    'faces',
+                    'funFacts',
+                    'weekendPersonality',
+                    'weekdayEnergy',
+                    'locations',
+                    'colorTemperature',
+                    'moodboard',
+                    'yourCreativeDNA',
+                    'vibeScore',
+                    'rareGems',
+                    'mostSpokenWords',
+                    'snapshotOfTheYear',
+                    'closingScene',
+                    'share',
+                  ],
                 },
                 title: { type: 'string' },
                 content: { type: 'string' },
@@ -280,10 +301,13 @@ class LocalLLM {
               required: ['name', 'count'],
             },
           },
+          mostSpokenWords: {
+            type: 'array',
+            items: { type: 'string' },
+          },
         },
-        required: ['slides', 'topObjects', 'topFaces', 'topEmotions', 'topLocations', 'topScenes'],
+        required: ['slides', 'topObjects', 'topFaces', 'topEmotions', 'topLocations', 'topScenes', 'mostSpokenWords'],
       } as const)
-
       const { data: raw, tokens, error } = await this.generate(prompt, 2048, grammar)
 
       if (error || !raw) {

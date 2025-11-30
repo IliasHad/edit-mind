@@ -17,7 +17,10 @@
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
     "@tanstack/react-virtual": "^3.13.12",
+    "@types/canvas-confetti": "^1.9.0",
     "bcryptjs": "^2.4.3",
+    "canvas": "^3.2.0",
+    "canvas-confetti": "^1.9.4",
     "chromadb": "^3.1.1",
     "cross-env": "^10.1.0",
     "date-fns": "^4.1.0",
@@ -33,6 +36,7 @@
     "react-intersection-observer": "^10.0.0",
     "react-router": "^7.9.2",
     "react-router-dom": "^7.9.5",
+    "recharts": "^3.5.0",
     "tsconfig-paths": "^4.2.0",
     "zod": "^4.1.12"
   },

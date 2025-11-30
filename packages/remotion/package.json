@@ -1,0 +1,40 @@
+{
+  "name": "remotion",
+  "version": "1.0.0",
+  "description": "My Remotion video",
+  "repository": {},
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.379",
+    "@remotion/tailwind-v4": "4.0.379",
+    "@remotion/transitions": "^4.0.379",
+    "@remotion/zod-types": "4.0.379",
+    "music-tempo": "^1.0.3",
+    "node-wav": "^0.0.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "remotion": "4.0.379",
+    "tailwindcss": "4.0.0",
+    "zod": "3.22.3"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.379",
+    "@types/react": "^19.1.11",
+    "@types/react-dom": "^19.1.8",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "9.19.0",
+    "prettier": "3.6.0",
+    "typescript": "5.8.2"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "upgrade": "remotion upgrade",
+    "render": "remotion render",
+    "lint": "eslint src && tsc"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}
