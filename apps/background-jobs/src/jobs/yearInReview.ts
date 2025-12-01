@@ -34,7 +34,7 @@ async function renderYearInReviewVideo(
   const outputName = `year-in-review-${year}-${userId}.mp4`
   const outputPath = path.join(outputDir, outputName)
 
-  const require = createRequire(import.meta.url)
+  const require = createRequire(process.cwd())
 
   const bundleLocation = await bundle({
     entryPoint: require.resolve(path.join(REMOTION_ROOT, 'src/index.ts')),
