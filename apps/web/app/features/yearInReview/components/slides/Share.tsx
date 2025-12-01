@@ -16,7 +16,7 @@ export function Share({ title, content, year, videoPath }: Props) {
     try {
       setDownloading(true)
 
-      const response = await fetch(`/media${videoPath}`)
+      const response = await fetch(`/media/${videoPath}`)
       if (!response.ok) throw new Error('Download failed')
 
       const blob = await response.blob()
