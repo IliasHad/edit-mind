@@ -7,7 +7,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(sidebar ? false : true)
 
   const sidebarWithProps =
     isValidElement(sidebar) &&
@@ -22,12 +22,10 @@ export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {
       <div
         className={`
           transition-all duration-300 ease-out
-          ${isCollapsed ? 'ml-16' : 'ml-72'}
+          ${!sidebar ? '' : isCollapsed ? 'ml-16' : 'ml-72'}
         `}
       >
-        <main className="min-h-screen flex flex-col">
-          {children}
-        </main>
+        <main className="min-h-screen flex flex-col">{children}</main>
       </div>
     </div>
   )

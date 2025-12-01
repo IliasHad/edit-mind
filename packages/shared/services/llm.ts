@@ -1,4 +1,9 @@
-import { Llama, LlamaModel, LlamaContext, LlamaChatSession, LlamaJsonSchemaGrammar, LlamaGrammar } from 'node-llama-cpp'
+import type {
+  Llama,
+  LlamaModel,
+  LlamaContext,
+  LlamaGrammar,
+} from 'node-llama-cpp'
 import { SEARCH_AI_MODEL } from '../constants'
 import {
   GENERAL_RESPONSE_PROMPT,
@@ -65,7 +70,8 @@ class LocalLLM {
     await this.init()
 
     const seq = this.context!.getSequence()
-    const session = new LlamaChatSession({ contextSequence: seq })
+    const loader = await import('node-llama-cpp')
+    const session = new loader.LlamaChatSession({ contextSequence: seq })
 
     try {
       const res = await session.prompt(prompt, {
@@ -113,8 +119,9 @@ class LocalLLM {
       return { data: fallback, tokens: 0, error: undefined }
     }
     await this.init()
+    const loader = await import('node-llama-cpp')
 
-    const grammar = new LlamaJsonSchemaGrammar(this.llama!, {
+    const grammar = new loader.LlamaJsonSchemaGrammar(this.llama!, {
       type: 'object',
       properties: {
         action: { type: ['string', 'null'] },
@@ -210,8 +217,8 @@ class LocalLLM {
       }
 
       await this.init()
-
-      const grammar = new LlamaJsonSchemaGrammar(this.llama!, {
+      const loader = await import('node-llama-cpp')
+      const grammar = new loader.LlamaJsonSchemaGrammar(this.llama!, {
         type: 'object',
         properties: {
           slides: {

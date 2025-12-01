@@ -1,16 +1,20 @@
-FROM node:22.20.0-slim AS base
+ARG NODE_VERSION=22.20.0
+ARG PNPM_VERSION=10.20.0
 
-# Configure pnpm
+FROM node:${NODE_VERSION}-bookworm-slim AS base
+
+ARG PNPM_VERSION
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@10.20.0 --activate
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
-# ============================================
-# Dependencies stage
-# ============================================
+WORKDIR /app
+
+RUN mkdir -p /app/models /app/models/yolo /tmp 
+
 FROM base AS dependencies
 
-# Install system dependencies in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3=3.11.* \
     python3-venv \
@@ -27,28 +31,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-WORKDIR /app
+COPY  pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
+COPY  apps/background-jobs/package.json ./apps/background-jobs/
+COPY  apps/web/package.json ./apps/web/
+COPY  packages/shared/package.json ./packages/shared/
+COPY  packages/prisma ./packages/prisma/
 
-# Copy package files for better layer caching
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
-COPY apps/web/package.json ./apps/web/package.json
-COPY apps/background-jobs/package.json ./apps/background-jobs/package.json
-COPY packages/shared/package.json ./packages/shared/package.json
-COPY packages/prisma ./packages/prisma
-COPY prisma.config.ts ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
-
-# ============================================
-# Python dependencies stage
-# ============================================
 FROM dependencies AS python-deps
 
-COPY python/requirements.txt ./python/requirements.txt
+COPY  python/requirements.txt ./python/
 
-# Create and activate virtual environment
-RUN python3 -m venv /app/.venv
+RUN python3 -m venv /app/.venv 
+
 ENV PATH="/app/.venv/bin:$PATH"
 ENV VIRTUAL_ENV="/app/.venv"
 
@@ -56,34 +53,51 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r python/requirements.txt
 
-# ============================================
-# Build stage
-# ============================================
 FROM python-deps AS builder
 
-# Copy source code
-COPY apps ./apps
-COPY packages ./packages
-COPY python ./python
-COPY tsconfig.json ./
+COPY  apps ./apps
+COPY  packages ./packages
+COPY  python ./python
+COPY  tsconfig.json ./
 
-# Rebuild native modules for the target architecture
 RUN pnpm rebuild @tailwindcss/oxide rollup sharp
 
-# Build the application
 RUN pnpm --filter background-jobs build
 
-# ============================================
-# Start stage
-# ============================================
-FROM builder AS start
+FROM base AS production
 
-WORKDIR /app/apps/background-jobs
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3=3.11.* \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    cmake \
+    libopenblas-dev \
+    liblapack-dev \
+    libx11-dev \
+    libgtk-3-dev \
+    libboost-all-dev \
+    ffmpeg \
+    && ln -sf /usr/bin/python3 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Create cache directory with proper permissions
-RUN mkdir -p /app/models
 
+COPY --from=builder  /app /app
+
+ENV NODE_ENV=production \
+    PATH="/app/.venv/bin:$PATH" \
+    VIRTUAL_ENV="/app/.venv" 
+
+RUN  pnpm --filter background-jobs build
+
+WORKDIR /app/
 
 EXPOSE 4000 8765
 
-CMD ["sh", "-c", "pnpm prisma migrate deploy --schema=/app/packages/prisma/schema.prisma && pnpm prisma generate --schema=/app/packages/prisma/schema.prisma && pnpm --filter background-jobs start"]
+CMD ["sh", "-c", "\
+  pnpm --filter prisma migrate deploy && \
+  pnpm --filter prisma generate && \
+  pnpm --filter prisma seed && \
+  pnpm --filter background-jobs start \
+"]

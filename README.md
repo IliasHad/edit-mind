@@ -86,63 +86,166 @@ This project is structured as a `pnpm` monorepo, separating concerns into distin
 
 ## 🚀 Getting Started (Docker-first Setup)
 
-The recommended way to get started with Edit Mind is using Docker Compose, which will set up all necessary services (Node.js backend, Python analysis, PostgreSQL, ChromaDB).
+Edit Mind uses Docker Compose to run everything in containers.
 
 ### Prerequisites
 
 *   [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-*   [pnpm](https://pnpm.io/installation) installed.
+*   That's it! Everything else runs in containers.
 
-### 1. Clone the repository
-
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/iliashad/edit-mind
 cd edit-mind
 ```
 
-### 2. Install Node.js Dependencies
+### 2. Configure Docker File Sharing
 
-```bash
-pnpm install
-```
+**Important:** Before proceeding, configure Docker to access your media folder.
+
+**macOS/Windows:**
+1. Open Docker Desktop
+2. Go to **Settings** → **Resources** → **File Sharing**
+3. Add the path where your videos are stored (e.g., `/Users/yourusername/Videos`)
+4. Click **Apply & Restart**
+
+**Linux:** File sharing is typically enabled by default.
 
 ### 3. Configure Environment Variables
 
-Create a `.env` file in the project root (`edit-mind/.env`).
-You can start by copying the example:
+Edit Mind uses a **two-file environment configuration**:
+- **`.env`** (in project root) - Your personal configuration (required)
+- **`.env.system`** (in `docker/` folder) - System defaults (optional, for advanced users)
 
+#### Step 3.1: Create Your Personal Configuration
+
+Copy the example file and customize it:
 ```bash
-cp .env.example .env
+cp .env.example docker/.env
 ```
 
-**Important:** Set your `HOST_MEDIA_PATH` in the `.env` file for accessing your media folder from the docker setup and make sure over Docker settings to make this folder shareable over Docker.
-
+**Edit the `.env` file and configure these critical settings:**
 ```ini
-# .env example
-DATABASE_URL="postgresql://user:password@localhost:5432/editmind?schema=public"
-REDIS_HOST="localhost"
-REDIS_PORT=6379
-GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-PYTHON_PORT=5001 
+# 1. SET YOUR VIDEO FOLDER PATH (REQUIRED)
+# Must match the path you added to Docker File Sharing
+HOST_MEDIA_PATH="/Users/yourusername/Videos"
 
-HOST_MEDIA_PATH="/path/to/media/folder/in/your/server"
+# 2. CHOOSE AI MODEL (Pick one option)
+# Option A: Use Gemini API (easier, requires API key)
+USE_LOCAL_MODEL="true"
+GEMINI_API_KEY="your-gemini-api-key-from-google-ai-studio"
 
+# Option B: Use Local Model (more private, requires model download)
+# USE_LOCAL_MODEL="false"
+# SEARCH_AI_MODEL="/app/models/path/to/.gguf"
+# The AI model should be downloaded and saved it to models folder in the project root dir
+
+# 3. GENERATE SECURITY KEYS (REQUIRED)
+# Generate with: openssl rand -base64 32
+ENCRYPTION_KEY="your-random-32-char-base64-key"
+# Generate with: openssl rand -hex 32
+SESSION_SECRET="your-random-session-secret"
 ```
 
-### 4. Start the Services with Docker Compose
+**Quick Key Generation:**
+```bash
+# Generate ENCRYPTION_KEY
+openssl rand -base64 32
 
-This command will build Docker images for all services and start them in detached mode.
+# Generate SESSION_SECRET
+openssl rand -hex 32
+```
+
+#### Step 3.2: Copy Configuration to Docker Directory
+```bash
+cp .env docker/.env
+```
+
+#### Step 3.3: Advanced Configuration (Optional)
+
+The `docker/.env.system` file contains system-level defaults. **Most users don't need to modify this file.**
+
+If you need to customize internal paths, ports, or service configurations:
+```bash
+# View system defaults
+cat docker/.env.system
+
+# Edit if needed (advanced users only)
+nano docker/.env.system 
+
+# use VS code
+code docker/.env.system 
+```
+
+### 4. Start the Services
+
+Start all services with a single command:
 
 ```bash
-docker compose -f docker/docker-compose.yml --env-file .env up --build
+docker compose up --build
 ```
+
+**First-time startup will take 5-10+ minutes** as Docker:
+- Builds all container images
+- Downloads AI models and dependencies
+- Initializes databases
 
 
 ### 5. Access the Applications
 
-*   **Web App:** Open your browser to `http://localhost:3745` (or the port configured for the web service).
-*   **Desktop App:** The Electron desktop application can be built and run separately. Refer to `apps/desktop/README.md` for specific instructions.
-*   **BullMQ Dashboard:** (Development only) Access the job queue monitoring dashboard at `http://localhost:4000` (or the port configured for `background-jobs`).
+Once all services are running (look for "ready" messages in logs):
+
+*   **Web App:** [http://localhost:3745](http://localhost:3745)
+*   **BullMQ Dashboard:** [http://localhost:4000/(http://localhost:4000) (Job queue monitoring) if you have ```NODE_ENV``` set to ```development```
+
+### 6. Add Your First Videos
+
+1. Navigate to the web app at `http://localhost:3745`
+2. Login using admin@example.com and password is admin
+3. Navigate to the web app at `http://localhost:3745/app/settings`
+4. Click **"Add Folder"**
+3. Select a folder from your `HOST_MEDIA_PATH` location
+4. The background job service will automatically start processing your videos and will be start watching for new video file events 
+5. Monitor progress in the BullMQ dashboard at `http://localhost:4000`
+
+### Troubleshooting
+
+**Problem: "Empty section between colons" error**
+```bash
+# Solution: Ensure .env is copied to docker directory
+cp .env docker/.env
+# Verify HOST_MEDIA_PATH is set
+grep HOST_MEDIA_PATH .env
+```
+
+**Problem: Services won't start**
+```bash
+# Check Docker is running
+docker --version
+docker compose version
+
+# View detailed logs
+docker compose -f docker/docker-compose.yml logs
+
+# Check service status
+docker compose -f docker/docker-compose.yml ps
+```
+
+**Problem: Cannot access video files**
+```bash
+# Verify HOST_MEDIA_PATH is correct
+ls -la /your/video/path
+
+# Check Docker file sharing includes this path
+# Docker Desktop → Settings → Resources → File Sharing
+
+# Restart Docker after adding paths
+```
+---
+
+## 🖥️ Desktop Application (Optional)
+
+For the native Electron desktop experience, see [apps/desktop/README.md](apps/desktop/README.md). Note: The desktop app requires local Node.js and pnpm installation.
 
 ---
 

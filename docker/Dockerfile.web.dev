@@ -1,54 +1,59 @@
-FROM node:22.20.0-slim AS base
+ARG NODE_VERSION=22.20.0
+ARG PNPM_VERSION=10.20.0
 
-# Configure pnpm
+FROM node:${NODE_VERSION}-slim AS base
+
+ARG PNPM_VERSION
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@10.20.0 --activate
-
-# ============================================
-# Dependencies stage
-# ============================================
-FROM base AS dependencies
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y openssl
+FROM base AS dependencies
 
-# Copy package files for optimal layer caching
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
-COPY apps/web/package.json ./apps/web/package.json
-COPY apps/background-jobs/package.json ./apps/background-jobs/package.json
-COPY packages/shared/package.json ./packages/shared/package.json
-COPY packages/prisma ./packages/prisma
-COPY prisma.config.ts ./
+COPY apps/web/package.json ./apps/web/
+COPY apps/background-jobs/package.json ./apps/background-jobs/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/prisma ./packages/prisma/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
-# ============================================
-# Build stage
-# ============================================
 FROM dependencies AS builder
 
-# Copy source code
 COPY apps ./apps
 COPY packages ./packages
 COPY tsconfig.json ./
 
-# Rebuild native modules
+RUN pnpm --filter prisma generate
+
 RUN pnpm rebuild @tailwindcss/oxide rollup sharp
 
-# Build the web application
+RUN pnpm --filter web install --frozen-lockfile
+
 RUN pnpm --filter web build
 
-# ============================================
-# Development stage
-# ============================================
 FROM builder AS development
 
-WORKDIR /app/apps/web
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
 
+ENV NODE_ENV=development
+
+
+WORKDIR /app/
 
 EXPOSE 3745
 
-CMD ["sh", "-c", "pnpm prisma migrate deploy --schema=/app/packages/prisma/schema.prisma && pnpm prisma generate --schema=/app/packages/prisma/schema.prisma && pnpm --filter web dev --host 0.0.0.0 --port 3745"]
+CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm prisma generate  && pnpm dev --host 0.0.0.0 --port 3745 --filter web"]

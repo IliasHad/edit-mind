@@ -105,7 +105,6 @@ async function processVideo(job: Job<{ videoPath: string; jobId: string; forceRe
       '🔍 Checking existing processed files'
     )
 
-    logger.info({ jobId }, '⏱ Starting transcription and frame analysis sequentially')
     const transcriptionStart = Date.now()
 
     if (!transcriptionExists) {
@@ -120,15 +119,27 @@ async function processVideo(job: Job<{ videoPath: string; jobId: string; forceRe
     } else {
       logger.info({ jobId, transcriptionPath }, '⏭️ Skipping transcription - using cached file')
     }
+    let transcriptionData
+    try {
+      transcriptionData = await fs.readFile(transcriptionPath, 'utf-8').then(JSON.parse)
+    } catch {
+      logger.info({ jobId, transcriptionPath }, 'has malformed JSON file')
+      await transcribeAudio(videoPath, transcriptionPath, jobId, async ({ progress, job_id }) => {
+        logger.debug({ jobId, progress, job_id }, '🎤 Transcription progress')
+        const overallProgress = 10 + progress * 0.3
 
-    const transcriptionData = await fs.readFile(transcriptionPath, 'utf-8').then(JSON.parse)
+        await updateJob(jobId, { stage: JobStage.transcribing, progress, overallProgress })
+      })
+      logger.info({ jobId }, '✅ Transcription completed')
+      transcriptionData = await fs.readFile(transcriptionPath, 'utf-8').then(JSON.parse)
+    }
     await job.updateProgress(40)
     const transcriptionDuration = (Date.now() - transcriptionStart) / 1000
     logger.info({ jobId, transcriptionDuration }, '🎤 Transcription done')
 
     const analysisStart = Date.now()
 
-    let analysisData: { analysis: Analysis; category: string; }
+    let analysisData: { analysis: Analysis; category: string }
     if (forceReIndexing || !analysisExists) {
       logger.info({ jobId, videoPath }, '🎥 Starting frame analysis')
       const result = await analyzeVideo(videoPath, jobId, async ({ progress, job_id }) => {

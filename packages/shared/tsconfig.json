@@ -18,5 +18,6 @@
       "@shared/*": ["./*"]
     }
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist", "tests", "**/*.test.ts", "**/*.spec.ts", "vitest.config.ts"]
 }

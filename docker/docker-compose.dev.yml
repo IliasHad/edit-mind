@@ -3,100 +3,138 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.background-jobs.dev
+      args:
+        NODE_VERSION: 22.20.0
+        PNPM_VERSION: 10.20.0
     image: edit-mind-background-jobs:dev
     container_name: edit-mind-background-jobs-dev
     ports:
-      - "4000:4000"
-      - "8765:8765"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    environment:
-      PYTHON_PORT: 8765
-    env_file:
-      - ../.env
-    networks:
-      - app-network
-    volumes:
-      - ${HOST_MEDIA_PATH}:/media/videos
-      - ../data:/app/data
-      - whisper-models:/app/models
-      - yolo-models:/app/models/yolo 
-      - background_jobs_node_modules:/app/node_modules
-
-  web:
-    container_name: edit-mind-web-dev
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.web.dev
-    image: edit-mind-web:dev
-    ports:
-      - "3745:3745"
+      - "${BACKGROUND_JOBS_PORT:-4000}:4000"
+      - "${BACKGROUND_JOBS_WS_PORT:-8765}:8765"
     depends_on:
       postgres:
         condition: service_healthy
       chroma:
         condition: service_started
+      redis:
+        condition: service_started
     env_file:
-      - ../.env
+      - .env.dev
+      - .env.system
+    environment:
+      NODE_ENV: development
+    networks:
+      - app-network
     volumes:
-      - ..:/app
-      - web_node_modules:/app/node_modules
+      - ../apps/background-jobs:/app/apps/background-jobs
+      - ../packages:/app/packages
+      - ../python:/app/python
       - ../data:/app/data
-      - ${HOST_MEDIA_PATH}:/media/videos
+      - ../tsconfig.json:/app/tsconfig.json
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos
+      - whisper-models:/app/models
+      - yolo-models:/app/models/yolo
+      - background_jobs_node_modules:/app/node_modules
+  web:
+    container_name: edit-mind-web-dev
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web.dev
+      target: development
+      args:
+        NODE_VERSION: 22.20.0
+        PNPM_VERSION: 10.20.0
+    image: edit-mind-web:dev
+    ports:
+      - "${WEB_PORT:-3745}:3745"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+      redis:
+        condition: service_started
+    env_file:
+      - .env.dev
+      - .env.system
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://user:password@postgres:5432/app
+      CHROMA_URL: http://chroma:8000
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ../apps/web:/app/apps/web
+      - ../packages:/app/packages
+      - ../data:/app/data
+      - ../tsconfig.json:/app/tsconfig.json
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos
+      - web_node_modules:/app/node_modules
     networks:
       - app-network
 
   chroma:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:1.3.5
+    container_name: edit-mind-chroma
+    restart: unless-stopped
     environment:
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
-      CHROMA_HOST: "0.0.0.0" 
-      CHROMA_PORT: "8000"
-    ports:  
-      - "8000:8000"
+      CHROMA_HOST: ${CHROMA_HOST:-0.0.0.0}
+      CHROMA_PORT: ${CHROMA_PORT:-8000}
+    ports:
+      - "${CHROMA_PORT:-8000}:8000"
     volumes:
       - ../.chroma_db:/data
     networks:
       - app-network
-
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   redis:
     image: redis:7-alpine
+    container_name: edit-mind-redis-dev
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
-    - redis_data:/data
+      - redis_data_dev:/data
     networks:
       - app-network
-
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
+    container_name: edit-mind-postgres-dev
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: app
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_dev:/var/lib/postgresql/data
+    networks:
+      - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d app"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-app}"]
+      interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
+    shm_size: 128mb
 
 volumes:
-  pgdata:
-  web_node_modules:
-  background_jobs_node_modules:
-  redis_data: 
+  pgdata_dev:
+    driver: local
+  redis_data_dev:
+    driver: local
   whisper-models:
     driver: local
-  yolo-models: 
+  yolo-models:
     driver: local
+  web_node_modules:
+    driver: local
+  background_jobs_node_modules:
+    driver: local
+
 networks:
   app-network:
+    driver: bridge

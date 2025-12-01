@@ -13,13 +13,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const decodedPath = decodeURIComponent(filePath)
 
     if (!fs.existsSync(decodedPath)) {
-      throw new Response('File not found', { status: 404 })
+      return new Response('File not found', { status: 404 })
     }
 
     const stats = fs.statSync(decodedPath)
 
     if (!stats.isFile()) {
-      throw new Response('Not a file', { status: 400 })
+      return new Response('Not a file', { status: 400 })
     }
 
     const contentType = getContentType(decodedPath)

@@ -1,7 +1,7 @@
 import type { Chat, ChatMessage } from '@prisma/client'
 import type { Scene } from '@shared/schemas'
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useFetcher, useNavigate } from 'react-router-dom'
+import { useFetcher, useNavigate } from 'react-router'
 
 interface ChatMessageWithScenes extends ChatMessage {
   outputScenes: Scene[]
@@ -66,7 +66,8 @@ export function useChat(chatId?: string) {
         setMessages((prev) => [...prev, newMessage])
       }
     }
-  }, [sendMessageFetcher.data, navigate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sendMessageFetcher.data])
 
   useEffect(() => {
     if (stitchFetcher.data) {
@@ -208,6 +209,6 @@ export function useChat(chatId?: string) {
     isStitching: isStitchingState,
     isSending: sendMessageFetcher.state !== 'idle',
     isRefreshing: messagesFetcher.state === 'loading',
-    chat
+    chat,
   }
 }

@@ -71,7 +71,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const response = await generateAnalyticsResponse(prompt, analytics, recentMessages)
       assistantText = response.data || 'Sorry, I could not generate an analytics response.'
       tokensUsed += response.tokens
-      outputSceneIds = analytics.sceneIds
       break
     }
 

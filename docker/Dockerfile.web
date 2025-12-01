@@ -1,54 +1,88 @@
-FROM node:22.20.0-slim AS base
+ARG NODE_VERSION=22.20.0
+ARG PNPM_VERSION=10.20.0
 
-# Configure pnpm
+FROM node:${NODE_VERSION}-slim AS base
+
+ARG PNPM_VERSION
+
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@10.20.0 --activate
-
-# ============================================
-# Dependencies stage
-# ============================================
-FROM base AS dependencies
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y openssl
+FROM base AS dependencies
 
-# Copy package files for optimal layer caching
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
-COPY apps/web/package.json ./apps/web/package.json
-COPY apps/background-jobs/package.json ./apps/background-jobs/package.json
-COPY packages/shared/package.json ./packages/shared/package.json
-COPY packages/prisma ./packages/prisma
+COPY apps/web/package.json ./apps/web/
+COPY apps/background-jobs/package.json ./apps/background-jobs/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/prisma ./packages/prisma/
 
-# Install dependencies with cache mount
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile
 
-# ============================================
-# Build stage
-# ============================================
 FROM dependencies AS builder
 
-# Copy source code
 COPY apps ./apps
 COPY packages ./packages
 COPY tsconfig.json ./
 
-# Rebuild native modules
+RUN pnpm --filter prisma generate
+
 RUN pnpm rebuild @tailwindcss/oxide rollup sharp
 
-# Build the web application
+RUN pnpm --filter shared build
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
+
 RUN pnpm --filter web build
 
-# ============================================
-# Development stage
-# ============================================
-FROM builder AS development
+FROM base AS production
 
-WORKDIR /app/apps/web
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
+COPY --from=builder /app/pnpm-workspace.yaml /app/
+COPY --from=builder /app/pnpm-lock.yaml /app/
+COPY --from=builder /app/package.json /app/
+COPY --from=builder /app/prisma.config.ts /app/
+
+COPY --from=builder /app/apps/web/package.json /app/apps/web/
+COPY --from=builder /app/apps/background-jobs/package.json /app/apps/background-jobs/
+COPY --from=builder /app/packages/shared/package.json /app/packages/shared/
+COPY --from=builder /app/packages/prisma/package.json /app/packages/prisma/
+
+COPY --from=builder /app/packages/prisma /app/packages/prisma
+
+COPY --from=builder /app/packages/shared/dist /app/packages/shared/dist
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
+
+COPY --from=builder /app/apps/web/build /app/apps/web/build
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3745
+ENV HOST=0.0.0.0
 
 EXPOSE 3745
 
-CMD ["pnpm", "--filter", "web", "start", "--host", "0.0.0.0", "--port", "3745"]
+CMD ["sh", "-c", "\
+  pnpm --filter prisma migrate deploy && \
+  pnpm --filter prisma generate && \
+  pnpm --filter prisma seed && \
+  pnpm --filter web start \
+"]

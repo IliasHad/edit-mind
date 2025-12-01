@@ -97,7 +97,6 @@ export const action: ActionFunction = async ({ request, params }) => {
       const response = await generateAnalyticsResponse(prompt, analytics, recentMessages)
       assistantText = response.data || 'Sorry, I could not generate an analytics response.'
       tokensUsed += response.tokens
-      outputSceneIds = analytics.sceneIds
       break
     }
 
