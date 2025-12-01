@@ -28,3 +28,4 @@ models/
 .pnpm-store/*
 test-results/*
 .env.testing
+.env.dev
