@@ -158,7 +158,8 @@ openssl rand -hex 32
 
 #### Step 3.2: Copy Configuration to Docker Directory
 ```bash
-cp .env docker/.env
+cp .env.example docker/.env
+cp .env.system.example docker/.env.system
 ```
 
 #### Step 3.3: Advanced Configuration (Optional)
