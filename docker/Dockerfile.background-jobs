@@ -51,6 +51,7 @@ COPY  apps/background-jobs/package.json ./apps/background-jobs/
 COPY  apps/web/package.json ./apps/web/
 COPY  packages/shared/package.json ./packages/shared/
 COPY  packages/prisma ./packages/prisma/
+COPY  packages/remotion/package.json ./packages/remotion/package.json
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile
