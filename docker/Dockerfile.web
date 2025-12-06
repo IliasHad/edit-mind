@@ -1,5 +1,5 @@
 ARG NODE_VERSION=22.20.0
-ARG PNPM_VERSION=10.20.0
+ARG PNPM_VERSION=10.13.1
 
 FROM node:${NODE_VERSION}-slim AS base
 
@@ -7,6 +7,7 @@ ARG PNPM_VERSION
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV NPM_CONFIG_NODE_LINKER=hoisted
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 WORKDIR /app
@@ -19,14 +20,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/background-jobs/package.json ./apps/background-jobs/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/prisma ./packages/prisma/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install
 
 FROM dependencies AS builder
 
@@ -41,7 +42,7 @@ RUN pnpm rebuild @tailwindcss/oxide rollup sharp
 RUN pnpm --filter shared build
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install
 
 RUN pnpm --filter web build
 
@@ -71,7 +72,7 @@ COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install
 
 
 COPY --from=builder /app/apps/web ./apps/web
@@ -116,7 +117,7 @@ COPY --from=builder /app/packages/prisma /app/packages/prisma
 COPY --from=builder /app/packages/shared/dist /app/packages/shared/dist
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install
 
 COPY --from=builder /app/apps/web/build /app/apps/web/build
 COPY --from=builder /app/apps/web/app ./apps/web/app

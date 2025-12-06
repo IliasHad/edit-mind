@@ -8,6 +8,11 @@ import { logger } from '@shared/services/logger.js'
 export function watchFolder(folderPath: string) {
   const watcher = chokidar.watch(folderPath, { ignored: /^\./, persistent: true, ignoreInitial: true })
 
+  watcher.on('error', (error) => {
+    logger.error(`Watcher error for ${folderPath}: ${error.message}`)
+    // Don't crash - just log the error and continue
+  })
+
   watcher.on('add', async (filePath) => {
     try {
       if (!SUPPORTED_VIDEO_EXTENSIONS.test(filePath)) return

@@ -1,32 +1,53 @@
+
 services:
   background-jobs:
-    image: ghcr.io/iliashad/edit-mind-background-jobs:${VERSION:-latest}
-    container_name: edit-mind-background-jobs
+    build:
+      target: development
+      context: .
+      dockerfile: docker/Dockerfile.background-jobs
+      args:
+        NODE_VERSION: 22.20.0
+        PNPM_VERSION: 10.20.0
+    image: edit-mind-background-jobs:dev
+    container_name: edit-mind-background-jobs-dev
     ports:
       - "${BACKGROUND_JOBS_PORT:-4000}:4000"
       - "${BACKGROUND_JOBS_WS_PORT:-8765}:8765"
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
       chroma:
+        condition: service_started
+      redis:
         condition: service_started
     env_file:
       - .env
-      - .env.system
+      - docker/.env.system
+    environment:
+      NODE_ENV: development
     networks:
       - app-network
     volumes:
-      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - whisper-models:/app/models:rw
-      - yolo-models:/app/models/yolo:rw  
+      - ./apps/background-jobs:/app/apps/background-jobs
+      - ./packages:/app/packages
+      - ./python:/app/python
+      - ./data:/app/data
+      - ./tsconfig.json:/app/tsconfig.json
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos
+      - whisper-models:/app/models
+      - yolo-models:/app/models/yolo
+      - background_jobs_node_modules:/app/node_modules
 
   web:
-    image: ghcr.io/iliashad/edit-mind-web:${VERSION:-latest}
-    container_name: edit-mind-web
-    environment:
-      NODE_ENV: "production"
+    container_name: edit-mind-web-dev
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+      target: development
+      args:
+        NODE_VERSION: 22.20.0
+        PNPM_VERSION: 10.20.0
+    image: edit-mind-web:dev
     ports:
       - "${WEB_PORT:-3745}:3745"
     depends_on:
@@ -35,12 +56,22 @@ services:
       chroma:
         condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
     env_file:
       - .env
-      - .env.system
+      - docker/.env.system
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://user:password@postgres:5432/app
+      CHROMA_URL: http://chroma:8000
+      REDIS_URL: redis://redis:6379
     volumes:
-      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ./apps/web:/app/apps/web
+      - ./packages:/app/packages
+      - ./data:/app/data
+      - ./tsconfig.json:/app/tsconfig.json
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos
+      - web_node_modules:/app/node_modules
     networks:
       - app-network
 
@@ -50,20 +81,27 @@ services:
     restart: unless-stopped
     environment:
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
+      CHROMA_HOST: ${CHROMA_HOST:-0.0.0.0}
+      CHROMA_PORT: ${CHROMA_PORT:-8000}
     ports:
       - "${CHROMA_PORT:-8000}:8000"
     volumes:
-      - chroma-data:/chroma/chroma
+      - ./.chroma_db:/data
     networks:
       - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   redis:
-    image: redis:7
-    container_name: edit-mind-redis
+    image: redis:7-alpine
+    container_name: edit-mind-redis-dev
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - redis_data:/data
+      - redis_data_dev:/data
     networks:
       - app-network
     healthcheck:
@@ -74,8 +112,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: edit-mind-postgres
-    restart: unless-stopped
+    container_name: edit-mind-postgres-dev
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     environment:
@@ -84,7 +121,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-app}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - pgdata_edit_mind:/var/lib/postgresql/data
+      - pgdata_dev:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -92,18 +129,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    shm_size: 128mb
 
 volumes:
-  pgdata_edit_mind:
+  pgdata_dev:
     driver: local
-  redis_data:
+  redis_data_dev:
     driver: local
   whisper-models:
     driver: local
   yolo-models:
     driver: local
-  chroma-data:
+  web_node_modules:
+    driver: local
+  background_jobs_node_modules:
     driver: local
 
 networks:
   app-network:
+    driver: bridge

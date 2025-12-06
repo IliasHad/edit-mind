@@ -284,7 +284,7 @@ class PythonService {
           this.client = null
         }
         reject(new Error('WebSocket connection timeout'))
-      }, 3000)
+      }, 10000) // Increased timeout for slow starts
 
       this.client = new WebSocket(this.serviceUrl)
 
@@ -299,11 +299,17 @@ class PythonService {
           const message = JSON.parse(data.toString())
           const { type, payload, job_id } = message
 
+          // Handle ping/pong heartbeat from Python service
+          if (type === 'ping') {
+            this.client?.send(JSON.stringify({ type: 'pong' }))
+            return
+          }
+
           const callback = this.messageCallbacks[type as PythonMessageType]
 
           if (callback) {
             callback({ ...payload, job_id })
-          } else {
+          } else if (type !== 'pong') {
             logger.warn(`⚠️ No callback registered for message type: ${type}`)
           }
         } catch (error) {
@@ -313,16 +319,39 @@ class PythonService {
 
       this.client.on('error', (error) => {
         clearTimeout(timeout)
+        logger.error({ error }, 'WebSocket error')
         this.client = null
         reject(error)
       })
 
-      this.client.on('close', () => {
+      this.client.on('close', (code, reason) => {
         clearTimeout(timeout)
+        logger.warn(`WebSocket closed: code=${code}, reason=${reason?.toString() || 'none'}`)
         this.client = null
         this.isRunning = false
+        // Auto-reconnect after unexpected close
+        if (code !== 1000) {
+          logger.info('Attempting auto-reconnect in 2 seconds...')
+          setTimeout(() => {
+            this.start().catch((err) => logger.error('Auto-reconnect failed:', err))
+          }, 2000)
+        }
       })
     })
+  }
+
+  // Ensure connection is alive, reconnect if needed
+  public async ensureConnected(): Promise<boolean> {
+    if (this.client && this.client.readyState === WebSocket.OPEN) {
+      return true
+    }
+    try {
+      await this.start()
+      return true
+    } catch (error) {
+      logger.error({ error }, 'Failed to ensure connection')
+      return false
+    }
   }
 
   private handleCrash() {

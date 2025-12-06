@@ -235,9 +235,10 @@ async function processVideo(job: Job<{ videoPath: string; jobId: string; forceRe
 export const videoIndexerWorker = new Worker('video-indexing', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 15 * 60 * 1000,
-  stalledInterval: 5 * 60 * 1000,
-  maxStalledCount: 2,
+  // Extended timeouts for long videos (up to 4 hours)
+  lockDuration: 4 * 60 * 60 * 1000,    // 4 hours - job can run this long
+  stalledInterval: 30 * 60 * 1000,     // Check for stalled jobs every 30 minutes
+  maxStalledCount: 3,                   // Allow 3 stall events before marking failed
 })
 
 videoIndexerWorker.on('failed', async (job: Job | undefined, err: Error) => {

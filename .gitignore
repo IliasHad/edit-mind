@@ -31,3 +31,4 @@ test-results/*
 .env.dev
 docker/.env.system
 .env.system
+docker/docker-compose.override.yml
