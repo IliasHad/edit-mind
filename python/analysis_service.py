@@ -901,7 +901,16 @@ class AnalysisService:
         
         elif host and port:
             logger.info(f"Starting service on {host}:{port}")
-            async with websockets.serve(self.handler.handle_connection, host, port,ping_interval=60,ping_timeout=120,close_timeout=30,max_queue=None):
+            # Extended timeouts for long-running transcriptions (hours-long videos)
+            async with websockets.serve(
+                self.handler.handle_connection, 
+                host, 
+                port,
+                ping_interval=30,      # Send ping every 30 seconds
+                ping_timeout=3600,     # Allow 1 hour without pong response
+                close_timeout=60,      # Wait 60s for close handshake
+                max_queue=None
+            ):
                 logger.info(f"Server listening on {host}:{port}")
                 await asyncio.Future()  # Run forever
     

@@ -25,8 +25,9 @@ export default defineConfig({
         input: {
           main: resolve(__dirname, 'lib/main/main.ts'),
         },
-        external: ['chromadb', '@shared', 'onnxruntime-node', '@ffmpeg-installer/ffmpeg', '@ffprobe-installer/ffprobe', 'sharp', 'egm96-universal'],
+        external: ['chromadb', '@shared', 'onnxruntime-node', '@ffmpeg-installer/ffmpeg', '@ffprobe-installer/ffprobe', 'sharp', 'egm96-universal', 'node-llama-cpp'],
       },
+      outDir: 'dist',
     },
   },
   preload: {

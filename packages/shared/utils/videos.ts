@@ -6,6 +6,7 @@ import {
   DEFAULT_FPS,
   MAX_DEPTH,
   SUPPORTED_VIDEO_EXTENSIONS,
+  SUPPORTED_AUDIO_EXTENSIONS,
   THUMBNAIL_QUALITY,
   THUMBNAIL_SCALE,
   THUMBNAILS_DIR,
@@ -125,6 +126,23 @@ export async function findVideoFiles(
   currentDepth: number = 0,
   maxDepth: number = MAX_DEPTH
 ): Promise<VideoFile[]> {
+  return findMediaFiles(dirPath, SUPPORTED_VIDEO_EXTENSIONS, currentDepth, maxDepth)
+}
+
+export async function findAudioFiles(
+  dirPath: string,
+  currentDepth: number = 0,
+  maxDepth: number = MAX_DEPTH
+): Promise<VideoFile[]> {
+  return findMediaFiles(dirPath, SUPPORTED_AUDIO_EXTENSIONS, currentDepth, maxDepth)
+}
+
+export async function findMediaFiles(
+  dirPath: string,
+  extensionPattern: RegExp,
+  currentDepth: number = 0,
+  maxDepth: number = MAX_DEPTH
+): Promise<VideoFile[]> {
   if (currentDepth > maxDepth) {
     return []
   }
@@ -139,8 +157,8 @@ export async function findVideoFiles(
         const stats = await fs.promises.stat(fullPath)
 
         if (stats.isDirectory()) {
-          results.push(await findVideoFiles(fullPath, currentDepth + 1, maxDepth))
-        } else if (stats.isFile() && SUPPORTED_VIDEO_EXTENSIONS.test(item)) {
+          results.push(await findMediaFiles(fullPath, extensionPattern, currentDepth + 1, maxDepth))
+        } else if (stats.isFile() && extensionPattern.test(item)) {
           results.push([{ path: fullPath, mtime: stats.mtime }])
         }
       } catch (error) {
