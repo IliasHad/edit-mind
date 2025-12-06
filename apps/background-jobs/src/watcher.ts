@@ -2,20 +2,36 @@ import chokidar from 'chokidar'
 import path from 'path'
 import { videoQueue } from './queue.js'
 import { prisma } from './services/db.js'
-import { SUPPORTED_VIDEO_EXTENSIONS } from '@shared/constants/index'
+import { SUPPORTED_VIDEO_EXTENSIONS, SUPPORTED_AUDIO_EXTENSIONS, WATCHER_IGNORED } from '@shared/constants/index'
 import { logger } from '@shared/services/logger.js'
 
+function isAudioFolder(p: string): boolean {
+  const name = p.toLowerCase()
+  return name.includes('/x_audio') || name.endsWith('/audio') || name.includes('xaudio')
+}
+
 export function watchFolder(folderPath: string) {
-  const watcher = chokidar.watch(folderPath, { ignored: /^\./, persistent: true, ignoreInitial: true })
+  const useAudio = isAudioFolder(folderPath)
+  const extPattern = useAudio ? SUPPORTED_AUDIO_EXTENSIONS : SUPPORTED_VIDEO_EXTENSIONS
+
+  const watcher = chokidar.watch(folderPath, {
+    ignored: (p: string) => WATCHER_IGNORED.some((re) => re.test(p)),
+    persistent: true,
+    ignoreInitial: true,
+    depth: 0, // top-level only; avoids heavy recursion (Downloads subdirs, Syncthing internals)
+    awaitWriteFinish: { stabilityThreshold: 3000, pollInterval: 100 },
+    ignorePermissionErrors: true,
+    atomic: true,
+  })
 
   watcher.on('error', (error) => {
     logger.error(`Watcher error for ${folderPath}: ${error.message}`)
-    // Don't crash - just log the error and continue
+    // Do not crash. For EIO/ENOMEM we keep the watcher alive; new file events may still arrive.
   })
 
   watcher.on('add', async (filePath) => {
     try {
-      if (!SUPPORTED_VIDEO_EXTENSIONS.test(filePath)) return
+      if (!extPattern.test(filePath)) return
 
       const folder = await prisma.folder.findFirst({
         where: {
@@ -30,7 +46,7 @@ export function watchFolder(folderPath: string) {
       })
       await videoQueue.add('index-video', { videoPath: filePath, jobId: job.id, folderId: folder.id })
     } catch (error) {
-      console.error('Error adding new video file while watching for new folder changes: ', error)
+      logger.error(`Error adding file from watcher for ${folderPath}: ${(error as Error).message}`)
     }
   })
 }
@@ -46,12 +62,12 @@ export async function initializeWatchers() {
       watchFolder(folder.path)
     }
   } catch (error) {
-    console.error('Failed to initialize watchers:', error)
+    logger.error(`Failed to initialize watchers: ${(error as Error).message}`)
   }
 }
 
 export function stopWatcher(folderPath: string) {
-  const watcher = chokidar.watch(folderPath, { ignored: /^\./, persistent: true, ignoreInitial: true })
+  const watcher = chokidar.watch(folderPath, { ignored: (p: string) => WATCHER_IGNORED.some((re) => re.test(p)), persistent: true, ignoreInitial: true })
   if (watcher) {
     watcher.close()
   }

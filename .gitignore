@@ -32,3 +32,5 @@ test-results/*
 docker/.env.system
 .env.system
 docker/docker-compose.override.yml
+docker/start.ps1
+docker/stop.ps1

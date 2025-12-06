@@ -12,7 +12,7 @@ services:
     ports:
       - "${BACKGROUND_JOBS_PORT:-4000}:4000"
       - "${BACKGROUND_JOBS_WS_PORT:-8765}:8765"
-    # Optional GPU acceleration
+    # Optional GPU acceleration (set GPU_COUNT=-1 for all GPUs, or specific count)
     deploy:
       resources:
         reservations:

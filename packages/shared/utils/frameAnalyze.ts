@@ -25,8 +25,9 @@ export function analyzeVideo(
     let fileCheckInterval: NodeJS.Timeout | null = null
 
     // Python saves analysis to analysis_results/<basename>_analysis.json
+    // This is relative to Python's cwd which is /app/apps/background-jobs
     const videoBasename = path.basename(videoPath, path.extname(videoPath))
-    const analysisResultPath = `/app/analysis_results/${videoBasename}_analysis.json`
+    const analysisResultPath = `/app/apps/background-jobs/analysis_results/${videoBasename}_analysis.json`
 
     // Parse analysis result and extract category
     const parseAnalysisResult = (result: Analysis): { analysis: Analysis; category: string } => {

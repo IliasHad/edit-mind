@@ -46,6 +46,15 @@ export const USE_LOCAL = process.env.USE_LOCAL_MODEL === 'true'
 export const GEMINI_MODEL_NAME = 'gemini-2.5-pro'
 // Files
 export const SUPPORTED_VIDEO_EXTENSIONS = /\.(mp4|mov|avi|mkv)$/i
+export const SUPPORTED_AUDIO_EXTENSIONS = /\.(mp3|m4a|aac|flac|wav|ogg|opus|mka)$/i
+export const SUPPORTED_MEDIA_EXTENSIONS = /\.(mp4|mov|avi|mkv|mp3|m4a|aac|flac|wav|ogg|opus|mka)$/i
+// Common temporary/ignored patterns for watchers (Syncthing, partial downloads, hidden)
+export const WATCHER_IGNORED = [
+  /^\./,                           // dotfiles
+  /(^|\\|\/)\.st(folder|ignore)/i, // Syncthing markers
+  /(~$|\.tmp$|\.part$|\.crdownload$|\.partial$)/i, // temp/partials
+  /(^|\\|\/)node_modules(\\|\/|$)/i,              // node_modules
+]
 export const DEFAULT_FPS = 30
 export const THUMBNAIL_SCALE = '320:-1'
 export const THUMBNAIL_QUALITY = '4'
