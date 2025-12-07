@@ -56,7 +56,9 @@ services:
       - chroma-data:/chroma/chroma
     networks:
       - app-network
-
+    env_file:
+      - .env
+      - .env.system
   redis:
     image: redis:7
     container_name: edit-mind-redis
@@ -71,7 +73,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-
+    env_file:
+      - .env
+      - .env.system
   postgres:
     image: postgres:16-alpine
     container_name: edit-mind-postgres
@@ -92,7 +96,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+    env_file:
+      - .env
+      - .env.system
 volumes:
   pgdata_edit_mind:
     driver: local

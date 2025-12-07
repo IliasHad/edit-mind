@@ -36,7 +36,6 @@ jobs:
             dockerfile: docker/Dockerfile.web
             context: .
         platform:
-          - linux/amd64
           - linux/arm64
     
     steps:
@@ -98,7 +97,7 @@ jobs:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
           target: production
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           build-args: |
             NODE_VERSION=22.20.0
             PNPM_VERSION=10.20.0

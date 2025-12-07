@@ -79,16 +79,13 @@ COPY --from=builder /app/apps/web ./apps/web
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3745
-ENV HOST=0.0.0.0
-
 EXPOSE 3745
 
 CMD ["sh", "-c", "\
   pnpm --filter prisma migrate deploy && \
   pnpm --filter prisma generate && \
   pnpm --filter prisma seed && \
-  pnpm --filter web start \
+  pnpm --filter web start --host 0.0.0.0 --port 3745 \
 "]
 
 
@@ -127,8 +124,6 @@ COPY --from=builder /app/apps/web/tsconfig.json ./apps/web/
 WORKDIR /app
 
 ENV NODE_ENV=development
-ENV PORT=3745
-ENV HOST=0.0.0.0
 
 EXPOSE 3745
 
@@ -136,5 +131,5 @@ CMD ["sh", "-c", "\
   pnpm --filter prisma migrate deploy && \
   pnpm --filter prisma generate && \
   pnpm --filter prisma seed && \
-  pnpm --filter web dev \
+  pnpm --filter web dev --host 0.0.0.0 --port 3745  \
 "]

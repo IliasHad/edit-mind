@@ -33,33 +33,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3=3.11.* \
     python3-venv \
     python3-pip \
-    build-essential \
+    ffmpeg \
     cmake \
+    build-essential \
+    libboost-all-dev \
     libopenblas-dev \
     liblapack-dev \
-    libx11-dev \
-    libgtk-3-dev \
-    libboost-all-dev \
-    ffmpeg \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-
 RUN python3 -m venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH" \
-    VIRTUAL_ENV="/app/.venv"
+    VIRTUAL_ENV="/app/.venv" 
 
 COPY python/requirements.txt ./python/
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir \
-        --compile \
-        face-recognition && \
-    pip install --no-cache-dir \
-        --compile \
-        -r python/requirements.txt
+    pip install --upgrade pip setuptools wheel && \
+    pip install dlib-bin && \
+    pip install face_recognition && \
+    pip install -r python/requirements.txt
 
 FROM node-deps AS builder
 
@@ -94,9 +88,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-COPY --from=builder /app /app
-COPY --from=python-deps  ./app/.venv  /app/.venv
-COPY --from=python-deps  ./app/python  /app/python
+COPY --from=python-deps /app/.venv /app/.venv
+COPY --from=builder /app/python /app/python
+
+COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/apps /app/apps
+COPY --from=builder /app/packages /app/packages
+COPY --from=builder /app/pnpm-workspace.yaml /app/pnpm-lock.yaml /app/package.json /app/prisma.config.ts /app/tsconfig.json ./
+
 
 ENV NODE_ENV=production \
     PATH="/app/.venv/bin:$PATH" \
@@ -116,11 +115,33 @@ CMD ["sh", "-c", "\
 
 FROM builder AS development
 
+COPY --from=python-deps /app/.venv /app/.venv
+COPY --from=python-deps /app/python /app/python
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3=3.11.* \
+    python3-venv \
+    libopenblas0 \
+    liblapack3 \
+    libx11-6 \
+    libgtk-3-0 \
+    libboost-python1.74.0 \
+    libboost-thread1.74.0 \
+    libboost-filesystem1.74.0 \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    libgomp1 \
+    && ln -sf /usr/bin/python3 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
 ENV NODE_ENV=development \
     PATH="/app/.venv/bin:$PATH" \
     VIRTUAL_ENV="/app/.venv"
 
-RUN  pnpm --filter background-jobs build
+RUN pnpm --filter background-jobs build
 
 WORKDIR /app/
 
