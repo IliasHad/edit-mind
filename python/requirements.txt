@@ -30,6 +30,7 @@ torchvision>=0.16.0
 
 # Face recognition (PyTorch backend)
 deepface>=0.0.96
+tf-keras
 
 ultralytics>=8.0.0
 transformers>=4.35.0
