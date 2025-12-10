@@ -4,7 +4,6 @@ import { spawn, ChildProcess } from 'child_process'
 import WebSocket from 'ws'
 import { Analysis, AnalysisProgress } from '../types/analysis'
 import { IS_WIN, MAX_RESTARTS, PYTHON_PORT, PYTHON_SCRIPT, RESTART_BACKOFF_MS, VENV_PATH } from '../constants'
-import { FaceIndexingProgress, FaceMatchingProgress, FindMatchingFacesResponse } from '../types/face'
 import { TranscriptionProgress } from '../types/transcription'
 import { logger } from './logger'
 import { CallbackMap, PythonMessageType } from '../types/python'
@@ -206,64 +205,6 @@ class PythonService {
     const message = {
       type: 'transcribe',
       payload: { video_path: videoPath, json_file_path: jsonFilePath, job_id },
-    }
-
-    this.client.send(JSON.stringify(message))
-  }
-
-  public reindexFaces(
-    specificFaces: { name: string; image_path: string }[],
-    jobId: string,
-    onProgress: (progress: FaceIndexingProgress) => void,
-    onComplete: (result: void) => void,
-    onError: (error: Error) => void
-  ): void {
-    if (!this.isRunning || !this.client) {
-      onError(new Error('Python service is not running.'))
-      return
-    }
-
-    this.messageCallbacks['reindex_progress'] = onProgress
-    this.messageCallbacks['reindex_complete'] = onComplete
-    this.messageCallbacks['reindex_error'] = onError
-
-    const message = {
-      type: 'reindex_faces',
-      specific_faces: specificFaces,
-      job_id: jobId,
-    }
-
-    this.client.send(JSON.stringify(message))
-  }
-  public findMatchingFaces(
-    personName: string,
-    referenceImages: string[],
-    unknownFacesDir: string,
-    onProgress: (progress: FaceMatchingProgress) => void,
-    onComplete: (result: FindMatchingFacesResponse) => void,
-    onError: (error: Error) => void
-  ): void {
-    if (!this.isRunning || !this.client) {
-      onError(new Error('Python service is not running.'))
-      return
-    }
-
-    if (this.client.readyState !== WebSocket.OPEN) {
-      onError(new Error(`WebSocket not open. State: ${this.client.readyState}`))
-      return
-    }
-
-    this.messageCallbacks['face_matching_progress'] = onProgress
-    this.messageCallbacks['face_matching_complete'] = onComplete
-    this.messageCallbacks['face_matching_error'] = onError
-    const message = {
-      type: 'find_matching_faces',
-      payload: {
-        person_name: personName,
-        reference_images: referenceImages,
-        unknown_faces_dir: unknownFacesDir,
-        tolerance: 0.4,
-      },
     }
 
     this.client.send(JSON.stringify(message))

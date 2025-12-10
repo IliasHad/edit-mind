@@ -385,8 +385,6 @@ def load_plugins(config: AnalysisConfig) -> List[AnalyzerPlugin]:
         ("ShotTypePlugin", "shot_type"),
         ("DominantColorPlugin", "dominant_color"),
         ("EnvironmentPlugin", "environment"),
-        ("ActivityPlugin", "activity"),
-        ("EmotionDetectionPlugin", "emotion_detection"),
         ("TextDetectionPlugin", "text_detection"),
     ]
 

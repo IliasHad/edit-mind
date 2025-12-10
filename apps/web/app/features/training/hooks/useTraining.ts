@@ -1,13 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { UnknownFace, KnownFace } from '@shared/types/face'
 
-interface MatchingStatus {
-  isMatching: boolean
-  progress: number
-  matchesFound: number
-  currentPerson: string
-  error: string | null
-}
 
 interface PaginationData {
   total: number
@@ -26,16 +19,8 @@ export const useTraining = () => {
   const [newFaceName, setNewFaceName] = useState<string>('')
   const [isLabeling, setIsLabeling] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>('unknown')
-  const [matchingStatus, setMatchingStatus] = useState<MatchingStatus>({
-    isMatching: false,
-    progress: 0,
-    matchesFound: 0,
-    currentPerson: '',
-    error: null,
-  })
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  // Pagination states
   const [unknownPagination, setUnknownPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -64,10 +49,6 @@ export const useTraining = () => {
       })
     } catch (error) {
       console.error('Error fetching unknown faces:', error)
-      setMatchingStatus((prev) => ({
-        ...prev,
-        error: 'Failed to load unknown faces. Please refresh the page.',
-      }))
     } finally {
       setLoading(false)
     }
@@ -80,14 +61,12 @@ export const useTraining = () => {
       if (!response.ok) throw new Error('Failed to fetch known faces')
       const data = await response.json()
 
-      // If data.faces is already in array format from pagination
       if (Array.isArray(data.faces)) {
         setKnownFaces(data.faces)
       } else {
-        // Convert object format to array if needed
-        const knownFacesArray = Object.entries(data.faces).map(([name, images]) => ({
+        const knownFacesArray = Object.entries(data.faces).map(([name, image]) => ({
           name,
-          images: images as string[],
+          image: image as string,
         }))
         setKnownFaces(knownFacesArray)
       }
@@ -100,10 +79,6 @@ export const useTraining = () => {
       })
     } catch (error) {
       console.error('Error fetching known faces:', error)
-      setMatchingStatus((prev) => ({
-        ...prev,
-        error: 'Failed to load known faces. Please refresh the page.',
-      }))
     } finally {
       setLoading(false)
     }
@@ -152,106 +127,22 @@ export const useTraining = () => {
     }
   }, [selectedFaces.size, unknownFaces])
 
-  const dismissSuccess = useCallback(() => {
-    setSuccessMessage(null)
-  }, [])
-
-  const dismissError = useCallback(() => {
-    setMatchingStatus((prev) => ({ ...prev, error: null }))
-  }, [])
-
-  const pollMatchingStatus = useCallback(
-    async (personName: string) => {
-      const pollInterval = 2000
-      const maxPolls = 60
-
-      let pollCount = 0
-
-      const poll = async () => {
-        if (pollCount >= maxPolls) {
-          setMatchingStatus((prev) => ({
-            ...prev,
-            isMatching: false,
-          }))
-          return
-        }
-
-        try {
-          const response = await fetch(`/api/faces/matching-status?person=${encodeURIComponent(personName)}`)
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch matching status')
-          }
-
-          const status = await response.json()
-
-          setMatchingStatus((prev) => ({
-            ...prev,
-            progress: status.progress || prev.progress,
-            matchesFound: status.matchesFound || 0,
-            isMatching: status.isActive,
-          }))
-
-          if (status.isActive) {
-            pollCount++
-            setTimeout(poll, pollInterval)
-          } else {
-            if (status.matchesFound > 0) {
-              setSuccessMessage(
-                `Automatic matching complete! Found and labeled ${status.matchesFound} additional matching face(s).`
-              )
-              await fetchData()
-            }
-            setMatchingStatus((prev) => ({
-              ...prev,
-              isMatching: false,
-            }))
-          }
-        } catch (error) {
-          console.error('Error polling matching status:', error)
-          setMatchingStatus((prev) => ({
-            ...prev,
-            isMatching: false,
-            error: 'Failed to get automatic matching status.',
-          }))
-        }
-      }
-
-      poll()
-    },
-    [fetchData]
-  )
   const handleLabelFaces = useCallback(async () => {
     if (selectedFaces.size === 0) {
-      setMatchingStatus((prev) => ({
-        ...prev,
-        error: 'Please select at least one face to label.',
-      }))
       return
     }
 
     const targetName = labelMode === 'existing' ? selectedKnownFace : newFaceName.trim()
 
     if (!targetName) {
-      setMatchingStatus((prev) => ({
-        ...prev,
-        error: 'Please select an existing face or enter a new name.',
-      }))
       return
     }
 
     setIsLabeling(true)
-    setMatchingStatus({
-      isMatching: true,
-      progress: 0,
-      matchesFound: 0,
-      currentPerson: targetName,
-      error: null,
-    })
+
     setSuccessMessage(null)
 
     try {
-      // Prepare all faces data
       const selectedFacesArray = Array.from(selectedFaces)
       const facesToLabel = selectedFacesArray
         .map((image_hash) => {
@@ -266,7 +157,6 @@ export const useTraining = () => {
         })
         .filter((face): face is { jsonFile: string; faceId: string } => face !== null)
 
-      // Single API call with all faces
       const response = await fetch('/api/faces/label', {
         method: 'POST',
         headers: {
@@ -284,7 +174,7 @@ export const useTraining = () => {
         throw new Error(result.error || 'Failed to label faces')
       }
 
-      const { labeledCount, failedCount } = result
+      const { labeledCount } = result
 
       if (labeledCount > 0) {
         setSuccessMessage(
@@ -293,33 +183,17 @@ export const useTraining = () => {
         )
       }
 
-      if (failedCount > 0) {
-        setMatchingStatus((prev) => ({
-          ...prev,
-          error: `${failedCount} face(s) failed to label. Please try again.`,
-        }))
-      }
-
       setSelectedFaces(new Set())
       setNewFaceName('')
       setSelectedKnownFace('')
 
       await fetchData()
-
-      // Start polling for matching status
-      if (labeledCount > 0) {
-        pollMatchingStatus(targetName)
-      }
     } catch (error) {
       console.error('Error labeling faces:', error)
-      setMatchingStatus((prev) => ({
-        ...prev,
-        error: 'An unexpected error occurred while labeling faces. Please try again.',
-      }))
     } finally {
       setIsLabeling(false)
     }
-  }, [selectedFaces, labelMode, selectedKnownFace, newFaceName, unknownFaces, fetchData, pollMatchingStatus])
+  }, [selectedFaces, labelMode, selectedKnownFace, newFaceName, unknownFaces, fetchData])
 
   const handleDeleteUnknownFace = useCallback(async (face: UnknownFace) => {
     try {
@@ -350,10 +224,6 @@ export const useTraining = () => {
       setSuccessMessage('Face deleted successfully.')
     } catch (error) {
       console.error('Error deleting face:', error)
-      setMatchingStatus((prev) => ({
-        ...prev,
-        error: 'Failed to delete face. Please try again.',
-      }))
     }
   }, [])
 
@@ -367,7 +237,6 @@ export const useTraining = () => {
     newFaceName,
     isLabeling,
     activeTab,
-    matchingStatus,
     successMessage,
     unknownPagination,
     knownPagination,
@@ -381,7 +250,5 @@ export const useTraining = () => {
     handleDeleteUnknownFace,
     handleUnknownPageChange,
     handleKnownPageChange,
-    dismissSuccess,
-    dismissError,
   }
 }

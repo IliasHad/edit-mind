@@ -11,9 +11,9 @@ import { hybridSearch } from '@shared/services/vectorDb'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getUser } from '~/services/user.sever'
 import { SearchInput } from '~/features/search/components/SearchInput'
-import type { VideoSearchParams } from '@shared/types/search';
+import type { VideoSearchParams } from '@shared/types/search'
 import { generateActionFromPrompt } from '@shared/services/modelRouter'
-import { getSearchStats } from '@shared/utils/search';
+import { getSearchStats } from '@shared/utils/search'
 import { buildSearchQueryFromSuggestions } from '@shared/services/suggestion'
 import { logger } from '@shared/services/logger'
 
@@ -42,7 +42,7 @@ export async function action({ request }: { request: Request }) {
       searchQuery = buildSearchQueryFromSuggestions(suggestions)
       console.debug('Using suggestions for search:', searchQuery)
     } else {
-      searchQuery = await (await generateActionFromPrompt(query)).data
+      searchQuery = (await generateActionFromPrompt(query)).data
       console.debug('Generated search query from AI:', searchQuery)
     }
 
@@ -182,7 +182,9 @@ export default function SearchPage() {
           </>
         )}
 
-        {!hasResults && !isSearching && <EmptyState hasQuery={hasQuery} query={query} hasPerformedSearch={hasSearched} />}
+        {!hasResults && !isSearching && (
+          <EmptyState hasQuery={hasQuery} query={query} hasPerformedSearch={hasSearched} />
+        )}
       </main>
     </DashboardLayout>
   )

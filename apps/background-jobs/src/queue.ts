@@ -19,16 +19,6 @@ export const videoQueue = new Queue('video-indexing', {
   },
 })
 
-export const faceMatcherQueue = new Queue('face-matcher', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
-  },
-})
 
 export const immichImporterQueue = new Queue('immich-importer', {
   connection,

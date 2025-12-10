@@ -22,7 +22,6 @@ import { convertTimeToWords } from '@shared/utils/time'
 import { getLocationName } from '@shared/utils/location'
 import { FACES_DIR, PROCESSED_VIDEOS_DIR, THUMBNAILS_DIR } from '@shared/constants'
 import { handle, sender } from '@/lib/main/shared'
-import { reindexFaces } from '@shared/utils/faces'
 
 export const registerAppHandlers = (app: App, webContents: WebContents) => {
   const send = sender(webContents)
@@ -249,7 +248,6 @@ export const registerAppHandlers = (app: App, webContents: WebContents) => {
 
     try {
       const jsonPath = path.join(unknownFacesDir, jsonFile)
-      const jobId = ''
 
       try {
         await fs.unlink(jsonPath)
@@ -257,7 +255,6 @@ export const registerAppHandlers = (app: App, webContents: WebContents) => {
         console.error(error)
       }
 
-      return await reindexFaces([], jobId)
 
       return { success: true }
     } catch (error) {

@@ -96,7 +96,7 @@ export const LabelingForm: React.FC<LabelingFormProps> = ({
               <option value="" className="bg-zinc-900">Choose a person...</option>
               {knownFaces.map((face) => (
                 <option key={face.name} value={face.name} className="bg-zinc-900">
-                  {face.name} · {face.images.length} samples
+                  {face.name}
                 </option>
               ))}
             </select>

@@ -1,7 +1,10 @@
 export interface Face {
   name: string
   location: [number, number, number, number]
-  emotion?: Record<string, number>
+  emotion: {
+    label: string,
+    confidence: number
+  }
   bbox: BBox
   confidence: number
 }

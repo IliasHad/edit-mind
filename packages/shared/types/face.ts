@@ -9,12 +9,7 @@ export interface FaceIndexingProgress {
 }
 export interface KnownFace {
   name: string
-  images: string[]
-}
-export interface AddFaceLabelingJobParams {
-  personName: string
-  referenceImages: string[]
-  unknownFacesDir: string
+  image: string
 }
 
 export type FaceIndexProgress = {
@@ -47,10 +42,6 @@ export interface FaceMatchingProgress {
   match?: MatchResult
 }
 
-interface FaceData {
-  video_path: string
-  timestamp_seconds: number
-}
 
 export interface FindMatchingFacesResponse {
   success: boolean

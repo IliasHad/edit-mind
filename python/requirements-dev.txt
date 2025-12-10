@@ -1,0 +1,3 @@
+-r requirements.txt
+pytest
+coverage>=7.11.0

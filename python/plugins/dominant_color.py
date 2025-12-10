@@ -30,7 +30,6 @@ class ColorInfo:
 class SceneColorAnalysis:
     """Scene-level color analysis"""
     dominant_color: Optional[Dict[str, Union[str, float, bool]]]
-    color_palette: List[Dict[str, Union[str, float, bool]]]
     overall_brightness: float
     overall_saturation: float
     overall_warmth: float
@@ -168,7 +167,7 @@ class DominantColorPlugin(AnalyzerPlugin):
                 random_state=42,
                 n_init=5,
                 max_iter=100,
-                tol=0.01
+                tol=0.01,
             )
             kmeans.fit(pixels)
             
@@ -322,7 +321,6 @@ class DominantColorPlugin(AnalyzerPlugin):
         
         return SceneColorAnalysis(
             dominant_color=dominant_color_json,
-            color_palette=json_color_palette,
             overall_brightness=round(overall_brightness, 2),
             overall_saturation=round(overall_saturation, 2),
             overall_warmth=round(overall_warmth, 2),

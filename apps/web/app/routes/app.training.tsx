@@ -3,7 +3,6 @@ import { Loader2 } from 'lucide-react'
 import { LabelingForm } from '~/features/training/components/LabelingForm'
 import { UnknownFacesGrid } from '~/features/training/components/UnknownFacesGrid'
 import { KnownFacesGrid } from '~/features/training/components/KnownFacesGrid'
-import { StatusNotifications } from '~/features/training/components/StatusNotifications'
 import { useTraining } from '~/features/training/hooks/useTraining'
 import type { MetaFunction } from 'react-router'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
@@ -28,8 +27,6 @@ const Training: React.FC = () => {
     newFaceName,
     isLabeling,
     activeTab,
-    matchingStatus,
-    successMessage,
     setLabelMode,
     setSelectedKnownFace,
     setNewFaceName,
@@ -38,8 +35,6 @@ const Training: React.FC = () => {
     handleSelectAll,
     handleLabelFaces,
     handleDeleteUnknownFace,
-    dismissSuccess,
-    dismissError,
     unknownPagination,
     handleUnknownPageChange,
   } = useTraining()
@@ -57,13 +52,6 @@ const Training: React.FC = () => {
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
-      <StatusNotifications
-        matchingStatus={matchingStatus}
-        successMessage={successMessage}
-        onDismissSuccess={dismissSuccess}
-        onDismissError={dismissError}
-      />
-
       <div className="min-h-screen bg-black text-white">
         <div className="px-8 pt-16 pb-8">
           <div className="max-w-7xl mx-auto">

@@ -31,3 +31,5 @@ test-results/*
 .env.dev
 docker/.env.system
 .env.system
+!python/.faces
+*.pkl

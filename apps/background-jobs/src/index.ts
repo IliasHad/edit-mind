@@ -6,9 +6,8 @@ import { ExpressAdapter } from '@bull-board/express'
 import foldersRoute from './routes/folders'
 import stitcherRoute from './routes/stitcher'
 import { config } from './config'
-import { faceMatcherQueue, immichImporterQueue, videoQueue, videoStitcherQueue } from './queue'
+import { immichImporterQueue, videoQueue, videoStitcherQueue } from './queue'
 import './jobs/videoIndexer'
-import './jobs/faceMatcher'
 import './jobs/ImmichImporter'
 import './jobs/videoStitcher'
 
@@ -28,7 +27,6 @@ if (process.env.NODE_ENV === 'development') {
   createBullBoard({
     queues: [
       new BullMQAdapter(videoQueue),
-      new BullMQAdapter(faceMatcherQueue),
       new BullMQAdapter(immichImporterQueue),
       new BullMQAdapter(videoStitcherQueue),
     ],

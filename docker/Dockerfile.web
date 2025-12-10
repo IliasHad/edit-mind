@@ -96,30 +96,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     ca-certificates \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/
 
-COPY --from=builder /app/pnpm-workspace.yaml /app/
-COPY --from=builder /app/pnpm-lock.yaml /app/
-COPY --from=builder /app/package.json /app/
-COPY --from=builder /app/prisma.config.ts /app/
+WORKDIR /app
 
-COPY --from=builder /app/apps/web/package.json /app/apps/web/
-COPY --from=builder /app/apps/background-jobs/package.json /app/apps/background-jobs/
-COPY --from=builder /app/packages/shared/package.json /app/packages/shared/
-COPY --from=builder /app/packages/prisma/package.json /app/packages/prisma/
-
-COPY --from=builder /app/packages/prisma /app/packages/prisma
-
-COPY --from=builder /app/packages/shared/dist /app/packages/shared/dist
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
+COPY apps ./apps
+COPY packages ./packages
+COPY tsconfig.json ./
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile
-
-COPY --from=builder /app/apps/web/build /app/apps/web/build
-COPY --from=builder /app/apps/web/app ./apps/web/app
-COPY --from=builder /app/apps/web/vite.config.ts ./apps/web/
-COPY --from=builder /app/apps/web/react-router.config.ts ./apps/web/
-COPY --from=builder /app/apps/web/tsconfig.json ./apps/web/
 
 WORKDIR /app
 
