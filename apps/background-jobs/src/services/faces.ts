@@ -1,9 +1,7 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import { existsSync } from 'fs'
-import { faceMatcherQueue } from 'src/queue'
-import { AddFaceLabelingJobParams } from '@shared/types/face'
-import { FACES_DIR, KNOWN_FACES_FILE, UNKNOWN_FACES_DIR } from '@shared/constants'
+import { FACES_DIR, UNKNOWN_FACES_DIR } from '@shared/constants';
 
 const FACES_PER_PAGE = 40
 
@@ -50,32 +48,31 @@ export const getAllUnknownFaces = async (page = 1, limit = FACES_PER_PAGE) => {
 }
 
 export const getAllKnownFaces = async () => {
-  if (!existsSync(KNOWN_FACES_FILE)) {
-    fs.writeFile(KNOWN_FACES_FILE, JSON.stringify({}), 'utf8')
+  if (!existsSync(FACES_DIR)) {
+    await fs.mkdir(FACES_DIR, { recursive: true })
+    return null
   }
-  if (existsSync(KNOWN_FACES_FILE)) {
-    const facesData = await fs.readFile(KNOWN_FACES_FILE, 'utf-8')
-    const faces = JSON.parse(facesData)
+  const peopleFolders = await fs.readdir(FACES_DIR, { withFileTypes: true })
 
-    const cleanedFaces: Record<string, string[]> = {}
-    for (const [person, paths] of Object.entries(faces)) {
-      cleanedFaces[person] = (paths as string[]).map((path) => path.replace(FACES_DIR, ''))
-    }
+  const result: Record<string, string> = {}
 
-    return cleanedFaces
+  for (const entry of peopleFolders) {
+    if (!entry.isDirectory()) continue
+
+    const personName = entry.name
+    const personFolder = path.join(FACES_DIR, personName)
+
+    const files = await fs.readdir(personFolder)
+    const jpgFiles = files.filter((f) => f.toLowerCase().endsWith('.jpg'))
+
+    if (jpgFiles.length === 0) continue
+
+    jpgFiles.sort()
+
+    const lastImage = jpgFiles[jpgFiles.length - 1]
+
+    result[personName] = path.join(personName, lastImage)
   }
 
-  return null
-}
-
-export const addFaceLabelingJob = async (params: AddFaceLabelingJobParams) => {
-  const job = await faceMatcherQueue.add('face-matcher', params, {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 5000,
-    },
-  })
-
-  return job
+  return result
 }

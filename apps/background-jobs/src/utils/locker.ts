@@ -1,10 +1,7 @@
-import { KNOWN_FACES_FILE } from '@shared/constants'
 import { Scene } from '@shared/schemas'
 import { logger } from '@shared/services/logger'
 import { existsSync } from 'fs'
 import { readFile, open, unlink, writeFile } from 'fs/promises'
-
-const LOCK_FILE = KNOWN_FACES_FILE + '.lock'
 
 export async function acquireLock(lockPath: string) {
   while (true) {
@@ -27,31 +24,6 @@ async function releaseLock(lockPath: string) {
   }
 }
 
-export async function safeUpdateKnownFaces(personName: string, newImagePath: string) {
-  await acquireLock(LOCK_FILE)
-
-  try {
-    let faces: Record<string, string[]> = {}
-
-    try {
-      const content = await readFile(KNOWN_FACES_FILE, 'utf-8')
-      faces = JSON.parse(content)
-    } catch {
-      faces = {}
-    }
-
-    if (!faces[personName]) {
-      faces[personName] = []
-    }
-
-    faces[personName].push(newImagePath)
-
-    await writeFile(KNOWN_FACES_FILE, JSON.stringify(faces, null, 2))
-  } finally {
-    await releaseLock(LOCK_FILE)
-  }
-}
-
 export async function safeUpdateScenesFile(
   scenesPath: string,
   faceId: string,
@@ -69,7 +41,6 @@ export async function safeUpdateScenesFile(
 
     const allScenes: Scene[] = JSON.parse(await readFile(scenesPath, 'utf-8'))
 
-    // Update the scenes in the array
     let modified = false
     for (const scene of allScenes) {
       if (scene.startTime <= faceTimestamp && scene.endTime >= faceTimestamp) {

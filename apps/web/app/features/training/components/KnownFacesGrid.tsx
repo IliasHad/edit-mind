@@ -11,12 +11,8 @@ export const KnownFacesGrid: React.FC<KnownFacesGridProps> = ({ knownFaces }) =>
       {knownFaces.map((face) => (
         <div key={face.name} className="group">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-zinc-900 ring-1 ring-white/10 hover:ring-white/30 transition-all duration-300 hover:scale-105">
-            {face.images.length > 0 ? (
-              <img
-                src={`/faces${face.images[face.images.length - 1]}`}
-                alt={face.name}
-                className="w-full h-full object-cover"
-              />
+            {face.image ? (
+              <img src={`/faces/${face.image}`} alt={face.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <svg className="w-16 h-16 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,9 +31,6 @@ export const KnownFacesGrid: React.FC<KnownFacesGridProps> = ({ knownFaces }) =>
 
           <div className="mt-3 px-1">
             <p className="font-semibold text-base truncate">{face.name}</p>
-            <p className="text-sm text-gray-500 mt-0.5">
-              {face.images.length} sample{face.images.length !== 1 ? 's' : ''}
-            </p>
           </div>
         </div>
       ))}

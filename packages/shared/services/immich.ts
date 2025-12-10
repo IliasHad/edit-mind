@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import fetch from 'node-fetch'
-import { FACES_DIR } from '../constants'
+import { FACES_DIR } from '../constants';
 import { AssetsBucketResponse, Face, ImmichConfig, PeopleResponse, Person, TimeBucket } from '../types/immich'
 import * as Jimp from 'jimp'
 import { logger } from './logger'
@@ -163,7 +163,7 @@ async function processAssetForPerson(
   const imageBuffer = await client.getAssetImage(assetId)
 
   const faceFiles = await Promise.all(
-    matchedFaces.map((face) => extractAndSaveFace(imageBuffer, face, assetId, personDir))
+    matchedFaces.map((face) => extractAndSaveFace(imageBuffer, face, personDir))
   )
 
   return faceFiles.filter((file): file is string => file !== null)
@@ -172,7 +172,6 @@ async function processAssetForPerson(
 async function extractAndSaveFace(
   imageBuffer: Buffer,
   face: Face,
-  assetId: string,
   personDir: string
 ): Promise<string | null> {
   try {
@@ -195,6 +194,7 @@ async function extractAndSaveFace(
   }
 }
 
+
 async function savePersonThumbnail(client: ImmichClient, personId: string, personDir: string) {
   try {
     const thumbnail = await client.getPersonThumbnail(personId)
@@ -206,5 +206,5 @@ async function savePersonThumbnail(client: ImmichClient, personId: string, perso
 }
 
 function sanitizeName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9-_]/g, '_')
+  return name.replace(/[^a-zA-Z0-9-_]/g, '_');
 }
