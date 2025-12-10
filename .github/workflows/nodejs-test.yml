@@ -19,8 +19,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up env files
+        run: |
+          cp .env.example .env
+          cp .env.system.example .env.system
+
       - name: Start ChromaDB
-        run: cp .env.example .env && cp .env.system.example .env.system docker compose up -d chroma
+        run: docker compose up -d chroma
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
