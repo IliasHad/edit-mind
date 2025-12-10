@@ -2,9 +2,6 @@
 numpy>=1.24.0,<2.0.0
 tqdm>=4.66.0
 
-# Face recognition
-deepface>=0.0.96
-tf_keras
 
 # Audio transcription
 faster-whisper>=1.2.1
@@ -31,6 +28,11 @@ python-dotenv>=1.2.1
 
 # ML/AI frameworks (CPU ONLY)
 --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Face recognition
+deepface>=0.0.96
+tf_keras
+
 torch>=2.1.0
 torchvision>=0.16.0
 ultralytics>=8.0.0
