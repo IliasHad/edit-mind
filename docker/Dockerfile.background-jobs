@@ -50,11 +50,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
 COPY python/requirements.txt ./python/
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip setuptools wheel && \
-    pip install dlib-bin && \
-    pip install face_recognition && \
-    pip install fer && \
-    pip install -r python/requirements.txt
+       pip install -r python/requirements.txt
 
 FROM node-deps AS builder
 
