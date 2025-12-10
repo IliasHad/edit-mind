@@ -92,7 +92,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         id: push
-        if: github.event_name != 'pull_request'
         with:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
