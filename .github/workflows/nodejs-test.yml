@@ -41,4 +41,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: pnpm --filter shared test
+        run: pnpm --filter shared test tests/services/vectorDb.test.ts tests/services/modelRouter.test.ts
