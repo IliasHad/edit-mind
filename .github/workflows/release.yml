@@ -36,7 +36,7 @@ jobs:
             dockerfile: docker/Dockerfile.web
             context: .
         platform:
-          - linux/arm64
+          - linux/arm64,linux/amd64
     
     steps:
       - name: Checkout code
@@ -86,8 +86,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           tags: |
             type=raw,value=latest-${{ steps.platform-tag.outputs.tag }},enable={{is_default_branch}}
-            type=semver,pattern={{version}}-${{ steps.platform-tag.outputs.tag }},enable=${{ startsWith(github.ref, 'refs/tags/') }}
-            type=semver,pattern={{major}}.{{minor}}-${{ steps.platform-tag.outputs.tag }},enable=${{ startsWith(github.ref, 'refs/tags/') }}
             type=sha,prefix={{branch}}-${{ steps.platform-tag.outputs.tag }}-
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
