@@ -16,7 +16,6 @@ env:
   IMAGE_PREFIX: ${{ github.repository_owner }}/edit-mind
 
 jobs:
-  
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
@@ -25,7 +24,7 @@ jobs:
       packages: write
       artifact-metadata: write
       attestations: write
-        
+
     strategy:
       matrix:
         service:
@@ -42,30 +41,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: "node-cleanup"
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /usr/local/share/boost
-          sudo apt-get clean
-          docker system prune -af --volumes
-          df -h
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: ${{ matrix.platform }}
+          platforms: all
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          driver-opts: |
-            image=moby/buildkit:latest
-            network=host
+          driver-opts: image=moby/buildkit:latest
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -77,8 +62,7 @@ jobs:
       - name: Generate platform tag
         id: platform-tag
         run: |
-          PLATFORM_TAG=$(echo "${{ matrix.platform }}" | sed 's/\//-/g')
-          echo "tag=${PLATFORM_TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${{ matrix.platform }}" | sed 's/\//-/g' >> $GITHUB_OUTPUT
 
       - name: Extract metadata (tags, labels)
         id: meta
@@ -89,13 +73,13 @@ jobs:
             type=raw,value=latest-${{ steps.platform-tag.outputs.tag }},enable={{is_default_branch}}
             type=sha,prefix={{branch}}-${{ steps.platform-tag.outputs.tag }}-
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
         id: push
+        uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
           target: production
-          platforms: linux/arm64
+          platforms: ${{ matrix.platform }}
           build-args: |
             NODE_VERSION=22.20.0
             PNPM_VERSION=10.20.0
@@ -120,9 +104,9 @@ jobs:
   create-release:
     needs: build-and-push
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
-    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -133,7 +117,6 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           draft: true
-          prerelease: false
           files: |
             docker-compose.yml
             .env.example
