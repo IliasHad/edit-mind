@@ -35,7 +35,7 @@ services:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos
       - whisper-models:/app/models
       - yolo-models:/app/models/yolo
-      - background_jobs_node_modules:/app/node_modules
+      - background_jobs_node_modules-dev:/app/node_modules
   web:
     container_name: edit-mind-web-dev
     build:
@@ -61,21 +61,19 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://user:password@postgres:5432/app
-      CHROMA_URL: http://chroma:8000
-      REDIS_URL: redis://redis:6379
     volumes:
       - ../apps/web:/app/apps/web
       - ../packages:/app/packages
       - ../data:/app/data
       - ../tsconfig.json:/app/tsconfig.json
       - ${HOST_MEDIA_PATH:-./media}:/media/videos
-      - web_node_modules:/app/node_modules
+      - web_node_modules-dev:/app/node_modules
     networks:
       - app-network
 
   chroma:
     image: chromadb/chroma:1.3.5
-    container_name: edit-mind-chroma
+    container_name: edit-mind-chroma-dev
     restart: unless-stopped
     environment:
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
@@ -96,7 +94,7 @@ services:
     image: redis:7-alpine
     container_name: edit-mind-redis-dev
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT:-6380}:6380"
     volumes:
       - redis_data_dev:/data
     networks:
@@ -105,7 +103,7 @@ services:
     image: postgres:16-alpine
     container_name: edit-mind-postgres-dev
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
@@ -131,9 +129,9 @@ volumes:
     driver: local
   yolo-models:
     driver: local
-  web_node_modules:
+  web_node_modules-dev:
     driver: local
-  background_jobs_node_modules:
+  background_jobs_node_modules-dev:
     driver: local
 
 networks:
