@@ -1,11 +1,10 @@
 # Core dependencies
-opencv-python>=4.8.0
 numpy>=1.24.0,<2.0.0
 tqdm>=4.66.0
 
-# Emotion detection (optional - can be heavy)
-fer==22.5.1
-tensorflow>=2.13.0
+# Face recognition
+deepface>=0.0.96
+tf_keras
 
 # Audio transcription
 faster-whisper>=1.2.1
@@ -20,16 +19,12 @@ Pillow>=9.3.0
 # Monitoring
 psutil>=5.9.0
 
-# Video processing with audio support
-ffmpeg-python>=0.2.0
-moviepy>=1.0.3
-
 # Websockets 
 websockets>=12.0
 python-multipart>=0.0.6
 
 # Testing
-pytest>=7.4.0
+pytest
 coverage>=7.11.0
 
 python-dotenv>=1.2.1
