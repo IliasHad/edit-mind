@@ -36,7 +36,8 @@ jobs:
             dockerfile: docker/Dockerfile.web
             context: .
         platform:
-          - linux/arm64,linux/amd64
+          - linux/arm64
+          - linux/amd64
     
     steps:
       - name: Checkout code
