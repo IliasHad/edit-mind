@@ -1,4 +1,4 @@
-import { GenerateContentResult, GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
+import { GenerateContentResult, GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, GenerativeModel } from '@google/generative-ai'
 import { GEMINI_API_KEY, GEMINI_MODEL_NAME } from '../constants'
 import {
   GENERAL_RESPONSE_PROMPT,
@@ -20,8 +20,11 @@ import { VideoSearchParamsSchema } from '@shared/schemas/search'
 
 const CONTEXT_WINDOW_LIMIT = 20000 // based on gemini-2.5-pro
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: GEMINI_MODEL_NAME })
+let model: GenerativeModel;
+if (GEMINI_API_KEY) {
+  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
+  model = genAI.getGenerativeModel({ model: GEMINI_MODEL_NAME })
+}
 
 const formatHistory = (chatHistory?: ChatMessage[]) => {
   return chatHistory?.length

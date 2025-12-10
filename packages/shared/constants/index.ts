@@ -39,7 +39,7 @@ export const COLLECTION_NAME = 'video_content'
 
 // AI Models
 export const EMBEDDING_MODEL = 'text-embedding-004'
-export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 export const SEARCH_AI_MODEL = process.env.SEARCH_AI_MODEL
 export const USE_LOCAL = process.env.USE_LOCAL_MODEL === 'true'
 export const GEMINI_MODEL_NAME = 'gemini-2.5-pro'
