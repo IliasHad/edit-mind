@@ -20,10 +20,6 @@ import { VideoSearchParamsSchema } from '@shared/schemas/search'
 
 const CONTEXT_WINDOW_LIMIT = 20000 // based on gemini-2.5-pro
 
-if (!GEMINI_API_KEY) {
-  throw new Error('Gemini API key missing')
-}
-
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({ model: GEMINI_MODEL_NAME })
 
