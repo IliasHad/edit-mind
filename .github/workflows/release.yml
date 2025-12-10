@@ -70,11 +70,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           tags: |
-            type=raw,value=latest-${{ steps.platform-tag.outputs.tag }}
-
-            type=sha,prefix={{branch}}-${{ steps.platform-tag.outputs.tag }}
-
-            type=sha,prefix={{tag}}-${{ steps.platform-tag.outputs.tag }}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
 
       - name: Build and push Docker image
         id: push
