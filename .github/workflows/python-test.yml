@@ -1,0 +1,40 @@
+name: Python Test and Analyze
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-test.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/**'
+      - '.github/workflows/python-test.yml'
+
+jobs:
+  test-and-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r python/requirements-dev.txt
+          pip install -r python/requirements.txt
+
+      - name: Run tests with pytest
+        run: cd python && pytest
+

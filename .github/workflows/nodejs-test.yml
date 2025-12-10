@@ -1,0 +1,39 @@
+name: Node.js Tests (Shared)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'packages/shared/**'
+      - '.github/workflows/nodejs-test.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'packages/shared/**'
+      - '.github/workflows/nodejs-test.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start ChromaDB
+        run: docker-compose up -d chroma
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm --filter shared test
