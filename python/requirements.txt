@@ -36,7 +36,7 @@ python-dotenv>=1.2.1
 
 # ML/AI frameworks (CPU ONLY)
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch>=2.1.0
+torch>=2.6.0
 torchvision>=0.16.0
 ultralytics>=8.0.0
 transformers>=4.35.0
