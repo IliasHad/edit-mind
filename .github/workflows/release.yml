@@ -34,18 +34,25 @@ jobs:
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
+        platform:
+          - linux/amd64
+          - linux/arm64
+      max-parallel: 1 
     
     steps:
-      - run: df -h
-      - name: "node-cleanup"
+      - name: Maximize build space
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker builder prune -a -f
-          sudo docker image prune -a -f
-      - run: df -h
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/share/boost
+          sudo apt-get autoremove -y
+          sudo apt-get clean
+          sudo docker system prune -a -f
+          df -h
       
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,12 +60,14 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: all
+          platforms: ${{ matrix.platform }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          driver-opts: image=moby/buildkit:latest
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -67,16 +76,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate platform suffix
+        id: platform
+        run: |
+          echo "suffix=$(echo ${{ matrix.platform }} | sed 's/\//-/g')" >> $GITHUB_OUTPUT
+
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=ref,event=branch,suffix=-${{ steps.platform.outputs.suffix }}
+            type=semver,pattern={{version}},suffix=-${{ steps.platform.outputs.suffix }}
+            type=semver,pattern={{major}}.{{minor}},suffix=-${{ steps.platform.outputs.suffix }}
 
       - name: Build and push Docker image
         id: push
@@ -85,18 +98,15 @@ jobs:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
           target: production
-          platforms: linux/amd64,linux/arm64 
+          platforms: ${{ matrix.platform }}
           build-args: |
             NODE_VERSION=22.20.0
             PNPM_VERSION=10.20.0
           push: ${{ github.event_name != 'pull_request' }}
-          load: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            type=gha,scope=${{ matrix.service.name }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:buildcache
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ steps.platform.outputs.suffix }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ steps.platform.outputs.suffix }}
           sbom: false
 
       - name: Generate artifact attestation
@@ -107,8 +117,38 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-  create-release:
+  create-manifest:
     needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        service:
+          - name: background-jobs
+          - name: web
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push manifest
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            TAG="main"
+          fi
+          
+          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:${TAG} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:${TAG}-linux-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:${TAG}-linux-arm64
+
+  create-release:
+    needs: create-manifest
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
