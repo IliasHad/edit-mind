@@ -8,14 +8,13 @@ from typing import Optional, Callable, Dict, Union, Set, List, Awaitable
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
-from concurrent.futures import Future
 import websockets
 from websockets.legacy.server import WebSocketServerProtocol  
 from websockets.exceptions import ConnectionClosed, ConnectionClosedOK, ConnectionClosedError
 
 from transcribe import TranscriptionService
 from analyze import AnalysisConfig, OutputManager, VideoAnalysisResult, VideoAnalyzer
-import os
+import urllib.parse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -355,7 +354,10 @@ class MessageHandler:
         self, websocket: "WebSocketServerProtocol", payload: JsonDict
     ) -> None:
         """Handle video analysis request with concurrency control."""
-        video_path_str = payload.get("video_path")
+        
+        encoded_path = payload['video_path']
+        video_path_str = urllib.parse.unquote(encoded_path)
+
         if not isinstance(video_path_str, str):
             logger.error("Missing or invalid 'video_path' in payload")
             await self._send_message(
@@ -528,10 +530,10 @@ class MessageHandler:
         self, websocket: "WebSocketServerProtocol", payload: JsonDict
     ) -> None:
         """Handle transcription request with live progress updates and debug logging."""
-        video_path = payload.get("video_path")
+        encoded_path = payload.get("video_path")
         json_file_path = payload.get("json_file_path")
 
-        if not isinstance(video_path, str) or not isinstance(json_file_path, str):
+        if not isinstance(encoded_path, str) or not isinstance(json_file_path, str):
             await self._send_message(
                 websocket,
                 MessageType.TRANSCRIPTION_ERROR,
@@ -545,7 +547,7 @@ class MessageHandler:
             logger.error("Missing or invalid 'job_id' in payload")
             job_id = None  # Continue but log the issue
             
-        video_path_normalized = str(Path(video_path).resolve())
+        video_path_normalized = urllib.parse.unquote(encoded_path)
         self.state.start_transcription(video_path_normalized)
         logger.info(f"Started transcription for: {video_path_normalized}")
 
@@ -567,7 +569,7 @@ class MessageHandler:
             result = await loop.run_in_executor(
                 None,
                 lambda: self.transcription_service.transcribe(
-                    video_path,
+                    video_path_normalized,
                     json_file_path,
                     progress_callback
                 )

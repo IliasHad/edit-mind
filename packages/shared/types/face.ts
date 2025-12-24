@@ -50,3 +50,10 @@ export interface FindMatchingFacesResponse {
   matches: MatchResult[]
   reference_images_used: number
 }
+export interface FaceLabellingJobData {
+  faces: {
+    jsonFile: string
+    faceId: string
+  }[]
+  name: string
+}

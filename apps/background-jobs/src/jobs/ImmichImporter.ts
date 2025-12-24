@@ -1,6 +1,6 @@
 import { decryptApiKey } from '@shared/services/encryption'
 import { Worker, Job } from 'bullmq'
-import { connection } from '../queue'
+import { connection } from '../services/redis'
 import { ImmichImporterJobData } from '@shared/types/immich'
 import { getAllImmichFaces } from '@shared/services/immich'
 import { prisma } from 'src/services/db'

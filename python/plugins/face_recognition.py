@@ -75,8 +75,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         
         frame_scale_inverse = 1.0 / self.face_scale
         ui_scale = float(frame_analysis.get('scale_factor', 1.0))
+
         output_faces = []
-        
         for face in recognized_faces:
             top, right, bottom, left = face['location']
 
@@ -99,7 +99,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
             ui_y = abs_y * ui_scale
             ui_w = abs_w * ui_scale
             ui_h = abs_h * ui_scale
-                
+            
             output_face: Dict[str, Union[str, List[int], Optional[Dict[str, float]], float, List[float], Dict[str, float], Dict[str, int]]] = {
                 "name": face['name'],
                 "location": [top, right, bottom, left],
@@ -140,7 +140,6 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                     original_width,
                     original_height
                 )
-
         frame_analysis['faces'] = output_faces
         return frame_analysis
 
@@ -219,6 +218,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         else:
             # Face already saved - just update the JSON with new appearance
             self._update_unknown_face_appearances(face_id, appearance_data)
+   
 
     def _save_unknown_face_first_occurrence(
         self,

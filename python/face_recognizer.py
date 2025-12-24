@@ -88,20 +88,23 @@ class FaceRecognizer:
                 name = "Unknown"
                 confidence = 0.0
                 
-                face_analysis_results = DeepFace.find(
+                try:
+                    os.makedirs(self.known_faces_folder, exist_ok=True)
+                    face_analysis_results = DeepFace.find(
                         img_path=frame_rgb,
                         enforce_detection=False,
                         detector_backend=self.detector_backend,
                         silent=True,
                         db_path=self.known_faces_folder,
-                )
-        
-
-                if len(face_analysis_results) > 0 and len(face_analysis_results[0]) > 0:
-                    best_match_path = face_analysis_results[0].iloc[0]
-                    name = os.path.basename(os.path.dirname(best_match_path["identity"]))
-                    confidence = best_match_path["confidence"]
+                    )
                     
+                    if len(face_analysis_results) > 0 and len(face_analysis_results[0]) > 0:
+                        best_match_path = face_analysis_results[0].iloc[0]
+                        name = os.path.basename(os.path.dirname(best_match_path["identity"]))
+                        confidence = best_match_path["confidence"]
+                except Exception as e:
+                    pass
+
                 face_encoding = None
                 try:
                     face_img = face_obj['face']

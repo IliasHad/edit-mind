@@ -6,7 +6,14 @@ import { Analysis, AnalysisProgress } from '../types/analysis'
 import { IS_WIN, MAX_RESTARTS, PYTHON_PORT, PYTHON_SCRIPT, RESTART_BACKOFF_MS, VENV_PATH } from '../constants'
 import { TranscriptionProgress } from '../types/transcription'
 import { logger } from './logger'
-import { CallbackMap, PythonMessageType } from '../types/python'
+import { PythonMessageType } from '../types/python'
+
+interface JobCallbacks {
+  onProgress?: (data: any) => void
+  onResult?: (data: any) => void
+  onError?: (error: Error) => void
+  onComplete?: () => void
+}
 
 class PythonService {
   private static instance: PythonService
@@ -15,7 +22,7 @@ class PythonService {
   private serviceUrl: string
   private isRunning = false
   private restartCount = 0
-  private messageCallbacks: CallbackMap = {}
+  private jobCallbacks: Map<string, JobCallbacks> = new Map()
   private port: string
   private startPromise: Promise<string> | null = null
 
@@ -37,7 +44,6 @@ class PythonService {
 
   public async start(): Promise<string> {
     if (this.startPromise) {
-      logger.debug('Python service already starting, waiting...')
       return this.startPromise
     }
 
@@ -78,8 +84,6 @@ class PythonService {
 
     const servicePath = PYTHON_SCRIPT
 
-    logger.debug(`Spawning Python service: ${pythonExecutable} ${servicePath}`)
-
     this.serviceProcess = spawn(pythonExecutable, [servicePath, '--port', this.port, '--host', '0.0.0.0'], {
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: false,
@@ -88,16 +92,6 @@ class PythonService {
     if (!this.serviceProcess || !this.serviceProcess.pid) {
       throw new Error('Failed to spawn Python service process')
     }
-
-    logger.debug(`Python service spawned with PID: ${this.serviceProcess.pid}`)
-
-    this.serviceProcess.stdout?.on('data', (data) => {
-      logger.debug(`[PythonService STDOUT]: ${data.toString().trim()}`)
-    })
-
-    this.serviceProcess.stderr?.on('data', (data) => {
-      logger.debug(`[PythonService STDERR]: ${data.toString().trim()}`)
-    })
 
     this.serviceProcess.on('error', (error) => {
       logger.error('Python service process error: ' + error)
@@ -110,7 +104,6 @@ class PythonService {
       this.handleCrash()
     })
 
-    logger.debug('Waiting for Python service to be ready...')
     const maxAttempts = 15
     const delayMs = 1000
 
@@ -129,7 +122,6 @@ class PythonService {
           logger.error(error)
           throw new Error(`Python service failed to start within ${maxAttempts * delayMs}ms`)
         }
-        logger.debug(`Attempt ${attempt} failed, retrying in ${delayMs}ms...`)
         await new Promise((resolve) => setTimeout(resolve, delayMs))
       }
     }
@@ -148,6 +140,7 @@ class PythonService {
       this.serviceProcess.kill('SIGTERM')
       this.serviceProcess = null
     }
+    this.jobCallbacks.clear()
     this.isRunning = false
   }
 
@@ -158,57 +151,62 @@ class PythonService {
     onResult: (result: Analysis) => void,
     onError: (error: Error) => void
   ): void {
-    if (!this.isRunning || !this.client) {
-      onError(new Error('Python service is not running.'))
+    if (this.client?.readyState !== WebSocket.OPEN) {
+      onError(new Error(`WebSocket not open. State: ${this.client?.readyState}`))
       return
     }
 
-    if (this.client.readyState !== WebSocket.OPEN) {
-      onError(new Error(`WebSocket not open. State: ${this.client.readyState}`))
-      return
-    }
-
-    this.messageCallbacks['analysis_progress'] = onProgress
-    this.messageCallbacks['analysis_completed'] = onResult
-    this.messageCallbacks['analysis_error'] = onError
+    this.jobCallbacks.set(job_id, {
+      onProgress,
+      onResult,
+      onError,
+    })
 
     const message = {
       type: 'analyze',
-      payload: { video_path: videoPath, job_id },
+      payload: { video_path: encodeURI(videoPath), job_id },
     }
 
-    this.client.send(JSON.stringify(message))
+    try {
+      this.client.send(JSON.stringify(message))
+    } catch (error) {
+      this.jobCallbacks.delete(job_id)
+      onError(new Error(`Failed to send message: ${error}`))
+    }
   }
 
-  public async transcribe(
+  public transcribe(
     videoPath: string,
     jsonFilePath: string,
     job_id: string,
     onProgress: (progress: TranscriptionProgress) => void,
     onComplete: (result: void) => void,
     onError: (error: Error) => void
-  ): Promise<void> {
-    if (!this.isRunning || !this.client) {
-      onError(new Error('Python service is not running.'))
+  ): void {
+    if (this.client?.readyState !== WebSocket.OPEN) {
+      onError(new Error(`WebSocket not open. State: ${this.client?.readyState}`))
       return
     }
 
-    if (this.client.readyState !== WebSocket.OPEN) {
-      onError(new Error(`WebSocket not open. State: ${this.client.readyState}`))
-      return
-    }
-
-    this.messageCallbacks['transcription_progress'] = onProgress
-    this.messageCallbacks['transcription_completed'] = onComplete
-    this.messageCallbacks['transcription_error'] = onError
+    this.jobCallbacks.set(job_id, {
+      onProgress,
+      onComplete,
+      onError,
+    })
 
     const message = {
       type: 'transcribe',
-      payload: { video_path: videoPath, json_file_path: jsonFilePath, job_id },
+      payload: { video_path: encodeURI(videoPath), json_file_path: jsonFilePath, job_id },
     }
 
-    this.client.send(JSON.stringify(message))
+    try {
+      this.client?.send(JSON.stringify(message))
+    } catch (error) {
+      this.jobCallbacks.delete(job_id)
+      onError(new Error(`Failed to send message: ${error}`))
+    }
   }
+
   public getServiceUrl(): string {
     return this.serviceUrl
   }
@@ -227,7 +225,9 @@ class PythonService {
         reject(new Error('WebSocket connection timeout'))
       }, 3000)
 
-      this.client = new WebSocket(this.serviceUrl)
+      this.client = new WebSocket(this.serviceUrl, {
+        maxPayload: 1024 * 1024 * 1024, // 1GB
+      })
 
       this.client.on('open', () => {
         clearTimeout(timeout)
@@ -238,14 +238,52 @@ class PythonService {
       this.client.on('message', (data) => {
         try {
           const message = JSON.parse(data.toString())
-          const { type, payload, job_id } = message
+          const { type, payload } = message
+          const job_id = payload?.job_id
 
-          const callback = this.messageCallbacks[type as PythonMessageType]
+          if (!job_id) {
+            logger.warn(`⚠️ Received message without job_id: ${type}`)
+            return
+          }
 
-          if (callback) {
-            callback({ ...payload, job_id })
-          } else {
-            logger.warn(`⚠️ No callback registered for message type: ${type}`)
+          const callbacks = this.jobCallbacks.get(job_id)
+
+          if (!callbacks) {
+            logger.warn(`⚠️ No callbacks registered for job_id: ${job_id}`)
+            return
+          }
+
+          switch (type as PythonMessageType) {
+            case 'analysis_progress':
+              callbacks.onProgress?.(payload)
+              break
+
+            case 'analysis_completed':
+              callbacks.onResult?.(payload)
+              this.jobCallbacks.delete(job_id)
+              break
+
+            case 'analysis_error':
+              callbacks.onError?.(new Error(payload.message || 'Analysis failed'))
+              this.jobCallbacks.delete(job_id)
+              break
+
+            case 'transcription_progress':
+              callbacks.onProgress?.(payload)
+              break
+
+            case 'transcription_completed':
+              callbacks.onComplete?.()
+              this.jobCallbacks.delete(job_id)
+              break
+
+            case 'transcription_error':
+              callbacks.onError?.(new Error(payload.message || 'Transcription failed'))
+              this.jobCallbacks.delete(job_id)
+              break
+
+            default:
+              logger.warn(`⚠️ Unknown message type: ${type}`)
           }
         } catch (error) {
           logger.error('❌ Error processing message: ' + error)
