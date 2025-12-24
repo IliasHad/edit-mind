@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/background-jobs/package.json ./apps/background-jobs/
 COPY packages/shared/package.json ./packages/shared/
@@ -33,6 +33,8 @@ FROM dependencies AS builder
 COPY apps ./apps
 COPY packages ./packages
 COPY tsconfig.json ./
+COPY .npmrc ./
+COPY prisma.config.ts ./
 
 RUN pnpm --filter prisma generate
 
@@ -59,21 +61,19 @@ COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma.config.ts ./
+COPY --from=builder /app/.npmrc ./
 
 COPY --from=builder /app/apps/web/package.json ./apps/web/
 COPY --from=builder /app/apps/background-jobs/package.json ./apps/background-jobs/
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 COPY --from=builder /app/packages/prisma/package.json ./packages/prisma/
-
-COPY --from=builder /app/packages/prisma ./packages/prisma
-
-COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
-COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/prisma/schema.prisma ./packages/prisma
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+    pnpm install --frozen-lockfile --prod=false
 
-
+COPY --from=builder /app/packages/prisma ./packages/prisma
+COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/apps/web ./apps/web
 
 WORKDIR /app
@@ -83,7 +83,6 @@ EXPOSE 3745
 
 CMD ["sh", "-c", "\
   pnpm --filter prisma migrate deploy && \
-  pnpm --filter prisma generate && \
   pnpm --filter prisma seed && \
   pnpm --filter web start --host 0.0.0.0 --port 3745 \
 "]
@@ -104,6 +103,8 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
 COPY apps ./apps
 COPY packages ./packages
 COPY tsconfig.json ./
+COPY .npmrc ./
+COPY prisma.config.ts ./
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile
@@ -115,8 +116,7 @@ ENV NODE_ENV=development
 EXPOSE 3745
 
 CMD ["sh", "-c", "\
-  pnpm --filter prisma migrate deploy && \
-  pnpm --filter prisma generate && \
+  pnpm --filter prisma migrate:deploy && \
   pnpm --filter prisma seed && \
   pnpm --filter web dev --host 0.0.0.0 --port 3745  \
 "]

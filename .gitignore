@@ -2,7 +2,7 @@ node_modules
 dist
 out
 .DS_Store
-*.log*
+*.log
 temp
 .thumbnails
 python/.venv
