@@ -34,9 +34,6 @@ jobs:
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
-        platform:
-          - linux/arm64
-          - linux/amd64
     
     steps:
       - run: df -h
@@ -66,11 +63,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate platform tag
-        id: platform-tag
-        run: |
-          echo "tag=${{ matrix.platform }}" | sed 's/\//-/g' >> $GITHUB_OUTPUT
-
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
@@ -89,7 +81,7 @@ jobs:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
           target: production
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64 
           build-args: |
             NODE_VERSION=22.20.0
             PNPM_VERSION=10.20.0
@@ -98,9 +90,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: |
-            type=gha,scope=${{ matrix.service.name }}-${{ matrix.platform }}
-            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:buildcache-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ matrix.platform }}
+            type=gha,scope=${{ matrix.service.name }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:buildcache
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
           sbom: false
 
       - name: Generate artifact attestation
