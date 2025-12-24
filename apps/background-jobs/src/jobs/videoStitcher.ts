@@ -1,6 +1,6 @@
 import { generateCompilationResponse } from '@shared/services/modelRouter'
 import { Worker, Job } from 'bullmq'
-import { connection } from '../queue'
+import { connection } from '../services/redis'
 import { stitchVideos } from '@shared/utils/sticher'
 import { getVideoWithScenesBySceneIds } from '@shared/services/vectorDb'
 import { prisma } from '../services/db'
