@@ -1,10 +1,8 @@
 import { decryptApiKey } from '@shared/services/encryption'
 import { Worker, Job } from 'bullmq'
-import { connection } from '../queue'
+import { connection } from '../services/redis'
 import { ImmichImporterJobData } from '@shared/types/immich'
 import { getAllImmichFaces } from '@shared/services/immich'
-import { reindexFaces } from '@shared/utils/faces'
-import { pythonService } from '@shared/services/pythonService'
 import { prisma } from 'src/services/db'
 
 async function processImmichImporterJob(job: Job<ImmichImporterJobData>) {
@@ -14,9 +12,7 @@ async function processImmichImporterJob(job: Job<ImmichImporterJobData>) {
     })
     if (!integration) throw new Error('Integration not found')
     const apiKey = decryptApiKey(integration.immichApiKey)
-    const facesFiles = await getAllImmichFaces({ baseUrl: integration.immichBaseUrl, apiKey })
-    if (!pythonService.isServiceRunning) await pythonService.start()
-    if (job.id) await reindexFaces(facesFiles, job.id)
+    await getAllImmichFaces({ baseUrl: integration.immichBaseUrl, apiKey })
   } catch (error) {
     console.error(error)
   }

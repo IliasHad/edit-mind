@@ -1,245 +1,183 @@
-import face_recognition
+from deepface import DeepFace
 import numpy as np
 import json
 from collections import defaultdict
-import os
 from typing import List, Dict
+import os
 from dotenv import load_dotenv
+import cv2
 
 load_dotenv()
+
 class FaceRecognizer:
-    def __init__(self, known_faces_file: str ='.faces.json', tolerance: float =0.40, model: str ='cnn'):
+    def __init__(self, known_faces_folder: str = '.faces', tolerance: float = 0.40, model: str = 'VGG-Face'):
         """
-        Initialize the face recognizer.
+        Initialize the face recognizer using DeepFace.
         
         Args:
-            known_faces_file: Path to JSON file storing known faces
-            tolerance: Lower is more strict (default 0.6, range 0.0-1.0)
-            model: 'cnn' for accuracy or 'hog' for speed
+            known_faces_folder: Path to folder where we have faces labeled 
+            tolerance: Distance threshold for face matching (lower = stricter)
+            model: DeepFace model ('VGG-Face', 'Facenet', 'Facenet512', 'OpenFace', 'DeepFace', 'DeepID', 'ArcFace', 'Dlib', 'SFace')
         """
-        self.known_faces_file = known_faces_file
+        self.known_faces_folder = known_faces_folder
         self.tolerance = tolerance
-        self.model = model
-        self.known_face_encodings: List[np.ndarray] = []
-        self.known_face_names: List[str] = []
+        self.model = model 
+        self.detector_backend = 'opencv' 
         self.unknown_face_encodings: Dict[str, List[np.ndarray]] = defaultdict(list)
         self.unknown_face_counter = 0
-        self.load_known_faces()
-
-
                 
-    def load_known_faces(self):
-        """Load known faces from JSON ensuring float arrays."""
-        self.known_face_encodings = []
-        self.known_face_names = []
-
-        try:
-            with open(self.known_faces_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            # File doesn't exist yet, start with empty lists
-            return
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON in {self.known_faces_file}: {e}")
-
-        if isinstance(data, dict):
-            for name, enc_list in data.items():
-                # Skip if enc_list is not a list
-                if not isinstance(enc_list, list):
-                    continue
-                    
-                for enc in enc_list:
-                    # Skip if enc is not a list/array (e.g., if it's a string path)
-                    if not isinstance(enc, (list, np.ndarray)):
-                        continue
-                    
-                    # Skip if enc is empty or doesn't look like an encoding (should be 128 floats)
-                    if not enc or len(enc) != 128:
-                        continue
-                    
-                    try:
-                        # Ensure numeric array
-                        encoding_array = np.array(enc, dtype=np.float64)
-                        self.known_face_encodings.append(encoding_array)
-                        self.known_face_names.append(name)
-                    except (ValueError, TypeError) as e:
-                        # Skip invalid encodings
-                        print(f"Warning: Skipping invalid encoding for {name}: {e}")
-                        continue
-
-        elif isinstance(data, list):
-            for entry in data:
-                if not isinstance(entry, dict):
-                    continue
-                    
-                name = entry.get("name")
-                enc = entry.get("encoding") or entry.get("encodings")
-                
-                if not name or not enc:
-                    continue
-                
-                # Handle multiple encodings per person
-                if isinstance(enc[0], list):
-                    for e in enc:
-                        if len(e) != 128:
-                            continue
-                        try:
-                            self.known_face_encodings.append(np.array(e, dtype=np.float64))
-                            self.known_face_names.append(name)
-                        except (ValueError, TypeError):
-                            continue
-                else:
-                    if len(enc) == 128:
-                        try:
-                            self.known_face_encodings.append(np.array(enc, dtype=np.float64))
-                            self.known_face_names.append(name)
-                        except (ValueError, TypeError):
-                            continue
-
-
-    def recognize_faces(self, frame: np.ndarray, upsample: int =1) -> List[Dict[str, str]]:
+    def recognize_faces(self, frame: np.ndarray, upsample: int = 1) -> List[Dict[str, str]]:
         """
-        Recognize faces in a frame with improved accuracy.
+        Recognize faces in a frame using DeepFace.
         
         Args:
-            frame: Image array (RGB format recommended)
-            upsample: Number of times to upsample image for detection (higher = more accurate but slower)
+            frame: Image array (BGR format from OpenCV)
+            upsample: Not used with DeepFace but kept for compatibility
         """
-        # Convert to RGB if needed (face_recognition uses RGB)
-        if len(frame.shape) == 2:  # Grayscale
-            frame = np.stack([frame] * 3, axis=-1)
-        
-        # Detect faces with upsampling for better detection
-        face_locations = face_recognition.face_locations(
-            frame, 
-            number_of_times_to_upsample=upsample,
-            model=self.model
-        )
-        
-        # Get 128-dimensional face encodings
-        face_encodings = face_recognition.face_encodings(
-            frame, 
-            face_locations,
-            num_jitters=10  # More jitters = more accurate but slower
-        )
-        def distance_to_confidence(face_distance: float, tolerance: float =self.tolerance) -> float:
-            """Convert face distance to confidence (0-1 scale)."""
-            if face_distance > tolerance:
-                return 0.0
-            # Smooth mapping: closer distance -> higher confidence
-            confidence = 1 / (1 + np.exp(15 * (face_distance - tolerance)))
-            return confidence
+        # Convert BGR to RGB if needed
+        if len(frame.shape) == 3 and frame.shape[2] == 3:
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        else:
+            frame_rgb = frame
         
         recognized_faces = []
-        for face_location, face_encoding in zip(face_locations, face_encodings):
-            name = "Unknown"
-            confidence = 0.0
+        
+        try:
 
-            if len(self.known_face_encodings) > 0:
-                # Calculate distances to all known faces
-                face_distances = face_recognition.face_distance(
-                    self.known_face_encodings, 
-                    face_encoding,
-                )
-                
-                # Find best match
-                best_match_index = np.argmin(face_distances)
-                best_distance = face_distances[best_match_index]
-                
-                
-                # Check if match is within tolerance
-                if best_distance <= self.tolerance:
-                    name = self.known_face_names[best_match_index]
-                    # Convert distance to confidence score (0-1)
-                    confidence = distance_to_confidence(best_distance, self.tolerance)
-
+            analysis_results = DeepFace.analyze(
+                img_path=frame_rgb,
+                actions=['emotion'],
+                enforce_detection=False,
+                detector_backend=self.detector_backend,
+            )
+            if not isinstance(analysis_results, list):
+                analysis_results = [analysis_results]
             
-            if name == "Unknown":
-                # Check if this unknown face has been seen before
-                found_existing_unknown = False
-                for unknown_name, encodings in self.unknown_face_encodings.items():
-                    if encodings:
-                        distances = face_recognition.face_distance(encodings, face_encoding)
-                        if np.min(distances) <= self.tolerance:
-                            name = unknown_name
-                            found_existing_unknown = True
-                            confidence = distance_to_confidence(np.min(distances), self.tolerance)
-                            break
+            face_objs = DeepFace.extract_faces(
+                img_path=frame_rgb,
+                detector_backend=self.detector_backend,
+                enforce_detection=False,
+                align=True
+            )
+            
+            
+            for i, (face_obj, analysis) in enumerate(zip(face_objs, analysis_results)):
+                if face_obj['confidence'] == 0:
+                    continue
+                    
+                facial_area = face_obj['facial_area']
                 
-                if not found_existing_unknown:
-                    name = f"Unknown_{self.unknown_face_counter:03d}"
-                    self.unknown_face_counter += 1
-                    confidence = 0.0 
-                self.unknown_face_encodings[name].append(face_encoding)
+                top = facial_area['y']
+                left = facial_area['x']
+                bottom = facial_area['y'] + facial_area['h']
+                right = facial_area['x'] + facial_area['w']
+                face_location = (top, right, bottom, left)
+            
+                
+                emotion_probs = analysis.get('emotion', {})
+                emotion_data = None
+                
+                if emotion_probs:
+                    dominant_emotion = max(emotion_probs.items(), key=lambda x: x[1])
+                    emotion_data = {
+                        'emotion': dominant_emotion[0],
+                        'confidence': dominant_emotion[1] / 100.0
+                    }
+            
+                
+                name = "Unknown"
+                confidence = 0.0
+                
+                try:
+                    os.makedirs(self.known_faces_folder, exist_ok=True)
+                    face_analysis_results = DeepFace.find(
+                        img_path=frame_rgb,
+                        enforce_detection=False,
+                        detector_backend=self.detector_backend,
+                        silent=True,
+                        db_path=self.known_faces_folder,
+                    )
+                    
+                    if len(face_analysis_results) > 0 and len(face_analysis_results[0]) > 0:
+                        best_match_path = face_analysis_results[0].iloc[0]
+                        name = os.path.basename(os.path.dirname(best_match_path["identity"]))
+                        confidence = best_match_path["confidence"]
+                except Exception as e:
+                    pass
 
-            recognized_faces.append({
-                "name": name,
-                "confidence": confidence,
-                "encoding": face_encoding.tolist(),
-                "location": face_location
-            })
+                face_encoding = None
+                try:
+                    face_img = face_obj['face']
+                    embedding_objs = DeepFace.represent(
+                        img_path=face_img,
+                        model_name=self.model,
+                        enforce_detection=False
+                    )
+                    
+                    if not embedding_objs:
+                        continue
+                        
+                    face_encoding = np.array(embedding_objs[0]['embedding'])
+                    
+                except Exception as e:
+                    print(f"Error getting embedding: {e}")
+                    continue
+                
+                if name == "Unknown":
+                    found_existing_unknown = False
+                    for unknown_name, encodings in self.unknown_face_encodings.items():
+                        if encodings:
+                            distances = [self._cosine_distance(enc, face_encoding) for enc in encodings]
+                            if np.min(distances) <= self.tolerance:
+                                name = unknown_name
+                                found_existing_unknown = True
+                                confidence = self._distance_to_confidence(np.min(distances), self.tolerance)
+                                break
+                    
+                    if not found_existing_unknown:
+                        name = f"Unknown_{self.unknown_face_counter:03d}"
+                        self.unknown_face_counter += 1
+                        confidence = 0.0
+                    
+                    self.unknown_face_encodings[name].append(face_encoding)
+                
+                recognized_faces.append({
+                    "name": name,
+                    "confidence": confidence,
+                    "encoding": face_encoding.tolist(),
+                    "location": face_location,
+                    "emotion_label": emotion_data['emotion'] if emotion_data else None,
+                    "emotion_confidence": emotion_data['confidence'] if emotion_data else None
+                })
+        
+        except Exception as e:
+            print(f"Error in face recognition: {e}")
         
         return recognized_faces
 
-    def add_known_face(self, name: str, encoding: np.ndarray) -> None:
-        """Add a known face encoding."""
-        self.known_face_encodings.append(np.array(encoding))
-        self.known_face_names.append(name)
-
-    def save_known_faces(self) -> None:
-        """Save known faces to JSON file."""
-        known_faces_data: Dict[str, List[List[float]]] = {}
-        for name, encoding in zip(self.known_face_names, self.known_face_encodings):
-            if name not in known_faces_data:
-                known_faces_data[name] = []
-            known_faces_data[name].append(encoding.tolist())
+    @staticmethod
+    def _cosine_distance(encoding1: np.ndarray, encoding2: np.ndarray) -> float:
+        """Calculate cosine distance between two embeddings."""
+        dot_product = np.dot(encoding1, encoding2)
+        norm1 = np.linalg.norm(encoding1)
+        norm2 = np.linalg.norm(encoding2)
         
-        with open(self.known_faces_file, 'w') as f:
-            json.dump(known_faces_data, f, indent=2)
-
-    def get_all_faces(self) -> List[Dict[str, str]]:
-        """
-        Returns a list of all known and unknown faces with their representative encodings and counts.
-        """
-        all_faces: Dict[str, List[np.ndarray]] = defaultdict(list)
-        for name, encoding in zip(self.known_face_names, self.known_face_encodings):
-            all_faces[name].append(encoding)
+        if norm1 == 0 or norm2 == 0:
+            return 1.0
         
-        for name, encodings in self.unknown_face_encodings.items():
-            all_faces[name].extend(encodings)
+        cosine_similarity = dot_product / (norm1 * norm2)
+        return 1 - cosine_similarity
 
-        result = []
-        for name, encodings in all_faces.items():
-            # For simplicity, use the first encoding as representative and count all occurrences
-            if encodings:
-                result.append({
-                    "name": name,
-                    "encoding": encodings[0].tolist(),
-                    "count": len(encodings)
-                })
-        return result
+    def _distance_to_confidence(self, face_distance: float, tolerance: float) -> float:
+        """Convert face distance to confidence (0-1 scale)."""
+        if face_distance > tolerance:
+            return 0.0
+        confidence = 1 / (1 + np.exp(15 * (face_distance - tolerance)))
+        return confidence
 
-    def label_face(self, old_name: str, new_name: str) -> None:
-        """
-        Labels an existing face (known or unknown) with a new name.
-        If old_name was unknown, it becomes known.
-        """
-        # Move encodings from unknown to known if applicable
-        if old_name.startswith("Unknown_") and old_name in self.unknown_face_encodings:
-            for encoding in self.unknown_face_encodings[old_name]:
-                self.add_known_face(new_name, encoding)
-            del self.unknown_face_encodings[old_name]
-        else:
-            # Update existing known face names
-            for i, name in enumerate(self.known_face_names):
-                if name == old_name:
-                    self.known_face_names[i] = new_name
-        self.save_known_faces()
 
     def merge_faces(self, names_to_merge: List[str], new_name: str) -> None:
-        """
-        Merges multiple faces (known or unknown) under a single new name.
-        """
+        """Merges multiple faces under a single new name."""
         merged_encodings: List[np.ndarray] = []
         for name in names_to_merge:
             if name.startswith("Unknown_") and name in self.unknown_face_encodings:
@@ -247,19 +185,15 @@ class FaceRecognizer:
                     merged_encodings.append(encoding)
                 del self.unknown_face_encodings[name]
             else:
-                # Collect encodings of known faces to merge
                 for i, known_name in enumerate(self.known_face_names):
                     if known_name == name:
                         merged_encodings.append(self.known_face_encodings[i])
-                        # Remove old entry to avoid duplicates
-                        self.known_face_encodings[i] = None # Mark for deletion
-                        self.known_face_names[i] = None # Mark for deletion
+                        self.known_face_encodings[i] = None
+                        self.known_face_names[i] = None
         
-        # Clean up marked for deletion
         self.known_face_encodings = [e for e in self.known_face_encodings if e is not None]
         self.known_face_names = [n for n in self.known_face_names if n is not None]
 
-        # Add merged encodings under the new name
         for encoding in merged_encodings:
             self.add_known_face(new_name, encoding)
         

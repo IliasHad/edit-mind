@@ -87,7 +87,7 @@ export const createScenes = async (
       transcription: getTranscriptionForTimeRange(startTime, endTime),
       description: generateSceneDescription(frame.objects, frame.faces),
       shot_type: frame.shot_type,
-      emotions: [],
+      emotions: frame.faces?.map((face) => ({ name: face.name, emotion: face.emotion.label })),
       source: videoPath,
       camera: '',
       createdAt: 0,

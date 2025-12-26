@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env.testing'))
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from transcribe import run_transcription
+from transcribe import run_transcription, TranscriptionService
 
 
 class MockWhisperSegment:
@@ -86,11 +86,13 @@ class TestTranscribeVideo(unittest.TestCase):
         if os.path.exists(self.output_json_path):
             os.remove(self.output_json_path)
 
+    @patch('transcribe.TranscriptionService.is_model_cached')
     @patch('transcribe.WhisperModel')
     @patch('transcribe.Path.exists')
-    def test_transcribe_video(self, mock_path_exists, mock_whisper_model):
+    def test_transcribe_video(self, mock_path_exists, mock_whisper_model, mock_is_cached):
         """Test transcription with mocked Whisper model"""
         mock_path_exists.return_value = True
+        mock_is_cached.return_value = True
         
         # Create mock model instance
         mock_model_instance = MagicMock()
@@ -165,11 +167,13 @@ class TestTranscribeVideo(unittest.TestCase):
                 self.assertIn('word', word, 
                             f"Segment {i}, word {j} missing word text")
 
+    @patch('transcribe.TranscriptionService.is_model_cached')
     @patch('transcribe.WhisperModel')
     @patch('transcribe.Path.exists')
-    def test_transcribe_empty_audio(self, mock_path_exists, mock_whisper_model):
+    def test_transcribe_empty_audio(self, mock_path_exists, mock_whisper_model, mock_is_cached):
         """Test transcription with video that has no audio"""
         mock_path_exists.return_value = True
+        mock_is_cached.return_value = True  # Pretend model is already cached
         
         # Mock model to raise RuntimeError for no audio
         mock_model_instance = MagicMock()
@@ -184,11 +188,13 @@ class TestTranscribeVideo(unittest.TestCase):
         self.assertEqual(len(result['segments']), 0, "Expected no segments for no audio")
         self.assertEqual(result['language'], 'N/A', "Expected N/A language for no audio")
 
+    @patch('transcribe.TranscriptionService.is_model_cached')
     @patch('transcribe.WhisperModel')
     @patch('transcribe.Path.exists')
-    def test_transcribe_with_progress_callback(self, mock_path_exists, mock_whisper_model):
+    def test_transcribe_with_progress_callback(self, mock_path_exists, mock_whisper_model, mock_is_cached):
         """Test transcription with progress callback"""
         mock_path_exists.return_value = True
+        mock_is_cached.return_value = True  # Pretend model is already cached
         
         mock_model_instance = MagicMock()
         mock_model_instance.transcribe.return_value = (

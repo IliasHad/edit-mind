@@ -12,11 +12,10 @@ export const IS_WIN = process.platform === 'win32'
 
 // Directories
 export const THUMBNAILS_DIR = process.env.THUMBNAILS_PATH || '.thumbnails'
-export const FACES_DIR = process.env.FACES_DIR || '.faces'
+export const FACES_DIR = process.env.FACES_DIR || '.faces_db'
 export const PROCESSED_VIDEOS_DIR = process.env.PROCESSED_VIDEOS_DIR || path.resolve('.results')
 export const DATA_DIR = path.resolve('data')
 export const UNKNOWN_FACES_DIR = process.env.UNKNOWN_FACES_DIR || '.unknown_faces'
-export const KNOWN_FACES_FILE = process.env.KNOWN_FACES_FILE || '.faces.json'
 export const BACKGROUND_JOBS_DIR = process.env.BACKGROUND_JOBS_DIR || '/apps/background-jobs'
 
 export const CACHE_FILE = '.locations.json'

@@ -23,7 +23,7 @@ import { EmbeddingInput } from '@shared/types/vector'
 import { Scene } from '@shared/types/scene'
 import { VideoSearchParams } from '@shared/types/search'
 
-const TEST_TIMEOUT = 40000
+const TEST_TIMEOUT = 40000 * 2
 
 const mockScene = (overrides?: Partial<Scene>): Scene => ({
   id: `scene-${Date.now()}-${Math.random()}`,

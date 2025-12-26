@@ -1,11 +1,7 @@
 # Core dependencies
-opencv-python>=4.8.0
 numpy>=1.24.0,<2.0.0
 tqdm>=4.66.0
 
-# Emotion detection (optional - can be heavy)
-fer==22.5.1
-tensorflow>=2.13.0
 
 # Audio transcription
 faster-whisper>=1.2.1
@@ -20,24 +16,26 @@ Pillow>=9.3.0
 # Monitoring
 psutil>=5.9.0
 
-# Video processing with audio support
-ffmpeg-python>=0.2.0
-moviepy>=1.0.3
-
-# Websockets 
+# Websockets
 websockets>=12.0
 python-multipart>=0.0.6
 
-# Testing
-pytest>=7.4.0
-coverage>=7.11.0
-
+# Environment
 python-dotenv>=1.2.1
 
 # ML/AI frameworks (CPU ONLY)
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch>=2.6.0
 torchvision>=0.16.0
+
+# If x86 (AMD64), use the tiny CPU-only version
+tensorflow-cpu==2.15.0; platform_machine == "x86_64"
+tensorflow==2.15.0; platform_machine == "aarch64"
+
+# Face recognition (PyTorch backend)
+deepface>=0.0.96
+tf-keras
+
 ultralytics>=8.0.0
 transformers>=4.35.0
 --index-url https://pypi.org/simple

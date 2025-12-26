@@ -5,12 +5,13 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { ExpressAdapter } from '@bull-board/express'
 import foldersRoute from './routes/folders'
 import stitcherRoute from './routes/stitcher'
+import faceRoute from './routes/face'
 import { config } from './config'
-import { faceMatcherQueue, immichImporterQueue, videoQueue, videoStitcherQueue } from './queue'
+import { immichImporterQueue, videoQueue, videoStitcherQueue } from './queue'
 import './jobs/videoIndexer'
-import './jobs/faceMatcher'
 import './jobs/ImmichImporter'
 import './jobs/videoStitcher'
+import './jobs/faceLabelling'
 
 import { pythonService } from '@shared/services/pythonService'
 import { initializeWatchers } from './watcher'
@@ -28,7 +29,6 @@ if (process.env.NODE_ENV === 'development') {
   createBullBoard({
     queues: [
       new BullMQAdapter(videoQueue),
-      new BullMQAdapter(faceMatcherQueue),
       new BullMQAdapter(immichImporterQueue),
       new BullMQAdapter(videoStitcherQueue),
     ],
@@ -40,6 +40,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/folders', foldersRoute)
 app.use('/stitcher', stitcherRoute)
+app.use('/face', faceRoute)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 

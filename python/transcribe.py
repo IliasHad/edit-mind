@@ -189,7 +189,15 @@ class TranscriptionService:
         """Check if model is already downloaded"""
         model_repo = self._get_model_path()
         cache_path = Path(self.cache_dir) / model_repo.replace("/", "--")
-        return cache_path.exists() and any(cache_path.iterdir())
+        
+        # Check if path exists first before calling iterdir()
+        if not cache_path.exists():
+            return False
+        
+        try:
+            return any(cache_path.iterdir())
+        except (OSError, FileNotFoundError):
+            return False
 
     def download_model_async(self) -> None:
         """Download model in background thread"""

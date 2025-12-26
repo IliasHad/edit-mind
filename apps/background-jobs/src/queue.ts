@@ -1,25 +1,7 @@
 import { Queue } from 'bullmq'
-import { config } from './config'
-import IORedis from 'ioredis'
-
-export const connection = new IORedis({
-  host: config.redisHost,
-  port: config.redisPort,
-  maxRetriesPerRequest: null,
-})
+import { connection } from './services/redis'
 
 export const videoQueue = new Queue('video-indexing', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
-  },
-})
-
-export const faceMatcherQueue = new Queue('face-matcher', {
   connection,
   defaultJobOptions: {
     attempts: 3,
@@ -52,3 +34,13 @@ export const videoStitcherQueue = new Queue('video-stitcher', {
   },
 })
 
+export const faceLabellingQueue = new Queue('face-labelling', {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+  },
+})

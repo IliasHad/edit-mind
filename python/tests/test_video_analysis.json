@@ -1,0 +1,3660 @@
+{
+    "scene_analysis": {
+        "dominant_color": {
+            "name": "Black",
+            "hex": "#000000",
+            "percentage": 50.4,
+            "is_vibrant": false,
+            "is_muted": true
+        },
+        "overall_brightness": 29.27,
+        "overall_saturation": 21.67,
+        "overall_warmth": 3.7,
+        "color_mood": "dark",
+        "color_harmony": "analogous",
+        "environment": "snow",
+        "environment_confidence": 0.5,
+        "object_distribution": {
+            "person": 52,
+            "car": 4,
+            "laptop": 12,
+            "potted plant": 11,
+            "tv": 11,
+            "vase": 11,
+            "keyboard": 8,
+            "cell phone": 4,
+            "mouse": 7,
+            "apple": 4,
+            "orange": 4,
+            "refrigerator": 4,
+            "oven": 4
+        },
+        "total_frames": 60
+    },
+    "detected_activities": [],
+    "face_recognition_summary": {
+        "known_people_identified": [
+            "Aiony Haust",
+            "Ilias"
+        ],
+        "known_appearances": {
+            "Aiony Haust": {
+                "count": 4,
+                "first_seen": 0.0,
+                "last_seen": 3.0
+            },
+            "Ilias": {
+                "count": 4,
+                "first_seen": 20.0,
+                "last_seen": 23.0
+            }
+        },
+        "unknown_faces_detected": 20,
+        "unique_unknown_faces": 5,
+        "unknown_faces_saved": 5,
+        "total_faces_detected": 28,
+        "unknown_faces_directory": "unknown_faces",
+        "unknown_faces_details": {
+            "Unknown_000": {
+                "image_path": "unknown_faces/Unknown_000_first_4000ms.jpg",
+                "json_path": "unknown_faces/Unknown_000_first_4000ms.json",
+                "total_appearances": 4
+            },
+            "Unknown_001": {
+                "image_path": "unknown_faces/Unknown_001_first_8000ms.jpg",
+                "json_path": "unknown_faces/Unknown_001_first_8000ms.json",
+                "total_appearances": 4
+            },
+            "Unknown_002": {
+                "image_path": "unknown_faces/Unknown_002_first_12000ms.jpg",
+                "json_path": "unknown_faces/Unknown_002_first_12000ms.json",
+                "total_appearances": 4
+            },
+            "Unknown_003": {
+                "image_path": "unknown_faces/Unknown_003_first_37000ms.jpg",
+                "json_path": "unknown_faces/Unknown_003_first_37000ms.json",
+                "total_appearances": 4
+            },
+            "Unknown_004": {
+                "image_path": "unknown_faces/Unknown_004_first_37000ms.jpg",
+                "json_path": "unknown_faces/Unknown_004_first_37000ms.json",
+                "total_appearances": 4
+            }
+        }
+    },
+    "frame_analysis": [
+        {
+            "start_time_ms": 0,
+            "end_time_ms": 1000,
+            "duration_ms": 1000,
+            "frame_idx": 0,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9628351926803589,
+                    "bbox": {
+                        "x": 352.805908203125,
+                        "y": 105.13653564453125,
+                        "width": 574.772705078125,
+                        "height": 607.6312866210938
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Aiony Haust",
+                    "location": [
+                        168,
+                        832,
+                        456,
+                        544
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 544.0,
+                        "y": 168.0,
+                        "width": 288.0,
+                        "height": 288.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.5970541834831238
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman with a black shirt and a pink background"
+        },
+        {
+            "start_time_ms": 1000,
+            "end_time_ms": 2000,
+            "duration_ms": 1000,
+            "frame_idx": 30,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9628399014472961,
+                    "bbox": {
+                        "x": 352.805419921875,
+                        "y": 105.13812255859375,
+                        "width": 574.77197265625,
+                        "height": 607.6322631835938
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Aiony Haust",
+                    "location": [
+                        168,
+                        830,
+                        456,
+                        542
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 542.0,
+                        "y": 168.0,
+                        "width": 288.0,
+                        "height": 288.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.6164354681968689
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#000000",
+                "percentage": 50.4,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#000000",
+                    "percentage": 50.4,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Medium Purple",
+                    "hex": "#8481be",
+                    "percentage": 29.8,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 17.48,
+            "saturation": 19.12,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman with a black shirt and a pink background"
+        },
+        {
+            "start_time_ms": 2000,
+            "end_time_ms": 3000,
+            "duration_ms": 1000,
+            "frame_idx": 60,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9628399014472961,
+                    "bbox": {
+                        "x": 352.805419921875,
+                        "y": 105.13812255859375,
+                        "width": 574.77197265625,
+                        "height": 607.6322631835938
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Aiony Haust",
+                    "location": [
+                        168,
+                        830,
+                        456,
+                        542
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 542.0,
+                        "y": 168.0,
+                        "width": 288.0,
+                        "height": 288.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.6164354681968689
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman with a black shirt and a pink background",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 3000,
+            "end_time_ms": 4000,
+            "duration_ms": 1000,
+            "frame_idx": 90,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9628399014472961,
+                    "bbox": {
+                        "x": 352.805419921875,
+                        "y": 105.13812255859375,
+                        "width": 574.77197265625,
+                        "height": 607.6322631835938
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Aiony Haust",
+                    "location": [
+                        168,
+                        830,
+                        456,
+                        542
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 542.0,
+                        "y": 168.0,
+                        "width": 288.0,
+                        "height": 288.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.6164354681968689
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#03050a",
+                "percentage": 66.8,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#03050a",
+                    "percentage": 66.8,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Gray",
+                    "hex": "#6f6da2",
+                    "percentage": 17.2,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 17.48,
+            "saturation": 19.12,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman with a black shirt and a pink background"
+        },
+        {
+            "start_time_ms": 4000,
+            "end_time_ms": 5000,
+            "duration_ms": 1000,
+            "frame_idx": 120,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9587202072143555,
+                    "bbox": {
+                        "x": 462.8580322265625,
+                        "y": 15.13702392578125,
+                        "width": 712.801513671875,
+                        "height": 699.4501342773438
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_000",
+                    "location": [
+                        108,
+                        984,
+                        416,
+                        676
+                    ],
+                    "confidence": 0.0,
+                    "bbox": {
+                        "x": 676.0,
+                        "y": 108.0,
+                        "width": 308.0,
+                        "height": 308.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.9712995256542594
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a man with a beard and glasses on"
+        },
+        {
+            "start_time_ms": 5000,
+            "end_time_ms": 6000,
+            "duration_ms": 1000,
+            "frame_idx": 150,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9580745100975037,
+                    "bbox": {
+                        "x": 462.9479675292969,
+                        "y": 14.6707763671875,
+                        "width": 712.7727355957031,
+                        "height": 699.81494140625
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_000",
+                    "location": [
+                        108,
+                        984,
+                        418,
+                        674
+                    ],
+                    "confidence": 0.9974060524685332,
+                    "bbox": {
+                        "x": 674.0,
+                        "y": 108.0,
+                        "width": 310.0,
+                        "height": 310.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.9703518152236938
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Gainsboro",
+                "hex": "#d8dddf",
+                "percentage": 65.6,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Gainsboro",
+                    "hex": "#d8dddf",
+                    "percentage": 65.6,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Dark Gray",
+                    "hex": "#a29f9a",
+                    "percentage": 22.4,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 72.48,
+            "saturation": 13.26,
+            "color_temperature": "neutral",
+            "environment_caption": "a man with glasses and a green shirt",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 6000,
+            "end_time_ms": 7000,
+            "duration_ms": 1000,
+            "frame_idx": 180,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9580745100975037,
+                    "bbox": {
+                        "x": 462.9479675292969,
+                        "y": 14.6707763671875,
+                        "width": 712.7727355957031,
+                        "height": 699.81494140625
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_000",
+                    "location": [
+                        108,
+                        984,
+                        418,
+                        674
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 674.0,
+                        "y": 108.0,
+                        "width": 310.0,
+                        "height": 310.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.9703518152236938
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a man with glasses and a green shirt"
+        },
+        {
+            "start_time_ms": 7000,
+            "end_time_ms": 8000,
+            "duration_ms": 1000,
+            "frame_idx": 210,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9580745100975037,
+                    "bbox": {
+                        "x": 462.9479675292969,
+                        "y": 14.6707763671875,
+                        "width": 712.7727355957031,
+                        "height": 699.81494140625
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_000",
+                    "location": [
+                        108,
+                        984,
+                        418,
+                        674
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 674.0,
+                        "y": 108.0,
+                        "width": 310.0,
+                        "height": 310.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.9703518152236938
+                    }
+                }
+            ],
+            "shot_type": "medium-shot",
+            "dominant_color": {
+                "name": "Gainsboro",
+                "hex": "#d4d9db",
+                "percentage": 71.0,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Gainsboro",
+                    "hex": "#d4d9db",
+                    "percentage": 71.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Gray",
+                    "hex": "#8b908a",
+                    "percentage": 18.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 72.48,
+            "saturation": 13.26,
+            "color_temperature": "neutral",
+            "environment_caption": "a man with glasses and a green shirt"
+        },
+        {
+            "start_time_ms": 8000,
+            "end_time_ms": 9000,
+            "duration_ms": 1000,
+            "frame_idx": 240,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9500717520713806,
+                    "bbox": {
+                        "x": 392.6436767578125,
+                        "y": 1.4569091796875,
+                        "width": 763.62890625,
+                        "height": 710.5550537109375
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_001",
+                    "location": [
+                        124,
+                        976,
+                        430,
+                        670
+                    ],
+                    "confidence": 0.0,
+                    "bbox": {
+                        "x": 670.0,
+                        "y": 124.0,
+                        "width": 306.0,
+                        "height": 306.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.6319472193717957
+                    }
+                }
+            ],
+            "shot_type": "medium-shot",
+            "environment_caption": "a woman with long hair and a black shirt",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 9000,
+            "end_time_ms": 10000,
+            "duration_ms": 1000,
+            "frame_idx": 270,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9472954273223877,
+                    "bbox": {
+                        "x": 392.6351318359375,
+                        "y": 1.94036865234375,
+                        "width": 763.622802734375,
+                        "height": 710.1270141601562
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_001",
+                    "location": [
+                        126,
+                        976,
+                        430,
+                        672
+                    ],
+                    "confidence": 0.9969557314857264,
+                    "bbox": {
+                        "x": 672.0,
+                        "y": 126.0,
+                        "width": 304.0,
+                        "height": 304.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.5150555372238159
+                    }
+                }
+            ],
+            "shot_type": "medium-shot",
+            "dominant_color": {
+                "name": "Gray",
+                "hex": "#7f7d7d",
+                "percentage": 54.6,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Gray",
+                    "hex": "#7f7d7d",
+                    "percentage": 54.6,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Black",
+                    "hex": "#0d1410",
+                    "percentage": 27.0,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 34.99,
+            "saturation": 25.18,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman with long hair and blue eyes stands against a brick wall"
+        },
+        {
+            "start_time_ms": 10000,
+            "end_time_ms": 11000,
+            "duration_ms": 1000,
+            "frame_idx": 300,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9472954273223877,
+                    "bbox": {
+                        "x": 392.6351318359375,
+                        "y": 1.94036865234375,
+                        "width": 763.622802734375,
+                        "height": 710.1270141601562
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_001",
+                    "location": [
+                        126,
+                        976,
+                        430,
+                        672
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 672.0,
+                        "y": 126.0,
+                        "width": 304.0,
+                        "height": 304.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.5150555372238159
+                    }
+                }
+            ],
+            "shot_type": "medium-shot",
+            "environment_caption": "a woman with long hair and blue eyes stands against a brick wall"
+        },
+        {
+            "start_time_ms": 11000,
+            "end_time_ms": 12000,
+            "duration_ms": 1000,
+            "frame_idx": 330,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9472954273223877,
+                    "bbox": {
+                        "x": 392.6351318359375,
+                        "y": 1.94036865234375,
+                        "width": 763.622802734375,
+                        "height": 710.1270141601562
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_001",
+                    "location": [
+                        126,
+                        976,
+                        430,
+                        672
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 672.0,
+                        "y": 126.0,
+                        "width": 304.0,
+                        "height": 304.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.5150555372238159
+                    }
+                }
+            ],
+            "shot_type": "medium-shot",
+            "dominant_color": {
+                "name": "Gray",
+                "hex": "#7d7d7d",
+                "percentage": 54.0,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Gray",
+                    "hex": "#7d7d7d",
+                    "percentage": 54.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Black",
+                    "hex": "#0c1310",
+                    "percentage": 24.2,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 34.99,
+            "saturation": 25.18,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman with long hair and blue eyes stands against a brick wall",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 12000,
+            "end_time_ms": 13000,
+            "duration_ms": 1000,
+            "frame_idx": 360,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9509174823760986,
+                    "bbox": {
+                        "x": 355.1968688964844,
+                        "y": 59.98150634765625,
+                        "width": 569.1416320800781,
+                        "height": 653.9951782226562
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_002",
+                    "location": [
+                        256,
+                        772,
+                        522,
+                        506
+                    ],
+                    "confidence": 0.0,
+                    "bbox": {
+                        "x": 506.0,
+                        "y": 256.0,
+                        "width": 266.0,
+                        "height": 266.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.9999781847000122
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman with blue makeup and a white shirt"
+        },
+        {
+            "start_time_ms": 13000,
+            "end_time_ms": 14000,
+            "duration_ms": 1000,
+            "frame_idx": 390,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9485589861869812,
+                    "bbox": {
+                        "x": 355.2869873046875,
+                        "y": 60.8836669921875,
+                        "width": 569.02685546875,
+                        "height": 653.12060546875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_002",
+                    "location": [
+                        256,
+                        774,
+                        522,
+                        508
+                    ],
+                    "confidence": 0.9971492183963553,
+                    "bbox": {
+                        "x": 508.0,
+                        "y": 256.0,
+                        "width": 266.0,
+                        "height": 266.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.999967098236084
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#010101",
+                "percentage": 64.0,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#010101",
+                    "percentage": 64.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Gainsboro",
+                    "hex": "#dedfdb",
+                    "percentage": 30.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 33.73,
+            "saturation": 4.1,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman with blue makeup and a white shirt"
+        },
+        {
+            "start_time_ms": 14000,
+            "end_time_ms": 15000,
+            "duration_ms": 1000,
+            "frame_idx": 420,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9485589861869812,
+                    "bbox": {
+                        "x": 355.2869873046875,
+                        "y": 60.8836669921875,
+                        "width": 569.02685546875,
+                        "height": 653.12060546875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_002",
+                    "location": [
+                        256,
+                        774,
+                        522,
+                        508
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 508.0,
+                        "y": 256.0,
+                        "width": 266.0,
+                        "height": 266.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.999967098236084
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman with blue makeup and a white shirt",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 15000,
+            "end_time_ms": 16000,
+            "duration_ms": 1000,
+            "frame_idx": 450,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9485589861869812,
+                    "bbox": {
+                        "x": 355.2869873046875,
+                        "y": 60.8836669921875,
+                        "width": 569.02685546875,
+                        "height": 653.12060546875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_002",
+                    "location": [
+                        256,
+                        774,
+                        522,
+                        508
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 508.0,
+                        "y": 256.0,
+                        "width": 266.0,
+                        "height": 266.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "happy",
+                        "confidence": 0.999967098236084
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#010101",
+                "percentage": 60.6,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#010101",
+                    "percentage": 60.6,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Gainsboro",
+                    "hex": "#dfe0dd",
+                    "percentage": 34.2,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 33.73,
+            "saturation": 4.1,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman with blue makeup and a white shirt"
+        },
+        {
+            "start_time_ms": 16000,
+            "end_time_ms": 17000,
+            "duration_ms": 1000,
+            "frame_idx": 480,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9499943852424622,
+                    "bbox": {
+                        "x": 458.72833251953125,
+                        "y": 102.4029541015625,
+                        "width": 420.7724609375,
+                        "height": 610.1551513671875
+                    }
+                },
+                {
+                    "label": "car",
+                    "confidence": 0.5991251468658447,
+                    "bbox": {
+                        "x": 400.7100830078125,
+                        "y": 396.457763671875,
+                        "width": 167.8426513671875,
+                        "height": 308.276611328125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a man with a beard and glasses"
+        },
+        {
+            "start_time_ms": 17000,
+            "end_time_ms": 18000,
+            "duration_ms": 1000,
+            "frame_idx": 510,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9493444561958313,
+                    "bbox": {
+                        "x": 458.6393737792969,
+                        "y": 102.02294921875,
+                        "width": 420.8230285644531,
+                        "height": 610.55419921875
+                    }
+                },
+                {
+                    "label": "car",
+                    "confidence": 0.5729292631149292,
+                    "bbox": {
+                        "x": 400.73651123046875,
+                        "y": 396.8541564941406,
+                        "width": 167.8951416015625,
+                        "height": 307.9218444824219
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#040503",
+                "percentage": 76.4,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#040503",
+                    "percentage": 76.4,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Thistle",
+                    "hex": "#d8c1c3",
+                    "percentage": 13.2,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 15.57,
+            "saturation": 12.56,
+            "color_temperature": "neutral",
+            "environment_caption": "a man with glasses and a beard",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 18000,
+            "end_time_ms": 19000,
+            "duration_ms": 1000,
+            "frame_idx": 540,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9493444561958313,
+                    "bbox": {
+                        "x": 458.6393737792969,
+                        "y": 102.02294921875,
+                        "width": 420.8230285644531,
+                        "height": 610.55419921875
+                    }
+                },
+                {
+                    "label": "car",
+                    "confidence": 0.5729292631149292,
+                    "bbox": {
+                        "x": 400.73651123046875,
+                        "y": 396.8541564941406,
+                        "width": 167.8951416015625,
+                        "height": 307.9218444824219
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a man with glasses and a beard"
+        },
+        {
+            "start_time_ms": 19000,
+            "end_time_ms": 20000,
+            "duration_ms": 1000,
+            "frame_idx": 570,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9493444561958313,
+                    "bbox": {
+                        "x": 458.6393737792969,
+                        "y": 102.02294921875,
+                        "width": 420.8230285644531,
+                        "height": 610.55419921875
+                    }
+                },
+                {
+                    "label": "car",
+                    "confidence": 0.5729292631149292,
+                    "bbox": {
+                        "x": 400.73651123046875,
+                        "y": 396.8541564941406,
+                        "width": 167.8951416015625,
+                        "height": 307.9218444824219
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#040503",
+                "percentage": 73.4,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#040503",
+                    "percentage": 73.4,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Dim Gray",
+                    "hex": "#7a5f4d",
+                    "percentage": 13.6,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 15.57,
+            "saturation": 12.56,
+            "color_temperature": "neutral",
+            "environment_caption": "a man with glasses and a beard"
+        },
+        {
+            "start_time_ms": 20000,
+            "end_time_ms": 21000,
+            "duration_ms": 1000,
+            "frame_idx": 600,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9015654921531677,
+                    "bbox": {
+                        "x": 243.37310791015625,
+                        "y": 29.81060791015625,
+                        "width": 396.38580322265625,
+                        "height": 685.0991821289062
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8121369481086731,
+                    "bbox": {
+                        "x": 486.2861328125,
+                        "y": 283.58929443359375,
+                        "width": 367.5047607421875,
+                        "height": 211.75140380859375
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.5900073051452637,
+                    "bbox": {
+                        "x": 111.02456665039062,
+                        "y": 245.43099975585938,
+                        "width": 56.27459716796875,
+                        "height": 58.0830078125
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Ilias",
+                    "location": [
+                        108,
+                        598,
+                        248,
+                        458
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 458.0,
+                        "y": 108.0,
+                        "width": 140.0,
+                        "height": 140.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.5334884524345398
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a man sitting on a couch using a laptop",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 21000,
+            "end_time_ms": 22000,
+            "duration_ms": 1000,
+            "frame_idx": 630,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.901495635509491,
+                    "bbox": {
+                        "x": 243.90869140625,
+                        "y": 30.0322265625,
+                        "width": 395.6014404296875,
+                        "height": 684.9541015625
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8135069608688354,
+                    "bbox": {
+                        "x": 484.7569580078125,
+                        "y": 283.59283447265625,
+                        "width": 369.3446044921875,
+                        "height": 211.7928466796875
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.5596430897712708,
+                    "bbox": {
+                        "x": 111.18846130371094,
+                        "y": 245.4981689453125,
+                        "width": 55.78643798828125,
+                        "height": 58.0672607421875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Ilias",
+                    "location": [
+                        106,
+                        598,
+                        246,
+                        458
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 458.0,
+                        "y": 106.0,
+                        "width": 140.0,
+                        "height": 140.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.9020096063613892
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dim Gray",
+                "hex": "#7a6d4f",
+                "percentage": 42.8,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Dim Gray",
+                    "hex": "#7a6d4f",
+                    "percentage": 42.8,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Silver",
+                    "hex": "#bfbba6",
+                    "percentage": 30.2,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 43.42,
+            "saturation": 27.95,
+            "color_temperature": "neutral",
+            "environment_caption": "a man sitting on a couch using a laptop"
+        },
+        {
+            "start_time_ms": 22000,
+            "end_time_ms": 23000,
+            "duration_ms": 1000,
+            "frame_idx": 660,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.901495635509491,
+                    "bbox": {
+                        "x": 243.90869140625,
+                        "y": 30.0322265625,
+                        "width": 395.6014404296875,
+                        "height": 684.9541015625
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8135069608688354,
+                    "bbox": {
+                        "x": 484.7569580078125,
+                        "y": 283.59283447265625,
+                        "width": 369.3446044921875,
+                        "height": 211.7928466796875
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.5596430897712708,
+                    "bbox": {
+                        "x": 111.18846130371094,
+                        "y": 245.4981689453125,
+                        "width": 55.78643798828125,
+                        "height": 58.0672607421875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Ilias",
+                    "location": [
+                        106,
+                        598,
+                        246,
+                        458
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 458.0,
+                        "y": 106.0,
+                        "width": 140.0,
+                        "height": 140.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.9020096063613892
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a man sitting on a couch using a laptop"
+        },
+        {
+            "start_time_ms": 23000,
+            "end_time_ms": 24000,
+            "duration_ms": 1000,
+            "frame_idx": 690,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.901495635509491,
+                    "bbox": {
+                        "x": 243.90869140625,
+                        "y": 30.0322265625,
+                        "width": 395.6014404296875,
+                        "height": 684.9541015625
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8135069608688354,
+                    "bbox": {
+                        "x": 484.7569580078125,
+                        "y": 283.59283447265625,
+                        "width": 369.3446044921875,
+                        "height": 211.7928466796875
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.5596430897712708,
+                    "bbox": {
+                        "x": 111.18846130371094,
+                        "y": 245.4981689453125,
+                        "width": 55.78643798828125,
+                        "height": 58.0672607421875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Ilias",
+                    "location": [
+                        106,
+                        598,
+                        246,
+                        458
+                    ],
+                    "confidence": 100.0,
+                    "bbox": {
+                        "x": 458.0,
+                        "y": 106.0,
+                        "width": 140.0,
+                        "height": 140.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "neutral",
+                        "confidence": 0.9020096063613892
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dim Gray",
+                "hex": "#7c7256",
+                "percentage": 47.8,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Dim Gray",
+                    "hex": "#7c7256",
+                    "percentage": 47.8,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Black",
+                    "hex": "#2b2720",
+                    "percentage": 26.6,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 43.42,
+            "saturation": 27.95,
+            "color_temperature": "neutral",
+            "environment_caption": "a man sitting on a couch using a laptop",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 24000,
+            "end_time_ms": 25000,
+            "duration_ms": 1000,
+            "frame_idx": 720,
+            "objects": [],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a black background with a white and red flower"
+        },
+        {
+            "start_time_ms": 25000,
+            "end_time_ms": 26000,
+            "duration_ms": 1000,
+            "frame_idx": 750,
+            "objects": [
+                {
+                    "label": "tv",
+                    "confidence": 0.9024169445037842,
+                    "bbox": {
+                        "x": 441.0497741699219,
+                        "y": 281.669677734375,
+                        "width": 398.4394836425781,
+                        "height": 236.312255859375
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8301916122436523,
+                    "bbox": {
+                        "x": 171.33966064453125,
+                        "y": 442.7064208984375,
+                        "width": 73.32754516601562,
+                        "height": 134.6492919921875
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8062654733657837,
+                    "bbox": {
+                        "x": 903.8436279296875,
+                        "y": 550.888427734375,
+                        "width": 252.3330078125,
+                        "height": 47.7503662109375
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.7861149907112122,
+                    "bbox": {
+                        "x": 39.194091796875,
+                        "y": 306.49383544921875,
+                        "width": 304.70477294921875,
+                        "height": 272.39306640625
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.7242661714553833,
+                    "bbox": {
+                        "x": 519.7657470703125,
+                        "y": 617.1258544921875,
+                        "width": 207.818603515625,
+                        "height": 36.46337890625
+                    }
+                },
+                {
+                    "label": "cell phone",
+                    "confidence": 0.7105028033256531,
+                    "bbox": {
+                        "x": 374.19024658203125,
+                        "y": 489.6094970703125,
+                        "width": 51.353515625,
+                        "height": 100.920654296875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dark Olive Green",
+                "hex": "#3e383a",
+                "percentage": 41.4,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#3e383a",
+                    "percentage": 41.4,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Dim Gray",
+                    "hex": "#766186",
+                    "percentage": 41.2,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 38.56,
+            "saturation": 34.39,
+            "color_temperature": "neutral",
+            "environment_caption": "a computer on a desk with a flower in a vase"
+        },
+        {
+            "start_time_ms": 26000,
+            "end_time_ms": 27000,
+            "duration_ms": 1000,
+            "frame_idx": 780,
+            "objects": [
+                {
+                    "label": "tv",
+                    "confidence": 0.9023927450180054,
+                    "bbox": {
+                        "x": 441.05108642578125,
+                        "y": 281.6634521484375,
+                        "width": 398.4364013671875,
+                        "height": 236.34381103515625
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8300076723098755,
+                    "bbox": {
+                        "x": 171.34829711914062,
+                        "y": 442.7603759765625,
+                        "width": 73.321044921875,
+                        "height": 134.596923828125
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8062610030174255,
+                    "bbox": {
+                        "x": 903.8638916015625,
+                        "y": 550.8924560546875,
+                        "width": 252.315185546875,
+                        "height": 47.746826171875
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.7857850790023804,
+                    "bbox": {
+                        "x": 39.188720703125,
+                        "y": 306.49444580078125,
+                        "width": 304.7701416015625,
+                        "height": 272.4002685546875
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.7233920693397522,
+                    "bbox": {
+                        "x": 519.7647094726562,
+                        "y": 617.1199340820312,
+                        "width": 207.8187255859375,
+                        "height": 36.4774169921875
+                    }
+                },
+                {
+                    "label": "cell phone",
+                    "confidence": 0.7098793983459473,
+                    "bbox": {
+                        "x": 374.1974792480469,
+                        "y": 489.61572265625,
+                        "width": 51.3460693359375,
+                        "height": 100.94921875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a computer on a desk with a flower in a vase",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 27000,
+            "end_time_ms": 28000,
+            "duration_ms": 1000,
+            "frame_idx": 810,
+            "objects": [
+                {
+                    "label": "tv",
+                    "confidence": 0.9023927450180054,
+                    "bbox": {
+                        "x": 441.05108642578125,
+                        "y": 281.6634521484375,
+                        "width": 398.4364013671875,
+                        "height": 236.34381103515625
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8300076723098755,
+                    "bbox": {
+                        "x": 171.34829711914062,
+                        "y": 442.7603759765625,
+                        "width": 73.321044921875,
+                        "height": 134.596923828125
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8062610030174255,
+                    "bbox": {
+                        "x": 903.8638916015625,
+                        "y": 550.8924560546875,
+                        "width": 252.315185546875,
+                        "height": 47.746826171875
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.7857850790023804,
+                    "bbox": {
+                        "x": 39.188720703125,
+                        "y": 306.49444580078125,
+                        "width": 304.7701416015625,
+                        "height": 272.4002685546875
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.7233920693397522,
+                    "bbox": {
+                        "x": 519.7647094726562,
+                        "y": 617.1199340820312,
+                        "width": 207.8187255859375,
+                        "height": 36.4774169921875
+                    }
+                },
+                {
+                    "label": "cell phone",
+                    "confidence": 0.7098793983459473,
+                    "bbox": {
+                        "x": 374.1974792480469,
+                        "y": 489.61572265625,
+                        "width": 51.3460693359375,
+                        "height": 100.94921875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dark Olive Green",
+                "hex": "#423c41",
+                "percentage": 45.4,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#423c41",
+                    "percentage": 45.4,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Dim Gray",
+                    "hex": "#72608a",
+                    "percentage": 36.2,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 38.56,
+            "saturation": 34.37,
+            "color_temperature": "neutral",
+            "environment_caption": "a computer on a desk with a flower in a vase"
+        },
+        {
+            "start_time_ms": 28000,
+            "end_time_ms": 29000,
+            "duration_ms": 1000,
+            "frame_idx": 840,
+            "objects": [
+                {
+                    "label": "tv",
+                    "confidence": 0.9023927450180054,
+                    "bbox": {
+                        "x": 441.05108642578125,
+                        "y": 281.6634521484375,
+                        "width": 398.4364013671875,
+                        "height": 236.34381103515625
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8300076723098755,
+                    "bbox": {
+                        "x": 171.34829711914062,
+                        "y": 442.7603759765625,
+                        "width": 73.321044921875,
+                        "height": 134.596923828125
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.8062610030174255,
+                    "bbox": {
+                        "x": 903.8638916015625,
+                        "y": 550.8924560546875,
+                        "width": 252.315185546875,
+                        "height": 47.746826171875
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.7857850790023804,
+                    "bbox": {
+                        "x": 39.188720703125,
+                        "y": 306.49444580078125,
+                        "width": 304.7701416015625,
+                        "height": 272.4002685546875
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.7233920693397522,
+                    "bbox": {
+                        "x": 519.7647094726562,
+                        "y": 617.1199340820312,
+                        "width": 207.8187255859375,
+                        "height": 36.4774169921875
+                    }
+                },
+                {
+                    "label": "cell phone",
+                    "confidence": 0.7098793983459473,
+                    "bbox": {
+                        "x": 374.1974792480469,
+                        "y": 489.61572265625,
+                        "width": 51.3460693359375,
+                        "height": 100.94921875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a computer on a desk with a flower in a vase"
+        },
+        {
+            "start_time_ms": 29000,
+            "end_time_ms": 30000,
+            "duration_ms": 1000,
+            "frame_idx": 870,
+            "objects": [
+                {
+                    "label": "mouse",
+                    "confidence": 0.8866870999336243,
+                    "bbox": {
+                        "x": 909.430419921875,
+                        "y": 423.8297119140625,
+                        "width": 71.1005859375,
+                        "height": 30.4603271484375
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.6217185258865356,
+                    "bbox": {
+                        "x": 601.2000732421875,
+                        "y": 427.2948303222656,
+                        "width": 296.57763671875,
+                        "height": 60.66168212890625
+                    }
+                },
+                {
+                    "label": "tv",
+                    "confidence": 0.5394118428230286,
+                    "bbox": {
+                        "x": 1083.0751953125,
+                        "y": 216.0004119873047,
+                        "width": 196.2890625,
+                        "height": 195.14967346191406
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#0c110d",
+                "percentage": 75.0,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#0c110d",
+                    "percentage": 75.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#645341",
+                    "percentage": 24.2,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 13.55,
+            "saturation": 50.06,
+            "color_temperature": "neutral",
+            "environment_caption": "a desk with a computer and a monitor",
+            "detected_text": [
+                {
+                    "text": "RZEWo]",
+                    "confidence": 0.39622962994327204,
+                    "bounding_box": [
+                        [
+                            530,
+                            4
+                        ],
+                        [
+                            748,
+                            4
+                        ],
+                        [
+                            748,
+                            88
+                        ],
+                        [
+                            530,
+                            88
+                        ]
+                    ],
+                    "bbox": {
+                        "x": 530,
+                        "y": 4,
+                        "width": 218,
+                        "height": 84
+                    }
+                }
+            ]
+        },
+        {
+            "start_time_ms": 30000,
+            "end_time_ms": 31000,
+            "duration_ms": 1000,
+            "frame_idx": 900,
+            "objects": [
+                {
+                    "label": "mouse",
+                    "confidence": 0.886897087097168,
+                    "bbox": {
+                        "x": 909.4288330078125,
+                        "y": 423.8321533203125,
+                        "width": 71.1025390625,
+                        "height": 30.458984375
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.621772825717926,
+                    "bbox": {
+                        "x": 601.205322265625,
+                        "y": 427.28790283203125,
+                        "width": 296.637451171875,
+                        "height": 60.68896484375
+                    }
+                },
+                {
+                    "label": "tv",
+                    "confidence": 0.5393102169036865,
+                    "bbox": {
+                        "x": 1083.075439453125,
+                        "y": 216.0001220703125,
+                        "width": 196.289306640625,
+                        "height": 195.1778564453125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a desk with a computer and a monitor"
+        },
+        {
+            "start_time_ms": 31000,
+            "end_time_ms": 32000,
+            "duration_ms": 1000,
+            "frame_idx": 930,
+            "objects": [
+                {
+                    "label": "mouse",
+                    "confidence": 0.886897087097168,
+                    "bbox": {
+                        "x": 909.4288330078125,
+                        "y": 423.8321533203125,
+                        "width": 71.1025390625,
+                        "height": 30.458984375
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.621772825717926,
+                    "bbox": {
+                        "x": 601.205322265625,
+                        "y": 427.28790283203125,
+                        "width": 296.637451171875,
+                        "height": 60.68896484375
+                    }
+                },
+                {
+                    "label": "tv",
+                    "confidence": 0.5393102169036865,
+                    "bbox": {
+                        "x": 1083.075439453125,
+                        "y": 216.0001220703125,
+                        "width": 196.289306640625,
+                        "height": 195.1778564453125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#0b110e",
+                "percentage": 73.6,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#0b110e",
+                    "percentage": 73.6,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#634f3d",
+                    "percentage": 25.4,
+                    "is_vibrant": false,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 13.55,
+            "saturation": 50.02,
+            "color_temperature": "neutral",
+            "environment_caption": "a desk with a computer and a monitor"
+        },
+        {
+            "start_time_ms": 32000,
+            "end_time_ms": 33000,
+            "duration_ms": 1000,
+            "frame_idx": 960,
+            "objects": [
+                {
+                    "label": "mouse",
+                    "confidence": 0.886897087097168,
+                    "bbox": {
+                        "x": 909.4288330078125,
+                        "y": 423.8321533203125,
+                        "width": 71.1025390625,
+                        "height": 30.458984375
+                    }
+                },
+                {
+                    "label": "keyboard",
+                    "confidence": 0.621772825717926,
+                    "bbox": {
+                        "x": 601.205322265625,
+                        "y": 427.28790283203125,
+                        "width": 296.637451171875,
+                        "height": 60.68896484375
+                    }
+                },
+                {
+                    "label": "tv",
+                    "confidence": 0.5393102169036865,
+                    "bbox": {
+                        "x": 1083.075439453125,
+                        "y": 216.0001220703125,
+                        "width": 196.289306640625,
+                        "height": 195.1778564453125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a desk with a computer and a monitor",
+            "detected_text": [
+                {
+                    "text": "RZEWo]",
+                    "confidence": 0.3645427713455217,
+                    "bounding_box": [
+                        [
+                            530,
+                            4
+                        ],
+                        [
+                            748,
+                            4
+                        ],
+                        [
+                            748,
+                            88
+                        ],
+                        [
+                            530,
+                            88
+                        ]
+                    ],
+                    "bbox": {
+                        "x": 530,
+                        "y": 4,
+                        "width": 218,
+                        "height": 84
+                    }
+                }
+            ]
+        },
+        {
+            "start_time_ms": 33000,
+            "end_time_ms": 34000,
+            "duration_ms": 1000,
+            "frame_idx": 990,
+            "objects": [
+                {
+                    "label": "apple",
+                    "confidence": 0.6653153896331787,
+                    "bbox": {
+                        "x": 401.8502197265625,
+                        "y": 115.9088134765625,
+                        "width": 475.73583984375,
+                        "height": 475.2803955078125
+                    }
+                },
+                {
+                    "label": "orange",
+                    "confidence": 0.615795910358429,
+                    "bbox": {
+                        "x": 402.082763671875,
+                        "y": 114.66912841796875,
+                        "width": 474.0806884765625,
+                        "height": 476.17718505859375
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#030303",
+                "percentage": 81.4,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#030303",
+                    "percentage": 81.4,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#505050",
+                    "percentage": 9.6,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 10.25,
+            "saturation": 0.0,
+            "color_temperature": "neutral",
+            "environment_caption": "the moon is seen in this image taken from the camera"
+        },
+        {
+            "start_time_ms": 34000,
+            "end_time_ms": 35000,
+            "duration_ms": 1000,
+            "frame_idx": 1020,
+            "objects": [
+                {
+                    "label": "apple",
+                    "confidence": 0.6658236384391785,
+                    "bbox": {
+                        "x": 401.8471984863281,
+                        "y": 115.91490173339844,
+                        "width": 475.7424011230469,
+                        "height": 475.27357482910156
+                    }
+                },
+                {
+                    "label": "orange",
+                    "confidence": 0.6149478554725647,
+                    "bbox": {
+                        "x": 402.0781555175781,
+                        "y": 114.6710205078125,
+                        "width": 474.0817565917969,
+                        "height": 476.172607421875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "the moon is seen in this image taken from the camera"
+        },
+        {
+            "start_time_ms": 35000,
+            "end_time_ms": 36000,
+            "duration_ms": 1000,
+            "frame_idx": 1050,
+            "objects": [
+                {
+                    "label": "apple",
+                    "confidence": 0.6658236384391785,
+                    "bbox": {
+                        "x": 401.8471984863281,
+                        "y": 115.91490173339844,
+                        "width": 475.7424011230469,
+                        "height": 475.27357482910156
+                    }
+                },
+                {
+                    "label": "orange",
+                    "confidence": 0.6149478554725647,
+                    "bbox": {
+                        "x": 402.0781555175781,
+                        "y": 114.6710205078125,
+                        "width": 474.0817565917969,
+                        "height": 476.172607421875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#030303",
+                "percentage": 82.8,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#030303",
+                    "percentage": 82.8,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#4f4f4f",
+                    "percentage": 9.4,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 10.25,
+            "saturation": 0.0,
+            "color_temperature": "neutral",
+            "environment_caption": "the moon is seen in this image taken from the camera",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 36000,
+            "end_time_ms": 37000,
+            "duration_ms": 1000,
+            "frame_idx": 1080,
+            "objects": [
+                {
+                    "label": "apple",
+                    "confidence": 0.6658236384391785,
+                    "bbox": {
+                        "x": 401.8471984863281,
+                        "y": 115.91490173339844,
+                        "width": 475.7424011230469,
+                        "height": 475.27357482910156
+                    }
+                },
+                {
+                    "label": "orange",
+                    "confidence": 0.6149478554725647,
+                    "bbox": {
+                        "x": 402.0781555175781,
+                        "y": 114.6710205078125,
+                        "width": 474.0817565917969,
+                        "height": 476.172607421875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "the moon is seen in this image taken from the camera"
+        },
+        {
+            "start_time_ms": 37000,
+            "end_time_ms": 38000,
+            "duration_ms": 1000,
+            "frame_idx": 1110,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9668274521827698,
+                    "bbox": {
+                        "x": 587.9398193359375,
+                        "y": 1.2698974609375,
+                        "width": 618.8538818359375,
+                        "height": 711.7847900390625
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.8326878547668457,
+                    "bbox": {
+                        "x": 226.10601806640625,
+                        "y": 105.094482421875,
+                        "width": 371.0274658203125,
+                        "height": 518.998779296875
+                    }
+                },
+                {
+                    "label": "refrigerator",
+                    "confidence": 0.8258785605430603,
+                    "bbox": {
+                        "x": 0.3137969970703125,
+                        "y": 4.10003662109375,
+                        "width": 156.9606170654297,
+                        "height": 518.9912109375
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8127474784851074,
+                    "bbox": {
+                        "x": 0.072845458984375,
+                        "y": 621.9625244140625,
+                        "width": 149.15328979492188,
+                        "height": 98.0374755859375
+                    }
+                },
+                {
+                    "label": "oven",
+                    "confidence": 0.6676654815673828,
+                    "bbox": {
+                        "x": 1159.55908203125,
+                        "y": 335.5508117675781,
+                        "width": 119.927734375,
+                        "height": 380.3027038574219
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_003",
+                    "location": [
+                        186,
+                        488,
+                        322,
+                        352
+                    ],
+                    "confidence": 0.0,
+                    "bbox": {
+                        "x": 352.0,
+                        "y": 186.0,
+                        "width": 136.0,
+                        "height": 136.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.6397718191146851
+                    }
+                },
+                {
+                    "name": "Unknown_004",
+                    "location": [
+                        8,
+                        904,
+                        204,
+                        708
+                    ],
+                    "confidence": 0.0,
+                    "bbox": {
+                        "x": 708.0,
+                        "y": 8.0,
+                        "width": 196.0,
+                        "height": 196.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.9755483894886506
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dark Gray",
+                "hex": "#b4a797",
+                "percentage": 35.0,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Dark Gray",
+                    "hex": "#b4a797",
+                    "percentage": 35.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Sienna",
+                    "hex": "#8a4d32",
+                    "percentage": 34.6,
+                    "is_vibrant": true,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 41.78,
+            "saturation": 44.67,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman in a blue jacket"
+        },
+        {
+            "start_time_ms": 38000,
+            "end_time_ms": 39000,
+            "duration_ms": 1000,
+            "frame_idx": 1140,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9668616652488708,
+                    "bbox": {
+                        "x": 587.944580078125,
+                        "y": 1.2705078125,
+                        "width": 618.8514404296875,
+                        "height": 711.781982421875
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.8330450057983398,
+                    "bbox": {
+                        "x": 226.09925842285156,
+                        "y": 105.11700439453125,
+                        "width": 371.05162048339844,
+                        "height": 519.531982421875
+                    }
+                },
+                {
+                    "label": "refrigerator",
+                    "confidence": 0.8253546357154846,
+                    "bbox": {
+                        "x": 0.3138427734375,
+                        "y": 4.10382080078125,
+                        "width": 156.91375732421875,
+                        "height": 518.9447021484375
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8120298981666565,
+                    "bbox": {
+                        "x": 0.072235107421875,
+                        "y": 621.9801025390625,
+                        "width": 149.1405029296875,
+                        "height": 98.0198974609375
+                    }
+                },
+                {
+                    "label": "oven",
+                    "confidence": 0.6659095883369446,
+                    "bbox": {
+                        "x": 1159.54736328125,
+                        "y": 335.5455322265625,
+                        "width": 119.939453125,
+                        "height": 380.2899169921875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_003",
+                    "location": [
+                        188,
+                        486,
+                        322,
+                        352
+                    ],
+                    "confidence": 0.9973879484574109,
+                    "bbox": {
+                        "x": 352.0,
+                        "y": 188.0,
+                        "width": 134.0,
+                        "height": 134.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.7972616794989491
+                    }
+                },
+                {
+                    "name": "Unknown_004",
+                    "location": [
+                        8,
+                        904,
+                        204,
+                        708
+                    ],
+                    "confidence": 0.9975271930302738,
+                    "bbox": {
+                        "x": 708.0,
+                        "y": 8.0,
+                        "width": 196.0,
+                        "height": 196.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.9754615411437476
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman in a blue jacket",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 39000,
+            "end_time_ms": 40000,
+            "duration_ms": 1000,
+            "frame_idx": 1170,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9668616652488708,
+                    "bbox": {
+                        "x": 587.944580078125,
+                        "y": 1.2705078125,
+                        "width": 618.8514404296875,
+                        "height": 711.781982421875
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.8330450057983398,
+                    "bbox": {
+                        "x": 226.09925842285156,
+                        "y": 105.11700439453125,
+                        "width": 371.05162048339844,
+                        "height": 519.531982421875
+                    }
+                },
+                {
+                    "label": "refrigerator",
+                    "confidence": 0.8253546357154846,
+                    "bbox": {
+                        "x": 0.3138427734375,
+                        "y": 4.10382080078125,
+                        "width": 156.91375732421875,
+                        "height": 518.9447021484375
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8120298981666565,
+                    "bbox": {
+                        "x": 0.072235107421875,
+                        "y": 621.9801025390625,
+                        "width": 149.1405029296875,
+                        "height": 98.0198974609375
+                    }
+                },
+                {
+                    "label": "oven",
+                    "confidence": 0.6659095883369446,
+                    "bbox": {
+                        "x": 1159.54736328125,
+                        "y": 335.5455322265625,
+                        "width": 119.939453125,
+                        "height": 380.2899169921875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_003",
+                    "location": [
+                        188,
+                        486,
+                        322,
+                        352
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 352.0,
+                        "y": 188.0,
+                        "width": 134.0,
+                        "height": 134.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.7972616794989491
+                    }
+                },
+                {
+                    "name": "Unknown_004",
+                    "location": [
+                        8,
+                        904,
+                        204,
+                        708
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 708.0,
+                        "y": 8.0,
+                        "width": 196.0,
+                        "height": 196.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.9754615411437476
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dark Olive Green",
+                "hex": "#4d2a1c",
+                "percentage": 41.6,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#4d2a1c",
+                    "percentage": 41.6,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Dark Gray",
+                    "hex": "#b5afa4",
+                    "percentage": 29.8,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 41.78,
+            "saturation": 44.67,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman in a blue jacket"
+        },
+        {
+            "start_time_ms": 40000,
+            "end_time_ms": 41000,
+            "duration_ms": 1000,
+            "frame_idx": 1200,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9668616652488708,
+                    "bbox": {
+                        "x": 587.944580078125,
+                        "y": 1.2705078125,
+                        "width": 618.8514404296875,
+                        "height": 711.781982421875
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.8330450057983398,
+                    "bbox": {
+                        "x": 226.09925842285156,
+                        "y": 105.11700439453125,
+                        "width": 371.05162048339844,
+                        "height": 519.531982421875
+                    }
+                },
+                {
+                    "label": "refrigerator",
+                    "confidence": 0.8253546357154846,
+                    "bbox": {
+                        "x": 0.3138427734375,
+                        "y": 4.10382080078125,
+                        "width": 156.91375732421875,
+                        "height": 518.9447021484375
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.8120298981666565,
+                    "bbox": {
+                        "x": 0.072235107421875,
+                        "y": 621.9801025390625,
+                        "width": 149.1405029296875,
+                        "height": 98.0198974609375
+                    }
+                },
+                {
+                    "label": "oven",
+                    "confidence": 0.6659095883369446,
+                    "bbox": {
+                        "x": 1159.54736328125,
+                        "y": 335.5455322265625,
+                        "width": 119.939453125,
+                        "height": 380.2899169921875
+                    }
+                }
+            ],
+            "faces": [
+                {
+                    "name": "Unknown_003",
+                    "location": [
+                        188,
+                        486,
+                        322,
+                        352
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 352.0,
+                        "y": 188.0,
+                        "width": 134.0,
+                        "height": 134.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.7972616794989491
+                    }
+                },
+                {
+                    "name": "Unknown_004",
+                    "location": [
+                        8,
+                        904,
+                        204,
+                        708
+                    ],
+                    "confidence": 0.9975273768433653,
+                    "bbox": {
+                        "x": 708.0,
+                        "y": 8.0,
+                        "width": 196.0,
+                        "height": 196.0
+                    },
+                    "frame_dimensions": {
+                        "width": 1280,
+                        "height": 720
+                    },
+                    "emotion": {
+                        "label": "sad",
+                        "confidence": 0.9754615411437476
+                    }
+                }
+            ],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman in a blue jacket"
+        },
+        {
+            "start_time_ms": 41000,
+            "end_time_ms": 42000,
+            "duration_ms": 1000,
+            "frame_idx": 1230,
+            "objects": [
+                {
+                    "label": "mouse",
+                    "confidence": 0.8133947849273682,
+                    "bbox": {
+                        "x": 705.120361328125,
+                        "y": 444.5634765625,
+                        "width": 32.68798828125,
+                        "height": 20.60784912109375
+                    }
+                },
+                {
+                    "label": "tv",
+                    "confidence": 0.7941663265228271,
+                    "bbox": {
+                        "x": 480.699951171875,
+                        "y": 288.009765625,
+                        "width": 170.217041015625,
+                        "height": 174.0390625
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.7732422947883606,
+                    "bbox": {
+                        "x": 699.1503295898438,
+                        "y": 341.97613525390625,
+                        "width": 45.7423095703125,
+                        "height": 79.1451416015625
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.7437313199043274,
+                    "bbox": {
+                        "x": 797.5447387695312,
+                        "y": 388.0364990234375,
+                        "width": 33.6376953125,
+                        "height": 45.54327392578125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#030202",
+                "percentage": 77.4,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#030202",
+                    "percentage": 77.4,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Gainsboro",
+                    "hex": "#e2e1df",
+                    "percentage": 14.8,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 19.1,
+            "saturation": 6.12,
+            "color_temperature": "neutral",
+            "environment_caption": "a desk with a computer and a plant",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 42000,
+            "end_time_ms": 43000,
+            "duration_ms": 1000,
+            "frame_idx": 1260,
+            "objects": [
+                {
+                    "label": "mouse",
+                    "confidence": 0.8130481243133545,
+                    "bbox": {
+                        "x": 705.154296875,
+                        "y": 444.5655517578125,
+                        "width": 32.6572265625,
+                        "height": 20.62066650390625
+                    }
+                },
+                {
+                    "label": "tv",
+                    "confidence": 0.7942075729370117,
+                    "bbox": {
+                        "x": 480.7119140625,
+                        "y": 288.0045166015625,
+                        "width": 170.2042236328125,
+                        "height": 173.94793701171875
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.7744741439819336,
+                    "bbox": {
+                        "x": 699.1466064453125,
+                        "y": 341.90911865234375,
+                        "width": 45.750732421875,
+                        "height": 79.2159423828125
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.7450681328773499,
+                    "bbox": {
+                        "x": 797.5067138671875,
+                        "y": 388.0240783691406,
+                        "width": 33.6748046875,
+                        "height": 45.5902099609375
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a desk with a computer and a plant"
+        },
+        {
+            "start_time_ms": 43000,
+            "end_time_ms": 44000,
+            "duration_ms": 1000,
+            "frame_idx": 1290,
+            "objects": [
+                {
+                    "label": "mouse",
+                    "confidence": 0.8130481243133545,
+                    "bbox": {
+                        "x": 705.154296875,
+                        "y": 444.5655517578125,
+                        "width": 32.6572265625,
+                        "height": 20.62066650390625
+                    }
+                },
+                {
+                    "label": "tv",
+                    "confidence": 0.7942075729370117,
+                    "bbox": {
+                        "x": 480.7119140625,
+                        "y": 288.0045166015625,
+                        "width": 170.2042236328125,
+                        "height": 173.94793701171875
+                    }
+                },
+                {
+                    "label": "vase",
+                    "confidence": 0.7744741439819336,
+                    "bbox": {
+                        "x": 699.1466064453125,
+                        "y": 341.90911865234375,
+                        "width": 45.750732421875,
+                        "height": 79.2159423828125
+                    }
+                },
+                {
+                    "label": "potted plant",
+                    "confidence": 0.7450681328773499,
+                    "bbox": {
+                        "x": 797.5067138671875,
+                        "y": 388.0240783691406,
+                        "width": 33.6748046875,
+                        "height": 45.5902099609375
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#040302",
+                "percentage": 76.2,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#040302",
+                    "percentage": 76.2,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Gainsboro",
+                    "hex": "#e1e2e1",
+                    "percentage": 17.2,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 19.1,
+            "saturation": 6.12,
+            "color_temperature": "neutral",
+            "environment_caption": "a desk with a computer and a plant"
+        },
+        {
+            "start_time_ms": 44000,
+            "end_time_ms": 45000,
+            "duration_ms": 1000,
+            "frame_idx": 1320,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.857846200466156,
+                    "bbox": {
+                        "x": 313.9718322753906,
+                        "y": 2.7562255859375,
+                        "width": 696.9882507324219,
+                        "height": 461.4671630859375
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman ' s eye is covered in snow",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 45000,
+            "end_time_ms": 46000,
+            "duration_ms": 1000,
+            "frame_idx": 1350,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.8586587905883789,
+                    "bbox": {
+                        "x": 313.891357421875,
+                        "y": 2.761383056640625,
+                        "width": 697.05126953125,
+                        "height": 461.28582763671875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#050405",
+                "percentage": 54.4,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#050405",
+                    "percentage": 54.4,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Silver",
+                    "hex": "#cac3c3",
+                    "percentage": 29.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 30.08,
+            "saturation": 14.08,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman ' s eye is covered in snow"
+        },
+        {
+            "start_time_ms": 46000,
+            "end_time_ms": 47000,
+            "duration_ms": 1000,
+            "frame_idx": 1380,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.8586587905883789,
+                    "bbox": {
+                        "x": 313.891357421875,
+                        "y": 2.761383056640625,
+                        "width": 697.05126953125,
+                        "height": 461.28582763671875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman ' s eye is covered in snow"
+        },
+        {
+            "start_time_ms": 47000,
+            "end_time_ms": 48000,
+            "duration_ms": 1000,
+            "frame_idx": 1410,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.8586686253547668,
+                    "bbox": {
+                        "x": 313.9041748046875,
+                        "y": 2.7619781494140625,
+                        "width": 697.032470703125,
+                        "height": 461.26512145996094
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#050404",
+                "percentage": 53.6,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#050404",
+                    "percentage": 53.6,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Silver",
+                    "hex": "#c8c0bf",
+                    "percentage": 24.6,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 30.08,
+            "saturation": 14.08,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman ' s eye is covered in snow",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 48000,
+            "end_time_ms": 49000,
+            "duration_ms": 1000,
+            "frame_idx": 1440,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9548642039299011,
+                    "bbox": {
+                        "x": 401.7174072265625,
+                        "y": 194.9915771484375,
+                        "width": 476.5882568359375,
+                        "height": 517.625244140625
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman covering her face with her hands"
+        },
+        {
+            "start_time_ms": 49000,
+            "end_time_ms": 50000,
+            "duration_ms": 1000,
+            "frame_idx": 1470,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9548318982124329,
+                    "bbox": {
+                        "x": 401.71435546875,
+                        "y": 194.993408203125,
+                        "width": 476.601318359375,
+                        "height": 517.6309814453125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#000101",
+                "percentage": 65.0,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#000101",
+                    "percentage": 65.0,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#46433e",
+                    "percentage": 22.8,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 13.32,
+            "saturation": 8.47,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman covering her face with her hands"
+        },
+        {
+            "start_time_ms": 50000,
+            "end_time_ms": 51000,
+            "duration_ms": 1000,
+            "frame_idx": 1500,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9548318982124329,
+                    "bbox": {
+                        "x": 401.71435546875,
+                        "y": 194.993408203125,
+                        "width": 476.601318359375,
+                        "height": 517.6309814453125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman covering her face with her hands",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 51000,
+            "end_time_ms": 52000,
+            "duration_ms": 1000,
+            "frame_idx": 1530,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9548318982124329,
+                    "bbox": {
+                        "x": 401.71435546875,
+                        "y": 194.993408203125,
+                        "width": 476.601318359375,
+                        "height": 517.6309814453125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#000000",
+                "percentage": 60.0,
+                "is_vibrant": false,
+                "is_muted": true
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#000000",
+                    "percentage": 60.0,
+                    "is_vibrant": false,
+                    "is_muted": true
+                },
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#3f403c",
+                    "percentage": 21.2,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 13.32,
+            "saturation": 8.47,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman covering her face with her hands"
+        },
+        {
+            "start_time_ms": 52000,
+            "end_time_ms": 53000,
+            "duration_ms": 1000,
+            "frame_idx": 1560,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9246562123298645,
+                    "bbox": {
+                        "x": 223.675537109375,
+                        "y": 28.230224609375,
+                        "width": 598.3995361328125,
+                        "height": 686.0201416015625
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.9024955034255981,
+                    "bbox": {
+                        "x": 524.2127685546875,
+                        "y": 407.7945251464844,
+                        "width": 278.358154296875,
+                        "height": 195.31912231445312
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.7939924001693726,
+                    "bbox": {
+                        "x": 474.5268859863281,
+                        "y": 81.31982421875,
+                        "width": 590.2978210449219,
+                        "height": 632.7647705078125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman sitting on a couch"
+        },
+        {
+            "start_time_ms": 53000,
+            "end_time_ms": 54000,
+            "duration_ms": 1000,
+            "frame_idx": 1590,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9247915744781494,
+                    "bbox": {
+                        "x": 223.71224975585938,
+                        "y": 28.230712890625,
+                        "width": 598.3650207519531,
+                        "height": 686.0186767578125
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.9021109342575073,
+                    "bbox": {
+                        "x": 524.215087890625,
+                        "y": 407.81317138671875,
+                        "width": 278.71923828125,
+                        "height": 195.2994384765625
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.7942219376564026,
+                    "bbox": {
+                        "x": 474.6187744140625,
+                        "y": 81.3194580078125,
+                        "width": 590.2081298828125,
+                        "height": 632.760986328125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dark Olive Green",
+                "hex": "#3f291e",
+                "percentage": 42.8,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#3f291e",
+                    "percentage": 42.8,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Sienna",
+                    "hex": "#a47443",
+                    "percentage": 36.6,
+                    "is_vibrant": true,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 38.04,
+            "saturation": 52.75,
+            "color_temperature": "neutral",
+            "environment_caption": "a woman sitting on a couch",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 54000,
+            "end_time_ms": 55000,
+            "duration_ms": 1000,
+            "frame_idx": 1620,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9247915744781494,
+                    "bbox": {
+                        "x": 223.71224975585938,
+                        "y": 28.230712890625,
+                        "width": 598.3650207519531,
+                        "height": 686.0186767578125
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.9021109342575073,
+                    "bbox": {
+                        "x": 524.215087890625,
+                        "y": 407.81317138671875,
+                        "width": 278.71923828125,
+                        "height": 195.2994384765625
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.7942219376564026,
+                    "bbox": {
+                        "x": 474.6187744140625,
+                        "y": 81.3194580078125,
+                        "width": 590.2081298828125,
+                        "height": 632.760986328125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a woman sitting on a couch"
+        },
+        {
+            "start_time_ms": 55000,
+            "end_time_ms": 56000,
+            "duration_ms": 1000,
+            "frame_idx": 1650,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9247915744781494,
+                    "bbox": {
+                        "x": 223.71224975585938,
+                        "y": 28.230712890625,
+                        "width": 598.3650207519531,
+                        "height": 686.0186767578125
+                    }
+                },
+                {
+                    "label": "laptop",
+                    "confidence": 0.9021109342575073,
+                    "bbox": {
+                        "x": 524.215087890625,
+                        "y": 407.81317138671875,
+                        "width": 278.71923828125,
+                        "height": 195.2994384765625
+                    }
+                },
+                {
+                    "label": "person",
+                    "confidence": 0.7942219376564026,
+                    "bbox": {
+                        "x": 474.6187744140625,
+                        "y": 81.3194580078125,
+                        "width": 590.2081298828125,
+                        "height": 632.760986328125
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Dark Olive Green",
+                "hex": "#40291e",
+                "percentage": 43.6,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Dark Olive Green",
+                    "hex": "#40291e",
+                    "percentage": 43.6,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Sienna",
+                    "hex": "#a5743f",
+                    "percentage": 36.0,
+                    "is_vibrant": true,
+                    "is_muted": false
+                }
+            ],
+            "brightness": 38.04,
+            "saturation": 52.75,
+            "color_temperature": "warm",
+            "environment_caption": "a woman sitting on a couch"
+        },
+        {
+            "start_time_ms": 56000,
+            "end_time_ms": 57000,
+            "duration_ms": 1000,
+            "frame_idx": 1680,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.948384165763855,
+                    "bbox": {
+                        "x": 401.0283508300781,
+                        "y": 177.92779541015625,
+                        "width": 477.2428894042969,
+                        "height": 534.5269165039062
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a man in a suit and sunglasses is dancing",
+            "detected_text": []
+        },
+        {
+            "start_time_ms": 57000,
+            "end_time_ms": 58000,
+            "duration_ms": 1000,
+            "frame_idx": 1710,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9483422636985779,
+                    "bbox": {
+                        "x": 401.0250244140625,
+                        "y": 177.9107666015625,
+                        "width": 477.246337890625,
+                        "height": 534.54296875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#010302",
+                "percentage": 65.8,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#010302",
+                    "percentage": 65.8,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Dim Gray",
+                    "hex": "#766d53",
+                    "percentage": 20.2,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 16.73,
+            "saturation": 12.41,
+            "color_temperature": "neutral",
+            "environment_caption": "a man in a suit and sunglasses is dancing"
+        },
+        {
+            "start_time_ms": 58000,
+            "end_time_ms": 59000,
+            "duration_ms": 1000,
+            "frame_idx": 1740,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9483422636985779,
+                    "bbox": {
+                        "x": 401.0250244140625,
+                        "y": 177.9107666015625,
+                        "width": 477.246337890625,
+                        "height": 534.54296875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "environment_caption": "a man in a suit and sunglasses is dancing"
+        },
+        {
+            "start_time_ms": 59000,
+            "end_time_ms": 59967,
+            "duration_ms": 967,
+            "frame_idx": 1770,
+            "objects": [
+                {
+                    "label": "person",
+                    "confidence": 0.9483422636985779,
+                    "bbox": {
+                        "x": 401.0250244140625,
+                        "y": 177.9107666015625,
+                        "width": 477.246337890625,
+                        "height": 534.54296875
+                    }
+                }
+            ],
+            "faces": [],
+            "shot_type": "long-shot",
+            "dominant_color": {
+                "name": "Black",
+                "hex": "#010202",
+                "percentage": 70.8,
+                "is_vibrant": false,
+                "is_muted": false
+            },
+            "color_palette": [
+                {
+                    "name": "Black",
+                    "hex": "#010202",
+                    "percentage": 70.8,
+                    "is_vibrant": false,
+                    "is_muted": false
+                },
+                {
+                    "name": "Dark Gray",
+                    "hex": "#b6b09a",
+                    "percentage": 14.8,
+                    "is_vibrant": false,
+                    "is_muted": true
+                }
+            ],
+            "brightness": 16.73,
+            "saturation": 12.41,
+            "color_temperature": "neutral",
+            "environment_caption": "a man in a suit and sunglasses is dancing",
+            "detected_text": []
+        }
+    ] 
+}

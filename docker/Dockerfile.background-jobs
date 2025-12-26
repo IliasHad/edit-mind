@@ -22,87 +22,74 @@ COPY apps/background-jobs/package.json ./apps/background-jobs/
 COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/prisma ./packages/prisma/
+COPY .npmrc ./
+COPY prisma.config.ts ./
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile 
 
 
-FROM base AS python-deps
+FROM --platform=$BUILDPLATFORM python:3.11-slim-bookworm AS python-deps
+
+ARG TARGETARCH
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3=3.11.* \
-    python3-venv \
-    python3-pip \
-    ffmpeg \
-    cmake \
-    build-essential \
-    libboost-all-dev \
-    libopenblas-dev \
-    liblapack-dev \
-    && ln -sf /usr/bin/python3 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    build-essential cmake libopenblas-dev && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m venv /app/.venv
-ENV PATH="/app/.venv/bin:$PATH" \
-    VIRTUAL_ENV="/app/.venv" 
-
+WORKDIR /app
 COPY python/requirements.txt ./python/
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip setuptools wheel && \
-    pip install dlib-bin && \
-    pip install face_recognition && \
-    pip install fer && \
-    pip install -r python/requirements.txt
+RUN uv venv /app/.venv && \
+    VIRTUAL_ENV=/app/.venv uv pip install --no-cache -r python/requirements.txt
 
+    
+    
 FROM node-deps AS builder
 
-COPY --from=node-deps ./app/node_modules /app/node_modules
-COPY apps ./apps
-COPY packages ./packages
-COPY python ./python
-COPY tsconfig.json ./
+COPY . .
 
-RUN pnpm rebuild @tailwindcss/oxide rollup sharp
-RUN pnpm --filter shared build
-RUN pnpm --filter background-jobs build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
+
+RUN pnpm --filter prisma generate
+
+RUN pnpm --filter shared build && \
+    pnpm --filter background-jobs build
+
+FROM base AS prod-deps
+
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
+COPY apps/background-jobs/package.json ./apps/background-jobs/
+COPY apps/web/package.json ./apps/web/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/prisma ./packages/prisma/
+COPY .npmrc ./
+COPY prisma.config.ts ./
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --prod --frozen-lockfile
 
 FROM base AS production
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3=3.11.* \
-    python3-venv \
-    libopenblas0 \
-    liblapack3 \
-    libx11-6 \
-    libgtk-3-0 \
-    libboost-python1.74.0 \
-    libboost-thread1.74.0 \
-    libboost-filesystem1.74.0 \
-    ffmpeg \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
-    libgomp1 \
-    && ln -sf /usr/bin/python3 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    python3 ffmpeg libopenblas0 liblapack3 libsm6 libxext6 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
 
 COPY --from=python-deps /app/.venv /app/.venv
-COPY --from=builder /app/python /app/python
 
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/apps /app/apps
-COPY --from=builder /app/packages /app/packages
-COPY --from=builder /app/pnpm-workspace.yaml /app/pnpm-lock.yaml /app/package.json /app/prisma.config.ts /app/tsconfig.json ./
+COPY --from=prod-deps /app/node_modules /app/node_modules
 
+COPY --from=builder /app/apps/background-jobs/dist ./apps/background-jobs/dist
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/prisma ./packages/prisma
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml /app/prisma.config.ts ./
 
-ENV NODE_ENV=production \
-    PATH="/app/.venv/bin:$PATH" \
-    VIRTUAL_ENV="/app/.venv"
+ENV NODE_ENV=production VIRTUAL_ENV="/app/.venv" PATH="/app/.venv/bin:$PATH"
 
-WORKDIR /app/
 
 EXPOSE 4000 8765
 
@@ -118,29 +105,21 @@ FROM builder AS development
 
 COPY --from=python-deps /app/.venv /app/.venv
 COPY --from=python-deps /app/python /app/python
+COPY python/requirements-dev.txt ./python/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3=3.11.* \
-    python3-venv \
     libopenblas0 \
     liblapack3 \
-    libx11-6 \
-    libgtk-3-0 \
-    libboost-python1.74.0 \
-    libboost-thread1.74.0 \
-    libboost-filesystem1.74.0 \
     ffmpeg \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
-    libgomp1 \
-    && ln -sf /usr/bin/python3 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    libx11-6 libgtk-3-0 libsm6 libxext6 libxrender1 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=development \
     PATH="/app/.venv/bin:$PATH" \
     VIRTUAL_ENV="/app/.venv"
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -r python/requirements-dev.txt
 
 RUN pnpm --filter background-jobs build
 
@@ -154,3 +133,26 @@ CMD ["sh", "-c", "\
   pnpm --filter prisma seed && \
   pnpm --filter background-jobs dev \
 "]
+
+
+
+FROM base AS testing
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 ffmpeg libopenblas0 liblapack3 libsm6 libxext6 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+
+COPY python ./python/
+
+RUN uv venv /app/.venv && \
+    VIRTUAL_ENV=/app/.venv uv pip install --no-cache -r python/requirements.txt && \
+    uv pip install --no-cache -r python/requirements-dev.txt
+
+ENV NODE_ENV=testing VIRTUAL_ENV="/app/.venv" PATH="/app/.venv/bin:$PATH"
+
+WORKDIR /app/python
+RUN pytest tests

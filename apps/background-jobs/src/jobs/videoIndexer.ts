@@ -1,6 +1,6 @@
 import { Worker, Job } from 'bullmq'
 import { prisma } from '../services/db'
-import { connection } from '../queue'
+import { connection } from '../services/redis'
 import path from 'path'
 import { existsSync, mkdirSync, promises as fs } from 'fs'
 import { PROCESSED_VIDEOS_DIR, THUMBNAILS_DIR } from '@shared/constants'
