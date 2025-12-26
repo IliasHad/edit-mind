@@ -37,7 +37,6 @@ jobs:
         platform:
           - linux/amd64
           - linux/arm64
-      max-parallel: 1 
     
     steps:
       - name: Maximize build space
@@ -90,6 +89,25 @@ jobs:
             type=ref,event=branch,suffix=-${{ steps.platform.outputs.suffix }}
             type=semver,pattern={{version}},suffix=-${{ steps.platform.outputs.suffix }}
             type=semver,pattern={{major}}.{{minor}},suffix=-${{ steps.platform.outputs.suffix }}
+      
+      - name: Set up env files
+        run: |
+          cp .env.example .env
+          cp .env.system.example .env.system
+
+      - name: Start ChromaDB (testing)
+        run: docker compose up -d chroma
+    
+      - name: Build and Test
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.dockerfile }}
+          target: testing
+          platforms: ${{ matrix.platform }}
+          push: false 
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ matrix.platform }}
 
       - name: Build and push Docker image
         id: push
@@ -105,8 +123,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ steps.platform.outputs.suffix }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ steps.platform.outputs.suffix }}
+          cache-from: type=gha,scope=${{ matrix.service }}-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}-${{ matrix.platform }}
           sbom: false
 
       - name: Generate artifact attestation

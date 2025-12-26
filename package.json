@@ -12,9 +12,7 @@
     "type": "git",
     "url": "https://github.com/iliashad/edit-mind"
   },
-  "scripts": {
-    "postinstall": "pnpm prisma generate"
-  },
+  "scripts": {},
   "dependencies": {
     "@prisma/client": "6.19.0",
     "bcryptjs": "^2.4.3"
