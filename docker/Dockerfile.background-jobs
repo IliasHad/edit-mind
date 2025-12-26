@@ -147,6 +147,7 @@ WORKDIR /app
 COPY --from=python-deps /app/.venv /app/.venv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 COPY python/requirements.txt ./python/
+COPY python/.faces ./python/
 
 RUN  VIRTUAL_ENV=/app/.venv uv pip install --no-cache -r python/requirements.txt
 
