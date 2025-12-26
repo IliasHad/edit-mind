@@ -89,6 +89,15 @@ jobs:
             type=ref,event=branch,suffix=-${{ steps.platform.outputs.suffix }}
             type=semver,pattern={{version}},suffix=-${{ steps.platform.outputs.suffix }}
             type=semver,pattern={{major}}.{{minor}},suffix=-${{ steps.platform.outputs.suffix }}
+      
+      - name: Set up env files
+        run: |
+          cp .env.example .env
+          cp .env.system.example .env.system
+
+      - name: Start ChromaDB (testing)
+        run: docker compose up -d chroma
+    
       - name: Build and Test
         uses: docker/build-push-action@v6
         with:
