@@ -51,7 +51,9 @@ jobs:
           sudo apt-get clean
           sudo docker system prune -a -f
           df -h
-      
+      - name: Set lowercase image prefix
+        run: |
+          echo "IMAGE_PREFIX=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/edit-mind" >> $GITHUB_ENV
       - name: Checkout code
         uses: actions/checkout@v4
 
