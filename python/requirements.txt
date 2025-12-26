@@ -28,6 +28,10 @@ python-dotenv>=1.2.1
 torch>=2.6.0
 torchvision>=0.16.0
 
+# If x86 (AMD64), use the tiny CPU-only version
+tensorflow-cpu==2.15.0; platform_machine == "x86_64"
+tensorflow==2.15.0; platform_machine == "aarch64"
+
 # Face recognition (PyTorch backend)
 deepface>=0.0.96
 tf-keras
