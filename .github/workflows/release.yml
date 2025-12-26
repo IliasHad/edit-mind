@@ -13,7 +13,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.repository_owner }}/edit-mind
 
 jobs:
   build-and-push:
@@ -123,15 +122,15 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service }}-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}-${{ matrix.platform }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ matrix.platform }}
           sbom: false
 
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
         uses: actions/attest-build-provenance@v3
         with:
-          subject-name: iliashad/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
@@ -153,7 +152,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+          
+      - name: Set lowercase image prefix
+        id: image
+        run: |
+          echo "IMAGE_PREFIX=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/edit-mind" >> $GITHUB_ENV
+          
       - name: Create and push manifest
         run: |
           TAG="${{ github.ref_name }}"
