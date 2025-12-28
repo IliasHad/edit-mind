@@ -8,7 +8,7 @@ import { existsSync } from 'fs'
 import path from 'path'
 import type { Scene } from '@shared/types/scene'
 import { FACES_DIR, PROCESSED_VIDEOS_DIR, UNKNOWN_FACES_DIR } from '@shared/constants'
-import { getByVideoSource, updateMetadata } from '@shared/services/vectorDb'
+import { getByVideoSource, updateMetadata } from '@vector/services/vectorDb'
 
 async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
   const { faces, name } = job.data
@@ -35,14 +35,14 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
         const srcImagePath = path.join(UNKNOWN_FACES_DIR, imageFile)
         const destImagePath = path.join(personDir, imageFile)
 
-        const scenes = await getByVideoSource(faceData.video_path)
+        const video = await getByVideoSource(faceData.video_path)
         const sortedAppearances = faceData.all_appearances?.sort((a, b) => a.frame_index - b.frame_index)
 
-        if (sortedAppearances && scenes && scenes.length > 0) {
+        if (sortedAppearances && video && video.scenes) {
           const firstAppearance = sortedAppearances[0]
           const lastAppearance = sortedAppearances[sortedAppearances.length - 1]
 
-          for (const scene of scenes) {
+          for (const scene of video.scenes) {
             // Check if the face appears at any point during the scene
             const overlapsScene =
               firstAppearance.timestamp_seconds <= scene.endTime && lastAppearance.timestamp_seconds >= scene.startTime
@@ -127,4 +127,19 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
 export const faceLabellingWorker = new Worker('face-labelling', processFaceLabellingJob, {
   connection,
   concurrency: 3,
+})
+
+faceLabellingWorker.on('completed', (job) => {
+  logger.info({ jobId: job.id }, 'Face labelling job completed')
+})
+
+faceLabellingWorker.on('failed', (job, err) => {
+  logger.error(
+    {
+      jobId: job?.id,
+      error: err.message,
+      stack: err.stack,
+    },
+    'Face labelling job failed'
+  )
 })
