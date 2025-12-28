@@ -30,6 +30,9 @@ export const HEALTH_CHECK_INTERVAL = 1000 // 1 second
 export const MAX_RESTARTS = 10
 export const RESTART_BACKOFF_MS = 1000
 export const EMBEDDING_BATCH_SIZE = 200
+export const VISUAL_BATCH_SIZE = 10
+export const AUDIO_BATCH_SIZE = 10
+
 export const MAX_DEPTH = 5
 
 // ChromaDB
@@ -42,7 +45,9 @@ export const EMBEDDING_MODEL = 'text-embedding-004'
 export const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 export const SEARCH_AI_MODEL = process.env.SEARCH_AI_MODEL
 export const USE_LOCAL = process.env.USE_LOCAL_MODEL === 'true'
-export const GEMINI_MODEL_NAME = 'gemini-2.5-pro'
+export const USE_OLLAMA_MODEL = true
+export const OLLAMA_MODEL = 'qwen2.5:7b-instruct'
+export const GEMINI_MODEL_NAME = 'gemini-2.5-flash-lite'
 // Files
 export const SUPPORTED_VIDEO_EXTENSIONS = /\.(mp4|mov|avi|mkv)$/i
 export const DEFAULT_FPS = 30
@@ -62,3 +67,5 @@ export const PYTHON_PORT = process.env.PYTHON_PORT || '8765'
 export const IS_TESTING = process.env.NODE_ENV === 'testing'
 
 export const MAX_MESSAGES_PER_CHAT = 50
+
+export const EXPORTS_DIR = process.env.EXPORTS_DIR || path.resolve('data', 'exports')

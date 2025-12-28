@@ -2,7 +2,7 @@ export interface Face {
   name: string
   location: [number, number, number, number]
   emotion: {
-    label: string,
+    label: string
     confidence: number
   }
   bbox: BBox
@@ -38,6 +38,7 @@ export interface FrameAnalysis {
     is_vibrant: boolean
     is_muted: boolean
   }
+  environment: string
 }
 
 export interface DetectedText {
@@ -49,8 +50,6 @@ export interface DetectedText {
 
 export interface SceneAnalysis {
   environment: string
-  environment_confidence: number
-  object_distribution: { [key: string]: number }
   total_frames: number
 }
 
@@ -77,6 +76,16 @@ export interface AnalysisSummary {
   primary_activity: string
   confidence: number
 }
+export interface PluginAnalysisSummary {
+  plugin_name: string
+  total_duration_seconds: number
+  frames_processed: number
+  avg_time_per_frame_ms: number
+  min_time_ms: number
+  max_time_ms: number
+  timeout_count: number
+  error_count: number
+}
 
 export interface Analysis {
   video_file: string
@@ -85,6 +94,7 @@ export interface Analysis {
   face_recognition_summary: FaceRecognitionSummary
   frame_analysis: FrameAnalysis[]
   summary: AnalysisSummary
+  plugin_performance: PluginAnalysisSummary[]
 }
 
 export interface AnalysisProgress {

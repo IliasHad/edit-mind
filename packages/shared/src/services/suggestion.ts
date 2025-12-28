@@ -1,9 +1,9 @@
-import { getAllDocs } from './vectorDb'
 import { logger } from './logger'
 import { getCache, setCache, invalidateCache } from './cache'
 import { VideoSearchParams } from '../types/search'
 import { ShotType } from '../types'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
+// import { getAllDocs } from '@vector/services/vectorDb'
 
 export interface Suggestion {
   text: string
@@ -76,7 +76,7 @@ class SearchSuggestionCache {
   private async buildCache(): Promise<void> {
     logger.debug('Building search suggestion cache...')
 
-    const allDocs = await getAllDocs()
+    // const allDocs = await getAllDocs()
 
     const faceCounts = new Map<string, number>()
     const objectCounts = new Map<string, number>()
@@ -87,34 +87,34 @@ class SearchSuggestionCache {
     const transcriptionTerms = new Map<string, number>()
     const textTerms = new Map<string, number>()
 
-    allDocs?.forEach((metadata) => {
-      if (!metadata) return
+    // allDocs?.forEach((metadata) => {
+    //   if (!metadata) return
 
-      this.extractArray(metadata.faces, faceCounts)
-      this.extractArray(metadata.objects, objectCounts)
-      this.extractArray(
-        metadata.emotions.map((emotion) => emotion.emotion),
-        emotionCounts
-      )
+    //   this.extractArray(metadata.faces, faceCounts)
+    //   this.extractArray(metadata.objects, objectCounts)
+    //   this.extractArray(
+    //     metadata.emotions.map((emotion) => emotion.emotion),
+    //     emotionCounts
+    //   )
 
-      if (metadata.camera) {
-        const camera = metadata.camera.toString()
-        cameraCounts.set(camera, (cameraCounts.get(camera) || 0) + 1)
-      }
+    //   if (metadata.camera) {
+    //     const camera = metadata.camera.toString()
+    //     cameraCounts.set(camera, (cameraCounts.get(camera) || 0) + 1)
+    //   }
 
-      if (metadata.shot_type) {
-        const shotType = metadata.shot_type.toString()
-        shotTypeCounts.set(shotType, (shotTypeCounts.get(shotType) || 0) + 1)
-      }
+    //   if (metadata.shot_type) {
+    //     const shotType = metadata.shot_type.toString()
+    //     shotTypeCounts.set(shotType, (shotTypeCounts.get(shotType) || 0) + 1)
+    //   }
 
-      if (metadata.transcription) {
-        this.extractWords(metadata.transcription.toString(), transcriptionTerms, 3)
-      }
+    //   if (metadata.transcription) {
+    //     this.extractWords(metadata.transcription.toString(), transcriptionTerms, 3)
+    //   }
 
-      if (metadata.detectedText) {
-        this.extractWords(metadata.detectedText.toString(), textTerms, 3)
-      }
-    })
+    //   if (metadata.detectedText) {
+    //     this.extractWords(metadata.detectedText.toString(), textTerms, 3)
+    //   }
+    // })
 
     await this.indexTerms(faceCounts, 'face')
     await this.indexTerms(objectCounts, 'object')
@@ -283,7 +283,7 @@ export async function refreshSuggestionCache(): Promise<void> {
 }
 
 export function buildSearchQueryFromSuggestions(suggestions: Record<string, string>): VideoSearchParams {
-  const searchQuery: VideoSearchParams = VideoSearchParamsSchema.parse({});
+  const searchQuery: VideoSearchParams = VideoSearchParamsSchema.parse({})
 
   const typeMapping: Record<string, keyof VideoSearchParams> = {
     face: 'faces',

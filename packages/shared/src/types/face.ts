@@ -42,7 +42,6 @@ export interface FaceMatchingProgress {
   match?: MatchResult
 }
 
-
 export interface FindMatchingFacesResponse {
   success: boolean
   person_name: string
@@ -56,4 +55,8 @@ export interface FaceLabellingJobData {
     faceId: string
   }[]
   name: string
+}
+export interface FaceDeletionJobData {
+  jsonFile: string
+  imageFile: string
 }

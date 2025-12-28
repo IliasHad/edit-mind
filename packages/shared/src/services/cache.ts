@@ -1,4 +1,4 @@
-import { IS_TESTING } from '@shared/constants'
+import { IS_TESTING } from '../constants'
 import Redis from 'ioredis'
 
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost'
