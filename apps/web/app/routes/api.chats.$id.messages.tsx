@@ -1,14 +1,8 @@
-import {
-  classifyIntent,
-  generateActionFromPrompt,
-  generateAnalyticsResponse,
-  generateCompilationResponse,
-  generateGeneralResponse,
-} from '@shared/services/modelRouter'
-import { getVideoWithScenesBySceneIds, hybridSearch } from '@shared/services/vectorDb'
+import { getVideoWithScenesBySceneIds } from '@vector/services/vectorDb'
 import type { ActionFunction, LoaderFunction } from 'react-router'
 import { prisma } from '~/services/database'
-import { getVideoAnalytics } from '@shared/utils/analytics'
+import { logger } from '@shared/services/logger'
+import { handleIncomingMessage } from '~/services/chat.server'
 
 export const loader: LoaderFunction = async ({ params }) => {
   const chatId = params.id
@@ -20,10 +14,6 @@ export const loader: LoaderFunction = async ({ params }) => {
   })
   const chat = await prisma.chat.findFirst({
     where: { id: chatId },
-    select: {
-      lockReason: true,
-      isLocked: true,
-    },
   })
 
   const messagesWithScenes = await Promise.all(
@@ -51,94 +41,23 @@ export const action: ActionFunction = async ({ request, params }) => {
   const chatId = params.id
   if (!chatId) throw new Response('Chat ID required', { status: 400 })
 
+  const chat = await prisma.chat.findFirst({
+    where: { id: chatId },
+  })
+
   const { prompt } = await request.json()
-  if (!prompt) throw new Response('Invalid request', { status: 400 })
+  if (!prompt && !chat) throw new Response('Invalid request', { status: 400 })
 
-  await prisma.chatMessage.create({
-    data: {
-      chatId,
-      sender: 'user',
-      text: prompt,
-    },
-  })
+  if (!chat) throw new Response('Invalid request', { status: 400 })
 
-  const recentMessages = await prisma.chatMessage.findMany({
-    where: { chatId },
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  })
+  try {
+    await handleIncomingMessage(chat, prompt, chat?.projectId)
 
-  const intentResult = await classifyIntent(prompt, recentMessages)
-
-  if (intentResult.error || !intentResult.data) {
-    const messageAssistant = await prisma.chatMessage.create({
-      data: {
-        chatId,
-        sender: 'assistant',
-        text: 'Failed to classify intent.',
-        isError: true,
-        tokensUsed: intentResult.tokens,
-      },
-    })
     return {
-      ...messageAssistant,
-      outputScenes: [],
+      success: true,
     }
-  }
-
-  const intent = intentResult.data
-  let assistantText: string
-  let outputSceneIds: string[] = []
-  let tokensUsed = intentResult.tokens
-
-  switch (intent.type) {
-    case 'analytics': {
-      const analytics = await getVideoAnalytics(prompt)
-      const response = await generateAnalyticsResponse(prompt, analytics, recentMessages)
-      assistantText = response.data || 'Sorry, I could not generate an analytics response.'
-      tokensUsed += response.tokens
-      break
-    }
-
-    case 'compilation': {
-      const { data: searchParams, tokens, error } = await generateActionFromPrompt(prompt, recentMessages)
-      tokensUsed += tokens
-
-      if (error || !searchParams) {
-        assistantText = error || 'Sorry, I could not understand your request.'
-        break
-      }
-
-      const results = await hybridSearch(searchParams)
-
-      outputSceneIds = results.flatMap((result) => result.scenes.map((scene) => scene.id))
-      const response = await generateCompilationResponse(prompt, outputSceneIds.length, recentMessages)
-      assistantText = response.data || 'Sorry, I could not generate a compilation response.'
-      tokensUsed += response.tokens
-      break
-    }
-
-    case 'general':
-    default: {
-      const response = await generateGeneralResponse(prompt, recentMessages)
-      assistantText = response.data || 'Sorry, I could not generate a response.'
-      tokensUsed += response.tokens
-      break
-    }
-  }
-
-  const messageAssistant = await prisma.chatMessage.create({
-    data: {
-      chatId,
-      sender: 'assistant',
-      text: assistantText,
-      outputSceneIds,
-      tokensUsed,
-    },
-  })
-
-  return {
-    ...messageAssistant,
-    outputScenes: await getVideoWithScenesBySceneIds(outputSceneIds),
+  } catch (error) {
+    logger.error(error)
+    throw new Response('Internal error', { status: 500 })
   }
 }
