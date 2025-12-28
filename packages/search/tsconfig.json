@@ -15,11 +15,11 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@vector/*": ["../../packages/vector/dist/*"],
-      "@db/*": ["../../packages/db/dist/*"],
-      "@shared/*": ["./src/*"]
+      "@shared/*": ["../../packages/shared/dist/*"],
+      "@db/*": ["../../packages/db/dist/*"], 
+      "@ai/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "../immich/src/services/encryption.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
