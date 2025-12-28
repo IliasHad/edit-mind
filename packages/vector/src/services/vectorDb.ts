@@ -1,14 +1,20 @@
 import { ChromaClient, Collection, Metadata, Where, WhereDocument } from 'chromadb'
-import { EmbeddingInput, CollectionStatistics, Filters } from '../types/vector'
-import { Video, VideoWithScenes } from '../types/video'
-import { Scene } from '../types/scene'
-import { VideoSearchParams, VideoMetadataSummary } from '../types/search'
-import { metadataToScene, sanitizeMetadata, sceneToVectorFormat } from '../utils/embed'
-import { CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME, IS_TESTING } from '../constants'
-import { getEmbeddings } from '../services/embedding'
-import { suggestionCache } from './suggestion'
-import { getCache, setCache } from './cache'
-import { logger } from './logger'
+import {
+  EmbeddingInput,
+  CollectionStatistics,
+  Filters,
+  EmbeddingAudioInput,
+  EmbeddingVisualInput,
+} from '../types/vector'
+import { Video, VideoWithScenes } from '@shared/types/video'
+import { Scene } from '@shared/types/scene'
+import { VideoSearchParams, VideoMetadataSummary } from '@shared/types/search'
+import { metadataToScene, sanitizeMetadata, sceneToVectorFormat } from '../utils/shared'
+import { CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME, IS_TESTING } from '@shared/constants'
+import { getEmbeddings } from './embedding'
+import { suggestionCache } from '@shared/services/suggestion'
+import { getCache, setCache } from '@shared/services/cache'
+import { logger } from '@shared/services/logger'
 import { getLocationName } from '@shared/utils/location'
 import { YearStats } from '@shared/types/stats'
 
@@ -17,22 +23,31 @@ export const createVectorDbClient = async (
 ): Promise<{
   collection: Collection | null
   client: ChromaClient | null
+  visual_collection: Collection | null
+  audio_collection: Collection | null
 }> => {
   let client: ChromaClient | null = null
   let collection: Collection | null = null
+  let visual_collection: Collection | null = null
+  let audio_collection: Collection | null = null
 
   if (client && collection)
     return {
       client,
       collection,
+      audio_collection,
+      visual_collection,
     }
 
   client = new ChromaClient({ host: CHROMA_HOST, port: parseInt(CHROMA_PORT) })
   collection = await client.getOrCreateCollection({ name: collectionName })
-
+  visual_collection = await client.getOrCreateCollection({ name: `${collectionName}_visual` })
+  audio_collection = await client.getOrCreateCollection({ name: `${collectionName}_audio` })
   return {
     client,
     collection,
+    audio_collection,
+    visual_collection,
   }
 }
 
@@ -450,29 +465,97 @@ async function filterExistingVideos(videoSources: string[]): Promise<string[]> {
   }
 }
 
-async function getByVideoSource(videoSource: string): Promise<Scene[]> {
+async function getByVideoSource(videoSource: string): Promise<VideoWithScenes | null> {
   try {
     const { collection } = await createVectorDbClient()
 
     if (!collection) {
       throw new Error('Collection not initialized')
     }
+    const video = new Map()
 
-    const result = await collection?.get({
-      where: {
-        source: {
-          $in: [videoSource],
+    try {
+      const { collection } = await createVectorDbClient()
+
+      if (!collection) {
+        throw new Error('Collection not initialized')
+      }
+
+      const result = await collection?.get({
+        where: {
+          source: {
+            $in: [videoSource],
+          },
         },
-      },
-      include: ['metadatas'],
-    })
-    const filteredScenes: Scene[] = result.metadatas.map((metadata, index) =>
-      metadataToScene(metadata, result.ids![index])
-    )
-    return filteredScenes
+        include: ['metadatas'],
+      })
+      const cameras = new Set<string>()
+      const colors = new Set<string>()
+      const locations = new Set<string>()
+      const faces = new Set<string>()
+      const objects = new Set<string>()
+      const shotTypes = new Set<string>()
+      const emotions = new Set<string>()
+
+      for (const metadata of result.metadatas) {
+        const source = metadata?.source?.toString()
+
+        if (!metadata || !source) {
+          return null
+        }
+
+        if (!video.get(source)) {
+          video.set(source, {
+            source,
+            duration: parseFloat(metadata.duration?.toString() || '0.00'),
+            aspect_ratio: metadata.aspect_ratio?.toString() || 'Unknown',
+            camera: metadata.camera?.toString() || 'Unknown',
+            category: metadata.category?.toString() || 'Uncategorized',
+            createdAt: parseInt(metadata.createdAt?.toString() || '0'),
+            scenes: [],
+            sceneCount: 0,
+            thumbnailUrl: metadata.thumbnailUrl?.toString(),
+            faces: [],
+            emotions: [],
+            objects: [],
+            shotTypes: [],
+          })
+        }
+
+        const scene: Scene = metadataToScene(metadata, result.ids[0])
+        if (scene) video.get(source).scenes.push(scene)
+        if (scene.faces)
+          scene.faces.forEach((f) => {
+            if (!video.get(source).faces?.includes(f)) video.get(source).faces.push(f)
+          })
+        if (scene.emotions)
+          scene.emotions.forEach((e) => {
+            if (!video.get(source).emotions?.includes(e.emotion)) video.get(source).emotions.push(e.emotion)
+          })
+        if (scene.objects)
+          scene.objects.forEach((o) => {
+            if (!video.get(source).objects?.includes(o)) video.get(source).objects.push(o)
+          })
+        if (scene.shot_type && !video.get(source).shotTypes?.includes(scene.shot_type))
+          video.get(source).shotTypes.push(scene.shot_type)
+
+        if (scene.camera) cameras.add(scene.camera.toString())
+        if (scene.dominantColorName) colors.add(scene.dominantColorName.toString())
+        if (scene.location) locations.add(scene.location.toString())
+        if (scene.faces) scene.faces.forEach((f: string) => faces.add(f))
+        if (scene.objects) scene.objects.forEach((o: string) => objects.add(o))
+        if (scene.emotions) scene.emotions.forEach((o) => emotions.add(o.emotion))
+        if (scene.shot_type) shotTypes.add(scene.shot_type.toString())
+      }
+
+      return Array.from(video.values())[0]
+    } catch (error) {
+      logger.error('Error getting all videos:' + error)
+      throw error
+    }
   } catch (error) {
     logger.error('Error filtering existing videos: ' + error)
-    return []
+    return null
   }
 }
 
@@ -713,7 +796,13 @@ async function deleteByVideoSource(source: string): Promise<void> {
   await collection.delete({ where: { source: source } })
 }
 
-const hybridSearch = async (query: VideoSearchParams, nResults = undefined): Promise<VideoWithScenes[]> => {
+async function hybridSearch(
+  query: VideoSearchParams,
+  nResults: number | undefined = undefined,
+  scenesOnly = false,
+  projectsVideoSources?: string[],
+  skipSceneIds?: string[]
+): Promise<VideoWithScenes[]> {
   try {
     const { collection } = await createVectorDbClient()
 
@@ -1133,6 +1222,166 @@ async function getScenesByYear(year: number): Promise<{
   }
 }
 
+async function embedVisuals(documents: EmbeddingVisualInput[]): Promise<void> {
+  try {
+    const validDocuments = documents.filter(
+      (d) => d.id && d.embedding && Array.isArray(d.embedding) && d.embedding.length > 0 && d.metadata
+    )
+
+    if (validDocuments.length === 0) {
+      logger.warn('No valid visual embeddings to store. Check for missing IDs or empty embeddings.')
+      return
+    }
+
+    const { visual_collection } = await createVectorDbClient()
+    if (!visual_collection) {
+      throw new Error('Visual collection not initialized')
+    }
+
+    const sanitizedDocuments = validDocuments.map((doc) => ({
+      ...doc,
+      metadata: sanitizeMetadata(doc.metadata || {}),
+    }))
+
+    const ids = sanitizedDocuments.map((d) => d.id)
+    const metadatas = sanitizedDocuments.map((d) => d.metadata || {})
+    const embeddings = sanitizedDocuments.map((d) => d.embedding)
+
+    const dimensions = new Set(embeddings.map((e) => e.length))
+    if (dimensions.size > 1) {
+      throw new Error(
+        `Inconsistent visual embedding dimensions: ${Array.from(dimensions).join(', ')}. Expected 512 (CLIP).`
+      )
+    }
+
+    const expectedDimension = 512
+    if (embeddings[0].length !== expectedDimension) {
+      throw new Error(`Visual embedding dimension mismatch: got ${embeddings[0].length}, expected ${expectedDimension}`)
+    }
+
+    for (let i = 0; i < embeddings.length; i++) {
+      const hasInvalidValues = embeddings[i].some((val) => !isFinite(val) || isNaN(val))
+      if (hasInvalidValues) {
+        throw new Error(`Visual embedding at index ${i} contains invalid values (NaN or Infinity)`)
+      }
+    }
+
+    await visual_collection.add({
+      ids,
+      metadatas,
+      embeddings,
+    })
+
+    await suggestionCache.refresh()
+  } catch (error) {
+    logger.error('Error embedding visual documents')
+    throw error
+  }
+}
+
+async function embedAudios(documents: EmbeddingAudioInput[]): Promise<void> {
+  try {
+    const validDocuments = documents.filter(
+      (d) => d.id && d.embedding && Array.isArray(d.embedding) && d.embedding.length > 0 && d.metadata
+    )
+
+    if (validDocuments.length === 0) {
+      logger.warn('No valid audio embeddings to store')
+      return
+    }
+
+    const { audio_collection } = await createVectorDbClient()
+    if (!audio_collection) {
+      throw new Error('Audio collection not initialized')
+    }
+
+    const sanitizedDocuments = validDocuments.map((doc) => ({
+      ...doc,
+      metadata: sanitizeMetadata(doc.metadata || {}),
+    }))
+
+    const ids = sanitizedDocuments.map((d) => d.id)
+    const metadatas = sanitizedDocuments.map((d) => d.metadata || {})
+    const embeddings = sanitizedDocuments.map((d) => d.embedding)
+
+    const dimensions = new Set(embeddings.map((e) => e.length))
+    if (dimensions.size > 1) {
+      throw new Error(
+        `Inconsistent audio embedding dimensions: ${Array.from(dimensions).join(', ')}. Expected 512 (CLAP).`
+      )
+    }
+
+    const expectedDimension = 512
+    if (embeddings[0].length !== expectedDimension) {
+      throw new Error(`Audio embedding dimension mismatch: got ${embeddings[0].length}, expected ${expectedDimension}`)
+    }
+
+    for (let i = 0; i < embeddings.length; i++) {
+      const hasInvalidValues = embeddings[i].some((val) => !isFinite(val) || isNaN(val))
+      if (hasInvalidValues) {
+        throw new Error(`Audio embedding at index ${i} contains invalid values (NaN or Infinity)`)
+      }
+    }
+
+    await audio_collection.add({
+      ids,
+      metadatas,
+      embeddings,
+    })
+
+    await suggestionCache.refresh()
+  } catch (error) {
+    logger.error('Error embedding audio documents')
+    throw error
+  }
+}
+
+async function getSimilarScenes(referenceSceneIds: string[], nResults: number = 30): Promise<Scene[]> {
+  try {
+    const { collection } = await createVectorDbClient()
+    if (!collection) throw new Error('Collection not initialized')
+
+    const referenceScene = await collection.get({
+      ids: referenceSceneIds,
+      include: ['metadatas', 'embeddings'],
+    })
+
+    if (!referenceScene.embeddings?.[0]) {
+      throw new Error('Reference scene not found')
+    }
+
+    const referenceEmbedding = referenceScene.embeddings[0]
+
+    const vectorQuery = await collection.query({
+      queryEmbeddings: [referenceEmbedding],
+      nResults: nResults + referenceSceneIds.length, // +1 to exclude the reference scenes
+      include: ['metadatas', 'distances'],
+    })
+
+    if (!vectorQuery.metadatas[0] || !vectorQuery.ids[0]) {
+      return []
+    }
+
+    const scenes: Scene[] = []
+    for (let i = 0; i < vectorQuery.metadatas[0].length; i++) {
+      const id = vectorQuery.ids[0][i]
+
+      // Skip the reference scene itself
+      if (!referenceSceneIds.includes(id)) continue
+
+      const metadata = vectorQuery.metadatas[0][i]
+      if (!metadata) continue
+
+      scenes.push(metadataToScene(metadata, id))
+    }
+
+    return scenes.slice(0, nResults)
+  } catch (error) {
+    logger.error('Error in similarity search: ' + error)
+    throw error
+  }
+}
+
 export {
   embedDocuments,
   getStatistics,
@@ -1152,4 +1401,7 @@ export {
   getVideosNotEmbedded,
   getScenesByYear,
   deleteByVideoSource,
+  embedAudios,
+  embedVisuals,
+  getSimilarScenes,
 }

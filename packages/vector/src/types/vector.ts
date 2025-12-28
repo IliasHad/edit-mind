@@ -28,6 +28,17 @@ export interface EmbeddingInput {
   text: string
   metadata?: Metadata
 }
+export interface EmbeddingVisualInput {
+  id: string
+  embedding: number[]
+  metadata?: Metadata
+}
+
+export interface EmbeddingAudioInput {
+  id: string
+  embedding: number[]
+  metadata?: Metadata
+}
 
 export interface CollectionStatistics {
   name: string

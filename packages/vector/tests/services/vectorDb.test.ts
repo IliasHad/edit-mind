@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest'
 import {
   embedDocuments,
   getStatistics,
@@ -22,6 +22,13 @@ import {
 import { EmbeddingInput } from '@shared/types/vector'
 import { Scene } from '@shared/types/scene'
 import { VideoSearchParams } from '@shared/types/search'
+import { VideoSearchParamsSchema } from '@shared/schemas/search'
+
+const mockConstants: Record<string, string | null | boolean> = {
+  COLLECTION_NAME: 'testing',
+}
+
+vi.mock('@vector/constants', () => mockConstants)
 
 const TEST_TIMEOUT = 40000 * 2
 
@@ -48,21 +55,7 @@ const mockScene = (overrides?: Partial<Scene>): Scene => ({
   ...overrides,
 })
 
-const baseQuery: VideoSearchParams = {
-  faces: [],
-  emotions: [],
-  shot_type: null,
-  aspect_ratio: '16:9',
-  description: '',
-  objects: [],
-  camera: null,
-  transcriptionQuery: null,
-  detectedText: null,
-  semanticQuery: null,
-  action: null,
-  duration: 0,
-  locations: [],
-}
+const baseQuery = VideoSearchParamsSchema.parse({})
 
 const mockEmbedding = (overrides?: Partial<EmbeddingInput>): EmbeddingInput => ({
   id: `doc-${Date.now()}-${Math.random().toString(36).substring(7)}`,
