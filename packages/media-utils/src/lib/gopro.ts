@@ -2,7 +2,7 @@ import goproTelemetry from 'gopro-telemetry'
 import gpmfExtract from 'gpmf-extract'
 import { readFileSync } from 'node:fs'
 import { GoProMetadata, GoProMetadataWithStreams, GPS5Sample } from '../types/gopro'
-import { logger } from '../services/logger'
+import { logger } from '@shared/services/logger'
 
 export async function getGoProVideoMetadata(videoFullPath: string): Promise<GoProMetadata | null> {
   return new Promise((res, _rej) => {

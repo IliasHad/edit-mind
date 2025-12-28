@@ -1,13 +1,3 @@
-import z from 'zod'
-import { Scene } from './scene'
-import { videoSchema } from '../schemas'
-
-export type Video = z.infer<typeof videoSchema>
-
-export interface VideoWithScenes extends Video {
-  scenes: Scene[]
-  sceneCount: number
-}
 export interface VideoMetadata {
   duration: number
   fps: number
@@ -58,4 +48,19 @@ export interface VideoMetadataMap {
   descriptions: string[]
   totalScenes: number
   colors: Map<string, number>
+}
+
+export interface VideoIndexJobData {
+  videoPath: string
+  jobId: string
+  forceReIndexing?: boolean
+}
+
+export interface VideoProcessingData {
+  videoPath: string
+  jobId: string
+  forceReIndexing?: boolean
+  analysisPath: string
+  transcriptionPath: string
+  scenesPath: string
 }

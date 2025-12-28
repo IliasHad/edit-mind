@@ -12,10 +12,13 @@ import {
 } from '../constants'
 import { exiftool } from 'exiftool-vendored'
 import { CameraInfo, GeoLocation, VideoFile, VideoMetadata, FFmpegError } from '../types/video'
-import { spawnFFmpeg, spawnFFprobe } from './ffmpeg'
-import { validateFile } from './file'
-import { logger } from '../services/logger'
+import { spawnFFmpeg, spawnFFprobe } from '../lib/ffmpeg'
+import { validateFile } from '@shared/utils/file'
+import { logger } from '@shared/services/logger'
 import { FFprobeMetadata, FFprobeStream } from '../types/ffmpeg'
+import { Scene } from '@shared/schemas'
+import * as Jimp from 'jimp'
+import { readFile } from 'fs/promises'
 
 const initializeThumbnailsDir = (): void => {
   if (!fs.existsSync(THUMBNAILS_DIR)) {
@@ -52,8 +55,19 @@ const handleFFmpegProcess = (process: ChildProcess, operationName: string): Prom
   })
 }
 
-export async function generateThumbnail(videoPath: string, thumbnailPath: string, timestamp: number): Promise<void> {
+export async function generateThumbnail(
+  videoPath: string,
+  thumbnailPath: string,
+  timestamp: number,
+  options?: {
+    quality?: string
+    scale?: string
+  }
+): Promise<void> {
   await validateFile(videoPath)
+
+  const quality = options?.quality ?? THUMBNAIL_QUALITY
+  const scale = options?.scale ?? THUMBNAIL_SCALE
 
   const args = [
     '-ss',
@@ -63,9 +77,9 @@ export async function generateThumbnail(videoPath: string, thumbnailPath: string
     '-vframes',
     '1',
     '-vf',
-    `scale=${THUMBNAIL_SCALE}`,
+    `scale=${scale}`,
     '-q:v',
-    THUMBNAIL_QUALITY,
+    quality,
     thumbnailPath,
     '-y',
     '-loglevel',
@@ -114,7 +128,6 @@ export async function generateAllThumbnails(
   })
 
   args.push('-y')
-  logger.debug(`Batch thumbnail generated for ${videoPath}`)
 
   const ffmpegProcess = await spawnFFmpeg(args)
   return handleFFmpegProcess(ffmpegProcess, 'batch thumbnail generation')
@@ -286,10 +299,11 @@ export async function getVideoMetadata(videoFilePath: string): Promise<VideoMeta
       throw new Error('No video stream found in file')
     }
 
-    const duration = typeof metadata.format.duration === 'string' 
-      ? parseFloat(metadata.format.duration) 
-      : (metadata.format.duration || 0)
-    
+    const duration =
+      typeof metadata.format.duration === 'string'
+        ? parseFloat(metadata.format.duration)
+        : metadata.format.duration || 0
+
     const fps = parseFPS(videoStream.r_frame_rate)
     let width = videoStream.width || 0
     let height = videoStream.height || 0
@@ -297,10 +311,11 @@ export async function getVideoMetadata(videoFilePath: string): Promise<VideoMeta
     // Handle rotation metadata
     const streamRotate = videoStream.tags?.rotate
     const formatRotate = metadata.format.tags?.rotate
-    const rotation = typeof streamRotate === 'string' 
-      ? parseInt(streamRotate, 10) 
-      : (streamRotate || (typeof formatRotate === 'string' ? parseInt(formatRotate, 10) : formatRotate) || 0)
-    
+    const rotation =
+      typeof streamRotate === 'string'
+        ? parseInt(streamRotate, 10)
+        : streamRotate || (typeof formatRotate === 'string' ? parseInt(formatRotate, 10) : formatRotate) || 0
+
     if (rotation === 90 || rotation === 270 || rotation === -90 || rotation === -270) {
       // Swap width and height for rotated videos
       ;[width, height] = [height, width]
@@ -310,7 +325,6 @@ export async function getVideoMetadata(videoFilePath: string): Promise<VideoMeta
     const displayAspectRatio = videoStream.display_aspect_ratio
 
     const totalFrames = Math.floor(duration * fps)
-
 
     return {
       duration,
@@ -375,4 +389,34 @@ export async function getLocationFromVideo(videoFullPath: string): Promise<GeoLo
       altitude: undefined,
     }
   }
+}
+
+export async function createStackedThumbnail(exportId: string, scenes: Scene[]) {
+  const selectedScenes = scenes.slice(0, 3)
+  const images = []
+
+  for (const scene of selectedScenes) {
+    if (!scene.thumbnailUrl) continue
+    const imageBuffer = await readFile(scene.thumbnailUrl)
+    const image = await Jimp.Jimp.read(imageBuffer)
+    images.push(image)
+  }
+
+  const width = 1280
+  const height = 800
+  const stackedImage = new Jimp.Jimp({ width, height, color: 0x000000ff })
+  const overlap = 40 // how much each card overlaps the previous one
+  const cardHeight = Math.min(height * 0.7, (height + (images.length - 1) * overlap) / images.length)
+
+  let y = 0
+  for (const img of images) {
+    img.cover({ w: width, h: cardHeight })
+    stackedImage.composite(img, 0, y)
+    y += cardHeight - overlap
+  }
+
+  const thumbnailPath = path.join(THUMBNAILS_DIR, `${exportId}_thumbnail.jpg`)
+  await stackedImage.write(`${THUMBNAILS_DIR}/${exportId}_thumbnail.jpg`)
+
+  return thumbnailPath
 }
