@@ -4,8 +4,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-arm64-openssl-1.1.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-1.1.x", "linux-arm64-openssl-3.0.x"]
 }
 
 enum UserRole {
@@ -14,19 +14,40 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      UserRole @default(user)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  chats     Chat[]
-  folders   Folder[]
-  jobs      Job[]
-  integration   Integration?
+  id          String       @id
+  email       String       @unique
+  name        String
+  password    String
+  role        UserRole     @default(user)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  chats       Chat[]
+  folders     Folder[]
+  jobs        Job[]
+  integration Integration?
+  settings    Settings?
+
+  videos      Video[]
+  projects    Project[]
+  collections Collection[]
+  exports     Export[]
 }
 
+model Settings {
+  id     String @id
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Face Recognition Settings
+  primaryFaceLabel         String?
+  
+  // Notification Settings
+  notifyOnJobComplete Boolean @default(true)
+  notifyOnErrors      Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 enum FolderStatus {
   idle
@@ -36,16 +57,23 @@ enum FolderStatus {
 }
 
 model Folder {
-  id          String       @id @default(cuid())
+  id          String       @id
   path        String       @unique
   status      FolderStatus @default(idle)
-  videoCount  Int?       
+  videoCount  Int?
   lastScanned DateTime?
-  size        Int?  
   createdAt   DateTime     @default(now())
   jobs        Job[]
   userId      String
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Watcher settings
+  watcherEnabled    Boolean  @default(true)
+  lastWatcherScan   DateTime?
+  excludePatterns   String[] @default([])
+  includePatterns   String[] @default(["*.mp4", "*.mov", "*.avi", "*.mkv"])
+
+  videos Video[]
 }
 
 enum JobStatus {
@@ -54,73 +82,277 @@ enum JobStatus {
   done
   error
 }
+
 enum JobStage {
   starting
   transcribing
   frame_analysis
   creating_scenes
-  embedding
+  embedding_text
+  embedding_visual
+  embedding_audio
 }
-
 
 model Job {
-  id         String    @id @default(cuid())
-  videoPath  String
-  thumbnailPath String?
-  fileSize BigInt @default(0)
-  overallProgress  Int @default(0)
-  progress   Int @default(0)
-  stage      JobStage  @default(starting)
-  status     JobStatus @default(pending)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now())
-  folderId   String?
-  folder     Folder?   @relation(fields: [folderId], references: [id])
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+  id              String    @id
+  videoPath       String
+  thumbnailPath   String?
+  fileSize        BigInt    @default(0)
+  overallProgress Int       @default(0)
+  progress        Int       @default(0)
+  stage           JobStage  @default(starting)
+  status          JobStatus @default(pending)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now())
+  folderId        String?
+  folder          Folder?   @relation(fields: [folderId], references: [id])
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  
+  frameAnalysisTime Int?  
+  sceneCreationTime Int?  
+  transcriptionTime Int?   
+  textEmbeddingTime Int?  
+  audioEmbeddingTime Int?  
+  visualEmbeddingTime Int?
+
+  frameAnalysisPlugins Json?
+}
 
 enum Sender {
   user
   assistant
 }
 
-
 model Chat {
-  id        String        @id @default(cuid())
-  title     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  ChatMessage[]
-  isLocked  Boolean       @default(false) 
-  lockReason String?                       
+  id         String        @id
+  title      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages   ChatMessage[]
+  isLocked   Boolean       @default(false)
+  lockReason String?
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
 }
 
+enum MessageIntent {
+ compilation 
+ analytics 
+ general 
+ refinement 
+ similarity
+}
+
+enum MessageStage {
+  understanding   
+  searching       
+  analyzing       
+  compiling       
+  refining   
+  stitching
+  exporting_scenes     
+}
+
+
 model ChatMessage {
-  id                String          @id @default(cuid())
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                String   @id
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   sender            Sender
-  text              String
+  text              String?
   chatId            String
-  chat              Chat            @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  outputSceneIds    String[]        @default([])
-  stitchedVideoPath String?       
-  tokensUsed      BigInt @default(0)
-  isError             Boolean @default(false)                     
+  chat              Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  outputSceneIds    String[] @default([])
+  stitchedVideoPath String?
+  tokensUsed        BigInt   @default(0)
+  isError           Boolean  @default(false)
+
+  isThinking       Boolean  @default(true)
+
+  stage            MessageStage? 
+
+  intent           MessageIntent?
+
+  exportId            String?
+  export              Export?     @relation(fields: [exportId], references: [id], onDelete: Cascade)
 
   @@index([chatId, createdAt])
 }
 
 model Integration {
-  id            String   @id @default(cuid())
+  id            String   @id
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   immichApiKey  String
   immichBaseUrl String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id
+  name         String
+  instructions String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  videos       Video[]
+  isArchived   Boolean  @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  chats Chat[]
+}
+
+model Video {
+  id        String   @id
+  source    String
+  name      String
+  duration  BigInt   @default(0)
+  importAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shottedAt DateTime
+
+  thumbnailUrl String
+  faces        Json?
+  emotions     Json?
+  shotTypes    Json?
+  objects      Json?
+
+  aspectRatio String? @default("16:9")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  folderId  String?
+  folder    Folder?    @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  projects        Project[]
+  collectionItems CollectionItem[]
+}
+
+enum CollectionType {
+  visual_style
+  subject_matter
+  emotional_tone
+  aspect_ratio
+  time_of_day
+  use_case
+  people
+  location
+  custom
+  geographic_location
+  person
+  b_roll
+  audio
+}
+
+enum CollectionStatus {
+  active
+  archived
+  processing
+}
+
+model Collection {
+  id          String         @id
+  name        String
+  description String?
+  type        CollectionType
+
+  isAutoPopulated   Boolean @default(true)
+  autoUpdateEnabled Boolean @default(true)
+
+  filters          Json?
+  requiredObjects  String[] @default([])
+  requiredEmotions String[] @default([])
+  requiredFaces    String[] @default([])
+  locationName     String?
+
+  status        CollectionStatus @default(active)
+  itemCount     Int              @default(0)
+  totalDuration BigInt           @default(0)
+  lastUpdated   DateTime         @default(now())
+
+  thumbnailUrl String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items CollectionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, type])
+  @@index([userId, status])
+  @@index([type, status])
+}
+
+model CollectionItem {
+  id String @id
+
+  videoId  String
+  video    Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  sceneIds String[] @default([])
+
+  confidence Float
+  matchType  String @default("embedding")
+
+  viewCount   Int       @default(0)
+  exportCount Int       @default(0)
+  lastUsed    DateTime?
+
+  isPinned  Boolean @default(false)
+  userNotes String?
+
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([collectionId, videoId])
+  @@index([collectionId, confidence])
+  @@index([videoId])
+}
+
+enum ExportStatus {
+  created
+  ready
+  processing
+  failed
+}
+
+model Export {
+  id String @id
+
+  status ExportStatus @default(created)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sceneIds String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  chatMessage   ChatMessage[]
+
+
+
+  name String?
+  filePath String?
+  progress Int @default(0)
+  downloadCount Int @default(0)
+
+  thumbnailUrl String?
+
+  @@index([userId, status])
 }
