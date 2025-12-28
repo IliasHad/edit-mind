@@ -3,7 +3,7 @@ import { useFetcher } from 'react-router-dom'
 import lodash from 'lodash'
 import type { VideoWithScenes } from '@shared/types/video'
 import type { SearchStats } from '@shared/types/search';
-import type { Suggestion } from '@shared/services/suggestion'
+import type { Suggestion } from '@search/services/suggestion'
 
 const { debounce } = lodash
 

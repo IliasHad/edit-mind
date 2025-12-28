@@ -1,4 +1,4 @@
-import { getAllUnknownFaces } from '@background-jobs/src/services/faces';
+import { getAllUnknownFaces } from '@shared/utils/faces';
 import type { LoaderFunctionArgs } from 'react-router'
 
 export async function loader({ request }: LoaderFunctionArgs) {

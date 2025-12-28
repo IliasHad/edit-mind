@@ -3,7 +3,7 @@ import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SearchSuggestions } from './SearchSuggestions'
 import { useVideoSearch } from '../hooks/useVideoSearch'
-import type { Suggestion } from '@shared/services/suggestion'
+import type { Suggestion } from '@search/services/suggestion'
 
 interface SearchInputProps {
   onFocus?: () => void

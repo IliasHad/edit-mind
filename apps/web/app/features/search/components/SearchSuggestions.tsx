@@ -1,4 +1,4 @@
-import type { Suggestion } from '@shared/services/suggestion'
+import type { Suggestion } from '@search/services/suggestion'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 

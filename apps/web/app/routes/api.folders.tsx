@@ -2,8 +2,9 @@ import pathModule from 'path'
 import fs from 'fs/promises'
 import { MEDIA_BASE_PATH } from '@shared/constants'
 import { getUser } from '~/services/user.sever'
-import { prisma } from '~/services/database'
 import { triggerFolderQueue } from '~/utils/folder.server'
+import { logger } from '@shared/services/logger'
+import { FolderModel } from '@db/index';
 
 export async function loader({ request }: { request: Request }) {
   const url = new URL(request.url)
@@ -18,7 +19,6 @@ export async function loader({ request }: { request: Request }) {
     }
 
     const entries = await fs.readdir(fullPath, { withFileTypes: true })
-
     let folders = await Promise.all(
       entries
         .filter((entry) => entry.isDirectory())
@@ -50,7 +50,6 @@ export async function loader({ request }: { request: Request }) {
   }
 }
 
-
 export async function action({ request }: { request: Request }) {
   try {
     const user = await getUser(request)
@@ -66,26 +65,20 @@ export async function action({ request }: { request: Request }) {
     }
 
     const fullPath = pathModule.resolve(MEDIA_BASE_PATH, folderPath.replace(/^\//, ''))
-    
+
     if (!fullPath.startsWith(pathModule.resolve(MEDIA_BASE_PATH))) {
       return { success: false, error: 'Access denied: path outside allowed directory' }
     }
 
-    try {
-      await fs.access(fullPath)
-      const folder = await prisma.folder.create({
-        data: {
-          path: fullPath,
-          userId: user?.id,
-        },
-      })
-      await triggerFolderQueue(fullPath)
-      return { success: true, folder }
-    } catch {
-      return { success: false, error: 'Failed to create folder' }
-    }
+    await fs.access(fullPath)
+    const folder = await FolderModel.create({
+      path: fullPath,
+      userId: user?.id,
+    })
+    await triggerFolderQueue(fullPath)
+    return { success: true, folder }
   } catch (error) {
-    console.error(error)
+    logger.error(error)
     return { success: false, error: 'Failed to create folder' }
   }
 }

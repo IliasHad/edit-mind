@@ -8,7 +8,7 @@ type MessageListProps = {
   handleSelectScene: (sceneId: string) => void
   stitchSelectedScenes: (messageId: string) => void
   isStitching: boolean
-  chat: Chat | null
+  chat?: Chat | null
 }
 
 export function MessageList({

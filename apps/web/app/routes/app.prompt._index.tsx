@@ -2,8 +2,8 @@ import { AnimatePresence } from 'framer-motion'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { useChat } from '../features/prompt/hooks/useChat'
 import { useLoaderData, type LoaderFunctionArgs, type MetaFunction } from 'react-router'
-import { getVideosMetadataSummary } from '@shared/services/vectorDb'
-import { generateSearchSuggestions } from '@shared/utils/search'
+import { getVideosMetadataSummary } from '@vector/services/vectorDb'
+import { generateSearchSuggestions } from '@search/utils/search'
 import { ChatHistory } from '~/features/prompt/components/ChatHistory'
 import { Welcome } from '~/features/prompt/components/Welcome'
 import { MessageList } from '~/features/prompt/components/MessageList'
@@ -48,7 +48,7 @@ export default function ChatPage() {
     selectedScenes,
     toggleSceneSelection,
     stitchSelectedScenes,
-    isStitching
+    isStitching,
   } = useChat()
   const { suggestions, chats } = useLoaderData<typeof loader>()
 
@@ -65,8 +65,8 @@ export default function ChatPage() {
                   messages={messages}
                   selectedScenes={selectedScenes}
                   handleSelectScene={toggleSceneSelection}
-                    stitchSelectedScenes={stitchSelectedScenes}
-                    isStitching={isStitching}
+                  stitchSelectedScenes={stitchSelectedScenes}
+                  isStitching={isStitching}
                 />
                 {isLoading && <LoadingIndicator />}
                 <div ref={messagesEndRef} />

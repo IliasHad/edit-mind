@@ -1,4 +1,4 @@
-import { getAllKnownFaces } from '@background-jobs/src/services/faces'
+import { getAllKnownFaces } from '@shared/utils/faces'
 
 export async function loader() {
   const faces = await getAllKnownFaces()

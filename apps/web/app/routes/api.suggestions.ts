@@ -1,4 +1,4 @@
-import { getGroupedSearchSuggestions } from '@shared/services/suggestion';
+import { getGroupedSearchSuggestions } from '@search/services/suggestion';
 import type { ActionFunctionArgs } from 'react-router'
 
 export async function action({ request }: ActionFunctionArgs) {

@@ -5,9 +5,9 @@ import { useLoaderData, useRevalidator, useFetcher } from 'react-router'
 import { prisma } from '~/services/database'
 import { useEffect } from 'react'
 import { JobsGrid } from '~/features/settings/components/JobsGrid'
-import { findVideoFiles } from '@shared/utils/videos'
-import { videoQueue } from '@background-jobs/src/queue'
-import { getVideosNotEmbedded } from '@shared/services/vectorDb'
+import { backgroundJobsFetch } from '~/services/background.server'
+import type { Folder } from '@prisma/client'
+import { logger } from '@shared/services/logger'
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params
@@ -37,39 +37,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData()
   const intent = formData.get('intent')
 
+  logger.debug(intent)
+  
   if (intent === 'rescan') {
     const folder = await prisma.folder.findUnique({
       where: { id },
     })
 
     if (!folder) throw new Response('Folder not found', { status: 404 })
-    const videos = await findVideoFiles(folder.path)
-    const uniqueVideos = await getVideosNotEmbedded(videos.map((video) => video.path))
 
-    await prisma.folder.update({
-      where: { id },
-      data: {
-        videoCount: (folder.videoCount || 0) + uniqueVideos.length,
-        lastScanned: new Date(),
-      },
+    await backgroundJobsFetch<{ folderPath: string }, { folder: Folder }>('/folders/trigger', {
+      folderPath: folder.path,
     })
-
-    for (const video of uniqueVideos) {
-      const job = await prisma.job.upsert({
-        where: { videoPath: video, id: '' },
-        create: {
-          videoPath: video,
-          userId: folder?.userId,
-          folderId: folder.id,
-        },
-        update: { folderId: folder.id },
-      })
-      await videoQueue.add('index-video', { videoPath: video, jobId: job.id, folderId: folder.id })
-    }
-
-    return { success: true, message: 'Folder scan initiated' }
   }
-
   return { success: false, message: 'Invalid action' }
 }
 

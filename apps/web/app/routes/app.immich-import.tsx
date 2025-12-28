@@ -5,10 +5,9 @@ import { useLoaderData, useActionData, Form, useNavigation, type MetaFunction } 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
-import { getImmichConfig, saveImmichIntegration, deleteImmichIntegration } from '../services/immich.server';
+import { getImmichConfig, saveImmichIntegration, deleteImmichIntegration, addImmichImporterJob } from '../services/immich.server';
 import { getUser } from '~/services/user.sever'
-import { immichActionSchema, immichConfigFormSchema } from '@shared/schemas/immich'
-import { addImmichImporterJob } from '@background-jobs/src/services/immichImporter'
+import { immichActionSchema, immichConfigFormSchema } from '@immich/schemas/immich'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await getUser(request)

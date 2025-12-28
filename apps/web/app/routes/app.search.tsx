@@ -7,14 +7,14 @@ import { SearchResultsGrid } from '~/features/search/components/SearchResultsGri
 import { SearchStats } from '~/features/search/components/SearchStats'
 import { EmptyState } from '~/features/search/components/EmptyState'
 import { useVideoSearch } from '~/features/search/hooks/useVideoSearch'
-import { hybridSearch } from '@shared/services/vectorDb'
+import { hybridSearch } from '@vector/services/vectorDb'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getUser } from '~/services/user.sever'
 import { SearchInput } from '~/features/search/components/SearchInput'
 import type { VideoSearchParams } from '@shared/types/search'
-import { generateActionFromPrompt } from '@shared/services/modelRouter'
-import { getSearchStats } from '@shared/utils/search'
-import { buildSearchQueryFromSuggestions } from '@shared/services/suggestion'
+import { generateActionFromPrompt } from '@ai/services/modelRouter'
+import { getSearchStats } from '@search/utils/search'
+import { buildSearchQueryFromSuggestions } from '@search/services/suggestion'
 import { logger } from '@shared/services/logger'
 
 export const meta: MetaFunction = () => {
