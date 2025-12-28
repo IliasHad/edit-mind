@@ -1,10 +1,5 @@
-import type {
-  Llama,
-  LlamaModel,
-  LlamaContext,
-  LlamaGrammar,
-} from 'node-llama-cpp'
-import { SEARCH_AI_MODEL } from '../constants'
+import type { Llama, LlamaModel, LlamaContext, LlamaGrammar } from 'node-llama-cpp'
+import { SEARCH_AI_MODEL } from '@ai/constants'
 import {
   GENERAL_RESPONSE_PROMPT,
   ANALYTICS_RESPONSE_PROMPT,
@@ -13,16 +8,17 @@ import {
   YEAR_IN_REVIEW,
   SEARCH_PROMPT,
   ASSISTANT_MESSAGE_PROMPT,
-} from '../constants/prompts'
-import type { VideoSearchParams } from '../types/search'
+} from '@ai/constants/prompts'
+import type { VideoSearchParams } from '@shared/types/search'
+import { logger } from '@shared/services/logger'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
 import { getVideoAnalytics } from '@shared/utils/analytics'
 import type { ChatMessage } from '@prisma/client'
-import { ModelResponse } from './gemini'
-import { logger } from './logger'
+import { ModelResponse } from '@ai/types/ai'
 import { YearStats } from '@shared/types/stats'
 import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import { VideoWithScenes } from '@shared/types/video'
+import { formatHistory } from '@ai/utils'
 
 class LocalLLM {
   private llama: Llama | null = null
@@ -66,15 +62,29 @@ class LocalLLM {
     }
   }
 
-  async generate(prompt: string, max = 512, grammar?: LlamaGrammar): Promise<ModelResponse<string>> {
+  async generate(
+    prompt: string,
+    max = 512,
+    grammar?: LlamaGrammar,
+    systemPrompt?: string,
+    projectInstructions?: string
+  ): Promise<ModelResponse<string>> {
     await this.init()
 
     const seq = this.context!.getSequence()
     const loader = await import('node-llama-cpp')
     const session = new loader.LlamaChatSession({ contextSequence: seq })
 
+    let fullPrompt = prompt
+    if (systemPrompt) {
+      fullPrompt = `${systemPrompt}\n\n${fullPrompt}`
+    }
+    if (projectInstructions) {
+      fullPrompt = `[Project Instructions]\n${projectInstructions}\n\n${fullPrompt}`
+    }
+
     try {
-      const res = await session.prompt(prompt, {
+      const res = await session.prompt(fullPrompt, {
         maxTokens: max,
         temperature: 0.4,
         topP: 0.95,
@@ -97,23 +107,10 @@ class LocalLLM {
 
   async generateActionFromPrompt(
     query: string,
-    chatHistory?: ChatMessage[]
+    chatHistory?: ChatMessage[],
+    projectInstructions?: string
   ): Promise<ModelResponse<VideoSearchParams>> {
-    const fallback: VideoSearchParams = {
-      action: null,
-      emotions: [],
-      objects: [],
-      duration: null,
-      shot_type: null,
-      aspect_ratio: '16:9',
-      transcriptionQuery: null,
-      description: query || 'No query provided',
-      faces: [],
-      semanticQuery: query,
-      locations: [],
-      camera: null,
-      detectedText: null,
-    }
+    const fallback = VideoSearchParamsSchema.parse({})
 
     if (!query || query.trim() === '') {
       return { data: fallback, tokens: 0, error: undefined }
@@ -125,6 +122,7 @@ class LocalLLM {
       type: 'object',
       properties: {
         action: { type: ['string', 'null'] },
+        limit: { type: ['number', 'null'] },
         emotions: {
           type: 'array',
           items: {
@@ -143,6 +141,9 @@ class LocalLLM {
           enum: ['16:9', '9:16', '1:1', '4:3', '8:7'],
         },
         transcriptionQuery: { type: ['string', 'null'] },
+        transcriptionRegex: { type: ['string', 'null'] },
+        excludeTranscriptionRegex: { type: ['string', 'null'] },
+        detectedTextRegex: { type: ['string', 'null'] },
         description: { type: 'string' },
         faces: { type: 'array', items: { type: 'string' } },
       },
@@ -151,7 +152,11 @@ class LocalLLM {
 
     const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
-    const { data: raw, tokens, error } = await this.generate(SEARCH_PROMPT(query, history), 1024, grammar)
+    const {
+      data: raw,
+      tokens,
+      error,
+    } = await this.generate(SEARCH_PROMPT(query, history, projectInstructions), 1024, grammar)
 
     if (error || !raw) {
       return { data: fallback, tokens: 0, error }
@@ -162,7 +167,7 @@ class LocalLLM {
       return {
         data: VideoSearchParamsSchema.parse({
           ...parsed,
-          semanticQuery: query,
+          semanticQuery: null,
           locations: [],
           camera: null,
           detectedText: null,
@@ -178,28 +183,31 @@ class LocalLLM {
   async generateAssistantMessage(
     userPrompt: string,
     count: number,
-    chatHistory?: ChatMessage[]
+    chatHistory?: ChatMessage[],
+    projectInstructions?: string
   ): Promise<ModelResponse<string>> {
-    const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
+    const history = formatHistory(chatHistory)
 
-    return await this.generate(ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history))
+    return await this.generate(ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions))
   }
 
   async generateCompilationResponse(
     userPrompt: string,
     count: number,
-    chatHistory?: ChatMessage[]
+    chatHistory?: ChatMessage[],
+    projectInstructions?: string
   ): Promise<ModelResponse<string>> {
-    const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
-    return await this.generate(VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history))
+    const history = formatHistory(chatHistory)
+    return await this.generate(VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions))
   }
   async generateYearInReviewResponse(
     stats: YearStats,
     videos: VideoWithScenes[],
-    extraDetails: string
+    extraDetails: string,
+    projectInstructions?: string
   ): Promise<ModelResponse<YearInReviewData | null>> {
     try {
-      let prompt = YEAR_IN_REVIEW(stats, videos, extraDetails)
+      let prompt = YEAR_IN_REVIEW(stats, videos, extraDetails, projectInstructions)
       let promptLength = prompt.length
       let estimatedTokens = Math.ceil(promptLength / 4)
 
@@ -322,18 +330,39 @@ class LocalLLM {
     }
   }
 
-  async generateGeneralResponse(prompt: string, history?: ChatMessage[]): Promise<ModelResponse<string>> {
-    const context = history?.length ? history.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
+  async generateGeneralResponse(
+    prompt: string,
+    chatHistory?: ChatMessage[],
+    projectInstructions?: string
+  ): Promise<ModelResponse<string>> {
+    const history = formatHistory(chatHistory)
 
-    return await this.generate(GENERAL_RESPONSE_PROMPT(prompt, context))
+    return await this.generate(GENERAL_RESPONSE_PROMPT(prompt, history, projectInstructions))
   }
 
-  async classifyIntent(prompt: string, chatHistory?: ChatMessage[]): Promise<ModelResponse<any>> {
-    const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
-    const { data: raw, tokens, error } = await this.generate(CLASSIFY_INTENT_PROMPT(prompt, history))
+  async classifyIntent(
+    prompt: string,
+    chatHistory?: ChatMessage[],
+    projectInstructions?: string
+  ): Promise<
+    ModelResponse<{ type?: 'general' | 'compilation' | 'analytics' | undefined; needsVideoData?: boolean | undefined }>
+  > {
+    const history = formatHistory(chatHistory)
+    const {
+      data: raw,
+      tokens,
+      error,
+    } = await this.generate(CLASSIFY_INTENT_PROMPT(prompt, history, projectInstructions))
 
     if (error || !raw) {
-      return { data: null, tokens: 0, error }
+      return {
+        data: {
+          type: 'general',
+          needsVideoData: false,
+        },
+        tokens: 0,
+        error,
+      }
     }
 
     try {
@@ -344,7 +373,10 @@ class LocalLLM {
       }
     } catch {
       return {
-        data: null,
+        data: {
+          type: 'general',
+          needsVideoData: false,
+        },
         tokens: 0,
         error: 'Failed to parse intent from local model.',
       }
@@ -354,10 +386,11 @@ class LocalLLM {
   async generateAnalyticsResponse(
     prompt: string,
     analytics: Awaited<ReturnType<typeof getVideoAnalytics>>,
-    chatHistory?: ChatMessage[]
+    chatHistory?: ChatMessage[],
+    projectInstructions?: string
   ): Promise<ModelResponse<string>> {
-    const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
-    return await this.generate(ANALYTICS_RESPONSE_PROMPT(prompt, analytics, history))
+    const history = formatHistory(chatHistory)
+    return await this.generate(ANALYTICS_RESPONSE_PROMPT(prompt, analytics, history, projectInstructions))
   }
 
   async cleanup(): Promise<void> {

@@ -8,7 +8,7 @@ import {
   generateAnalyticsResponse,
   generateActionFromPrompt,
   generateYearInReviewResponse,
-} from '@shared/services/modelRouter'
+} from '@ai/services/modelRouter'
 import { TEST_QUERIES, compareResults } from '../helpers/llm'
 import { ChatMessage } from '@prisma/client'
 import { YearStats } from '@shared/types/stats'
@@ -1074,6 +1074,11 @@ describe('LLM Service', () => {
               { name: 'medium-shot', count: 542 },
               { name: 'long-shot', count: 398 },
             ],
+            topWords: [
+              { word: 'hey', count: 678 },
+              { word: 'welcome', count: 542 },
+              { word: 'testing', count: 398 },
+            ],
             categories: [
               { name: 'work', count: 89 },
               { name: 'personal', count: 67 },
@@ -1081,6 +1086,7 @@ describe('LLM Service', () => {
               { name: 'family', count: 32 },
               { name: 'hobbies', count: 14 },
             ],
+
             longestScene: {
               duration: 145.8,
               description: 'Detailed presentation of quarterly results with multiple charts and data visualizations',

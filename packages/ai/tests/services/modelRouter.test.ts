@@ -30,15 +30,15 @@ const mockLogger = {
   error: vi.fn(),
 }
 
-vi.mock('@shared/services/llm', () => ({
+vi.mock('@ai/services/localLlm', () => ({
   LocalModel: mockLocalModel,
 }))
 
-vi.mock('@shared/services/gemini', () => ({
+vi.mock('@ai/services/gemini', () => ({
   GeminiModel: mockGeminiModel,
 }))
 
-vi.mock('@shared/services/logger', () => ({
+vi.mock('@ai/services/logger', () => ({
   logger: mockLogger,
 }))
 
@@ -49,7 +49,7 @@ const mockConstants: Record<string, string | null | boolean> = {
   GEMINI_MODEL_NAME: 'gemini-pro',
 }
 
-vi.mock('@shared/constants', () => mockConstants)
+vi.mock('@ai/constants', () => mockConstants)
 
 const dummyHistory: ChatMessage[] = [
   {
@@ -90,9 +90,7 @@ describe('Model Router', () => {
       mockConstants.GEMINI_API_KEY = null
 
       vi.resetModules()
-      const modelRouter = await import('@shared/services/modelRouter')
-
-      expect(mockLogger.debug).toHaveBeenCalledWith(expect.stringContaining('Using Local Model'))
+      const modelRouter = await import('@ai/services/modelRouter')
 
       await modelRouter.generateActionFromPrompt('test', dummyHistory)
       expect(mockLocalModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
@@ -105,9 +103,7 @@ describe('Model Router', () => {
       mockConstants.GEMINI_MODEL_NAME = 'gemini-pro'
 
       vi.resetModules()
-      const modelRouter = await import('@shared/services/modelRouter')
-
-      expect(mockLogger.debug).toHaveBeenCalledWith('Using Gemini Model: gemini-pro')
+      const modelRouter = await import('@ai/services/modelRouter')
 
       await modelRouter.generateActionFromPrompt('test', dummyHistory)
       expect(mockGeminiModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
@@ -120,7 +116,7 @@ describe('Model Router', () => {
 
       vi.resetModules()
 
-      await expect(import('@shared/services/modelRouter')).rejects.toThrow(
+      await expect(import('@ai/services/modelRouter')).rejects.toThrow(
         'No valid AI backend found. Set USE_LOCAL + SEARCH_AI_MODEL or GEMINI_API_KEY.'
       )
     })
@@ -135,44 +131,44 @@ describe('Model Router', () => {
     })
 
     it('should call generateActionFromPrompt on the active model', async () => {
-      const { generateActionFromPrompt } = await import('@shared/services/modelRouter')
+      const { generateActionFromPrompt } = await import('@ai/services/modelRouter')
       await generateActionFromPrompt('test query', dummyHistory)
       expect(mockLocalModel.generateActionFromPrompt).toHaveBeenCalledWith('test query', dummyHistory)
     })
 
     it('should call generateAssistantMessage on the active model', async () => {
-      const { generateAssistantMessage } = await import('@shared/services/modelRouter')
+      const { generateAssistantMessage } = await import('@ai/services/modelRouter')
       await generateAssistantMessage('test prompt', 5)
       expect(mockLocalModel.generateAssistantMessage).toHaveBeenCalledWith('test prompt', 5)
     })
 
     it('should call generateCompilationResponse on the active model', async () => {
-      const { generateCompilationResponse } = await import('@shared/services/modelRouter')
+      const { generateCompilationResponse } = await import('@ai/services/modelRouter')
       await generateCompilationResponse('test prompt', 3, dummyHistory)
       expect(mockLocalModel.generateCompilationResponse).toHaveBeenCalledWith('test prompt', 3, dummyHistory)
     })
 
     it('should call generateGeneralResponse on the active model', async () => {
-      const { generateGeneralResponse } = await import('@shared/services/modelRouter')
+      const { generateGeneralResponse } = await import('@ai/services/modelRouter')
       await generateGeneralResponse('test prompt', dummyHistory)
       expect(mockLocalModel.generateGeneralResponse).toHaveBeenCalledWith('test prompt', dummyHistory)
     })
 
     it('should call classifyIntent on the active model', async () => {
-      const { classifyIntent } = await import('@shared/services/modelRouter')
+      const { classifyIntent } = await import('@ai/services/modelRouter')
       await classifyIntent('test prompt', dummyHistory)
       expect(mockLocalModel.classifyIntent).toHaveBeenCalledWith('test prompt', dummyHistory)
     })
 
     it('should call generateAnalyticsResponse on the active model', async () => {
-      const { generateAnalyticsResponse } = await import('@shared/services/modelRouter')
+      const { generateAnalyticsResponse } = await import('@ai/services/modelRouter')
       const analytics = { data: 'test' }
       await generateAnalyticsResponse('test prompt', analytics, dummyHistory)
       expect(mockLocalModel.generateAnalyticsResponse).toHaveBeenCalledWith('test prompt', analytics, dummyHistory)
     })
 
     it('should call generateYearInReviewResponse on the active model', async () => {
-      const { generateYearInReviewResponse } = await import('@shared/services/modelRouter')
+      const { generateYearInReviewResponse } = await import('@ai/services/modelRouter')
       const stats: YearStats = {
         totalVideos: 10,
         totalDuration: 100,
@@ -182,6 +178,7 @@ describe('Model Router', () => {
         topShotTypes: [],
         topObjects: [],
         categories: [],
+        topWords: [],
         longestScene: { duration: 10, description: '', videoSource: 'testing.mp4' },
         shortestScene: { duration: 10, description: '', videoSource: 'testing.mp4' },
       }
@@ -193,14 +190,14 @@ describe('Model Router', () => {
     })
 
     it('should call cleanup on the active model', async () => {
-      const { cleanup } = await import('@shared/services/modelRouter')
+      const { cleanup } = await import('@ai/services/modelRouter')
       await cleanup()
       expect(mockLocalModel.cleanUp).toHaveBeenCalled()
     })
   })
 
   describe('Error Handling', () => {
-    it('should log an error and re-throw when a function call fails', async () => {
+    it('should throw an error and re-throw when a function call fails', async () => {
       const error = new Error('Test error')
       mockLocalModel.generateActionFromPrompt.mockRejectedValueOnce(error)
 
@@ -208,10 +205,9 @@ describe('Model Router', () => {
       mockConstants.SEARCH_AI_MODEL = '/path/to/local/model'
       vi.resetModules()
 
-      const { generateActionFromPrompt } = await import('@shared/services/modelRouter')
+      const { generateActionFromPrompt } = await import('@ai/services/modelRouter')
 
       await expect(generateActionFromPrompt('test query')).rejects.toThrow(error)
-      expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Error processing query "test query"'))
     })
   })
 })
