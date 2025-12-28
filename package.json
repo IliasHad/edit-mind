@@ -12,7 +12,9 @@
     "type": "git",
     "url": "https://github.com/iliashad/edit-mind"
   },
-  "scripts": {},
+  "scripts": {
+    "build": "turbo build --filter='./packages/*'"
+  },
   "dependencies": {
     "@prisma/client": "6.19.0",
     "bcryptjs": "^2.4.3"
@@ -20,7 +22,9 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "prisma": "6.19.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "turbo": "^2.7.2",
+    "vitest": "^4.0.14"
   },
   "pnpm": {
     "overrides": {
@@ -46,5 +50,6 @@
   },
   "overrides": {
     "sharp": "0.34.5"
-  }
+  },
+  "packageManager": "pnpm@10.20.0"
 }
