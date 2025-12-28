@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Export" ADD COLUMN     "downloadCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "progress" INTEGER NOT NULL DEFAULT 0;
