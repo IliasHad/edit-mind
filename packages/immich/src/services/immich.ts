@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import { FACES_DIR } from '../constants';
 import { AssetsBucketResponse, Face, ImmichConfig, PeopleResponse, Person, TimeBucket } from '../types/immich'
 import * as Jimp from 'jimp'
-import { logger } from './logger'
+import { logger } from '@shared/services/logger'
 
 const PAGE_SIZE = 100
 
