@@ -1,10 +1,10 @@
-import { generateCompilationResponse } from '@shared/services/modelRouter'
+import { generateCompilationResponse } from '@ai/services/modelRouter'
 import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
-import { stitchVideos } from '@shared/utils/sticher'
-import { getVideoWithScenesBySceneIds } from '@shared/services/vectorDb'
-import { prisma } from '../services/db'
-import { VideoStitcherJobData } from '@shared/types/stitcher'
+import { stitchVideos } from '@media-utils/utils/stitcher'
+import { getVideoWithScenesBySceneIds } from '@vector/services/vectorDb'
+import { ChatMessageModel } from '@db/index'
+import { VideoStitcherJobData } from '@media-utils/types/stitcher'
 import { logger } from '@shared/services/logger'
 
 async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
@@ -12,13 +12,17 @@ async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
   logger.info({ jobId: job.id, messageId, chatId }, 'Starting video stitcher job')
 
   try {
+    await ChatMessageModel.update(messageId, {
+      stage: 'stitching',
+    })
+
     const outputScenes = await getVideoWithScenesBySceneIds(selectedSceneIds)
     if (!outputScenes || outputScenes.length === 0) {
       throw new Error('No scenes found for the provided IDs')
     }
 
     const stitchedVideoPath = await stitchVideos(outputScenes, `${messageId}-${new Date().getTime()}.mp4`)
-    const lastUserMessage = await prisma.chatMessage.findFirst({
+    const lastUserMessage = await ChatMessageModel.findFirst({
       where: {
         chatId: chatId,
         sender: 'user',
@@ -29,27 +33,25 @@ async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
     })
     let text = 'Here’s your stitched video!'
 
-    if (lastUserMessage) {
+    if (lastUserMessage && lastUserMessage?.text) {
       text = (await generateCompilationResponse(lastUserMessage?.text, outputScenes.length)).data
     }
 
-    await prisma.chatMessage.create({
-      data: {
-        chatId: chatId,
-        sender: 'assistant',
-        text,
-        stitchedVideoPath,
-      },
+    await ChatMessageModel.create({
+      chatId: chatId,
+      sender: 'assistant',
+      text: text || 'Here’s your stitched video!',
+      stitchedVideoPath,
+      intent: 'compilation',
     })
     logger.info({ jobId: job.id, messageId, chatId }, 'Video stitcher job completed')
   } catch (error) {
     logger.error({ jobId: job.id, error }, 'Video stitcher job failed')
-    await prisma.chatMessage.create({
-      data: {
-        chatId: chatId,
-        sender: 'assistant',
-        text: 'Sorry, there was an error creating your stitched video.',
-      },
+    await ChatMessageModel.create({
+      chatId: chatId,
+      sender: 'assistant',
+      text: 'Sorry, there was an error creating your stitched video.',
+      intent: 'compilation',
     })
     throw error
   }
