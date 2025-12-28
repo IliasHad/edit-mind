@@ -1,0 +1,32 @@
+{
+  "name": "db",
+  "version": "0.1.2",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": {
+    "name": "ilias",
+    "url": "https://github.com/iliashad"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iliashad/edit-mind"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.0",
+    "bcryptjs": "^2.4.3",
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
+    "prisma": "6.19.0",
+    "ts-node": "^10.9.2",
+    "typescript": "5.9.2"
+  }
+}
