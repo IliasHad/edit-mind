@@ -1,0 +1,30 @@
+{
+  "name": "smart-collections",
+  "version": "0.1.2",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": {
+    "name": "ilias",
+    "url": "https://github.com/iliashad"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iliashad/edit-mind"
+  },
+  "scripts": {
+    "build": "tsc --outDir dist",
+    "test": "NODE_ENV=testing vitest run",
+    "test:ui": "NODE_ENV=testing  vitest --ui"
+  },
+  "dependencies": {
+    "db": "workspace:*",
+    "@google/genai": "^1.25.0",
+    "@google/generative-ai": "^0.24.1",
+    "shared": "workspace:*",
+    "node-llama-cpp": "^3.14.2"
+  },
+  "devDependencies": {}
+}
