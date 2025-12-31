@@ -16,8 +16,10 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../../packages/shared/dist/*"],
-      "@db/*": ["../../packages/db/dist/*"], 
-      "@ai/*": ["./src/*"]
+      "@db/*": ["../../packages/db/dist/*"],
+      "@vector/*": ["../../packages/vector/dist/*"],
+      "@ai/*": ["./src/*"],
+      "@media-utils/*": ["../../packages/media-utils/dist/*"]
     }
   },
   "include": ["src/**/*"],

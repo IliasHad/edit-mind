@@ -11,9 +11,13 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./app/*"],
-      "@shared/*": ["../../packages/shared/*"],
+      "@shared/*": ["../../packages/shared/src/*"],
       "@ui/*": ["../../packages/ui/src/*"],
-      "@background-jobs/*": ["../../apps/background-jobs/*"]
+      "@vector/*": ["../../packages/vector/src/*"],
+      "@db/*": ["../../packages/db/src/*"],
+      "@ai/*": ["../../packages/ai/src/*"],
+      "@search/*": ["../../packages/search/src/*"],
+      "@immich/*": ["../../packages/immich/src/*"]
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

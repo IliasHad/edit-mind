@@ -1,20 +1,30 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES2020",
     "module": "commonjs",
+    "moduleResolution": "node",
     "outDir": "./dist",
     "rootDir": "../../",
-    "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
     "skipLibCheck": true,
+    "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDirs": ["."],
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../../packages/shared/*"]
+      "@shared/*": ["../../packages/shared/dist/*"],
+      "@ai/*": ["../../packages/ai/dist/*"],
+      "@vector/*": ["../../packages/vector/dist/*"],
+      "@db/*": ["../../packages/db/dist/*"],
+      "@media-utils/*": ["../../packages/media-utils/dist/*"],
+      "@search/*": ["../../packages/search/dist/*"],
+      "@immich/*": ["../../packages/immich/dist/*"],
+      "@smart-collections/*": ["../../packages/smart-collections/dist/*"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

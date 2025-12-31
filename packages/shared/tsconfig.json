@@ -16,10 +16,11 @@
     "baseUrl": ".",
     "paths": {
       "@vector/*": ["../../packages/vector/dist/*"],
+      "@media-utils/*": ["../../packages/media-utils/dist/*"],
       "@db/*": ["../../packages/db/dist/*"],
       "@shared/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "../immich/src/services/encryption.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

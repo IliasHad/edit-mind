@@ -16,8 +16,9 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../../packages/shared/dist/*"],
-      "@db/*": ["../../packages/db/dist/*"], 
-      "@ai/*": ["./src/*"]
+      "@db/*": ["../../packages/db/dist/*"],
+      "@ai/*": ["./src/*"],
+      "@vector/*": ["../../packages/vector/dist/*"]
     }
   },
   "include": ["src/**/*"],

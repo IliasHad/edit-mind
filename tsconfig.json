@@ -1,6 +1,16 @@
 {
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@ai/*": ["./packages/ai/dist/*"],
+      "@media-utils/*": ["./packages/media-utils/dist/*"],
+      "@vector/*": ["./packages/vector/dist/*"],
+      "@db/*": ["./packages/db/dist/*"],
+      "@shared/*": ["./packages/shared/dist/*"],
+      "@ui/*": ["./packages/ui/dist/*"],
+      "@search/*": ["./packages/search/dist/*"],
+      "@smart-collections/*": ["./packages/smart-collections/dist/*"]
+    }
   },
-  "include": ["apps/**/*", "packages/**/*"]
+  "exclude": ["node_modules", "**/dist", "**/node_modules"]
 }
