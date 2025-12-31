@@ -9,21 +9,23 @@ import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 import { unlink } from 'fs/promises'
 import { audioEmbeddingQueue, textEmbeddingQueue, visualEmbeddingQueue } from 'src/queue'
-import { Analysis } from '@shared/types/analysis';
+import { Analysis } from '@shared/types/analysis'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = false, transcriptionPath, analysisPath, scenesPath } = job.data
 
-  logger.info({ jobId, videoPath }, '🎬 Starting scene creation')
+  logger.info({ jobId, videoPath }, 'Starting scene creation')
 
   try {
+    const scenesStart = Date.now()
+
     if (!existsSync(analysisPath)) {
-      logger.error({ jobId, analysisPath }, '❌ Analysis file not found')
+      logger.error({ jobId, analysisPath }, 'Analysis file not found')
       throw new Error(`Analysis file not found at: ${analysisPath}`)
     }
 
     if (!existsSync(transcriptionPath)) {
-      logger.error({ jobId, transcriptionPath }, '❌ Transcription file not found')
+      logger.error({ jobId, transcriptionPath }, 'Transcription file not found')
       throw new Error(`Transcription file not found at: ${transcriptionPath}`)
     }
 
@@ -45,7 +47,6 @@ async function processVideo(job: Job<VideoProcessingData>) {
     }
     await updateJob(job, { stage: JobStage.creating_scenes, overallProgress: 70 })
 
-    const scenesStart = Date.now()
     const scenesExists = existsSync(scenesPath)
 
     let scenes: Scene[]
@@ -57,16 +58,17 @@ async function processVideo(job: Job<VideoProcessingData>) {
     }
 
     const scenesDuration = (Date.now() - scenesStart) / 1000
+    await updateJob(job, { sceneCreationTime: Math.round(scenesDuration) })
 
-    try {
-      await unlink(analysisPath)
-      await unlink(transcriptionPath)
-      logger.info({ jobId }, '🧹 Cleaned up intermediate files')
-    } catch (error) {
-      logger.warn({ jobId, error }, '⚠️ Failed to clean up intermediate files')
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        await unlink(analysisPath)
+        await unlink(transcriptionPath)
+        logger.info({ jobId }, 'Cleaned up intermediate files')
+      } catch (error) {
+        logger.warn({ jobId, error }, 'Failed to clean up intermediate files')
+      }
     }
-
-    await updateJob(job, { sceneCreationTime: scenesDuration })
 
     return { scenesPath }
   } catch (error) {
