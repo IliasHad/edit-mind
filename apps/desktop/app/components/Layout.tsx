@@ -1,5 +1,4 @@
 import React from 'react';
-import '@/app/styles/Layout.css';
 import { Header } from './Header';
 
 interface LayoutProps {

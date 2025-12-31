@@ -1,12 +1,10 @@
 import { z, type ZodPromise, type ZodTypeAny } from 'zod'
 import { windowIpcSchema } from './window-schema'
 import { appIpcSchema } from './app-schema'
-import { progressIpcSchema } from './progress-schema'
 
 export const ipcSchemas = {
   ...windowIpcSchema,
   ...appIpcSchema,
-  ...progressIpcSchema,
 } as const
 
 type SchemaReturn<T extends ZodTypeAny> = T extends ZodPromise<infer U> ? U : T
