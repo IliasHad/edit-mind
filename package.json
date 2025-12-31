@@ -2,7 +2,6 @@
   "name": "edit-mind",
   "version": "0.1.2",
   "description": "AI-Powered Video Indexing and Search",
-  "main": "./out/main/main.js",
   "license": "MIT",
   "author": {
     "name": "ilias",
@@ -13,18 +12,14 @@
     "url": "https://github.com/iliashad/edit-mind"
   },
   "scripts": {
-    "build": "turbo build --filter='./packages/*'"
+    "build": "turbo build --filter='./packages/*'",
+    "build:watch": "turbo watch build --filter='./packages/*'"
   },
   "dependencies": {
-    "@prisma/client": "6.19.0",
-    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "prisma": "6.19.0",
-    "ts-node": "^10.9.2",
-    "turbo": "^2.7.2",
-    "vitest": "^4.0.14"
+    "turbo": "^2.7.2"
   },
   "pnpm": {
     "overrides": {
