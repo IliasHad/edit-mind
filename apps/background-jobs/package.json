@@ -12,7 +12,7 @@
     "@bull-board/api": "^6.14.1",
     "@bull-board/express": "^6.14.1",
     "@bull-board/ui": "^6.14.1",
-    "@prisma/client": "6.19.0",
+    "archiver": "^7.0.1",
     "axios": "^1.7.0",
     "body-parser": "^2.2.0",
     "bullmq": "^5.6.0",
@@ -26,12 +26,12 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
     "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.15.6",
-    "prisma": "6.19.0",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.6",
