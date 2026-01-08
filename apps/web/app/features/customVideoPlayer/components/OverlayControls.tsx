@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff } from 'lucide-react'
+import { EyeIcon as Eye, EyeSlashIcon as EyeOff } from '@heroicons/react/24/outline'
 import type { OverlayMode } from '../types'
 import { OVERLAY_MODE_COLORS } from '../constants/styles'
+import { useEffect } from 'react'
 
 interface OverlayControlsProps {
   showOverlays: boolean
@@ -20,6 +21,22 @@ export function OverlayControls({
   onToggleOverlays,
   onChangeMode,
 }: OverlayControlsProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'v') {
+        onToggleOverlays()
+      }
+         if (e.key.toLowerCase() === 'a') {
+        onChangeMode("all")
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onChangeMode, onToggleOverlays])
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -34,7 +51,11 @@ export function OverlayControls({
           showOverlays ? 'bg-white text-black border-white' : 'bg-black/60 text-white border-white/20'
         }`}
       >
-        {showOverlays ? <Eye size={16} strokeWidth={2.5} /> : <EyeOff size={16} strokeWidth={2.5} />}
+        {showOverlays ? (
+          <Eye className="w-4 h-4" strokeWidth={2.5} />
+        ) : (
+          <EyeOff className="w-4 h-4" strokeWidth={2.5} />
+        )}
         <span className="text-xs font-bold uppercase tracking-wide">{showOverlays ? 'Hide' : 'Show'} AI</span>
       </motion.button>
 
@@ -51,9 +72,7 @@ export function OverlayControls({
                 key={mode}
                 onClick={() => onChangeMode(mode)}
                 className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
-                  overlayMode === mode
-                    ? OVERLAY_MODE_COLORS[mode]
-                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                  overlayMode === mode ? OVERLAY_MODE_COLORS[mode] : 'text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {mode}

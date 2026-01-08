@@ -1,4 +1,4 @@
-import { Volume2, VolumeX } from 'lucide-react'
+import { SpeakerWaveIcon as Volume2, SpeakerXMarkIcon as VolumeX } from '@heroicons/react/24/outline'
 import type { VolumeControlProps } from '../types'
 
 export function VolumeControl({ volume, isMuted, onToggleMute, onVolumeChange }: VolumeControlProps) {
@@ -10,9 +10,9 @@ export function VolumeControl({ volume, isMuted, onToggleMute, onVolumeChange }:
         aria-label={isMuted ? 'Unmute' : 'Mute'}
       >
         {isMuted || volume === 0 ? (
-          <VolumeX size={20} className="text-white" strokeWidth={2} />
+          <VolumeX className="w-5 h-5 text-white" strokeWidth={2} />
         ) : (
-          <Volume2 size={20} className="text-white" strokeWidth={2} />
+          <Volume2 className="w-5 h-5 text-white" strokeWidth={2} />
         )}
       </button>
       <input

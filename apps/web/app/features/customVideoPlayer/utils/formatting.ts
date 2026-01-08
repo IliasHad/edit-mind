@@ -5,11 +5,12 @@ export function formatTime(seconds: number): string {
 }
 
 export function formatConfidence(confidence: number | undefined): string | null {
-  return confidence !== undefined ? `${Math.round(confidence * 100)}%` : null
+  if (confidence && confidence < 1) return `${Math.round(confidence * 100)}%`
+  return confidence !== undefined ? `${Math.round(confidence)}%` : null
 }
 
 export function getConfidenceColor(confidence: number): string {
-  if (confidence >= 0.8) return 'text-green-400'
-  if (confidence >= 0.6) return 'text-yellow-400'
+  if (confidence >= 80) return 'text-green-400'
+  if (confidence >= 60) return 'text-yellow-400'
   return 'text-orange-400'
 }

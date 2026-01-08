@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, Tag, Type } from 'lucide-react'
+import { UserIcon as User, TagIcon as Tag, LanguageIcon as Type } from '@heroicons/react/24/outline'
 import type { Scene } from '@shared/types/scene'
 import { BADGE_COLORS } from '../constants/styles'
 
@@ -33,21 +33,21 @@ export function AIVisionBadge({ currentScene, showOverlays, showControls }: AIVi
 
         {currentScene.facesData && currentScene.facesData.length > 0 && (
           <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${BADGE_COLORS.face.bg}`}>
-            <User size={14} className={BADGE_COLORS.face.text} strokeWidth={2.5} />
+            <User className={`w-3.5 h-3.5 ${BADGE_COLORS.face.text}`} strokeWidth={2.5} />
             <span className={`text-sm font-bold ${BADGE_COLORS.face.text}`}>{currentScene.facesData.length}</span>
           </div>
         )}
 
         {currentScene.objectsData && currentScene.objectsData.length > 0 && (
           <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${BADGE_COLORS.object.bg}`}>
-            <Tag size={14} className={BADGE_COLORS.object.text} strokeWidth={2.5} />
+            <Tag className={`w-3.5 h-3.5 ${BADGE_COLORS.object.text}`} strokeWidth={2.5} />
             <span className={`text-sm font-bold ${BADGE_COLORS.object.text}`}>{currentScene.objectsData.length}</span>
           </div>
         )}
 
         {currentScene.detectedTextData && currentScene.detectedTextData.length > 0 && (
           <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${BADGE_COLORS.text.bg}`}>
-            <Type size={14} className={BADGE_COLORS.text.text} strokeWidth={2.5} />
+            <Type className={`w-3.5 h-3.5 ${BADGE_COLORS.text.text}`} strokeWidth={2.5} />
             <span className={`text-sm font-bold ${BADGE_COLORS.text.text}`}>
               {currentScene.detectedTextData.length}
             </span>

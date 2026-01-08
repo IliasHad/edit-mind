@@ -101,7 +101,6 @@ export function CustomVideoPlayer({
         src={source}
         poster={scenes[0]?.thumbnailUrl ? '/thumbnails/' + scenes[0].thumbnailUrl : undefined}
         className="w-full h-full bg-black"
-        style={{ objectFit: currentObjectFit }}
         onClick={togglePlay}
       />
 
@@ -151,12 +150,7 @@ export function CustomVideoPlayer({
         animate={{ opacity: showControls || !isPlaying ? 1 : 0, y: showControls || !isPlaying ? 0 : 20 }}
         className="absolute bottom-20 left-6 right-6 pointer-events-auto"
       >
-        <ProgressBar
-          scenes={scenes}
-          duration={duration}
-          currentTime={currentTime}
-          onSeek={seekTo}
-        />
+        <ProgressBar scenes={scenes} duration={duration} currentTime={currentTime} onSeek={seekTo} />
       </motion.div>
 
       <motion.div
@@ -189,7 +183,7 @@ export function CustomVideoPlayer({
       </motion.div>
 
       <AnimatePresence>
-        {!isPlaying && (
+        {!isPlaying && showControls && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
