@@ -1,419 +1,322 @@
-"""Face detection, recognition, and tracking plugin."""
+from services.logger import get_logger
 import os
 import json
 import hashlib
-import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 from datetime import datetime
 
 import cv2
 import numpy as np
-from dotenv import load_dotenv
 
-from face_recognizer import FaceRecognizer
+from services.analysis.face_recognizer import FaceRecognizer
 from plugins.base import AnalyzerPlugin, FrameAnalysis, PluginResult
+from utils.helpers import format_duration
+from core.config import AnalysisConfig
 
-load_dotenv()
-
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FaceRecognitionPlugin(AnalyzerPlugin):
-    """Plugin for detecting and recognizing faces in video frames."""
+    """A plugin for detecting faces in video frames using DeepFace (Default mode will be VGG-Face, using yolov8n)."""
 
-    def __init__(self, config: Dict[str, Union[str, bool, int, float]]):
+    def __init__(self, config: AnalysisConfig):
         super().__init__(config)
         self.face_recognizer: Optional[FaceRecognizer] = None
-        self.all_faces: List[Dict[str, Union[float, str, int]]] = []
-        self.unknown_faces_output_path: Optional[Path] = None
-        self.known_faces_folder = os.getenv("FACES_DIR") or '.faces'
-        self.detection_model = str(config.get('detection_model', 'VGG-Face'))
-        self.face_scale = float(config.get('face_scale', 0.5))
-        self.save_unknown_faces = bool(config.get('save_unknown_faces', True))
-        
-        self.saved_unknown_faces: Dict[str, Dict[str, Union[str, List]]] = {}
+        self.all_faces: List[Dict] = []
+        self.unknown_faces_dir: Optional[Path] = None
+        self.saved_unknown_faces: Dict[str, Dict] = {}
+        self.current_video_path: str = ""
+        self.current_job_id: str = ""
 
-    def setup(self) -> None:
-        """Initialize face recognizer and load known faces."""        
-        self.face_recognizer = FaceRecognizer(
-            known_faces_folder=self.known_faces_folder,
-            model=self.detection_model
-        )
-        if self.known_faces_folder:
-            os.makedirs(self.known_faces_folder, exist_ok=True)
-        
-        if self.save_unknown_faces:
-            path_str = os.getenv("UNKNOWN_FACES_DIR", str(self.config.get('unknown_faces_dir', 'unknown_faces')))
-            self.unknown_faces_output_path = Path(path_str)
-            self.unknown_faces_output_path.mkdir(parents=True, exist_ok=True)
-            logger.info(f"Unknown faces directory: {self.unknown_faces_output_path}") 
+    def setup(self, video_path: str, job_id: str) -> None:
+        self.face_recognizer = FaceRecognizer()
+        self.current_video_path = video_path
+        self.current_job_id = job_id
+        self.face_recognizer.reset_unknown_registry()
+
+        self.unknown_faces_dir = Path(
+            os.getenv("UNKNOWN_FACES_DIR", '.unknown_faces'))
+        self.unknown_faces_dir.mkdir(parents=True, exist_ok=True)
+
+        self._cleanup_previous_run()
 
     def analyze_frame(
-        self, 
-        frame: np.ndarray, 
-        frame_analysis: FrameAnalysis, 
+        self,
+        frame: np.ndarray,
+        frame_analysis: FrameAnalysis,
         video_path: str
     ) -> FrameAnalysis:
-        """Detect and recognize faces in frame."""
-        if self.face_recognizer is None:
-            logger.error("Face recognizer not initialized")
+        if not self.face_recognizer:
+            logger.warning("Face recognizer not initialized")
             frame_analysis['faces'] = []
             return frame_analysis
-        
-        original_height, original_width = frame.shape[:2]
-        
-        small_frame = cv2.resize(
-            frame, 
-            (0, 0), 
-            fx=self.face_scale, 
-            fy=self.face_scale,
-            interpolation=cv2.INTER_LINEAR
-        )
-        
-        recognized_faces = self.face_recognizer.recognize_faces(small_frame)
-        
-        frame_scale_inverse = 1.0 / self.face_scale
-        ui_scale = float(frame_analysis.get('scale_factor', 1.0))
+
+        height, width = frame.shape[:2]
+        scale_factor = float(frame_analysis.get('scale_factor', 1.0))
+        frame_idx = frame_analysis.get('frame_idx', 0)
+        timestamp_ms = int(frame_analysis['start_time_ms'])
+
+        recognized_faces = self.face_recognizer.recognize_faces(frame)
 
         output_faces = []
         for face in recognized_faces:
-            top, right, bottom, left = face['location']
+            scaled_face = self._scale_face_coordinates(
+                face, scale_factor, width, height)
+            output_faces.append(scaled_face)
 
-            top = int(round(top * frame_scale_inverse))
-            right = int(round(right * frame_scale_inverse))
-            bottom = int(round(bottom * frame_scale_inverse))
-            left = int(round(left * frame_scale_inverse))
-
-            left = max(0, min(left, original_width - 1))
-            top = max(0, min(top, original_height - 1))
-            right = max(0, min(right, original_width))
-            bottom = max(0, min(bottom, original_height))
-            
-            abs_x = left
-            abs_y = top
-            abs_w = right - left
-            abs_h = bottom - top
-
-            ui_x = abs_x * ui_scale
-            ui_y = abs_y * ui_scale
-            ui_w = abs_w * ui_scale
-            ui_h = abs_h * ui_scale
-            
-            output_face: Dict[str, Union[str, List[int], Optional[Dict[str, float]], float, List[float], Dict[str, float], Dict[str, int]]] = {
-                "name": face['name'],
-                "location": [top, right, bottom, left],
-                "confidence": face.get("confidence"),
-                "bbox": {
-                    "x": ui_x,
-                    "y": ui_y,
-                    "width": ui_w,
-                    "height": ui_h
-                },
-                "frame_dimensions": {
-                    "width": original_width,
-                    "height": original_height
-                },
-                "emotion":{
-                    "label": face.get('emotion_label'),
-                    "confidence": face.get('emotion_confidence')
-                }
-            }
-            output_faces.append(output_face)
-            
             self.all_faces.append({
-                "timestamp": frame_analysis['start_time_ms'] / 1000,
+                "timestamp": timestamp_ms / 1000,
                 "name": face['name'],
-                "frame_idx": frame_analysis.get('frame_idx', 0)
+                "frame_idx": frame_idx
             })
 
-            if face['name'].startswith("Unknown_") and self.save_unknown_faces:
-                face_original = face.copy()
-                face_original['location'] = [top, right, bottom, left]
-                
+            if face['name'].startswith("Unknown_"):
                 self._track_unknown_face(
-                    frame,
-                    int(frame_analysis['start_time_ms']),
-                    int(frame_analysis.get('frame_idx', 0)),
-                    face_original,
-                    video_path,
-                    original_width,
-                    original_height
+                    frame, timestamp_ms, frame_idx, face,
+                    video_path, frame_analysis["job_id"], scale_factor
                 )
+
+        if output_faces:
+            names = [f['name'] for f in output_faces]
+            logger.debug(
+                f"Video Path: {video_path},"
+                f"Frame {frame_idx}: ,"
+                f"{len(output_faces)} face(s) - {', '.join(names)}")
+
         frame_analysis['faces'] = output_faces
         return frame_analysis
+
+    def _scale_face_coordinates(
+        self,
+        face: Dict,
+        scale_factor: float,
+        frame_width: int,
+        frame_height: int
+    ) -> Dict:
+        """" Scale face recognized coordinate to the original frame because we scaled down for analyse """
+        top, right, bottom, left = face['location']
+
+        top = int(top * scale_factor)
+        right = int(right * scale_factor)
+        bottom = int(bottom * scale_factor)
+        left = int(left * scale_factor)
+
+        return {
+            "name": face['name'],
+            "location": [top, right, bottom, left],
+            "confidence": face.get("confidence", 0),
+            "bbox": {
+                "x": left,
+                "y": top,
+                "width": right - left,
+                "height": bottom - top
+            },
+            "frame_dimensions": {"width": frame_width, "height": frame_height},
+            "emotion": {
+                "label": face.get('emotion_label'),
+                "confidence": face.get('emotion_confidence')
+            }
+        }
 
     def _track_unknown_face(
         self,
         frame: np.ndarray,
         timestamp_ms: int,
         frame_idx: int,
-        face: Dict[str, Union[str, List[int], np.ndarray, List[float]]],
+        face: Dict,
         video_path: str,
-        frame_width: int,
-        frame_height: int
+        job_id: str,
+        scale_factor: float
     ) -> None:
-        """Track unknown face appearances and save only the first occurrence."""
+        """" Track unknown face  and check by face name, if we save it before or it's the first time to save json and image file for user to label after the video is indexed """
         face_id = face['name']
-        
-        location = face['location']
-        if not isinstance(location, list) or len(location) != 4:
-            return
-            
-        top, right, bottom, left = location
-
-        left = max(0, int(left))
-        top = max(0, int(top))
-        right = min(frame_width, int(right))
-        bottom = min(frame_height, int(bottom))
-
-        original_bbox = {
-            'top': top,
-            'right': right,
-            'bottom': bottom,
-            'left': left,
-            'width': right - left,
-            'height': bottom - top
-        }
-
-        padding_w = int((right - left) * 0.1)
-        padding_h = int((bottom - top) * 0.1)
-        
-        padded_left = max(0, left - padding_w)
-        padded_top = max(0, top - padding_h)
-        padded_right = min(frame_width, right + padding_w)
-        padded_bottom = min(frame_height, bottom + padding_h)
-
-        padded_bbox = {
-            'top': padded_top,
-            'right': padded_right,
-            'bottom': padded_bottom,
-            'left': padded_left,
-            'width': padded_right - padded_left,
-            'height': padded_bottom - padded_top
-        }
-
         appearance_data = {
             "frame_index": frame_idx,
             "timestamp_ms": timestamp_ms,
             "timestamp_seconds": timestamp_ms / 1000,
-            "formatted_timestamp": self._format_timestamp(timestamp_ms),
-            "bounding_box": original_bbox,
-            "padded_bounding_box": padded_bbox
+            "formatted_timestamp": format_duration(timestamp_ms / 1000),
         }
 
-        # Check if this unknown face has been saved before
+        # In case a face is marked as unknown from FaceRecognizer service (DeepFace):
+        # Case 1: the face is "Unknown_001" and we don't have in saved_unknown_faces yet
+        # Step 1: Build the appearance data including the timestamps, the face coordinates, job_id (most important to use later on for user face labelling)
+        # Step 2: Because we scaled down to video frame, we need to get face coordinates and face image in the original to train the DeepFace model with high quality
+        # face images, we use the scale_factor that we pass when we scale down the frame, revert back to original frame and save it the image using _load_original_frame and opencv
+        # save a json file that we can keep track of the face data, so later on the user can label the face once per video and we'll get all scenes where the face recognized
+        # over FaceRecognizer._recognize_or_cluster, we're recognize the face or cluster the unknown using the embedding
+
         if face_id not in self.saved_unknown_faces:
-            # First time seeing this face - save the image
-            self._save_unknown_face_first_occurrence(
-                frame,
-                timestamp_ms,
-                frame_idx,
-                face,
-                video_path,
-                frame_width,
-                frame_height,
-                appearance_data
+            self._save_first_occurrence(
+                frame, timestamp_ms, frame_idx, face, video_path,
+                appearance_data, job_id, scale_factor
             )
         else:
-            # Face already saved - just update the JSON with new appearance
-            self._update_unknown_face_appearances(face_id, appearance_data)
-   
+            self._update_appearances(face_id, appearance_data)
 
-    def _save_unknown_face_first_occurrence(
+    def _save_first_occurrence(
         self,
         frame: np.ndarray,
         timestamp_ms: int,
         frame_idx: int,
-        face: Dict[str, Union[str, List[int], np.ndarray, List[float]]],
+        face: Dict,
         video_path: str,
-        frame_width: int,
-        frame_height: int,
-        appearance_data: Dict
+        appearance_data: Dict,
+        job_id: str,
+        scale_factor: float
     ) -> None:
-        """Save the first occurrence of an unknown face."""
+        """" Save unknown face for the first if we don't save it yet """
         face_id = face['name']
-        location = face['location']
-        top, right, bottom, left = location
+        top, right, bottom, left = face['location']
 
-        left = max(0, int(left))
-        top = max(0, int(top))
-        right = min(frame_width, int(right))
-        bottom = min(frame_height, int(bottom))
+        original_frame = self._load_original_frame(
+            frame, video_path, timestamp_ms)
 
-        padding_w = int((right - left) * 0.1)
-        padding_h = int((bottom - top) * 0.1)
-        
-        padded_left = max(0, left - padding_w)
-        padded_top = max(0, top - padding_h)
-        padded_right = min(frame_width, right + padding_w)
-        padded_bottom = min(frame_height, bottom + padding_h)
+        if original_frame is None:
+            original_frame = frame
 
-        face_image = frame[padded_top:padded_bottom, padded_left:padded_right]
+        height, width = original_frame.shape[:2]
 
+        left = max(0, int(left * scale_factor))
+        top = max(0, int(top * scale_factor))
+        right = min(width, int(right * scale_factor))
+        bottom = min(height, int(bottom * scale_factor))
+
+        pad = int(0.15 * (bottom - top))
+        top = max(0, top - pad)
+        left = max(0, left - pad)
+        bottom = min(height, bottom + pad)
+        right = min(width, right + pad)
+
+        face_image = original_frame[top:bottom, left:right]
         if face_image.size == 0:
             return
 
-        base_filename = f"{face_id}_first_{timestamp_ms}ms"
-        image_filename = f"{base_filename}.jpg"
-        json_filename = f"{base_filename}.json"
-        
-        if self.unknown_faces_output_path is None:
-            return
-            
-        image_filepath = self.unknown_faces_output_path / image_filename
-        json_filepath = self.unknown_faces_output_path / json_filename
-        
-        try:
-            self.unknown_faces_output_path.mkdir(parents=True, exist_ok=True)
-            h, w = frame.shape[:2]
-            cv2.imwrite(
-                str(image_filepath), 
-                face_image,
-                [cv2.IMWRITE_JPEG_QUALITY, 85]
-            )
-            original_bbox = {
-            'top': top,
-            'right': right,
-            'bottom': bottom,
-            'left': left,
-            'width': right - left,
-            'height': bottom - top
-            }
-            padding_w = int((right - left) * 0.1)
-            padding_h = int((bottom - top) * 0.1)
-            
-            padded_left = max(0, left - padding_w)
-            padded_top = max(0, top - padding_h)
-            padded_right = min(w, right + padding_w)
-            padded_bottom = min(h, bottom + padding_h)
+        video_name = Path(video_path).stem
+        unique_suffix = hashlib.md5(
+            f"{video_name}{face_id}{job_id}{timestamp_ms}".encode()
+        ).hexdigest()[:8]
 
-            padded_bbox = {
-                'top': padded_top,
-                'right': padded_right,
-                'bottom': padded_bottom,
-                'left': padded_left,
-                'width': padded_right - padded_left,
-                'height': padded_bottom - padded_top
-            }
+        base_filename = f"{face_id}_{unique_suffix}"
+        image_path = self.unknown_faces_dir / f"{base_filename}.jpg"
+        json_path = self.unknown_faces_dir / f"{base_filename}.json"
+
+        try:
+            cv2.imwrite(str(image_path), face_image, [
+                        cv2.IMWRITE_JPEG_QUALITY, 85])
 
             metadata = {
-                "image_file": image_filename,
-                "json_file": json_filename,
+                "face_id": face_id,
+                "job_id": job_id,
+                "image_file": image_path.name,
+                "json_file": json_path.name,
                 "image_hash": hashlib.md5(face_image.tobytes()).hexdigest(),
                 "created_at": datetime.now().isoformat(),
                 "video_path": video_path,
-                "video_name": Path(video_path).name if video_path else "unknown",
-                "frame_index": frame_idx,
-                "timestamp_ms": timestamp_ms,
-                "timestamp_seconds": timestamp_ms / 1000,
-                "formatted_timestamp": self._format_timestamp(timestamp_ms),
-                "frame_dimensions": {"width": w, "height": h},
-                "face_id": face['name'],
-                "bounding_box": original_bbox,
-                "padded_bounding_box": padded_bbox,
-                "first_appearance": appearance_data,
+                "video_name": Path(video_path).name,
                 "all_appearances": [appearance_data],
-                "total_appearances": 1,
-                "label": {
-                    "name": None,
-                    "labeled_by": None,
-                    "labeled_at": None,
-                    "confidence": None,
-                    "notes": None
-                }
+                "frame_idx": frame_idx,
+                "total_appearances": 1
             }
-            
-            with open(json_filepath, 'w', encoding='utf-8') as json_file:
-                json.dump(metadata, json_file, indent=2, ensure_ascii=False)
-            
+
+            json_path.write_text(json.dumps(
+                metadata, indent=2, ensure_ascii=False))
+
             self.saved_unknown_faces[face_id] = {
-                "json_path": str(json_filepath),
-                "image_path": str(image_filepath),
+                "json_path": str(json_path),
+                "image_path": str(image_path),
                 "appearances": [appearance_data]
             }
-            
-            
-        except Exception as e:
-            logger.error(f"Error saving unknown face {image_filepath}: {e}")
 
-    def _update_unknown_face_appearances(
-        self,
-        face_id: str,
-        appearance_data: Dict
-    ) -> None:
-        """Update the JSON file with a new appearance of an already-saved unknown face."""
-        if face_id not in self.saved_unknown_faces:
-            return
-        
+        except Exception as e:
+            logger.error(f"Failed to save unknown face {face_id}: {e}")
+
+    def _update_appearances(self, face_id: str, appearance_data: Dict) -> None:
+        """" Update exciting unknown face appearances """
         json_path = self.saved_unknown_faces[face_id]["json_path"]
-        
+
         try:
-            with open(json_path, 'r', encoding='utf-8') as f:
-                metadata = json.load(f)
-            
-            metadata["all_appearances"].append(appearance_data)
+            metadata = json.loads(Path(json_path).read_text())
+            metadata.setdefault("all_appearances", []).append(appearance_data)
             metadata["total_appearances"] = len(metadata["all_appearances"])
             metadata["last_updated"] = datetime.now().isoformat()
             metadata["last_appearance"] = appearance_data
-            
-            with open(json_path, 'w', encoding='utf-8') as f:
-                json.dump(metadata, f, indent=2, ensure_ascii=False)
-            
-            self.saved_unknown_faces[face_id]["appearances"].append(appearance_data)
-            
-            
-        except Exception as e:
-            logger.error(f"Error updating unknown face {face_id}: {e}")
 
-    @staticmethod
-    def _format_timestamp(timestamp_ms: int) -> str:
-        """Format timestamp in HH:MM:SS.mmm format."""
-        total_seconds = timestamp_ms / 1000
-        hours = int(total_seconds // 3600)
-        minutes = int((total_seconds % 3600) // 60)
-        seconds = int(total_seconds % 60)
-        milliseconds = int(timestamp_ms % 1000)
-        
-        return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}"
+            Path(json_path).write_text(json.dumps(
+                metadata, indent=2, ensure_ascii=False))
+            self.saved_unknown_faces[face_id]["appearances"].append(
+                appearance_data)
+
+        except Exception as e:
+            logger.error(f"Failed to update appearances for {face_id}: {e}")
+
+    def _load_original_frame(self, frame: np.ndarray, video_path: str, timestamp_ms: int) -> Optional[np.ndarray]:
+        """" Load original frame to save the unknown face image with high resolution """
+        try:
+            cap = cv2.VideoCapture(video_path)
+            cap.set(cv2.CAP_PROP_POS_MSEC, timestamp_ms)
+            ret, original_frame = cap.read()
+            cap.release()
+
+            if not ret or original_frame is None:
+                logger.warning(
+                    f"Could not read original frame at {timestamp_ms}ms")
+                original_frame = frame
+            else:
+                return original_frame
+        except Exception as e:
+            logger.error(f"Error reading original frame: {e}")
+            original_frame = frame
+            return original_frame
+
+    def _cleanup_previous_run(self) -> None:
+        """" Clean previous unknown faces using previous job_id, if the video processing job failed and re-run, delete previous jobs unknown saved faces"""
+        removed = 0
+        for json_file in self.unknown_faces_dir.glob("*.json"):
+            try:
+                metadata = json.loads(json_file.read_text())
+                if (metadata.get("video_path") == self.current_video_path and
+                        metadata.get("job_id") == self.current_job_id):
+
+                    json_file.unlink()
+                    image_file = json_file.with_suffix(".jpg")
+                    if image_file.exists():
+                        image_file.unlink()
+                    removed += 1
+
+            except Exception as e:
+                logger.warning(f"Cleanup failed for {json_file}: {e}")
+                json_file.unlink(missing_ok=True)
+
+        if removed:
+            logger.info(
+                f"Cleaned {removed} previous unknown faces for job {self.current_job_id}")
 
     def get_results(self) -> PluginResult:
-        """Return all detected faces."""
+        """" Get all faces back"""
         return self.all_faces
 
     def get_summary(self) -> PluginResult:
-        """Return comprehensive face recognition summary."""
+        """" Get result summary that will be saved over the final json"""
         known_people = list(set(
-            face['name']
-            for face in self.all_faces
-            if isinstance(face.get('name'), str) and not face['name'].startswith('Unknown_')
+            face['name'] for face in self.all_faces
+            if not face['name'].startswith('Unknown_')
         ))
+
+        known_appearances = {}
+        for person in known_people:
+            appearances = [f for f in self.all_faces if f['name'] == person]
+            timestamps = [f['timestamp'] for f in appearances]
+            known_appearances[person] = {
+                'count': len(appearances),
+                'first_seen': min(timestamps),
+                'last_seen': max(timestamps)
+            }
 
         unknown_count = sum(
-            1 for face in self.all_faces
-            if isinstance(face.get('name'), str) and face['name'].startswith('Unknown_')
-        )
-
-        unique_unknown = len(set(
-            face['name']
-            for face in self.all_faces
-            if isinstance(face.get('name'), str) and face['name'].startswith('Unknown_')
-        ))
-
-        known_appearances: Dict[str, Dict[str, Union[int, float]]] = {}
-        for person in known_people:
-            appearances = [f for f in self.all_faces if f.get('name') == person]
-            if appearances:
-                timestamps = [float(f['timestamp']) for f in appearances if isinstance(f.get('timestamp'), (int, float))]
-                known_appearances[person] = {
-                    'count': len(appearances),
-                    'first_seen': min(timestamps) if timestamps else 0.0,
-                    'last_seen': max(timestamps) if timestamps else 0.0
-                }
-
-        logger.info(f"Known people identified: {len(known_people)}")
-        logger.info(f"Unique unknown faces: {unique_unknown}")
-        
+            1 for f in self.all_faces if f['name'].startswith('Unknown_'))
+        unique_unknown = len(
+            set(f['name'] for f in self.all_faces if f['name'].startswith('Unknown_')))
 
         return {
             "known_people_identified": known_people,
@@ -422,7 +325,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
             "unique_unknown_faces": unique_unknown,
             "unknown_faces_saved": len(self.saved_unknown_faces),
             "total_faces_detected": len(self.all_faces),
-            "unknown_faces_directory": str(self.unknown_faces_output_path) if self.save_unknown_faces else None,
+            "unknown_faces_directory": str(self.unknown_faces_dir),
             "unknown_faces_details": {
                 face_id: {
                     "image_path": data["image_path"],
