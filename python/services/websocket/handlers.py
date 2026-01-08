@@ -203,7 +203,7 @@ class MessageHandlers:
                     # fo external host, we will be sending the json data over websocket
 
                     self.transcription_service.save_result(
-                        result.to_dict(), request.json_file_path)
+                        result, request.json_file_path)
 
                 # Send result
                 await self.connection_manager.send_message(
