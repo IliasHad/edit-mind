@@ -20,11 +20,12 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@ffprobe-installer/ffprobe": "^2.1.2",
-    "shared": "workspace:*",
+    "@types/micromatch": "^4.0.10",
     "exiftool-vendored": "^31.1.0",
     "gopro-telemetry": "^1.2.11",
     "gpmf-extract": "^0.3.2",
-    "jimp": "^1.6.0"
-  },
-  "devDependencies": {}
+    "jimp": "^1.6.0",
+    "micromatch": "^4.0.8",
+    "shared": "workspace:*"
+  }
 }
