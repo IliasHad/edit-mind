@@ -1,8 +1,17 @@
 import { LocalModel } from '@ai/services/localLlm'
 import { GeminiModel } from '@ai/services/gemini'
+import { OllamaModel } from '@ai/services/ollama'
 import { logger } from '@shared/services/logger'
 import path from 'path'
-import { GEMINI_API_KEY, GEMINI_MODEL_NAME, SEARCH_AI_MODEL, USE_LOCAL } from '@ai/constants'
+import {
+  GEMINI_API_KEY,
+  GEMINI_MODEL_NAME,
+  OLLAMA_MODEL,
+  SEARCH_AI_MODEL,
+  USE_GEMINI,
+  USE_LOCAL,
+  USE_OLLAMA_MODEL,
+} from '@ai/constants'
 import { AIModel } from '@ai/types/ai'
 import type { ChatMessage } from '@prisma/client'
 import { YearStats } from '@shared/types/stats'
@@ -10,10 +19,13 @@ import { VideoWithScenes } from '@shared/types/video'
 
 let activeModel: AIModel
 
-if (USE_LOCAL && SEARCH_AI_MODEL) {
+if (USE_OLLAMA_MODEL && OLLAMA_MODEL) {
+  logger.debug(`Using Ollama Model: ${OLLAMA_MODEL}`)
+  activeModel = OllamaModel
+} else if (USE_LOCAL && SEARCH_AI_MODEL) {
   logger.debug(`Using Local Model: ${path.basename(SEARCH_AI_MODEL)}`)
   activeModel = LocalModel
-} else if (GEMINI_API_KEY) {
+} else if (GEMINI_API_KEY && USE_GEMINI) {
   logger.debug(`Using Gemini Model: ${GEMINI_MODEL_NAME}`)
   activeModel = GeminiModel
 } else {
