@@ -1,5 +1,5 @@
 import { CalendarIcon, FilmIcon } from '@heroicons/react/24/outline'
-import { smartFormatDate } from '~/features/shared/utils/date'
+import { smartFormatDate } from '@shared/utils/duration'
 import clsx from 'clsx'
 import { Link } from 'react-router'
 import { useDeleteModal } from '~/features/shared/hooks/useDeleteModal'

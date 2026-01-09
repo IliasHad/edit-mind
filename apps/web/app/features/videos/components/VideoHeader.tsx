@@ -1,7 +1,7 @@
 import { ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { CollectionBadge } from '~/features/collections/components/CollectionBadge'
 import { ProjectBadge } from '~/features/projects/components/ProjectBadge'
-import { smartFormatDate } from '~/features/shared/utils/date'
+import { smartFormatDate } from '@shared/utils/duration'
 
 interface VideoHeaderProps {
   fileName: string

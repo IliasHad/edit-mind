@@ -1,6 +1,6 @@
 import { ClockIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 import { Link, useParams } from 'react-router'
-import { smartFormatDate } from '~/features/shared/utils/date'
+import { smartFormatDate } from '@shared/utils/duration'
 import type { Chat } from '@prisma/client'
 import { useChats } from '../hooks/useChats'
 import { DeleteModal } from '~/features/shared/components/DeleteModal'

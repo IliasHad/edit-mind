@@ -6,7 +6,7 @@ import { StitchedVideo } from './StitchedVideo'
 import { useCurrentChat } from '../hooks/useCurrentChat'
 import { LoadingIndicator } from './LoadingIndicator'
 import { Compiler } from './Compiler'
-import { smartFormatDate } from '~/features/shared/utils/date'
+import { smartFormatDate } from '@shared/utils/duration'
 import { ExportedScenes } from './ExportedScenes'
 import { useFaces } from '~/features/faces/hooks/useFaces'
 
