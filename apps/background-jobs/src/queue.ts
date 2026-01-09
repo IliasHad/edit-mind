@@ -1,8 +1,51 @@
-import { Queue } from 'bullmq'
+import { Queue, QueueOptions } from 'bullmq'
 import { connection } from '../src/services/redis'
 
-export const immichImporterQueue = new Queue('immich-importer', {
-  connection,
+const createQueue = (name: string, customOptions?: Partial<QueueOptions>): Queue => {
+  return new Queue(name, {
+    connection,
+    defaultJobOptions: {
+      attempts: 5,
+      backoff: {
+        type: 'exponential',
+        delay: 1000 * 60 * 2,
+      },
+      removeOnComplete: {
+        age: 86400,
+        count: 100,
+      },
+      removeOnFail: {
+        age: 604800,
+      },
+    },
+    ...customOptions,
+  })
+}
+
+export const immichImporterQueue = createQueue('immich-importer', {
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+  },
+})
+
+export const videoStitcherQueue = createQueue('video-stitcher', {
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+  },
+})
+
+export const faceLabellingQueue = createQueue('face-labelling')
+export const faceRenameQueue = createQueue('face-renaming')
+
+export const faceDeletionQueue = createQueue('face-deletion', {
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -12,135 +55,94 @@ export const immichImporterQueue = new Queue('immich-importer', {
   },
 })
 
-export const videoStitcherQueue = new Queue('video-stitcher', {
-  connection,
+export const smartCollectionQueue = createQueue('smart-collection')
+
+export const chatQueue = createQueue('chat-message', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 2,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 1000,
     },
   },
 })
 
-export const faceLabellingQueue = new Queue('face-labelling', {
-  connection,
+export const exportQueue = createQueue('export-scenes', {
   defaultJobOptions: {
     attempts: 3,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 5000,
     },
   },
 })
 
-export const faceDeletionQueue = new Queue('face-deletion', {
-  connection,
+export const transcriptionQueue = createQueue('transcription', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 10,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 1000 * 60 * 10, // 10 minutes delay
     },
   },
 })
 
-
-export const smartCollectionQueue = new Queue('smart-collection', {
-  connection,
+export const frameAnalysisQueue = createQueue('frame-analysis', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 10,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 1000 * 60 * 10, // 10 minutes delay
     },
   },
 })
 
-export const chatQueue = new Queue('chat-message', {
-  connection,
+export const sceneCreationQueue = createQueue('scene-creation', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 10,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 1000 * 60 * 5,
     },
   },
 })
 
-export const exportQueue = new Queue('export-scenes', {
-  connection,
+export const textEmbeddingQueue = createQueue('text-embedding', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 10,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 1000 * 60 * 5,
     },
   },
 })
 
-export const transcriptionQueue = new Queue('transcription', {
-  connection,
+export const visualEmbeddingQueue = createQueue('visual-embedding', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 10,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 1000 * 60 * 5,
     },
   },
 })
 
-export const frameAnalysisQueue = new Queue('frame-analysis', {
-  connection,
+export const audioEmbeddingQueue = createQueue('audio-embedding', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 10,
     backoff: {
       type: 'exponential',
-      delay: 2000,
+      delay: 1000 * 60 * 5,
     },
   },
 })
 
-export const sceneCreationQueue = new Queue('scene-creation', {
-  connection,
+export const videoFinalizationQueue = createQueue('video-finalization', {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 5,
     backoff: {
       type: 'exponential',
-      delay: 2000,
-    },
-  },
-})
-
-export const textEmbeddingQueue = new Queue('text-embedding', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
-  },
-})
-
-export const visualEmbeddingQueue = new Queue('visual-embedding', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
-  },
-})
-
-export const audioEmbeddingQueue = new Queue('audio-embedding', {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
+      delay: 3000,
     },
   },
 })
