@@ -1,20 +1,25 @@
-import type { Job } from 'bullmq'
-import { videoQueue } from 'src/queue'
+import { logger } from '@shared/services/logger'
+import { videoProcessingQueues } from '../queue'
 
-export async function findJobsByFolderId(folderId: string): Promise<Job[]> {
-  const results: Job[] = []
+const JOB_STATUSES = ['waiting', 'delayed', 'active', 'failed'] as const
 
-  const states = ['active', 'waiting', 'delayed', 'failed', 'completed'] as const
+export async function deleteJobsByDataJobId(targetJobId: string) {
+  let deletedCount = 0
 
-  for (const state of states) {
-    const jobs = await videoQueue.getJobs([state])
+  for (const queue of videoProcessingQueues) {
+    for (const status of JOB_STATUSES) {
+      const jobs = await queue.getJobs([status], 0, -1)
 
-    for (const job of jobs) {
-      if (job.data?.folderId === folderId) {
-        results.push(job)
+      for (const job of jobs) {
+        if (job.data?.jobId === targetJobId) {
+          await job.remove()
+          deletedCount++
+
+          logger.info(`🗑️ Removed job ${job.id} from queue "${queue.name}"`)
+        }
       }
     }
   }
 
-  return results
+  return deletedCount
 }

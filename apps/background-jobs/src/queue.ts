@@ -146,3 +146,12 @@ export const videoFinalizationQueue = createQueue('video-finalization', {
     },
   },
 })
+
+export const videoProcessingQueues = [
+  transcriptionQueue,
+  frameAnalysisQueue,
+  sceneCreationQueue,
+  textEmbeddingQueue,
+  visualEmbeddingQueue,
+  audioEmbeddingQueue,
+]
