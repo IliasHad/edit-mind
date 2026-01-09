@@ -17,7 +17,8 @@
       "@db/*": ["../../packages/db/src/*"],
       "@ai/*": ["../../packages/ai/src/*"],
       "@search/*": ["../../packages/search/src/*"],
-      "@immich/*": ["../../packages/immich/src/*"]
+      "@immich/*": ["../../packages/immich/src/*"],
+      "@media-utils/*": ["../../packages/media-utils/src/*"]
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

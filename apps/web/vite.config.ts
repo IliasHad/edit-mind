@@ -5,56 +5,33 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    reactRouter(),
-    tsconfigPaths({ ignoreConfigErrors: true }),
-
-  ],
+  plugins: [tailwindcss(), reactRouter(), tsconfigPaths({ ignoreConfigErrors: true })],
   server: {
     allowedHosts: ['web', 'localhost', '127.0.0.1'],
   },
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'app'),
-      '@background-jobs': path.resolve(__dirname, '../../apps/background-jobs'),
-      '@shared': path.resolve(__dirname, '../../packages/shared'),
+      '@shared': path.resolve(__dirname, '../../packages/shared/src'),
       '@ui': path.resolve(__dirname, '../../packages/ui'),
+      '@db': path.resolve(__dirname, '../../packages/db/src'),
+      '@vector': path.resolve(__dirname, '../../packages/vector/src'),
+      '@ai': path.resolve(__dirname, '../../packages/ai/src'),
+      '@search': path.resolve(__dirname, '../../packages/search/src'),
+      '@immich': path.resolve(__dirname, '../../packages/immich/src'),
+      '@media-utils': path.resolve(__dirname, '../../packages/media-utils/src'),
       '@/app': path.resolve(__dirname, './app'),
     },
   },
   optimizeDeps: {
-    exclude: [
-      'node-llama-cpp',
-      '@node-llama-cpp/*',
-      '@ffmpeg-installer/ffmpeg',
-      '@ffprobe-installer/ffprobe',
-      'pino-pretty',
-      'shrap',
-      'chromadb',
-      'onnxruntime-node',
-      '@xenova/transformers',
-    ],
+    exclude: ['pino-pretty', 'chromadb'],
   },
   ssr: {
-    external: [
-      'node-llama-cpp',
-      '@node-llama-cpp/*',
-      '@ffmpeg-installer/ffmpeg',
-      '@ffprobe-installer/ffprobe',
-      'pino-pretty',
-      'onnxruntime-node',
-      '@xenova/transformers',
-    ],
+    external: ['pino-pretty'],
   },
   build: {
     rollupOptions: {
-      external: [
-        '@ffmpeg-installer/ffmpeg',
-        '@ffprobe-installer/ffprobe',
-        'onnxruntime-node',
-        '@xenova/transformers',
-      ],
+      external: [],
     },
   },
 })
