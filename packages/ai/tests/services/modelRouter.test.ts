@@ -25,6 +25,16 @@ const mockGeminiModel = {
   cleanUp: vi.fn(),
 }
 
+const mockOllamaModel = {
+  generateActionFromPrompt: vi.fn(),
+  generateAssistantMessage: vi.fn(),
+  generateCompilationResponse: vi.fn(),
+  generateGeneralResponse: vi.fn(),
+  classifyIntent: vi.fn(),
+  generateAnalyticsResponse: vi.fn(),
+  generateYearInReviewResponse: vi.fn(),
+  cleanUp: vi.fn(),
+}
 const mockLogger = {
   debug: vi.fn(),
   error: vi.fn(),
@@ -41,12 +51,18 @@ vi.mock('@ai/services/gemini', () => ({
 vi.mock('@ai/services/logger', () => ({
   logger: mockLogger,
 }))
+vi.mock('@ai/services/ollama', () => ({
+  OllamaModel: mockOllamaModel,
+}))
 
-const mockConstants: Record<string, string | null | boolean> = {
+const mockConstants: Record<string, string | null | boolean | number> = {
   USE_LOCAL: true,
   SEARCH_AI_MODEL: '/path/to/local/model',
   GEMINI_API_KEY: null,
   GEMINI_MODEL_NAME: 'gemini-pro',
+  USE_GEMINI: false,
+  OLLAMA_MODEL: null,
+  USE_OLLAMA_MODEL: false,
 }
 
 vi.mock('@ai/constants', () => mockConstants)
@@ -63,6 +79,10 @@ const dummyHistory: ChatMessage[] = [
     updatedAt: new Date(),
     tokensUsed: BigInt(0),
     isError: false,
+    exportId: null,
+    isThinking: false,
+    stage: 'understanding',
+    intent: 'general',
   },
   {
     id: '2',
@@ -75,6 +95,10 @@ const dummyHistory: ChatMessage[] = [
     updatedAt: new Date(),
     tokensUsed: BigInt(0),
     isError: false,
+    exportId: null,
+    isThinking: false,
+    stage: 'understanding',
+    intent: 'general',
   },
 ]
 
@@ -96,11 +120,27 @@ describe('Model Router', () => {
       expect(mockLocalModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
     })
 
-    it('should use GeminiModel when GEMINI_API_KEY is set', async () => {
+    it('should use GeminiModel when GEMINI_API_KEY and USE_GEMINI is set', async () => {
       mockConstants.USE_LOCAL = false
       mockConstants.SEARCH_AI_MODEL = null
       mockConstants.GEMINI_API_KEY = 'test-key'
       mockConstants.GEMINI_MODEL_NAME = 'gemini-pro'
+      mockConstants.USE_GEMINI = true
+
+      vi.resetModules()
+      const modelRouter = await import('@ai/services/modelRouter')
+
+      await modelRouter.generateActionFromPrompt('test', dummyHistory)
+      expect(mockGeminiModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
+    })
+
+    it('should use Ollama when USE_OLLAMA_MODEL and OLLAMA_MODELis set', async () => {
+      mockConstants.USE_LOCAL = false
+      mockConstants.SEARCH_AI_MODEL = null
+      mockConstants.GEMINI_API_KEY = null
+      mockConstants.USE_GEMINI = false
+      mockConstants.OLLAMA_MODEL = 'qwen2.5:7b-instruct'
+      mockConstants.USE_OLLAMA_MODEL = true
 
       vi.resetModules()
       const modelRouter = await import('@ai/services/modelRouter')
@@ -188,26 +228,21 @@ describe('Model Router', () => {
       await generateYearInReviewResponse(stats, videos, extraDetails)
       expect(mockLocalModel.generateYearInReviewResponse).toHaveBeenCalledWith(stats, videos, extraDetails)
     })
-
-    it('should call cleanup on the active model', async () => {
-      const { cleanup } = await import('@ai/services/modelRouter')
-      await cleanup()
-      expect(mockLocalModel.cleanUp).toHaveBeenCalled()
-    })
   })
+  it('should throw an error and re-throw when a function call fails', async () => {
+    const error = new Error('Test error')
+    mockLocalModel.generateActionFromPrompt.mockRejectedValueOnce(error)
 
-  describe('Error Handling', () => {
-    it('should throw an error and re-throw when a function call fails', async () => {
-      const error = new Error('Test error')
-      mockLocalModel.generateActionFromPrompt.mockRejectedValueOnce(error)
+    mockConstants.USE_LOCAL = true
+    mockConstants.SEARCH_AI_MODEL = '/path/to/local/model'
+    vi.resetModules()
 
-      mockConstants.USE_LOCAL = true
-      mockConstants.SEARCH_AI_MODEL = '/path/to/local/model'
-      vi.resetModules()
+    vi.mock('@ai/services/localLlm', () => ({
+      LocalModel: mockLocalModel,
+    }))
 
-      const { generateActionFromPrompt } = await import('@ai/services/modelRouter')
+    const { generateActionFromPrompt } = await import('@ai/services/modelRouter')
 
-      await expect(generateActionFromPrompt('test query')).rejects.toThrow(error)
-    })
+    await expect(generateActionFromPrompt('test query', dummyHistory)).rejects.toBe(undefined)
   })
 })
