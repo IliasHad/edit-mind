@@ -20,8 +20,9 @@
   "dependencies": {
     "@types/ws": "^8.18.1",
     "date-fns": "^4.1.0",
-    "zod": "^4.1.12",
-    "db": "workspace:*"
+    "db": "workspace:*",
+    "ioredis": "^5.8.2",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "pino": "^10.1.0",
