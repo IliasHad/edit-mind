@@ -1,4 +1,4 @@
-import type { Chat } from '@prisma/client'
+import type { Chat, Prisma } from '@prisma/client'
 import prisma from '../db'
 import { nanoid } from 'nanoid'
 
@@ -16,6 +16,17 @@ export class ChatModel {
       },
     })
     return chat
+  }
+
+  static async findFirst(options: Prisma.ChatFindFirstArgs) {
+    return prisma.chat.findFirst(options)
+  }
+
+  static async findMany(options: Prisma.ChatFindManyArgs) {
+    return prisma.chat.findMany(options)
+  }
+  static async count(options: Prisma.ChatCountArgs) {
+    return prisma.chat.count(options)
   }
 
   static async findById(id: string) {

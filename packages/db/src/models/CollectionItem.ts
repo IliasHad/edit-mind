@@ -1,10 +1,16 @@
-import type { CollectionItem,Prisma } from '@prisma/client'
+import type { CollectionItem, Prisma } from '@prisma/client'
 import prisma from '../db'
 import { nanoid } from 'nanoid'
 
 type CollectionItemUpdateData = Partial<Omit<CollectionItem, 'id' | 'userId'>>
 
-type CollectionItemCreateInput = Pick<CollectionItem, 'videoId' | 'confidence' | 'collectionId'>
+type CollectionItemCreateInput = Pick<CollectionItem, 'videoId' | 'confidence' | 'collectionId' | 'sceneIds' | 'matchType'>
+
+type CollectionItemUpsertInput = {
+  where: Prisma.CollectionItemWhereUniqueInput
+  create: CollectionItemCreateInput
+  update: Prisma.CollectionItemUpdateInput
+}
 
 export class CollectionItemModel {
   static async create(data: CollectionItemCreateInput) {
@@ -21,8 +27,14 @@ export class CollectionItemModel {
     return prisma.collectionItem.findUnique({ where: { id } })
   }
 
-  static async upsert(options: Prisma.CollectionItemUpsertArgs) {
-    return prisma.collectionItem.upsert(options)
+  static async upsert(options: CollectionItemUpsertInput) {
+    return prisma.collectionItem.upsert({
+      ...options,
+      create: {
+        ...options.create,
+        id: nanoid(),
+      },
+    })
   }
 
   static async count(collectionId: string) {

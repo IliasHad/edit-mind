@@ -34,6 +34,7 @@ export class UserModel {
   static async findById(id: string) {
     const user = await prisma.user.findUnique({
       where: { id },
+      select: { email: true, createdAt: true, id: true, role: true },
     })
     return user
   }

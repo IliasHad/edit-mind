@@ -13,6 +13,8 @@ type ChatMessageCreateData = {
   stitchedVideoPath?: string | null
   intent?: MessageIntent
   isError?: boolean
+  exportId?: string
+  outputSceneIds?: string[]
 }
 
 export class ChatMessageModel {
@@ -29,13 +31,40 @@ export class ChatMessageModel {
   static async findFirst(options: Prisma.ChatMessageFindFirstArgs) {
     return prisma.chatMessage.findFirst(options)
   }
+  static async findMany(options: Prisma.ChatMessageFindManyArgs) {
+    return prisma.chatMessage.findMany(options)
+  }
+  static async findUnique(options: Prisma.ChatMessageFindUniqueArgs) {
+    return prisma.chatMessage.findUnique(options)
+  }
+
+  static async upsert(options: Prisma.ChatMessageUpsertArgs) {
+    return prisma.chatMessage.upsert(options)
+  }
+
+  static async countByChatId(chatId: string) {
+    return prisma.chatMessage.count({
+      where: {
+        chatId,
+      },
+    })
+  }
 
   static async findById(id: string) {
     return prisma.chatMessage.findUnique({ where: { id } })
   }
 
+  static async findByIdWithChat(id: string) {
+    return prisma.chatMessage.findUnique({ where: { id }, include: { chat: true } })
+  }
+
   static async findManyByChatId(chatId: string) {
-    return prisma.chatMessage.findMany({ where: { chatId } })
+    return prisma.chatMessage.findMany({
+      where: { chatId },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
   }
 
   static async update(id: string, data: ChatMessageUpdateData) {

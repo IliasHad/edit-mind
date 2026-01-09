@@ -1,4 +1,4 @@
-import type { Collection } from '@prisma/client'
+import type { Collection, Prisma } from '@prisma/client'
 import prisma from '../db'
 import { nanoid } from 'nanoid'
 
@@ -22,6 +22,9 @@ export class CollectionModel {
 
   static async findById(id: string) {
     return prisma.collection.findUnique({ where: { id } })
+  }
+  static async findMany(options: Prisma.CollectionFindManyArgs) {
+    return prisma.collection.findMany(options)
   }
 
   static async findByNameAndUser(name: string, userId: string) {

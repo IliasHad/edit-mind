@@ -1,4 +1,4 @@
-import type { Folder } from '@prisma/client';
+import type { Folder, Prisma } from '@prisma/client'
 import prisma from '../db'
 import { nanoid } from 'nanoid'
 
@@ -25,17 +25,23 @@ export class FolderModel {
     return prisma.folder.findUnique({ where: { path } })
   }
 
-  static async update(id: string,data: FolderUpdateData) {
-    const folder: Folder = await prisma.folder.update({
+  static async findMany(options: Prisma.FolderFindManyArgs) {
+    return prisma.folder.findMany(options)
+  }
+  static async findUnique(options: Prisma.FolderFindUniqueArgs) {
+    return prisma.folder.findUnique(options)
+  }
+  static async update(id: string, data: FolderUpdateData) {
+    const folder = await prisma.folder.update({
       where: { id },
       data,
     })
     return folder
   }
-  static async updateByPath({ path, ...restData }: FolderUpdateData) {
-    const folder: Folder = await prisma.folder.update({
+  static async updateByPath(path: string, data: FolderUpdateData) {
+    const folder = await prisma.folder.update({
       where: { path },
-      data: restData,
+      data,
     })
     return folder
   }

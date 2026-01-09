@@ -18,7 +18,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@prisma/client": "6.19.0",
+    "@prisma/client": "^6.19.0",
     "bcryptjs": "^2.4.3",
     "nanoid": "^5.1.6"
   },
