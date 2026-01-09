@@ -1,26 +1,27 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import fs from 'fs'
 import path from 'path'
+import { logger } from '@shared/services/logger'
+import { requireUser } from '~/services/user.sever'
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  const filePath = params['*']
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+  const source = url.searchParams.get('source')
 
-  if (!filePath) {
+  if (!source) {
     throw new Response('No file path provided', { status: 400 })
   }
 
   try {
-    const decodedPath = decodeURIComponent(filePath)
+    await requireUser(request)
+
+    const decodedPath = decodeURIComponent(source)
 
     if (!fs.existsSync(decodedPath)) {
-      return new Response('File not found', { status: 404 })
+      return new Response('Video File not found', { status: 404 })
     }
 
     const stats = fs.statSync(decodedPath)
-
-    if (!stats.isFile()) {
-      return new Response('Not a file', { status: 400 })
-    }
 
     const contentType = getContentType(decodedPath)
 
@@ -32,29 +33,30 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1
       const chunkSize = end - start + 1
 
-      const buffer = Buffer.alloc(chunkSize)
-      const fd = fs.openSync(decodedPath, 'r')
-      const uint8Array = new Uint8Array(buffer)
+      if (chunkSize >= 0 && start >= 0 && chunkSize <= 100 * 1024 * 1024) {
+        const buffer = Buffer.alloc(chunkSize)
+        const fd = fs.openSync(decodedPath, 'r')
+        const uint8Array = new Uint8Array(buffer)
 
-      fs.readSync(fd, uint8Array, 0, chunkSize, start)
-      fs.closeSync(fd)
+        fs.readSync(fd, uint8Array, 0, chunkSize, start)
+        fs.closeSync(fd)
 
-      return new Response(uint8Array, {
-        status: 206,
-        headers: {
-          'Content-Range': `bytes ${start}-${end}/${stats.size}`,
-          'Accept-Ranges': 'bytes',
-          'Content-Length': chunkSize.toString(),
-          'Content-Type': contentType,
-          'Cache-Control': 'no-cache',
-        },
-      })
+        return new Response(uint8Array, {
+          status: 206,
+          headers: {
+            'Content-Range': `bytes ${start}-${end}/${stats.size}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunkSize.toString(),
+            'Content-Type': contentType,
+            'Cache-Control': 'no-cache',
+          },
+        })
+      }
     }
 
-    const fileBuffer = fs.readFileSync(decodedPath)
-    const uint8Array = new Uint8Array(fileBuffer)
+    const stream = fs.createReadStream(decodedPath)
 
-    return new Response(uint8Array, {
+    return new Response(stream as unknown as ReadableStream, {
       status: 200,
       headers: {
         'Content-Type': contentType,
@@ -63,8 +65,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         'Cache-Control': 'no-cache',
       },
     })
-  } catch {
-    throw new Response('File not found or error loading media', { status: 404 })
+  } catch (error) {
+    logger.warn(error)
+    throw new Response('Error loading media', { status: 404 })
   }
 }
 

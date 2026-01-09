@@ -1,28 +1,31 @@
-import type { LoaderFunctionArgs } from 'react-router'
-import fs from 'fs'
+import type { LoaderFunctionArgs } from 'react-router';
+import fs from 'fs';
 import path from 'path'
 import { FACES_DIR } from '@shared/constants'
+import { logger } from '@shared/services/logger'
+import { requireUser } from '~/services/user.sever'
 
-export async function loader({ params }: LoaderFunctionArgs) {
-  const filePath = params['*'] || ''
-  if (!filePath) throw new Response('No file path provided', { status: 400 })
+export async function loader({ params, request }: LoaderFunctionArgs) {
+  const filePath = params['*']
+  if (!filePath) {
+    throw new Response('No file path provided', { status: 400 })
+  }
+
+  const decodedPath = path.join(FACES_DIR, decodeURIComponent(filePath))
 
   try {
-    const decodedPath = path.join(FACES_DIR, decodeURIComponent(filePath))
+    await requireUser(request)
 
-    if (!fs.existsSync(decodedPath)) {
-      throw new Response('File not found', { status: 404 })
+    const stats = await fs.promises.stat(decodedPath)
+
+    if (!stats.isFile()) {
+      throw new Response('Not a file', { status: 400 })
     }
 
-    const stats = fs.statSync(decodedPath)
-    if (!stats.isFile()) throw new Response('Not a file', { status: 400 })
-
     const contentType = getContentType(decodedPath)
-    const fileBuffer = fs.readFileSync(decodedPath)
+    const stream = fs.createReadStream(decodedPath)
 
-    const uint8Array = new Uint8Array(fileBuffer)
-
-    return new Response(uint8Array, {
+    return new Response(stream as unknown as ReadableStream, {
       status: 200,
       headers: {
         'Content-Type': contentType,
@@ -31,8 +34,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
         'Cache-Control': 'no-cache',
       },
     })
-  } catch {
-    throw new Response('File not found or error loading media', { status: 404 })
+  } catch (error) {
+    logger.debug(error)
   }
 }
 
@@ -44,5 +47,5 @@ function getContentType(filePath: string): string {
     '.jpeg': 'image/jpeg',
     '.webp': 'image/webp',
   }
-  return types[ext] || 'application/octet-stream'
+  return types[ext] ?? 'application/octet-stream'
 }

@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { getCache, setCache } from '@shared/services/cache'
 import crypto from 'crypto'
+import { requireUser } from '~/services/user.sever'
 
 interface CachedFileMetadata {
   contentType: string
@@ -16,6 +17,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (!filePath) throw new Response('No file path provided', { status: 400 })
 
   try {
+    await requireUser(request)
+
     const decodedPath = path.normalize(decodeURIComponent(filePath))
 
     if (!fs.existsSync(decodedPath)) {
@@ -37,14 +40,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     const contentType = getContentType(decodedPath)
 
-    // For images and small files, cache the buffer in Redis
     const MAX_REDIS_SIZE = 5 * 1024 * 1024 // 5MB max for Redis
 
     if (stats.size <= MAX_REDIS_SIZE) {
       const cachedBuffer = await getCache<string>(cacheKey)
 
       if (cachedBuffer) {
-        console.debug('Cache hit for file:', decodedPath)
         const buffer = Buffer.from(cachedBuffer, 'base64')
         const uint8Array = new Uint8Array(buffer)
 
@@ -77,28 +78,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         7200 // 2 hours
       )
 
-      const uint8Array = new Uint8Array(fileBuffer)
+      const stream = fs.createReadStream(decodedPath)
 
-      return new Response(uint8Array, {
+      return new Response(stream as unknown as ReadableStream, {
         status: 200,
         headers: {
           'Content-Type': contentType,
           'Content-Length': stats.size.toString(),
-          'Cache-Control': 'public, max-age=31536000, immutable',
-          ETag: etag,
+          'Accept-Ranges': 'bytes',
+          'Cache-Control': 'no-cache',
         },
       })
     }
 
-    const fileBuffer = fs.readFileSync(decodedPath)
-    const uint8Array = new Uint8Array(fileBuffer)
     const etag = generateEtag(decodedPath, stats)
 
-    return new Response(uint8Array, {
+    const stream = fs.createReadStream(decodedPath)
+
+    return new Response(stream as unknown as ReadableStream, {
       status: 200,
       headers: {
         'Content-Type': contentType,
         'Content-Length': stats.size.toString(),
+        'Accept-Ranges': 'bytes',
         'Cache-Control': 'public, max-age=86400', // 1 day
         ETag: etag,
       },

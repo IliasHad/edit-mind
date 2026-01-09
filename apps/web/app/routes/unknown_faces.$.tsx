@@ -2,18 +2,19 @@ import type { LoaderFunctionArgs } from 'react-router'
 import fs from 'fs'
 import path from 'path'
 import { UNKNOWN_FACES_DIR } from '@shared/constants'
+import { logger } from '@shared/services/logger'
+import { requireUser } from '~/services/user.sever'
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const filePath = params['*'] || ''
   if (!filePath) throw new Response('No file path provided', { status: 400 })
 
   try {
     const decodedPath = decodeURIComponent(filePath)
-
-    const thumbnailsDir = UNKNOWN_FACES_DIR
+    await requireUser(request)
 
     const safePath = path.normalize(decodedPath).replace(/^(\.\.(\/|\\|$))+/, '')
-    const thumbnailPath = path.join(thumbnailsDir, safePath)
+    const thumbnailPath = path.join(UNKNOWN_FACES_DIR, safePath)
 
     if (!fs.existsSync(thumbnailPath)) {
       throw new Response('File not found', { status: 404 })
@@ -23,11 +24,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
     if (!stats.isFile()) throw new Response('Not a file', { status: 400 })
 
     const contentType = getContentType(thumbnailPath)
-    const fileBuffer = fs.readFileSync(thumbnailPath)
+    const stream = fs.createReadStream(thumbnailPath)
 
-    const uint8Array = new Uint8Array(fileBuffer)
-
-    return new Response(uint8Array, {
+    return new Response(stream as unknown as ReadableStream, {
       status: 200,
       headers: {
         'Content-Type': contentType,
@@ -37,6 +36,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       },
     })
   } catch (error) {
+    logger.error(error)
     throw new Response(`File not found or error loading media: ${error}`, { status: 404 })
   }
 }
