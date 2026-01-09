@@ -1,23 +1,25 @@
-import type { FeatureExtractionPipeline, PreTrainedModel, Processor } from '@xenova/transformers'
+import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@xenova/transformers'
 import { logger } from '@shared/services/logger'
 import { existsSync, readFileSync } from 'fs'
 import { readAudio } from '@media-utils/utils/audio'
-
-let extractor: FeatureExtractionPipeline | null = null
-let audioInitPromise: Promise<{
-  model: PreTrainedModel
-  processor: Processor
-}> | null = null
+import { withTimeout } from '@vector/utils/shared'
+import { EMBEDDING_TIMEOUT, MODEL_DIMENSIONS } from '@vector/constants'
 
 let visualModelCache: { processor: Processor; model: PreTrainedModel } | null = null
+let textModelCache: { embed: FeatureExtractionPipeline } | null = null
+let audioModelCache: { processor: Processor; model: PreTrainedModel } | null = null
+let textToVisualModelCache: { tokenizer: PreTrainedTokenizer; model: PreTrainedModel } | null = null
+let textToAudioModelCache: { tokenizer: PreTrainedTokenizer; model: PreTrainedModel } | null = null
 
-async function getExtractor(): Promise<FeatureExtractionPipeline> {
-  const { pipeline } = await import('@xenova/transformers')
+async function geTextExtractor() {
+  if (!textModelCache) {
+    const { pipeline } = await import('@xenova/transformers')
 
-  if (!extractor) {
-    extractor = await pipeline('feature-extraction', 'Xenova/all-mpnet-base-v2')
+    const embed = await pipeline('feature-extraction', 'Xenova/all-mpnet-base-v2')
+
+    textModelCache = { embed }
   }
-  return extractor
+  return textModelCache
 }
 
 async function getFrameExtractor() {
@@ -31,40 +33,62 @@ async function getFrameExtractor() {
   return visualModelCache
 }
 
-export async function getEmbeddings(texts: string[]): Promise<number[][]> {
-  const extractor = await getExtractor()
-  const vectors: number[][] = []
+async function getAudioExtractor() {
+  if (!audioModelCache) {
+    const { AutoProcessor, ClapAudioModelWithProjection } = await import('@xenova/transformers')
+    const processor = await AutoProcessor.from_pretrained('Xenova/clap-htsat-unfused')
+    const model = await ClapAudioModelWithProjection.from_pretrained('Xenova/clap-htsat-unfused')
 
-  for (const text of texts) {
-    const output = await extractor(text, {
-      pooling: 'mean',
-      normalize: true,
-    })
-    vectors.push(Array.from(output.data as Float32Array))
+    audioModelCache = { processor, model }
   }
+  return audioModelCache
+}
+
+export async function getEmbeddings(texts: string[]): Promise<number[][]> {
+  const { embed } = await geTextExtractor()
+
+  const vectors = await Promise.all(
+    texts.map(async (text) => {
+      try {
+        const output = await withTimeout(
+          embed(text, { pooling: 'mean', normalize: true }),
+          EMBEDDING_TIMEOUT,
+          `Text embedding timed out after ${EMBEDDING_TIMEOUT}ms`
+        )
+
+        const data = output.data
+        if (!(data instanceof Float32Array)) {
+          throw new Error('Unexpected extractor output')
+        }
+        return Array.from(data)
+      } catch (error) {
+        logger.error(`Error embedding text "${text.substring(0, 50)}...": ${error}`)
+        logger.debug(error)
+        // Return zero vector with known dimension - don't call the model again
+        return new Array(MODEL_DIMENSIONS.text).fill(0)
+      }
+    })
+  )
 
   return vectors
 }
 
 export async function getEmbeddingDimension(): Promise<number> {
-  const extractor = await getExtractor()
-  const testOutput = await extractor('test', {
+  const { embed } = await geTextExtractor()
+  const testOutput = await embed('test', {
     pooling: 'mean',
     normalize: true,
   })
   return (testOutput.data as Float32Array).length
 }
 
-let textToVisualModelCache: { processor: any; model: any } | null = null
-let textToAudioModelCache: { processor: any; model: any } | null = null
-
 async function getTextToVisualExtractor() {
   if (!textToVisualModelCache) {
     const { AutoTokenizer, CLIPTextModelWithProjection } = await import('@xenova/transformers')
 
-    const processor = await AutoTokenizer.from_pretrained('Xenova/clip-vit-base-patch32')
+    const tokenizer = await AutoTokenizer.from_pretrained('Xenova/clip-vit-base-patch32')
     const model = await CLIPTextModelWithProjection.from_pretrained('Xenova/clip-vit-base-patch32')
-    textToVisualModelCache = { processor, model }
+    textToVisualModelCache = { tokenizer, model }
   }
   return textToVisualModelCache
 }
@@ -73,16 +97,16 @@ async function getTextToAudioExtractor() {
   if (!textToAudioModelCache) {
     const { AutoTokenizer, ClapTextModelWithProjection } = await import('@xenova/transformers')
 
-    const processor = await AutoTokenizer.from_pretrained('Xenova/clap-htsat-unfused')
+    const tokenizer = await AutoTokenizer.from_pretrained('Xenova/clap-htsat-unfused')
     const model = await ClapTextModelWithProjection.from_pretrained('Xenova/clap-htsat-unfused')
-    textToAudioModelCache = { processor, model }
+    textToAudioModelCache = { tokenizer, model }
   }
   return textToAudioModelCache
 }
 
 export async function getVisualEmbeddingForText(text: string): Promise<number[]> {
-  const { processor, model } = await getTextToVisualExtractor()
-  const inputs = processor([text])
+  const { tokenizer, model } = await getTextToVisualExtractor()
+  const inputs = tokenizer([text])
   const { text_embeds } = await model(inputs)
   const embedding = Array.from(text_embeds.data as Float32Array)
   const norm = Math.sqrt(embedding.reduce((s, v) => s + v * v, 0))
@@ -91,8 +115,8 @@ export async function getVisualEmbeddingForText(text: string): Promise<number[]>
 }
 
 export async function getAudioEmbeddingForText(text: string): Promise<number[]> {
-  const { processor, model } = await getTextToAudioExtractor()
-  const inputs = processor([text])
+  const { tokenizer, model } = await getTextToAudioExtractor()
+  const inputs = tokenizer([text])
   const { text_embeds } = await model(inputs)
   const embedding = Array.from(text_embeds.data as Float32Array)
   const norm = Math.sqrt(embedding.reduce((s, v) => s + v * v, 0))
@@ -101,16 +125,16 @@ export async function getAudioEmbeddingForText(text: string): Promise<number[]> 
 }
 
 export async function getImageEmbedding(imageBuffer: Buffer): Promise<number[]> {
-  const { processor, model  } = await getFrameExtractor()
+  const { processor, model } = await getFrameExtractor()
   const { RawImage } = await import('@xenova/transformers')
-  
+
   const image = await RawImage.fromBlob(new Blob([new Uint8Array(imageBuffer)]))
   const inputs = await processor(image)
   const { image_embeds } = await model(inputs)
-  
+
   const embedding = Array.from(image_embeds.data as Float32Array)
   const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0))
-  return embedding.map(val => val / norm)
+  return embedding.map((val) => val / norm)
 }
 
 export async function embedSceneFrames(frames: string[]): Promise<number[] | null> {
@@ -127,9 +151,13 @@ export async function embedSceneFrames(frames: string[]): Promise<number[] | nul
       const image = await RawImage.fromBlob(new Blob([buffer]))
 
       const image_inputs = await processor(image)
-      const { image_embeds } = await model(image_inputs)
+      const { image_embeds } = await withTimeout<{ image_embeds: { data: Float32Array } }>(
+        model(image_inputs),
+        EMBEDDING_TIMEOUT,
+        `Visual embedding timed out after ${EMBEDDING_TIMEOUT}ms`
+      )
 
-      const vec = Array.from(image_embeds.data as Float32Array)
+      const vec = Array.from(image_embeds.data)
       const norm = Math.sqrt(vec.reduce((s, v) => s + v * v, 0))
       frameEmbeddings.push(vec.map((v) => v / norm))
     } catch (e) {
@@ -147,20 +175,6 @@ export async function embedSceneFrames(frames: string[]): Promise<number[] | nul
   return meanVec.map((v) => v / norm)
 }
 
-async function getAudioExtractor() {
-  if (!audioInitPromise) {
-    audioInitPromise = (async () => {
-      const { AutoProcessor, ClapAudioModelWithProjection } = await import('@xenova/transformers')
-      const processor = await AutoProcessor.from_pretrained('Xenova/clap-htsat-unfused')
-      const model = await ClapAudioModelWithProjection.from_pretrained('Xenova/clap-htsat-unfused')
-
-      return { model, processor }
-    })()
-  }
-
-  return audioInitPromise
-}
-
 export async function embedSceneAudio(audioPath: string): Promise<number[]> {
   const { processor, model } = await getAudioExtractor()
 
@@ -171,9 +185,14 @@ export async function embedSceneAudio(audioPath: string): Promise<number[]> {
   try {
     const audio = await readAudio(audioPath, 48000)
     const audio_inputs = await processor(audio)
-    const { audio_embeds } = await model(audio_inputs)
 
-    const embedding = Array.from(audio_embeds.data) as number[]
+    const { audio_embeds } = await withTimeout<{ audio_embeds: { data: number[] } }>(
+      model(audio_inputs),
+      EMBEDDING_TIMEOUT,
+      `Audio embedding timed out after ${EMBEDDING_TIMEOUT}ms`
+    )
+
+    const embedding = Array.from(audio_embeds.data)
     const norm = Math.sqrt(embedding.reduce((s, v) => s + v * v, 0))
     return embedding.map((v) => v / norm)
   } catch (error) {

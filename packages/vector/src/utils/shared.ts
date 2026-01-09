@@ -1,16 +1,15 @@
-import { Scene } from "@shared/schemas"
-import { logger } from "@shared/services/logger"
-import { DetectedTextData, FaceData, ObjectData, TranscriptionWord } from "@shared/types/scene"
-import { Metadata } from "chromadb"
-import path from "path"
-import { getAspectRatioDescription } from "./aspectRatio"
+import { Scene } from '@shared/schemas'
+import { logger } from '@shared/services/logger'
+import { DetectedTextData, FaceData, ObjectData, TranscriptionWord } from '@shared/types/scene'
+import { Metadata } from 'chromadb'
+import { getAspectRatioDescription } from './aspectRatio'
 
 const generateVectorDocumentText = async (scene: Scene) => {
   const faces = scene.faces?.join(', ') || ''
   const objects = scene.objects?.join(', ') || ''
   const emotionsText =
     scene.emotions
-      ?.map((face) => (face.emotion ? `${face.name} is ${face.emotion}` : ''))
+      ?.map((face) => (face.emotion ? `${face.name} is ${face.emotion} with ${Math.ceil(face.confidence)}% confidence` : ''))
       .filter(Boolean)
       .join(', ') || ''
   const detectedText = Array.isArray(scene.detectedText) ? scene.detectedText.join(', ') : scene.detectedText || ''
@@ -18,13 +17,13 @@ const generateVectorDocumentText = async (scene: Scene) => {
   const textParts: string[] = []
 
   // Shot type description
-  if (scene.shot_type) {
+  if (scene.shotType) {
     const shotTypeDescriptions: Record<string, string> = {
       'close-up': 'a close-up shot',
       'medium-shot': 'a medium-shot scene',
       'long-shot': 'a wide-angle scene',
     }
-    textParts.push(`This is ${shotTypeDescriptions[scene.shot_type] || 'a ' + scene.shot_type}`)
+    textParts.push(`This is ${shotTypeDescriptions[scene.shotType] || 'a ' + scene.shotType}`)
   } else {
     textParts.push('This is a video scene')
   }
@@ -84,14 +83,14 @@ const generateVectorDocumentText = async (scene: Scene) => {
   }
 
   // Aspect ratio
-  if (scene.aspect_ratio) {
-    const aspectRatioDesc = getAspectRatioDescription(scene.aspect_ratio)
+  if (scene.aspectRatio) {
+    const aspectRatioDesc = getAspectRatioDescription(scene.aspectRatio)
     textParts.push(` in ${aspectRatioDesc} format`)
   }
 
-  // Category
-  if (scene.category) {
-    textParts.push(` categorized as ${scene.category}`)
+  // Description
+  if (scene.description) {
+    textParts.push(` described as ${scene.description}`)
   }
 
   // Clean up and return
@@ -99,7 +98,6 @@ const generateVectorDocumentText = async (scene: Scene) => {
 
   return text
 }
-
 
 export const sceneToVectorFormat = async (scene: Scene) => {
   const detectedText = Array.isArray(scene.detectedText) ? scene.detectedText.join(', ') : scene.detectedText || ''
@@ -111,13 +109,12 @@ export const sceneToVectorFormat = async (scene: Scene) => {
     thumbnailUrl: scene.thumbnailUrl || '',
     startTime: scene.startTime,
     endTime: scene.endTime,
-    type: 'scene',
     faces: scene.faces.join(', '),
     objects: scene.objects.join(', '),
     transcription: scene.transcription || '',
     emotions: JSON.stringify(scene.emotions || []),
-    description: text,
-    shot_type: scene.shot_type || 'long-shot',
+    description: scene.description,
+    shotType: scene.shotType,
     detectedText: detectedText,
     createdAt: scene.createdAt,
     location: scene.location,
@@ -129,11 +126,11 @@ export const sceneToVectorFormat = async (scene: Scene) => {
     objectsData: JSON.stringify(scene.objectsData || []),
     detectedTextData: JSON.stringify(scene.detectedTextData || []),
     transcriptionWords: JSON.stringify(scene.transcriptionWords || []),
-    aspect_ratio: scene.aspect_ratio,
+    aspectRatio: scene.aspectRatio,
   }
 
   return {
-    id: scene.id || `${path.basename(scene.source)}_scene_${scene.startTime}_${scene.endTime}`,
+    id: scene.id,
     text,
     metadata,
   }
@@ -183,8 +180,7 @@ export const validateDocument = (doc: { id: string; text: string; metadata?: any
   return true
 }
 
-
-export const metadataToScene = (metadata: Record<string, unknown> | null, id: string): Scene => {
+export const metadataToScene = (metadata: Record<string, unknown> | null, id: string, text?: string | null): Scene => {
   if (!metadata) {
     return {
       id: id,
@@ -195,7 +191,7 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
       objects: [],
       transcription: '',
       description: '',
-      shot_type: '',
+      shotType: '',
       emotions: [],
       createdAt: 0,
       source: '',
@@ -205,11 +201,11 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
       detectedText: [],
       location: '',
       duration: 0,
-      aspect_ratio: '16:9',
+      aspectRatio: '16:9',
     }
   }
 
-  let emotions: Array<{ name: string; emotion: string }> = []
+  let emotions: Array<{ name: string; emotion: string; confidence: number }> = []
   try {
     const emotionsStr = metadata.emotions as string
     if (emotionsStr) {
@@ -220,7 +216,7 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
           .map((s) => s.trim())
           .map((part) => {
             const [name, emotion] = part.split(':').map((s) => s.trim())
-            return { name: name || 'unknown', emotion: emotion || 'neutral' }
+            return { name: name || 'unknown', emotion: emotion || 'neutral', confidence: 1 }
           })
       } else {
         // Otherwise, try parsing as JSON
@@ -229,6 +225,7 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
           emotions = parsed.map((e) => ({
             name: e.name || 'unknown',
             emotion: e.emotion || 'neutral',
+            confidence: parseFloat(e.emotion) || 0,
           }))
         }
       }
@@ -292,25 +289,35 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
     objects,
     transcription: metadata.transcription?.toString() || '',
     description: metadata.description?.toString() || '',
-    shot_type: metadata.shot_type?.toString() || '',
+    shotType: metadata.shotType?.toString() || '',
     emotions,
     createdAt: parseInt(metadata.createdAt?.toString() || '0'),
     source: metadata.source?.toString() || '',
-    camera: metadata.camera?.toString() || 'N/A',
-    dominantColorHex: metadata.dominantColor?.toString() || metadata.dominantColorHex?.toString() || 'N/A',
-    dominantColorName: metadata.dominantColorName?.toString() || 'N/A',
+    camera: metadata.camera?.toString() || 'Unknown Camera',
+    dominantColorHex: metadata.dominantColor?.toString() || metadata.dominantColorHex?.toString() || 'Unknown',
+    dominantColorName: metadata.dominantColorName?.toString() || 'Unknown',
     detectedText,
-    location: metadata.location?.toString() || 'N/A',
+    location: metadata.location?.toString() || 'Unknown Location',
     duration: parseInt(metadata.duration?.toString() || '0'),
     detectedTextData,
     transcriptionWords,
     objectsData,
     facesData,
-    aspect_ratio: metadata.aspect_ratio?.toString() || '16:9',
+    aspectRatio: metadata.aspectRatio?.toString() || '16:9',
+    text: text ?? undefined,
   }
 }
 
-
 export function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b)
+}
+
+
+export const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, errorMsg: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => 
+      setTimeout(() => reject(new Error(errorMsg)), timeoutMs)
+    )
+  ])
 }

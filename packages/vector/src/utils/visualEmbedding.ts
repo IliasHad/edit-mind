@@ -12,15 +12,10 @@ export const embedVisualScenes = async (scenes: Scene[], videoFullPath: string):
     if (!visual_collection) {
       throw new Error('Visual Collection not initialized')
     }
-    const idsToCheck = scenes.map((e) => e.id)
-    const existingVideoIds = await visual_collection.get({
-      ids: idsToCheck,
-      include: [],
-    })
-    const newScenes = scenes.filter((emb) => !existingVideoIds?.ids.includes(emb.id))
 
-    for (let i = 0; i < newScenes.length; i += VISUAL_BATCH_SIZE) {
-      const batch = newScenes.slice(i, i + VISUAL_BATCH_SIZE)
+
+    for (let i = 0; i < scenes.length; i += VISUAL_BATCH_SIZE) {
+      const batch = scenes.slice(i, i + VISUAL_BATCH_SIZE)
       logger.info(`Processing batch ${i / VISUAL_BATCH_SIZE + 1}, scenes ${i} to ${i + batch.length - 1}`)
 
       const visualEmbeddingsPromise = batch.map(async (scene) => {

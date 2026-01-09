@@ -13,15 +13,9 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
     if (!audio_collection) {
       throw new Error('Audio Collection not initialized')
     }
-    const idsToCheck = scenes.map((e) => e.id)
-    const existingAudioIds = await audio_collection.get({
-      ids: idsToCheck,
-      include: [],
-    })
-    const newScenes = scenes.filter((emb) => !existingAudioIds?.ids.includes(emb.id))
 
-    for (let i = 0; i < newScenes.length; i += AUDIO_BATCH_SIZE) {
-      const batch = newScenes.slice(i, i + AUDIO_BATCH_SIZE)
+    for (let i = 0; i < scenes.length; i += AUDIO_BATCH_SIZE) {
+      const batch = scenes.slice(i, i + AUDIO_BATCH_SIZE)
 
       logger.info(`Processing ${batch.length} scenes for audio embeddings`)
 
