@@ -36,9 +36,6 @@ jobs:
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
-        platform:
-          - linux/amd64
-          - linux/arm64
 
     steps:
       - name: Maximize build space
