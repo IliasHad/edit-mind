@@ -1,64 +1,42 @@
-### 🧠 Edit Mind:  AI-Powered Video Indexing & Search
+### Edit Mind:  Local Video Indexer & AI Search
 
-Edit Mind lets you **search your videos by content, not just filenames**. Recognize faces, transcribe speech, detect objects, and explore your library with natural language search. All **locally and securely**.  
+Edit Mind lets you index your videos **(including transcription, frame analysis, and multi-model embedding)**, and you can search your videos (or specific video scenes) using natural language.
 
-Perfect for creators, editors, and researchers who need smarter video management.
+> **Development Status:** Edit Mind is currently in **active development** and **not yet production-ready**.
+> Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
 [![Docker](https://img.shields.io/badge/Containerized-Docker-blue.svg)](https://www.docker.com/)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-☕-ffdd00?style=flat-square&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/iliashaddad_dev)
 
-> ⚠️ **Development Status:** Edit Mind is currently in **active development** and **not yet production-ready**.
-> Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
 
 ---
+Note: (Edit Mind name is coming from Video Editor Mind, so this will be editor's second brain in the future)
 
-## 📺 Demo
+## Showcase Video
 
-### YouTube Walkthrough
 [![Edit Mind Demo](https://img.youtube.com/vi/YrVaJ33qmtg/maxresdefault.jpg)](https://www.youtube.com/watch?v=YrVaJ33qmtg)  
 *Click to watch a walkthrough of Edit Mind's core features.*
 
 ---
 
-## ⚡ Why Edit Mind?
-- Search videos by spoken words, objects, faces, and events.
+## Why Edit Mind?
+- Search videos by spoken words, objects, faces, etc...
 - Runs fully **locally**, respecting privacy.
-- Works on **desktop and web**.
+- Works on **any computer or server with Docker installed**.
 - Uses AI for rich metadata extraction and semantic search.
 
-
-## ✨ Core Features
+## Core Features
 
 *   **Video Indexing and Processing:** A background service watches for new video files and queues them for AI-powered analysis.
 *   **AI-Powered Video Analysis:** Extracts metadata like face recognition, transcription, object & text detection, scene analysis, and more.
-*   **Vector-Based Semantic Search:** Powerful natural language search capabilities on video content using ChromaDB and Google Gemini.
-*   **Dual Interfaces:** Access your video library through a native **Desktop App** (Electron) or a **Web App** (Docker).
+*   **Vector-Based Semantic Search:** Powerful natural language search capabilities on video content using ChromaDB.
+*   **Dual Interfaces:** Access your video library through a **Web App**.
 
 ---
 
-## ⚙️ Monorepo Architecture & Tech Stack
-
-This project is structured as a `pnpm` monorepo, separating concerns into distinct applications and shared packages.
-
-### Applications
-
-*   **`apps/desktop`**: The native Electron application, providing a rich user experience.
-*   **`apps/web`**: A full-stack web application for browser-based access.
-*   **`apps/background-jobs`**: The core backend service managing video processing, AI analysis orchestration, and job queues. (Used for the Docker setup)
-
-### Shared Packages
-
-*   **`packages/prisma`**: Database schema and migration management.
-*   **`packages/shared`**: (Under refactoring) Contains utilities, types, and services shared across applications.
-*   **`packages/ui`**: A shared UI component library (Under construction to share components between web and the desktop application).
-
-### AI/ML Services
-
-*   **`python/`**: Contains Python scripts for various AI-powered video analysis plugins, transcription, face matching and face reindexing. It's communicating via WebSockets.
 
 ### Core Technologies
 
@@ -66,16 +44,15 @@ This project is structured as a `pnpm` monorepo, separating concerns into distin
 | :---------------- | :------------------------------------------------ |
 | **Monorepo**      | [pnpm workspaces](https://pnpm.io/workspaces)   |
 | **Containerization** | [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/) |
-| **Frontend**      | [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/) |
-| **UI / Styling**  | [shadcn/ui](https://ui.shadcn.com/), [Tailwind CSS](https://tailwindcss.com/) |
-| **Backend (Node.js)** | [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/), [BullMQ](https://bullmq.io/) |
-| **AI / ML**       | [Python](https://www.python.org/), [OpenCV](https://opencv.org/), [PyTorch](https://pytorch.org/), OpenAI Whisper, Google Gemini (Used for NLP) |
+| **Web Service**      | [React Router V7](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/) |
+| **Background Jobs Service** | [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/), [BullMQ](https://bullmq.io/) |
+| **ML Sevice**       | [Python](https://www.python.org/), [OpenCV](https://opencv.org/), [PyTorch](https://pytorch.org/), OpenAI Whisper, Google Gemini or Ollama (Used for NLP) |
 | **Vector Database** | [ChromaDB](https://www.trychroma.com/)           |
 | **Relational DB** | [PostgreSQL](https://www.postgresql.org/) (via [Prisma ORM](https://www.prisma.io/)) |
 
 ---
 
-## 🚀 Getting Started (Docker-first Setup)
+## Getting Started
 
 Edit Mind uses Docker Compose to run everything in containers.
 
@@ -84,9 +61,9 @@ Edit Mind uses Docker Compose to run everything in containers.
 *   [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 *   That's it! Everything else runs in containers.
 
-### 1. Clone the Repository
+### 1. Project Setup
 ```bash
-git clone https://github.com/iliashad/edit-mind
+mkdir edit-mind
 cd edit-mind
 ```
 
@@ -111,9 +88,14 @@ Edit Mind uses a **two-file environment configuration**:
 #### Step 3.1: Create Your Personal Configuration
 
 Copy the example file and customize it:
+
 ```bash
-cp .env.example .env
-```
+git clone https://github.com/iliashad/edit-mind
+cd edit-mind
+
+cp .env.system.example docker/.env.system
+cp .env.example docker/.env
+ ```
 
 **Edit the `.env` file and configure these critical settings:**
 ```ini
@@ -122,14 +104,26 @@ cp .env.example .env
 HOST_MEDIA_PATH="/Users/yourusername/Videos"
 
 # 2. CHOOSE AI MODEL (Pick one option)
-# Option A: Use Gemini API (easier, requires API key)
-USE_LOCAL_MODEL="false"
-GEMINI_API_KEY="your-gemini-api-key-from-google-ai-studio"
+# Option A: Use Ollama (more private, requires model download)
+USE_OLLAMA_MODEL="TRUE"
+OLLAMA_HOST="http://host.docker.internal"
+OLLAMA_PORT="11434"
+OLLAMA_MODEL="qwen2.5:7b-instruct"
+
+# Please make sure to run ollama server first using this command 
+
+# OLLAMA_HOST=0.0.0.0:11434 ollama serve
+# and pull the ollama model first 
+# ollama pull qwen2.5:7b-instruct
 
 # Option B: Use Local Model (more private, requires model download)
 # USE_LOCAL_MODEL="true"
 # SEARCH_AI_MODEL="/app/models/path/to/.gguf"
 # The AI model should be downloaded and saved it to models folder in the project root dir
+
+# Option C: Use Gemini API (requires API key)
+USE_LOCAL_MODEL="false"
+GEMINI_API_KEY="your-gemini-api-key-from-google-ai-studio"
 
 # 3. GENERATE SECURITY KEYS (REQUIRED)
 # Generate with: openssl rand -base64 32
@@ -147,24 +141,15 @@ openssl rand -base64 32
 openssl rand -hex 32
 ```
 
-#### Step 3.2: Copy Configuration to Docker Directory
-```bash
-cp .env.system.example .env.system
-```
-
 
 ### 4. Start the Services
 
 Start all services with a single command:
 
 ```bash
-docker compose up
+cd docker
+docker-compose up --build
 ```
-
-**First-time startup will take 5-10+ minutes** as Docker:
-- Builds all container images
-- Downloads AI models and dependencies
-- Initializes databases
 
 
 ### 5. Access the Applications
@@ -172,90 +157,131 @@ docker compose up
 Once all services are running (look for "ready" messages in logs):
 
 *   **Web App:** [http://localhost:3745](http://localhost:3745)
-*   **BullMQ Dashboard:** [http://localhost:4000/(http://localhost:4000) (Job queue monitoring) if you have ```NODE_ENV``` set to ```development```
 
 ### 6. Add Your First Videos
 
 1. Navigate to the web app at `http://localhost:3745`
-2. Login using admin@example.com and password is admin
+2. Login using `admin@example.com` and password is `admin`
 3. Navigate to the web app at `http://localhost:3745/app/settings`
 4. Click **"Add Folder"**
 3. Select a folder from your `HOST_MEDIA_PATH` location
+4. Click on the folder and Click on `Rescan`
 4. The background job service will automatically start processing your videos and will be start watching for new video file events 
-5. Monitor progress in the BullMQ dashboard at `http://localhost:4000`
-
-### Troubleshooting
-
-**Problem: "Empty section between colons" error**
-```bash
-# Solution: Ensure .env is copied to docker directory
-cp .env docker/.env
-# Verify HOST_MEDIA_PATH is set
-grep HOST_MEDIA_PATH .env
-```
-
-**Problem: Services won't start**
-```bash
-# Check Docker is running
-docker --version
-docker compose version
-
-# View detailed logs
-docker compose -f docker/docker-compose.yml logs
-
-# Check service status
-docker compose -f docker/docker-compose.yml ps
-```
-
-**Problem: Cannot access video files**
-```bash
-# Verify HOST_MEDIA_PATH is correct
-ls -la /your/video/path
-
-# Check Docker file sharing includes this path
-# Docker Desktop → Settings → Resources → File Sharing
-
-# Restart Docker after adding paths
-```
----
-
-## 🖥️ Desktop Application (Optional)
-
-For the native Electron desktop experience, see [apps/desktop/README.md](apps/desktop/README.md). Note: The desktop app requires local Node.js and pnpm installation.
-
----
-
-## 📂 Project Structure
-
-```
-.
-├── apps/                 # Individual applications (desktop, web, background-jobs)
-│   ├── background-jobs/  # Node.js service for AI analysis orchestration & job queue
-│   ├── desktop/          # Electron desktop application
-│   └── web/              # Full-stack web application
-├── packages/             # Shared libraries and packages
-│   ├── prisma/           # Prisma schema, migrations, and database utilities
-│   ├── shared/           # Cross-application constants, types, and utilities
-│   └── ui/               # Reusable UI components
-├── python/               # Core Python AI/ML analysis services and plugins
-├── docker/               # Dockerfiles and docker-compose configurations
-└── ...                   # Other configuration files (pnpm-workspace.yaml, .env.example, etc.)
-```
-
-For detailed instructions on each application, refer to their respective `README.md` files:
-*   [**`apps/desktop/README.md`**](apps/desktop/README.md)
-*   [**`apps/web/README.md`**](apps/web/README.md)
-*   [**`apps/background-jobs/README.md`**](apps/background-jobs/README.md)
-
----
-## 🤝 Special Shoutout
-
-I would like to thank the community of/r/selfhost for their amazing support and feedback (https://www.reddit.com/r/selfhosted/comments/1ogis3j/i_built_a_selfhosted_alternative_to_googles_video/)
 
 
-## 🤝 Contributing
+## Packages
+
+This section provides an overview of the various packages within this monorepo. Each package is designed to handle a specific set of responsibilities, promoting modularity and reusability.
+
+### `@packages/ai`
+
+**Purpose**: Handles all interactions with Artificial Intelligence models (both local and cloud-based).
+
+- **Responsibilities**:
+  - Interprets natural language user queries for search and chat.
+  - Classifies user intent (e.g., compilation, analytics, general chat).
+  - Converts queries into a structured JSON format for the search service.
+  - Generates user-facing messages, analytics summaries, and creative video compilation ideas.
+  - Supports multiple AI backends like Google Gemini and local models (via `node-llama-cpp`) or `Ollama`.
+
+### `@packages/vector`
+
+**Purpose**: Manages communication with the vector database (ChromaDB) and handles the creation of embeddings.
+
+- **Responsibilities**:
+  - Provides a client for interacting with ChromaDB collections.
+  - Creates text, visual, and audio embeddings for video scenes using libraries like `@xenova/transformers`.
+  - Stores, retrieves, and searches for scenes based on vector similarity (hybrid search).
+  - Manages separate collections for text, visual, and audio data to support multi-modal search.
+  - Provides utilities for batch embedding scenes text, visual, and audio segments.
+
+### `@packages/media-utils`
+
+**Purpose**: A comprehensive toolkit for all media processing tasks.
+
+- **Responsibilities**:
+  - Extracts video metadata using `ffmpeg`.
+  - Generates thumbnails for videos and scenes.
+  - Extracts individual frames and audio segments from videos for visual embedding.
+  - Stitches video scenes together to create compilations.
+  - Reads camera metadata (e.g., GoPro telemetry) and EXIF data for location and date information.
+
+### `@packages/db`
+
+**Purpose**: Centralizes database client and schema management.
+
+- **Responsibilities**:
+  - Exports the Prisma Client instance for use across the application.
+  - Ensures that all parts of the application use a single, consistent database connection.
+
+### `@packages/prisma`
+
+**Purpose**: Defines the application's database schema and manages migrations.
+
+- **Responsibilities**:
+  - Contains the `schema.prisma` file, which is the single source of truth for database models.
+  - Includes scripts for seeding the database with initial data (`seed.ts`).
+  - Manages database migrations to keep the schema in sync with the models.
+
+### `@packages/search`
+
+**Purpose**: Orchestrates the entire search process, from user query to results.
+
+- **Responsibilities**:
+  - Takes a user query, and then uses the structured result to query the vector database.
+  - Consolidates results and prepares them to use.
+
+### `@packages/shared`
+
+**Purpose**: Contains code, types, and utilities that are shared across multiple packages.
+
+- **Responsibilities**:
+  - Defines shared TypeScript types and Zod schemas.
+  - Provides common services like `logger` and `cache`.
+  - Includes shared utility functions.
+
+### `@packages/smart-collections`
+
+**Purpose**: Manages the creation and maintenance of "smart collections" of videos.
+
+- **Responsibilities**:
+  - Defines criteria for dynamic collections (e.g., "Moments with X," "Conversations and Talks").
+  - Queries the vector database to find media that matches the collection criteria.
+  - Generates and updates these collections automatically.
+
+### Special Thanks
+
+A huge thank you to the `r/selfhosted` community on Reddit for their amazing support, valuable feedback, and encouragement.
+
+Original discussion:
+https://www.reddit.com/r/selfhosted/comments/1ogis3j/i_built_a_selfhosted_alternative_to_googles_video/
+
+
+## Contributing
 
 We welcome contributions of all kinds! Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
+
+## Development Setup
+
+Follow the steps below if you want to extend the app functionality or fix bugs.
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/iliashad/edit-mind
+cd edit-mind
+```
+
+### 2. Setup dev environment
+```bash
+cp .env.system.example docker/.env.system
+cp .env.example docker/.env.dev
+```
+
+### 3. Start docker container in dev mode
+```bash
+cd docker 
+docker-compose -f docker-compose.dev.yml up --build
+```
 
 ---
 
