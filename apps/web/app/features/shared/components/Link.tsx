@@ -7,7 +7,7 @@ export function Link({
   label,
   to,
 }: {
-  isCollapsed: boolean
+  isCollapsed?: boolean
   icon: JSX.Element
   label: string
   to: string

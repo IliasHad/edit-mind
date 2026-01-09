@@ -1,23 +1,33 @@
-import { Home, MessageSquare, MoreHorizontal, ChevronLeft, SearchIcon, Users } from 'lucide-react'
+import {
+  HomeIcon,
+  Cog6ToothIcon,
+  ChevronLeftIcon,
+  MagnifyingGlassIcon,
+  ChatBubbleLeftIcon,
+  UsersIcon,
+  FolderIcon,
+  FilmIcon,
+} from '@heroicons/react/24/outline'
 import { Link } from './Link'
 import { useSession } from '~/features/auth/hooks/useSession'
+import type { JSX } from 'react'
 
 interface SidebarProps {
   isCollapsed?: boolean
   setIsCollapsed?: (v: boolean) => void
+  children?: JSX.Element
 }
 
-export function Sidebar({ isCollapsed = false, setIsCollapsed }: SidebarProps) {
+export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: SidebarProps) {
   const { session } = useSession()
 
   return (
     <aside
       className={`
         fixed left-0 top-0 h-screen z-50
-        ${isCollapsed ? 'w-16' : 'w-72'}
-        backdrop-blur-xl bg-white/60 dark:bg-black/40
-        border-r border-gray-200 dark:border-white/10
-        flex flex-col transition-all duration-300 ease-out shadow-sm
+        ${isCollapsed ? 'w-16' : 'w-64'}
+        border-r border-gray-800
+        flex flex-col transition-all duration-300 ease-out
       `}
     >
       <div className="shrink-0 p-4 border-b border-gray-200 dark:border-white/10">
@@ -38,7 +48,7 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed }: SidebarProps) {
             onClick={() => setIsCollapsed?.(!isCollapsed)}
             className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md transition-colors"
           >
-            <ChevronLeft
+            <ChevronLeftIcon
               className={`w-4 h-4 text-gray-700 dark:text-gray-300 transition-transform ${
                 isCollapsed ? 'rotate-180' : ''
               }`}
@@ -47,29 +57,42 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed }: SidebarProps) {
         </div>
       </div>
 
-      <nav className="shrink-0 p-4 space-y-1">
-        <Link isCollapsed={isCollapsed} icon={<Home className="w-5 h-5" />} to="/app/home" label="Home" />
-        <Link isCollapsed={isCollapsed} icon={<SearchIcon className="w-5 h-5" />} to="/app/search" label="Search" />
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <Link isCollapsed={isCollapsed} icon={<HomeIcon className="w-5 h-5" />} to="/app/home" label="Dashboard" />
         <Link
           isCollapsed={isCollapsed}
-          icon={<MessageSquare className="w-5 h-5" />}
-          to="/app/prompt"
+          icon={<MagnifyingGlassIcon className="w-5 h-5" />}
+          to="/app/search"
+          label="Search"
+        />
+        <Link
+          isCollapsed={isCollapsed}
+          icon={<ChatBubbleLeftIcon className="w-5 h-5" />}
+          to="/app/chats/new"
           label="New Chat"
         />
         <Link
           isCollapsed={isCollapsed}
-          icon={<Users className="w-5 h-5" />}
-          to="/app/training"
-          label="Face Training"
+          icon={<FolderIcon className="w-5 h-5" />}
+          to="/app/collections"
+          label="Collections"
         />
-      </nav>
-
-      <div className="mt-auto p-4 border-t border-gray-200 dark:border-white/10">
+        <Link isCollapsed={isCollapsed} icon={<FilmIcon className="w-5 h-5" />} to="/app/projects" label="Projects" />
         <Link
           isCollapsed={isCollapsed}
-          icon={<MoreHorizontal className="w-5 h-5" />}
-          to={`/app/settings`}
-          label={'Settings'}
+          icon={<UsersIcon className="w-5 h-5" />}
+          to="/app/faces"
+          label="Face Training"
+        />
+        {children}
+      </nav>
+
+      <div className="p-4 border-t border-gray-800">
+        <Link
+          isCollapsed={isCollapsed}
+          icon={<Cog6ToothIcon className="w-5 h-5" />}
+          to="/app/settings"
+          label="Settings"
         />
       </div>
     </aside>
