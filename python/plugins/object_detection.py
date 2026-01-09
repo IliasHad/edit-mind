@@ -30,10 +30,6 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
 
     def setup(self, video_path, job_id) -> None:
         """Initialize the YOLO model."""
-        # Set environment variables for YOLO cache paths
-        os.environ['YOLO_CONFIG_DIR'] = self.config.get("cache_dir")
-        os.environ['TORCH_HOME'] = self.config.get("cache_dir")
-
         # Initialize YOLO model (will download to cache_dir if needed)
         self.yolo_model = YOLO(self.model)
 
