@@ -9,7 +9,7 @@ from pathlib import Path
 class AnalysisConfig:
     """Video analysis configuration."""
     sample_interval_seconds: float = 2.5
-    max_workers: int = max(1, os.cpu_count() - 2) if os.cpu_count() else 2
+    max_workers: 2
     cache_dir: str = 'ml-models/.yolo'
     enable_streaming: bool = True
     enable_aggressive_gc: bool = False
@@ -35,7 +35,6 @@ class AnalysisConfig:
             available_gb = psutil.virtual_memory().available / (1024**3)
 
             if available_gb < 8:
-                self.max_workers = 2
                 self.frame_buffer_limit = 4
                 self.target_resolution_height = 480
             elif available_gb < 16:
@@ -89,9 +88,9 @@ class ServerConfig:
     host: Optional[str] = None
     port: Optional[int] = None
     socket_path: Optional[str] = None
-    max_concurrent_jobs: int = 4
-    max_concurrent_analyses: int = 2
-    max_concurrent_transcriptions: int = 2
+    max_concurrent_jobs: int = 2
+    max_concurrent_analyses: int = 1
+    max_concurrent_transcriptions: int = 1
     ping_interval: int = 60
     ping_timeout: int = 120
     close_timeout: int = 30
