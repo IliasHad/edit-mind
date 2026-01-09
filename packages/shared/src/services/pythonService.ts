@@ -1,18 +1,14 @@
-import 'dotenv/config'
-import path from 'path'
-import { spawn, ChildProcess } from 'child_process'
+import { ChildProcess } from 'child_process'
 import WebSocket from 'ws'
-import { Analysis, AnalysisProgress } from '../types/analysis'
-import { IS_WIN, MAX_RESTARTS, PYTHON_PORT, PYTHON_SCRIPT, RESTART_BACKOFF_MS, VENV_PATH } from '../constants'
-import { TranscriptionProgress } from '../types/transcription'
+import { ML_HOST, ML_PORT } from '../constants'
 import { logger } from './logger'
-import { PythonMessageType } from '../types/python'
+import { Analysis, AnalysisProgress } from '@shared/types/analysis'
+import { Transcription, TranscriptionProgress } from '@shared/types/transcription'
 
-interface JobCallbacks {
-  onProgress?: (data: any) => void
-  onResult?: (data: any) => void
+interface JobCallbacks<T = Analysis | Transcription> {
+  onProgress?: (progress: TranscriptionProgress | AnalysisProgress) => void
   onError?: (error: Error) => void
-  onComplete?: () => void
+  onComplete?: (data: T) => void
 }
 
 class PythonService {
@@ -21,18 +17,18 @@ class PythonService {
   private client: WebSocket | null = null
   private serviceUrl: string
   private isRunning = false
-  private restartCount = 0
   private jobCallbacks: Map<string, JobCallbacks> = new Map()
-  private port: string
   private startPromise: Promise<string> | null = null
 
+  // TODO: We need to implement session for this websocket,
+  // in case the Node.js service has been restarted and ML service is still processing a job, we'll lost the connection
+
   private constructor() {
-    if (!PYTHON_PORT) {
-      throw new Error('PYTHON_PORT is not defined in the environment variables.')
+    if (!ML_PORT) {
+      throw new Error('ML_PORT is not defined in the environment variables.')
     }
-    this.port = PYTHON_PORT
-    const host = process.env.PYTHON_HOST || 'localhost'
-    this.serviceUrl = `ws://${host}:${this.port}`
+    this.serviceUrl = `ws://${ML_HOST}:${ML_PORT}`
+    logger.debug(`Connecting to ${this.serviceUrl}`)
   }
 
   public static getInstance(): PythonService {
@@ -62,71 +58,31 @@ class PythonService {
   }
 
   private async _doStart(): Promise<string> {
-    try {
-      logger.debug('Attempting to connect to existing Python service...')
-      if (this.client) {
-        this.client.removeAllListeners()
-        this.client.close()
-        this.client = null
-      }
-      await this.connectToWebSocket()
-      this.isRunning = true
-      logger.debug('✅ Connected to existing Python service')
-      return this.serviceUrl
-    } catch {
-      logger.debug('No existing service found, spawning new one...')
-    }
+    const maxRetries = 30
+    const retryDelay = 2000
 
-    const venvPath = VENV_PATH
-    const pythonExecutable = IS_WIN
-      ? path.join(venvPath, 'Scripts', 'python.exe')
-      : path.join(venvPath, 'bin', 'python')
-
-    const servicePath = PYTHON_SCRIPT
-
-    this.serviceProcess = spawn(pythonExecutable, [servicePath, '--port', this.port, '--host', '0.0.0.0'], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      detached: false,
-    })
-
-    if (!this.serviceProcess || !this.serviceProcess.pid) {
-      throw new Error('Failed to spawn Python service process')
-    }
-
-    this.serviceProcess.on('error', (error) => {
-      logger.error('Python service process error: ' + error)
-    })
-
-    this.serviceProcess.on('exit', (code, signal) => {
-      logger.error(`Python service exited with code ${code}, signal ${signal}`)
-      this.isRunning = false
-      this.serviceProcess = null
-      this.handleCrash()
-    })
-
-    const maxAttempts = 15
-    const delayMs = 1000
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        logger.debug(`Connection attempt ${attempt}/${maxAttempts}...`)
+        logger.debug(`Attempting to connect to ML service (attempt ${attempt}/${maxRetries})...`)
+        if (this.client) {
+          this.client.removeAllListeners()
+          this.client.close()
+          this.client = null
+        }
         await this.connectToWebSocket()
         this.isRunning = true
-        this.restartCount = 0
-        logger.debug('✅ Connected to the Python service')
+        logger.debug('Connected to ML service')
         return this.serviceUrl
       } catch (error) {
-        if (attempt === maxAttempts) {
-          logger.error('Failed to connect to Python service after max attempts')
-          this.stop()
-          logger.error(error)
-          throw new Error(`Python service failed to start within ${maxAttempts * delayMs}ms`)
+        logger.debug(`Connection attempt ${attempt} failed: ${error}`)
+        if (attempt < maxRetries) {
+          logger.debug(`Retrying in ${retryDelay}ms...`)
+          await new Promise((resolve) => setTimeout(resolve, retryDelay))
         }
-        await new Promise((resolve) => setTimeout(resolve, delayMs))
       }
     }
 
-    throw new Error('Failed to start Python service')
+    throw new Error('Failed to connect to ML service after maximum retries')
   }
 
   public async stop(): Promise<void> {
@@ -146,9 +102,10 @@ class PythonService {
 
   public analyzeVideo(
     videoPath: string,
+    jsonFilePath: string,
     job_id: string,
     onProgress: (progress: AnalysisProgress) => void,
-    onResult: (result: Analysis) => void,
+    onComplete: (data: Analysis) => void,
     onError: (error: Error) => void
   ): void {
     if (this.client?.readyState !== WebSocket.OPEN) {
@@ -157,14 +114,14 @@ class PythonService {
     }
 
     this.jobCallbacks.set(job_id, {
-      onProgress,
-      onResult,
+      onProgress: onProgress as (progress: TranscriptionProgress | AnalysisProgress) => void,
+      onComplete: onComplete as (data: Analysis | Transcription) => void,
       onError,
     })
 
     const message = {
       type: 'analyze',
-      payload: { video_path: encodeURI(videoPath), job_id },
+      payload: { video_path: encodeURI(videoPath), job_id, json_file_path: jsonFilePath },
     }
 
     try {
@@ -180,7 +137,7 @@ class PythonService {
     jsonFilePath: string,
     job_id: string,
     onProgress: (progress: TranscriptionProgress) => void,
-    onComplete: (result: void) => void,
+    onComplete: (data: Transcription) => void,
     onError: (error: Error) => void
   ): void {
     if (this.client?.readyState !== WebSocket.OPEN) {
@@ -189,8 +146,8 @@ class PythonService {
     }
 
     this.jobCallbacks.set(job_id, {
-      onProgress,
-      onComplete,
+      onProgress: onProgress as (progress: TranscriptionProgress | AnalysisProgress) => void,
+      onComplete: onComplete as (data: Analysis | Transcription) => void,
       onError,
     })
 
@@ -223,15 +180,15 @@ class PythonService {
           this.client = null
         }
         reject(new Error('WebSocket connection timeout'))
-      }, 3000)
+      }, 5000)
 
       this.client = new WebSocket(this.serviceUrl, {
-        maxPayload: 1024 * 1024 * 1024, // 1GB
+        maxPayload: 200 * 1024 * 1024, // 200 MB
       })
 
       this.client.on('open', () => {
         clearTimeout(timeout)
-        logger.debug('✅ WebSocket connection established.')
+        logger.debug('WebSocket connection established.')
         resolve()
       })
 
@@ -241,25 +198,29 @@ class PythonService {
           const { type, payload } = message
           const job_id = payload?.job_id
 
+          if (type === 'ping') {
+            return
+          }
+
           if (!job_id) {
-            logger.warn(`⚠️ Received message without job_id: ${type}`)
+            logger.warn(`Received message without job_id: ${type}`)
             return
           }
 
           const callbacks = this.jobCallbacks.get(job_id)
 
           if (!callbacks) {
-            logger.warn(`⚠️ No callbacks registered for job_id: ${job_id}`)
-            return
+            logger.warn(`No callbacks registered for job_id: ${job_id}`)
+            throw new Error(`No callbacks registered for job_id: ${job_id}`)
           }
 
-          switch (type as PythonMessageType) {
+          switch (type) {
             case 'analysis_progress':
               callbacks.onProgress?.(payload)
               break
 
             case 'analysis_completed':
-              callbacks.onResult?.(payload)
+              callbacks.onComplete?.(payload)
               this.jobCallbacks.delete(job_id)
               break
 
@@ -273,7 +234,7 @@ class PythonService {
               break
 
             case 'transcription_completed':
-              callbacks.onComplete?.()
+              callbacks.onComplete?.(payload)
               this.jobCallbacks.delete(job_id)
               break
 
@@ -283,10 +244,10 @@ class PythonService {
               break
 
             default:
-              logger.warn(`⚠️ Unknown message type: ${type}`)
+              logger.warn(`Unknown message type: ${type}`)
           }
         } catch (error) {
-          logger.error('❌ Error processing message: ' + error)
+          logger.error('Error processing message: ' + error)
         }
       })
 
@@ -300,18 +261,11 @@ class PythonService {
         clearTimeout(timeout)
         this.client = null
         this.isRunning = false
+        logger.warn('WebSocket connection closed')
+        // Try again to reconnect to the websocket
+        this.start()
       })
     })
-  }
-
-  private handleCrash() {
-    if (this.restartCount < MAX_RESTARTS) {
-      this.restartCount++
-      const delay = this.restartCount * RESTART_BACKOFF_MS
-      setTimeout(() => this.start().catch((err) => logger.error('Restart failed:', err)), delay)
-    } else {
-      logger.error('Python service has crashed too many times. Will not restart.')
-    }
   }
 }
 
