@@ -1,6 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Folder, Plus, Loader2, X, ChevronRight, Video } from 'lucide-react'
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  FolderIcon,
+  LinkIcon,
+  VideoCameraIcon,
+  ViewfinderCircleIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline'
 
 interface ServerFolder {
   path: string
@@ -14,29 +22,35 @@ interface RelinkVideoProps {
   oldSource: string
   onClose: () => void
   onRelink: (oldSource: string, newSource: string) => void
+  relinkSuccess: boolean
 }
 
-export function RelinkVideo({ isOpen, oldSource, onClose, onRelink }: RelinkVideoProps) {
+export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSuccess }: RelinkVideoProps) {
   const [availableFolders, setAvailableFolders] = useState<ServerFolder[]>([])
   const [currentPath, setCurrentPath] = useState('/')
   const [loadingFolders, setLoadingFolders] = useState(false)
   const [selectedPath, setSelectedPath] = useState('')
   const [isRelinking, setIsRelinking] = useState(false)
 
-  const fetchAvailableFolders = async (path: string = '/') => {
-    setLoadingFolders(true)
-    try {
-      const response = await fetch(`/api/files?path=${encodeURIComponent(path)}`)
-      const data = await response.json()
-      setAvailableFolders(data.folders || [])
-      setCurrentPath(path)
-    } catch (error) {
-      console.error(error)
-      setAvailableFolders([])
-    } finally {
-      setLoadingFolders(false)
-    }
-  }
+  const fetchAvailableFolders = useCallback(
+    async (path: string = '/') => {
+      setLoadingFolders(true)
+      try {
+        const response = await fetch(
+          `/api/files?path=${encodeURIComponent(path)}&oldSource=${encodeURIComponent(oldSource)}`
+        )
+        const data = await response.json()
+        setAvailableFolders(data.folders || [])
+        setCurrentPath(path)
+      } catch (error) {
+        console.error(error)
+        setAvailableFolders([])
+      } finally {
+        setLoadingFolders(false)
+      }
+    },
+    [oldSource]
+  )
 
   useEffect(() => {
     if (isOpen) {
@@ -44,18 +58,33 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink }: RelinkVide
       setCurrentPath('/')
       fetchAvailableFolders('/')
     }
-  }, [isOpen])
+  }, [isOpen, fetchAvailableFolders])
 
-  const handleNavigateToFolder = (folderPath: string) => fetchAvailableFolders(folderPath)
-  const handleSelectFolder = (folderPath: string, isFile: boolean) => {
-    if (!isFile) return
-    setSelectedPath(folderPath)
+  const handleNavigateToFolder = (folderPath: string) => {
+    fetchAvailableFolders(folderPath)
+  }
+
+  const handleItemClick = (item: ServerFolder) => {
+    if (item.isDirectory) {
+      // Navigate into folder
+      handleNavigateToFolder(item.path)
+    } else {
+      // Select video file
+      setSelectedPath(item.path)
+    }
   }
 
   const handleRelink = async () => {
     if (!selectedPath) return
     setIsRelinking(true)
-    onRelink(oldSource, selectedPath)
+    try {
+      await onRelink(oldSource, selectedPath)
+      onClose()
+    } catch (error) {
+      console.error('Relink error:', error)
+    } finally {
+      setIsRelinking(false)
+    }
   }
 
   const getBreadcrumbs = () => {
@@ -70,6 +99,26 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink }: RelinkVide
     ]
   }
 
+  // Separate folders and files for better organization
+  const folders = availableFolders.filter((item) => item.isDirectory)
+  const files = availableFolders.filter((item) => !item.isDirectory)
+
+  if (relinkSuccess)
+    return (
+      <AnimatePresence>
+        {relinkSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-4 bg-green-500/5 dark:bg-green-500/10 border border-green-500/20 dark:border-green-500/20 rounded-xl flex items-center gap-3"
+          >
+            <CheckIcon className="size-4 text-green-600 dark:text-green-400" />
+            <span className="text-sm text-green-900 dark:text-green-100">Video successfully relinked</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
   return (
     <AnimatePresence>
       {isOpen && (
@@ -77,7 +126,7 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink }: RelinkVide
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/20 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={onClose}
         >
           <motion.div
@@ -85,115 +134,137 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink }: RelinkVide
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.97, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-black rounded-xl shadow-lg max-w-xl w-full max-h-[80vh] flex flex-col border border-gray-200 dark:border-gray-800"
+            className="bg-white dark:bg-black rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col border border-black/10 dark:border-white/10"
           >
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-black dark:text-white">Relink Video</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                  Select the new video file path for <span className="font-mono">{oldSource}</span>
+            <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-semibold text-black dark:text-white flex items-center gap-2">
+                  <LinkIcon className="size-5" />
+                  Relink Video
+                </h2>
+                <p className="text-sm text-black/60 dark:text-white/60 mt-1">
+                  Select a new video file to replace the missing source
                 </p>
+                {oldSource && (
+                  <p className="text-xs text-black/40 dark:text-white/40 mt-1 font-mono truncate">
+                    Previous: {oldSource}
+                  </p>
+                )}
               </div>
               <button
                 onClick={onClose}
-                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
               >
-                <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <XCircleIcon className="size-4 text-black/40 dark:text-white/40" />
               </button>
             </div>
 
-            <div className="px-6 py-2 flex items-center gap-2 overflow-x-auto text-sm text-gray-600 dark:text-gray-400">
+            <div className="px-6 py-3 flex items-center gap-2 overflow-x-auto text-sm text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5">
               {getBreadcrumbs().map((crumb, idx) => (
-                <div key={crumb.path} className="flex items-center gap-1">
+                <div key={crumb.path} className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => handleNavigateToFolder(crumb.path)}
                     className="whitespace-nowrap hover:text-black dark:hover:text-white transition-colors"
                   >
                     {crumb.name}
                   </button>
-                  {idx < getBreadcrumbs().length - 1 && <ChevronRight className="w-3 h-3" />}
+                  {idx < getBreadcrumbs().length - 1 && <ArrowRightIcon className="size-3" />}
                 </div>
               ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-3 space-y-1">
+            <div className="flex-1 overflow-y-auto px-6 py-3 min-h-0">
               {loadingFolders ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-black dark:text-white" />
+                <div className="flex items-center justify-center py-16">
+                  <ViewfinderCircleIcon className="size-6 animate-spin text-black/40 dark:text-white/40" />
                 </div>
               ) : availableFolders.length === 0 ? (
-                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                  <Folder className="w-10 h-10 mx-auto mb-3" />
-                  No files or folders found
+                <div className="text-center py-16 text-black/40 dark:text-white/40">
+                  <FolderIcon className="size-10 mx-auto mb-3" />
+                  <p className="text-sm">No files or folders found</p>
                 </div>
               ) : (
-                availableFolders.map((item) => (
-                  <motion.div
-                    key={item.path}
-                    layout
-                    className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedPath === item.path ? 'bg-white/20' : ''
-                    }`}
-                  >
-                    <div
-                      className="flex items-center gap-3 w-full"
-                      onClick={() => item.isDirectory && handleNavigateToFolder(item.path)}
-                    >
-                      {item.isDirectory ? (
-                        <Folder className="w-5 h-5 text-black dark:text-white shrink-0" />
-                      ) : (
-                        <Video className="w-5 h-5 text-black dark:text-white shrink-0" />
-                      )}
-                      <span className="text-sm text-black dark:text-white truncate">{item.name}</span>
+                <div className="space-y-4">
+                  {folders.length > 0 && (
+                    <div className="space-y-1">
+                      <h3 className="text-xs font-medium text-black/40 dark:text-white/40 px-3 mb-2">Folders</h3>
+                      {folders.map((folder) => (
+                        <motion.button
+                          key={folder.path}
+                          layout
+                          onClick={() => handleItemClick(folder)}
+                          className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <FolderIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />
+                            <span className="text-sm text-black dark:text-white truncate text-left">{folder.name}</span>
+                          </div>
+                          <ArrowRightIcon className="size-4 text-black/30 dark:text-white/30 group-hover:text-black/60 dark:group-hover:text-white/60 transition-colors shrink-0" />
+                        </motion.button>
+                      ))}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleSelectFolder(item.path, !item.isDirectory)
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                          selectedPath === item.path
-                            ? 'bg-black text-white dark:bg-white dark:text-black'
-                            : 'bg-white/20 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        {selectedPath === item.path ? 'Selected' : item.isDirectory ? 'Folder' : 'Select'}
-                      </button>
-                      {item.isDirectory && <ChevronRight className="w-4 h-4 text-gray-400" />}
+                  )}
+
+                  {files.length > 0 && (
+                    <div className="space-y-1">
+                      <h3 className="text-xs font-medium text-black/40 dark:text-white/40 px-3 mb-2">Video Files</h3>
+                      {files.map((file) => (
+                        <motion.button
+                          key={file.path}
+                          layout
+                          onClick={() => handleItemClick(file)}
+                          className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors ${
+                            selectedPath === file.path
+                              ? 'bg-black/10 dark:bg-white/10 ring-2 ring-black/20 dark:ring-white/20'
+                              : 'hover:bg-black/5 dark:hover:bg-white/5'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <VideoCameraIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />
+                            <span className="text-sm text-black dark:text-white truncate text-left">{file.name}</span>
+                          </div>
+                          {selectedPath === file.path && (
+                            <div className="px-2.5 py-1 bg-black dark:bg-white text-white dark:text-black rounded-md text-xs font-medium shrink-0">
+                              Selected
+                            </div>
+                          )}
+                        </motion.button>
+                      ))}
                     </div>
-                  </motion.div>
-                ))
+                  )}
+                </div>
               )}
             </div>
 
             {selectedPath && (
-              <div className="px-6 py-2 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-300 truncate">
-                Selected: <span className="font-mono text-black dark:text-white">{selectedPath}</span>
+              <div className="px-6 py-3 border-t border-black/10 dark:border-white/10">
+                <p className="text-xs text-black/40 dark:text-white/40 mb-1">New source:</p>
+                <p className="text-sm font-mono text-black dark:text-white truncate">{selectedPath}</p>
               </div>
             )}
 
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-full font-medium text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                disabled={isRelinking}
+                className="px-5 py-2 rounded-xl font-medium text-sm text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRelink}
                 disabled={!selectedPath || isRelinking}
-                className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full font-medium text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isRelinking ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <ViewfinderCircleIcon className="size-4 animate-spin" />
                     Relinking...
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4" />
-                    Relink
+                    <LinkIcon className="size-4" />
+                    Relink Video
                   </>
                 )}
               </button>
