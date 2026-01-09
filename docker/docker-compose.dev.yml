@@ -11,33 +11,62 @@ services:
     container_name: edit-mind-background-jobs-dev
     ports:
       - "${BACKGROUND_JOBS_PORT:-4000}:4000"
-      - "${BACKGROUND_JOBS_WS_PORT:-8765}:8765"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       chroma:
         condition: service_started
-      redis:
-        condition: service_started
+      ml:
+          condition: service_started
     env_file:
       - .env.dev
       - .env.system
     environment:
       NODE_ENV: development
     networks:
-      - app-network
+      - app-network-dev
     volumes:
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ../.data:/app/data
       - ../apps/background-jobs:/app/apps/background-jobs
-      - ../packages:/app/packages
+      - ../packages/shared:/app/packages/shared
+      - ../packages/prisma:/app/packages/prisma
+      - ../packages/db:/app/packages/db
+      - ../packages/ai:/app/packages/ai
+      - ../packages/vector:/app/packages/vector
+      - ../packages/media-utils:/app/packages/media-utils
+      - ../packages/immich:/app/packages/immich
+      - ../packages/search:/app/packages/search
+      - ../packages/smart-collections:/app/packages/smart-collections
+
+  ml:
+    build:
+      target: development
+      context: ..
+      dockerfile: docker/Dockerfile.ml
+      args:
+        PYTHON_VERSION: 3.11
+    image: edit-mind-ml:dev
+    container_name: edit-mind-ml-dev
+    ports:
+      - "${ML_PORT:-8765}:8765"
+    env_file:
+      - .env.dev
+      - .env.system
+    environment:
+      NODE_ENV: development
+      YOLO_CONFIG_DIR: "/app/ml-models"
+      DEEPFACE_HOME: "/app/ml-models"
+    networks:
+      - app-network-dev
+    volumes:
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ml-models:/app/ml-models:rw
+      - ../.data:/app/data
       - ../python:/app/python
-      - ../data:/app/data
-      - ../tsconfig.json:/app/tsconfig.json
-      - ${HOST_MEDIA_PATH:-./media}:/media/videos
-      - whisper-models:/app/models
-      - yolo-models:/app/models/yolo
-      - background_jobs_node_modules-dev:/app/node_modules
   web:
-    container_name: edit-mind-web-dev
     build:
       context: ..
       dockerfile: docker/Dockerfile.web
@@ -46,6 +75,9 @@ services:
         NODE_VERSION: 22.20.0
         PNPM_VERSION: 10.20.0
     image: edit-mind-web:dev
+    container_name: edit-mind-web-dev
+    environment:
+      NODE_ENV: development
     ports:
       - "${WEB_PORT:-3745}:3745"
     depends_on:
@@ -54,22 +86,25 @@ services:
       chroma:
         condition: service_started
       redis:
-        condition: service_started
+        condition: service_healthy
     env_file:
       - .env.dev
       - .env.system
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://user:password@postgres:5432/app
     volumes:
+      - ../.data:/app/data
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
       - ../apps/web:/app/apps/web
-      - ../packages:/app/packages
-      - ../data:/app/data
-      - ../tsconfig.json:/app/tsconfig.json
-      - ${HOST_MEDIA_PATH:-./media}:/media/videos
-      - web_node_modules-dev:/app/node_modules
+      - ../packages/shared:/app/packages/shared
+      - ../packages/prisma:/app/packages/prisma
+      - ../packages/db:/app/packages/db
+      - ../packages/ai:/app/packages/ai
+      - ../packages/vector:/app/packages/vector
+      - ../packages/media-utils:/app/packages/media-utils
+      - ../packages/immich:/app/packages/immich
+      - ../packages/search:/app/packages/search
+      - ../packages/smart-collections:/app/packages/smart-collections
     networks:
-      - app-network
+      - app-network-dev
 
   chroma:
     image: chromadb/chroma:1.3.5
@@ -77,63 +112,68 @@ services:
     restart: unless-stopped
     environment:
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
-      CHROMA_HOST: ${CHROMA_HOST:-0.0.0.0}
-      CHROMA_PORT: ${CHROMA_PORT:-8000}
     ports:
       - "${CHROMA_PORT:-8000}:8000"
     volumes:
-      - ../.chroma_db:/data
+      - ../.data/chroma:/chroma/chroma
     networks:
-      - app-network
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - app-network-dev
+
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: edit-mind-redis-dev
     ports:
-      - "${REDIS_PORT:-6380}:6380"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - redis_data_dev:/data
+      - redis_data:/data
     networks:
-      - app-network
+      - app-network-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   postgres:
     image: postgres:16-alpine
     container_name: edit-mind-postgres-dev
+    restart: unless-stopped
+    env_file:
+    - path: ./.env.dev
+      required: true
+    - path: ./.env.system
+      required: true
     ports:
-      - "${POSTGRES_PORT:-5434}:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - pgdata_dev:/var/lib/postgresql/data
+      - pgdata_edit_mind:/var/lib/postgresql/data
     networks:
-      - app-network
+      - app-network-dev
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-app}"]
+      test: 
+        - "CMD"
+        - "pg_isready"
+        - "-U"
+        - "${POSTGRES_USER}"
+        - "-d" 
+        - "${POSTGRES_DB}"
       interval: 10s
       timeout: 5s
       retries: 5
-    shm_size: 128mb
 
 volumes:
-  pgdata_dev:
+  pgdata_edit_mind:
     driver: local
-  redis_data_dev:
+  redis_data:
     driver: local
-  whisper-models:
-    driver: local
-  yolo-models:
-    driver: local
-  web_node_modules-dev:
-    driver: local
-  background_jobs_node_modules-dev:
+  ml-models:
     driver: local
 
 networks:
-  app-network:
+  app-network-dev:
     driver: bridge

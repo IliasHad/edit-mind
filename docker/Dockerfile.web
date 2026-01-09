@@ -1,7 +1,7 @@
 ARG NODE_VERSION=22.20.0
 ARG PNPM_VERSION=10.20.0
 
-FROM node:${NODE_VERSION}-slim AS base
+FROM node:${NODE_VERSION}-bookworm-slim AS base
 
 ARG PNPM_VERSION
 
@@ -9,55 +9,57 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
-WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  openssl \
+  ca-certificates \
+  curl \
+  && rm -rf /var/lib/apt/lists/*
 
 FROM base AS dependencies
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl \
-    ca-certificates \
-    curl \
-    python3 \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc ./
 COPY apps/web/package.json ./apps/web/
-COPY apps/background-jobs/package.json ./apps/background-jobs/
 COPY packages/shared/package.json ./packages/shared/
-COPY packages/prisma ./packages/prisma/
+COPY packages/db/package.json ./packages/db/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/vector/package.json ./packages/vector/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/immich/package.json ./packages/immich/
+COPY packages/media-utils/package.json ./packages/media-utils/
+COPY packages/search/package.json ./packages/search/
+COPY packages/smart-collections/package.json ./packages/smart-collections/
+COPY packages/prisma/schema.prisma ./packages/prisma/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+  pnpm install --frozen-lockfile
 
 FROM dependencies AS builder
 
+WORKDIR /app
+
+COPY --from=dependencies /app/node_modules ./node_modules
+
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc ./
 COPY apps ./apps
 COPY packages ./packages
 COPY tsconfig.json ./
 COPY .npmrc ./
 COPY prisma.config.ts ./
+COPY turbo.json ./
 
-RUN pnpm --filter prisma generate
+RUN pnpm run build 
 
-RUN pnpm rebuild @tailwindcss/oxide rollup sharp
-
-RUN pnpm --filter shared build
-
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+RUN pnpm rebuild @tailwindcss/oxide rollup
 
 RUN pnpm --filter web build
 
 FROM base AS production
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl \
-    ca-certificates \
-    curl \
-    python3 \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
+
+COPY --from=dependencies /app/node_modules ./node_modules
 
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
@@ -67,76 +69,57 @@ COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/.npmrc ./
 
 COPY --from=builder /app/apps/web/package.json ./apps/web/
-COPY --from=builder /app/apps/background-jobs/package.json ./apps/background-jobs/
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/db/package.json ./packages/db/
 COPY --from=builder /app/packages/prisma/package.json ./packages/prisma/
 COPY --from=builder /app/packages/prisma/schema.prisma ./packages/prisma
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod=false
 
 COPY --from=builder /app/packages/prisma ./packages/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/db ./packages/db
 COPY --from=builder /app/apps/web ./apps/web
 
-WORKDIR /app
-
 ENV NODE_ENV=production
-EXPOSE 3745
-
-CMD ["sh", "-c", "\
-  pnpm --filter prisma migrate deploy && \
-  pnpm --filter prisma seed && \
-  pnpm --filter web start --host 0.0.0.0 --port 3745 \
-"]
-
-
-
-FROM base AS development
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl \
-    ca-certificates \
-    curl \
-    python3 \
-    && rm -rf /var/lib/apt/lists/
-
-WORKDIR /app
-
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts ./
-COPY apps ./apps
-COPY packages ./packages
-COPY tsconfig.json ./
-COPY .npmrc ./
-COPY prisma.config.ts ./
-
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
-
-WORKDIR /app
-
-ENV NODE_ENV=development
-
-EXPOSE 3745
+EXPOSE ${PORT}
 
 CMD ["sh", "-c", "\
   pnpm --filter prisma migrate:deploy && \
   pnpm --filter prisma seed && \
-  pnpm --filter web dev --host 0.0.0.0 --port 3745  \
-"]
+  pnpm --filter web start --host 0.0.0.0 --port ${PORT} \
+  "]
 
 
+
+FROM dependencies AS development
+
+WORKDIR /app
+
+COPY --from=dependencies /app/node_modules ./node_modules
+
+COPY apps/ ./apps/
+COPY packages/ ./packages/
+COPY turbo.json ./
+COPY tsconfig.json ./
+
+RUN pnpm --filter prisma generate
+
+ENV NODE_ENV=development
+
+EXPOSE 4000
+
+CMD ["sh", "-c", "\
+  pnpm --filter prisma migrate:deploy && \
+  pnpm --filter prisma seed && \
+  pnpm --filter web dev --host 0.0.0.0 --port ${PORT}  \
+  "]
 
 FROM base AS testing
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl \
-    ca-certificates \
-    curl \
-    python3 \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+COPY --from=dependencies /app/node_modules ./node_modules
 
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
@@ -146,18 +129,18 @@ COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/.npmrc ./
 
 COPY --from=builder /app/apps/web/package.json ./apps/web/
-COPY --from=builder /app/apps/background-jobs/package.json ./apps/background-jobs/
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/db/package.json ./packages/db/
 COPY --from=builder /app/packages/prisma/package.json ./packages/prisma/
 COPY --from=builder /app/packages/prisma/schema.prisma ./packages/prisma
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod=false
 
 COPY --from=builder /app/packages/prisma ./packages/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/db ./packages/db
 COPY --from=builder /app/apps/web ./apps/web
 
 
 ENV NODE_ENV=testing
-RUN pnpm --filter shared test tests/services/vectorDb.test.ts tests/services/modelRouter.test.ts
+
+CMD ["pnpm", "--filter", "ai", "test"]

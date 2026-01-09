@@ -1,5 +1,6 @@
 services:
   background-jobs:
+    restart: unless-stopped
     build:
       target: production
       context: ..
@@ -11,7 +12,6 @@ services:
     container_name: edit-mind-background-jobs
     ports:
       - "${BACKGROUND_JOBS_PORT:-4000}:4000"
-      - "${BACKGROUND_JOBS_WS_PORT:-8765}:8765"
     depends_on:
       postgres:
         condition: service_healthy
@@ -19,6 +19,8 @@ services:
         condition: service_healthy
       chroma:
         condition: service_started
+      ml:
+          condition: service_started
     env_file:
       - .env
       - .env.system
@@ -26,10 +28,9 @@ services:
       - app-network
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - whisper-models:/app/models:rw
-      - yolo-models:/app/models/yolo:rw 
-      - edit-mind-data:/app/data
+      - ../.data:/app/data
   web:
+    restart: unless-stopped
     build:
       context: ..
       dockerfile: docker/Dockerfile.web
@@ -55,7 +56,7 @@ services:
       - .env.system
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - edit-mind-data:/app/data
+      - ../.data:/app/data
     networks:
       - app-network
 
@@ -68,11 +69,12 @@ services:
     ports:
       - "${CHROMA_PORT:-8000}:8000"
     volumes:
-      - chroma-data:/chroma/chroma
+      - ../.data/chroma:/chroma/chroma
     networks:
       - app-network
 
   redis:
+    restart: unless-stopped
     image: redis:7
     container_name: edit-mind-redis
     ports:
@@ -91,35 +93,51 @@ services:
     image: postgres:16-alpine
     container_name: edit-mind-postgres
     restart: unless-stopped
+    env_file:
+      - .env
+      - .env.system
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-app}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - pgdata_edit_mind:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-app}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
-
+  ml:
+    restart: unless-stopped
+    build:
+      target: production
+      context: ..
+      dockerfile: docker/Dockerfile.ml
+      args:
+        PYTHON_VERSION: 3.11
+    image: edit-mind-ml:latest
+    container_name: edit-mind-ml
+    ports:
+      - "${ML_WS_PORT:-8765}:8765"
+    env_file:
+      - .env
+      - .env.system
+    environment:
+      NODE_ENV: production
+    networks:
+      - app-network
+    volumes:
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ml-models:/ml-models:rw
 volumes:
   pgdata_edit_mind:
     driver: local
   redis_data:
     driver: local
-  whisper-models:
+  ml-models:
     driver: local
-  yolo-models:
-    driver: local
-  chroma-data:
-    driver: local
-  edit-mind-data:
-    driver: local
+
 networks:
   app-network:
