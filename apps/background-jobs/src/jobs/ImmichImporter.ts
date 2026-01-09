@@ -1,18 +1,15 @@
-import { decryptApiKey } from '@shared/services/encryption'
 import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
-import { ImmichImporterJobData } from '@shared/types/immich'
-import { getAllImmichFaces } from '@shared/services/immich'
-import { prisma } from 'src/services/db'
+import { ImmichImporterJobData } from '@immich/types/immich'
+import { IntegrationModel } from '@db/index'
 
 async function processImmichImporterJob(job: Job<ImmichImporterJobData>) {
   try {
-    const integration = await prisma.integration.findUnique({
-      where: { id: job.data.integrationId },
-    })
+    const integration = await IntegrationModel.findById(job.data.integrationId)
     if (!integration) throw new Error('Integration not found')
-    const apiKey = decryptApiKey(integration.immichApiKey)
-    await getAllImmichFaces({ baseUrl: integration.immichBaseUrl, apiKey })
+
+    // TODO: add logic to import immich faces images and their label name
+
   } catch (error) {
     console.error(error)
   }
@@ -20,13 +17,5 @@ async function processImmichImporterJob(job: Job<ImmichImporterJobData>) {
 
 export const ImmichImporter = new Worker('immich-importer', processImmichImporterJob, {
   connection,
-  concurrency: 5,
-})
-
-ImmichImporter.on('completed', (job) => {
-  console.debug(`Face labeling job ${job.id} completed`)
-})
-
-ImmichImporter.on('failed', (job, err) => {
-  console.error(`Face labeling job ${job?.id} failed:`, err)
+  concurrency: 1,
 })
