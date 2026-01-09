@@ -160,56 +160,70 @@ const processClip = async (
   const videoFilter = buildVideoFilter(dimensions, targetFps)
   const encodingArgs = buildEncodingArgs()
 
-  const baseArgs = [
+  const argsWithAudio = [
     '-ss',
     scene.startTime.toString(),
     '-to',
     scene.endTime.toString(),
+
     '-i',
     scene.source,
+
     '-vf',
     videoFilter,
+
+    '-map',
+    '0:v:0',
+    '-map',
+    '0:a:0?',
+
     ...encodingArgs,
+
     '-y',
     clipPath,
-    '-hide_banner',
-    '-loglevel',
-    'error',
   ]
 
-  const argsWithAudio = [...baseArgs.slice(0, 8), '-map', '0:v:0', '-map', '0:a:0?', ...baseArgs.slice(8)]
+  let process = await spawnFFmpeg(argsWithAudio)
+  let result = await handleFFmpegProcess(process, `clip processing (${scene.source})`)
 
-  const process = await spawnFFmpeg(argsWithAudio)
-  const result = await handleFFmpegProcess(process, `clip processing (${scene.source})`)
-
-  if (result.code === 0) {
-    return
-  }
+  if (result.code === 0) return
 
   logger.warn(`Initial processing failed for ${scene.source}, retrying with silent audio`)
 
   const argsWithSilentAudio = [
-    ...baseArgs.slice(0, 8),
+    '-ss',
+    scene.startTime.toString(),
+    '-to',
+    scene.endTime.toString(),
+
+    '-i',
+    scene.source,
+
     '-f',
     'lavfi',
     '-i',
     'anullsrc=r=48000:cl=stereo',
+
+    '-vf',
+    videoFilter,
+
     '-map',
     '0:v:0',
     '-map',
     '1:a:0',
     '-shortest',
-    '-hide_banner',
-    '-loglevel',
-    'error',
-    ...baseArgs.slice(8),
+
+    ...encodingArgs,
+
+    '-y',
+    clipPath,
   ]
 
-  const retryProcess = await spawnFFmpeg(argsWithSilentAudio)
-  const retryResult = await handleFFmpegProcess(retryProcess, `clip processing retry (${scene.source})`)
+  process = await spawnFFmpeg(argsWithSilentAudio)
+  result = await handleFFmpegProcess(process, `clip processing retry (${scene.source})`)
 
-  if (retryResult.code !== 0) {
-    throw new Error(`Failed to process clip from ${scene.source}: ${retryResult.stderr || 'Unknown error'}`)
+  if (result.code !== 0) {
+    throw new Error(`Failed to process clip from ${scene.source}: ${result.stderr || 'Unknown error'}`)
   }
 }
 

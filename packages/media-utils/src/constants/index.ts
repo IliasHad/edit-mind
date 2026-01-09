@@ -1,11 +1,4 @@
-import * as path from 'path'
-import dotenv from 'dotenv'
-
-if (process.env.NODE_ENV === 'testing') {
-  dotenv.config({ path: path.resolve('../../.env.testing') })
-} else {
-  dotenv.config({})
-}
+import 'dotenv/config'
 
 export const STITCHED_VIDEOS_DIR = process.env.STITCHED_VIDEOS_DIR
 
@@ -19,3 +12,5 @@ export const BATCH_THUMBNAIL_QUALITY = '3'
 export const MAX_DEPTH = 5
 
 export const THUMBNAILS_DIR = process.env.THUMBNAILS_PATH || '.thumbnails'
+
+export const EXPORTS_DIR = process.env.EXPORTS_DIR || '/app/data/.exports'

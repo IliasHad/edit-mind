@@ -5,7 +5,6 @@ import {
   BATCH_THUMBNAIL_QUALITY,
   DEFAULT_FPS,
   MAX_DEPTH,
-  SUPPORTED_VIDEO_EXTENSIONS,
   THUMBNAIL_QUALITY,
   THUMBNAIL_SCALE,
   THUMBNAILS_DIR,
@@ -19,6 +18,7 @@ import { FFprobeMetadata, FFprobeStream } from '../types/ffmpeg'
 import { Scene } from '@shared/schemas'
 import * as Jimp from 'jimp'
 import { readFile } from 'fs/promises'
+import micromatch from 'micromatch'
 
 const initializeThumbnailsDir = (): void => {
   if (!fs.existsSync(THUMBNAILS_DIR)) {
@@ -135,6 +135,8 @@ export async function generateAllThumbnails(
 
 export async function findVideoFiles(
   dirPath: string,
+  includePattern: string[] | undefined,
+  excludePattern: string[] | undefined = [],
   currentDepth: number = 0,
   maxDepth: number = MAX_DEPTH
 ): Promise<VideoFile[]> {
@@ -150,11 +152,17 @@ export async function findVideoFiles(
 
       try {
         const stats = await fs.promises.stat(fullPath)
+        const fileName = path.basename(fullPath)
 
         if (stats.isDirectory()) {
-          results.push(await findVideoFiles(fullPath, currentDepth + 1, maxDepth))
-        } else if (stats.isFile() && SUPPORTED_VIDEO_EXTENSIONS.test(item)) {
-          results.push([{ path: fullPath, mtime: stats.mtime }])
+          results.push(await findVideoFiles(fullPath, includePattern, excludePattern, currentDepth + 1, maxDepth))
+        } else if (
+          includePattern &&
+          stats.isFile() &&
+          micromatch.isMatch(fileName.toLocaleLowerCase(), includePattern) &&
+          !micromatch.isMatch(fileName.toLocaleLowerCase(), excludePattern)
+        ) {
+          results.push([{ path: fullPath, mtime: stats.mtime, size: stats.size }])
         }
       } catch (error) {
         logger.warn(

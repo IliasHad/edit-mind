@@ -10,6 +10,7 @@ export interface VideoMetadata {
 export interface VideoFile {
   path: string
   mtime: Date
+  size: number
 }
 
 export interface CameraInfo {
