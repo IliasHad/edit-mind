@@ -9,7 +9,6 @@ async function processImmichImporterJob(job: Job<ImmichImporterJobData>) {
     if (!integration) throw new Error('Integration not found')
 
     // TODO: add logic to import immich faces images and their label name
-
   } catch (error) {
     console.error(error)
   }
