@@ -9,13 +9,9 @@ import { logger } from '@shared/services/logger'
 
 async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
   const { selectedSceneIds, messageId, chatId } = job.data
-  logger.info({ jobId: job.id, messageId, chatId }, 'Starting video stitcher job')
+  logger.debug({ jobId: job.id, messageId, chatId }, 'Starting video stitcher job')
 
   try {
-    await ChatMessageModel.update(messageId, {
-      stage: 'stitching',
-    })
-
     const outputScenes = await getVideoWithScenesBySceneIds(selectedSceneIds)
     if (!outputScenes || outputScenes.length === 0) {
       throw new Error('No scenes found for the provided IDs')
@@ -31,28 +27,24 @@ async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
         createdAt: 'desc',
       },
     })
-    let text = 'Here’s your stitched video!'
+    let text = "Here's your stitched video!"
 
     if (lastUserMessage && lastUserMessage?.text) {
-      text = (await generateCompilationResponse(lastUserMessage?.text, outputScenes.length)).data
+      const response = await generateCompilationResponse(lastUserMessage?.text, outputScenes.length)
+      text = response.data
     }
 
-    await ChatMessageModel.create({
-      chatId: chatId,
-      sender: 'assistant',
-      text: text || 'Here’s your stitched video!',
+    await ChatMessageModel.update(messageId, {
+      stage: 'compiling',
+      isThinking: false,
       stitchedVideoPath,
-      intent: 'compilation',
+      text,
     })
-    logger.info({ jobId: job.id, messageId, chatId }, 'Video stitcher job completed')
+
+    logger.debug({ jobId: job.id, messageId, chatId }, 'Video stitcher job completed')
   } catch (error) {
-    logger.error({ jobId: job.id, error }, 'Video stitcher job failed')
-    await ChatMessageModel.create({
-      chatId: chatId,
-      sender: 'assistant',
-      text: 'Sorry, there was an error creating your stitched video.',
-      intent: 'compilation',
-    })
+    await ChatMessageModel.delete(messageId)
+
     throw error
   }
 }
@@ -60,19 +52,4 @@ async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
 export const videoStitcherWorker = new Worker('video-stitcher', processVideoStitcherJob, {
   connection,
   concurrency: 1,
-})
-
-videoStitcherWorker.on('completed', (job) => {
-  logger.info({ jobId: job.id }, 'Video stitcher job completed')
-})
-
-videoStitcherWorker.on('failed', (job, err) => {
-  logger.error(
-    {
-      jobId: job?.id,
-      error: err.message,
-      stack: err.stack,
-    },
-    'Video stitcher job failed'
-  )
 })

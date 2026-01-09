@@ -1,22 +1,20 @@
+import { trimVideoScenes } from '@media-utils/utils/export'
 import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
 import { logger } from '@shared/services/logger'
-import { ExportModel } from '@db/index'
+import { ChatMessageModel, ExportModel } from '@db/index'
 import { getVideoWithScenesBySceneIds } from '@vector/services/vectorDb'
-import { spawnFFmpeg } from '@media-utils/lib/ffmpeg'
 import path from 'path'
 import { promises as fs, existsSync, createWriteStream } from 'fs'
-import { EXPORTS_DIR } from '@shared/constants'
+import { EXPORTS_DIR } from '@media-utils/constants'
 import archiver from 'archiver'
 import { createStackedThumbnail } from '@media-utils/utils/videos'
+import { ExportProcessingJob } from 'src/schemas/export'
 
-interface ExportJobData {
-  exportId: string
-}
+async function processExportJob(job: Job<ExportProcessingJob>) {
+  const { exportId, chatMessageId, collectionId } = job.data
 
-async function processExportJob(job: Job<ExportJobData>) {
-  const { exportId } = job.data
-  logger.info({ jobId: job.id, exportId }, 'Starting export job')
+  logger.info({ jobId: job.id, ...job.data }, 'Starting export job')
 
   if (!existsSync(EXPORTS_DIR)) {
     await fs.mkdir(EXPORTS_DIR, { recursive: true })
@@ -28,6 +26,7 @@ async function processExportJob(job: Job<ExportJobData>) {
 
   try {
     const exportRecord = await ExportModel.findById(exportId)
+
     if (!exportRecord) {
       throw new Error('Export record not found')
     }
@@ -43,49 +42,8 @@ async function processExportJob(job: Job<ExportJobData>) {
     })
 
     const tempExportDir = path.join(EXPORTS_DIR, exportId)
-    if (!existsSync(tempExportDir)) {
-      await fs.mkdir(tempExportDir, { recursive: true })
-    }
 
-    const clipPaths: string[] = []
-    for (let i = 0; i < scenes.length; i++) {
-      const scene = scenes[i]
-      const clipPath = path.join(tempExportDir, `scene_${i + 1}_${path.basename(scene.source)}`)
-      clipPaths.push(clipPath)
-
-      const ffmpegArgs = [
-        '-i',
-        scene.source,
-        '-ss',
-        scene.startTime.toString(),
-        '-to',
-        scene.endTime.toString(),
-        '-c:v',
-        'libx264',
-        '-c:a',
-        'aac',
-        clipPath,
-        '-y',
-      ]
-
-      const ffmpegProcess = await spawnFFmpeg(ffmpegArgs)
-
-      await new Promise<void>((resolve, reject) => {
-        ffmpegProcess.on('close', (code) => {
-          if (code === 0) {
-            resolve()
-          } else {
-            reject(new Error(`FFmpeg exited with code ${code}`))
-          }
-        })
-      })
-
-      const progress = ((i + 1) / scenes.length) * 90
-      await job.updateProgress(progress)
-      await ExportModel.update(exportId, {
-        progress,
-      })
-    }
+    const clipPaths = await trimVideoScenes(scenes, tempExportDir)
 
     const zipPath = path.join(EXPORTS_DIR, `${exportId}.zip`)
     const output = createWriteStream(zipPath)
@@ -118,33 +76,61 @@ async function processExportJob(job: Job<ExportJobData>) {
 
     await fs.rm(tempExportDir, { recursive: true, force: true })
 
+    if (collectionId) {
+      await ExportModel.update(exportId, {
+        collectionId: collectionId,
+      })
+    } else if (chatMessageId) {
+      const text = "Here's your exports video zip file!"
+
+      await ChatMessageModel.update(chatMessageId, {
+        stage: 'compiling',
+        isThinking: false,
+        exportId,
+        text,
+      })
+
+      const message = await ChatMessageModel.update(chatMessageId, {
+        exportId,
+      })
+      return {
+        filePath: zipPath,
+        messageId: message.id,
+      }
+    }
     logger.info({ jobId: job.id, exportId }, 'Export job completed')
-    await job.updateProgress(100)
+
+    return {
+      filePath: zipPath,
+    }
   } catch (error) {
     logger.error({ jobId: job.id, exportId, error }, 'Export job failed')
+
+    // Update export record to failed status
     await ExportModel.update(exportId, {
       status: 'failed',
     })
+
+    // Update chat message if applicable
+    if (chatMessageId) {
+      await ChatMessageModel.delete(chatMessageId)
+    }
+
+    // Clean up temp directory if it exists
+    try {
+      const tempExportDir = path.join(EXPORTS_DIR, exportId)
+      if (existsSync(tempExportDir)) {
+        await fs.rm(tempExportDir, { recursive: true, force: true })
+      }
+    } catch (cleanupError) {
+      logger.error({ jobId: job.id, exportId, cleanupError }, 'Failed to clean up temp directory')
+    }
+
     throw error
   }
 }
 
 export const exportWorker = new Worker('export-scenes', processExportJob, {
   connection,
-  concurrency: 3,
-})
-
-exportWorker.on('completed', (job) => {
-  logger.info({ jobId: job.id }, 'Export job completed')
-})
-
-exportWorker.on('failed', (job, err) => {
-  logger.error(
-    {
-      jobId: job?.id,
-      error: err.message,
-      stack: err.stack,
-    },
-    'Export job failed'
-  )
+  concurrency: 1,
 })
