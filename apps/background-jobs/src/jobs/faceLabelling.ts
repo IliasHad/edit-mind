@@ -2,144 +2,129 @@ import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
 import { logger } from '@shared/services/logger'
 import { FaceLabellingJobData } from '@shared/types/face'
-import type { FaceDetectionData } from '@shared/types/unknownFace'
+import type { UnknownFace } from '@shared/types/unknownFace'
 import { promises as fs } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
-import type { Scene } from '@shared/types/scene'
-import { FACES_DIR, PROCESSED_VIDEOS_DIR, UNKNOWN_FACES_DIR } from '@shared/constants'
+import { FACES_DIR, UNKNOWN_FACES_DIR } from '@shared/constants'
 import { getByVideoSource, updateMetadata } from '@vector/services/vectorDb'
+import { importVideoFromVectorDb } from 'src/utils/videos'
+import { rebuildFacesCache } from '@shared/utils/faces'
+import { suggestionCache } from '@search/services/suggestion'
+import { JobModel } from '@db/index'
 
 async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
   const { faces, name } = job.data
-  logger.info({ jobId: job.id }, 'Starting Face labelling job')
+  logger.debug({ jobId: job.id }, 'Starting Face labelling job')
 
   const personDir = path.join(FACES_DIR, name)
   if (!existsSync(personDir)) {
     await fs.mkdir(personDir, { recursive: true })
   }
 
-  for (const face of faces) {
-    try {
-      const jsonPath = path.join(UNKNOWN_FACES_DIR, face.jsonFile)
+  try {
+    const updatedScene = new Map<string, string>()
+    const processedVideos = new Set<string>()
 
-      if (existsSync(jsonPath)) {
-        let faceData: FaceDetectionData
+    for (const face of faces) {
+      try {
+        const jsonPath = path.join(UNKNOWN_FACES_DIR, face.jsonFile)
+
+        let faceData: UnknownFace
         try {
           faceData = JSON.parse(await fs.readFile(jsonPath, 'utf8'))
-        } catch {
+        } catch (error) {
+          logger.error({ error, jsonPath }, 'Failed to parse JSON')
           continue
         }
 
-        const imageFile = faceData.image_file
-        const srcImagePath = path.join(UNKNOWN_FACES_DIR, imageFile)
-        const destImagePath = path.join(personDir, imageFile)
+        const job = await JobModel.findById(faceData.job_id)
 
-        const video = await getByVideoSource(faceData.video_path)
-        const sortedAppearances = faceData.all_appearances?.sort((a, b) => a.frame_index - b.frame_index)
+        if (!job) throw new Error('Job not found')
 
-        if (sortedAppearances && video && video.scenes) {
-          const firstAppearance = sortedAppearances[0]
-          const lastAppearance = sortedAppearances[sortedAppearances.length - 1]
+        const video = await getByVideoSource(job?.videoPath)
 
+        if (video) {
           for (const scene of video.scenes) {
-            // Check if the face appears at any point during the scene
-            const overlapsScene =
-              firstAppearance.timestamp_seconds <= scene.endTime && lastAppearance.timestamp_seconds >= scene.startTime
+            const match = scene.faces.some((f) => {
+              const faceStr = String(f)
+              return (
+                faceStr === String(face.faceId) || // Match face_id
+                faceStr === String(faceData.face_id) || // Match from JSON
+                faceStr === faceData.image_hash || // Match image hash
+                faceStr.includes(face.faceId) || // Partial match
+                face.faceId.includes(faceStr)
+              )
+            })
+            if (match) {
+              logger.info({ sceneId: scene.id }, 'Found matching scene!')
+            }
 
-            if (!overlapsScene) continue
+            scene.faces = scene.faces.map((f) => (String(f) === String(face.faceId) ? name : f))
 
-            if (scene.faces.includes(face.faceId)) {
-              scene.faces = scene.faces.map((f) => (f === face.faceId ? name : f))
+            if (scene.emotions) {
+              scene.emotions = scene.emotions.map((e) => (e.name === face.faceId ? { ...e, name } : e))
             }
 
             if (scene.facesData) {
               scene.facesData = scene.facesData.map((f) =>
-                f.name === face.faceId ? { ...f, name, confidence: 100 } : f
+                String(f.name) === String(face.faceId) ? { ...f, name, confidence: 100 } : f
               )
             }
 
             await updateMetadata(scene)
+            updatedScene.set(faceData.face_id, scene.id)
           }
 
-          const videoDir = path.join(PROCESSED_VIDEOS_DIR, path.basename(faceData.video_path))
-          const scenesJsonPath = path.join(videoDir, 'scenes.json')
-
-          if (existsSync(scenesJsonPath)) {
-            const fileScenes: Scene[] = JSON.parse(await fs.readFile(scenesJsonPath, 'utf8'))
-            let modified = false
-
-            for (const scene of fileScenes) {
-              const inRange =
-                scene.startTime <= faceData.last_appearance?.timestamp_seconds &&
-                scene.endTime >= faceData.first_appearance?.timestamp_seconds
-
-              if (!inRange) continue
-
-              let sceneModified = false
-
-              if (scene.faces.includes(face.faceId)) {
-                scene.faces = scene.faces.map((f) => (f === face.faceId ? name : f))
-                sceneModified = true
-              }
-
-              if (scene.facesData) {
-                const hadFace = scene.facesData.some((f) => f.name === face.faceId)
-                scene.facesData = scene.facesData.map((f) =>
-                  f.name === face.faceId ? { ...f, name, confidence: 100 } : f
-                )
-                if (hadFace) sceneModified = true
-              }
-
-              if (sceneModified) modified = true
-            }
-
-            if (modified) {
-              await fs.writeFile(scenesJsonPath, JSON.stringify(fileScenes, null, 2), 'utf8')
-            }
-          }
+          processedVideos.add(faceData.video_path)
         }
+
+        // Copy image to known faces directory
+        const srcImagePath = path.join(UNKNOWN_FACES_DIR, faceData.image_file)
+        const destImagePath = path.join(personDir, faceData.image_file)
+
         if (existsSync(srcImagePath)) {
           await fs.copyFile(srcImagePath, destImagePath)
           await fs.unlink(srcImagePath)
         }
-        try {
-          await fs.unlink(jsonPath)
-        } catch (error) {
-          logger.warn(error)
-        }
-      } else {
-        try {
-          const imageFile = face.jsonFile.replace('.json', '.jpg')
-          const srcImagePath = path.join(UNKNOWN_FACES_DIR, imageFile)
-          await fs.unlink(srcImagePath)
-        } catch (error) {
-          logger.warn(error)
-        }
+        // Now delete the JSON file
+        await fs.unlink(jsonPath)
+      } catch (err) {
+        logger.error({ error: err, face }, 'Error processing face label')
       }
-    } catch (err) {
-      logger.error('Label error: ' + err)
     }
+
+    // Reimport all affected videos once
+    for (const videoPath of processedVideos) {
+      const video = await getByVideoSource(videoPath)
+      if (video) {
+        await importVideoFromVectorDb(video)
+      }
+    }
+
+    await rebuildFacesCache()
+
+    await suggestionCache.refresh()
+
+    logger.debug(
+      {
+        jobId: job.id,
+        updatedScenes: updatedScene.size,
+        processedVideos: processedVideos.size,
+      },
+      'Face labelling job completed'
+    )
+
+    return {
+      updatedScene: Array.from(updatedScene),
+      processedVideos: Array.from(processedVideos),
+    }
+  } catch (error) {
+    logger.error(error)
   }
-  logger.info({ jobId: job.id }, 'Face labelling job completed')
 }
 
 export const faceLabellingWorker = new Worker('face-labelling', processFaceLabellingJob, {
   connection,
-  concurrency: 3,
-})
-
-faceLabellingWorker.on('completed', (job) => {
-  logger.info({ jobId: job.id }, 'Face labelling job completed')
-})
-
-faceLabellingWorker.on('failed', (job, err) => {
-  logger.error(
-    {
-      jobId: job?.id,
-      error: err.message,
-      stack: err.stack,
-    },
-    'Face labelling job failed'
-  )
+  concurrency: 1,
 })
