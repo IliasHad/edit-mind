@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@chroma-core/default-embed": "^0.1.9",
+    "@xenova/transformers": "^2.17.2",
     "chromadb": "^3.0.17",
-    "chromadb-default-embed": "^2.14.0",
-    "shared": "workspace:*"
+    "chromadb-default-embed": "^2.14.0"
   }
 }
