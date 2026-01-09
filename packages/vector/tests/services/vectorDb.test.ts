@@ -44,8 +44,8 @@ const mockScene = (overrides?: Partial<Scene>): Scene => ({
   emotions: [{ emotion: 'happy', name: 'person1' }],
   transcription: 'Hello world, this is a test',
   detectedText: ['lorem ipsum'],
-  shot_type: 'medium-shot',
-  aspect_ratio: '16:9',
+  shotType: 'medium-shot',
+  aspectRatio: '16:9',
   camera: 'static',
   category: 'test',
   createdAt: new Date().getTime(),
@@ -350,8 +350,8 @@ describe('VectorDB Service', () => {
           metadata: {
             source: 'video1.mp4',
             emotions: 'person:happy',
-            shot_type: 'close-up',
-            aspect_ratio: '16:9',
+            shotType: 'close-up',
+            aspectRatio: '16:9',
           },
         }),
         mockEmbedding({
@@ -360,8 +360,8 @@ describe('VectorDB Service', () => {
           metadata: {
             source: 'video2.mp4',
             emotions: 'person:sad',
-            shot_type: 'medium-shot',
-            aspect_ratio: '9:16',
+            shotType: 'medium-shot',
+            aspectRatio: '9:16',
           },
         }),
         mockEmbedding({
@@ -370,8 +370,8 @@ describe('VectorDB Service', () => {
           metadata: {
             source: 'video3.mp4',
             objects: 'dog,ball',
-            shot_type: 'long-shot',
-            aspect_ratio: '16:9',
+            shotType: 'long-shot',
+            aspectRatio: '16:9',
           },
         }),
       ]
@@ -394,11 +394,11 @@ describe('VectorDB Service', () => {
     it(
       'filters by aspect ratio',
       async () => {
-        const query: VideoSearchParams = { ...baseQuery, aspect_ratio: '16:9' }
+        const query: VideoSearchParams = { ...baseQuery, aspectRatio: '16:9' }
         const results = await queryCollection(query)
 
         results.forEach((video) => {
-          expect(video.aspect_ratio).toBe('16:9')
+          expect(video.aspectRatio).toBe('16:9')
         })
       },
       TEST_TIMEOUT
@@ -407,7 +407,7 @@ describe('VectorDB Service', () => {
     it(
       'filters by shot type',
       async () => {
-        const query: VideoSearchParams = { ...baseQuery, shot_type: 'close-up' }
+        const query: VideoSearchParams = { ...baseQuery, shotType: 'close-up' }
         const results = await queryCollection(query)
 
         results.forEach((video) => {
@@ -470,13 +470,13 @@ describe('VectorDB Service', () => {
       async () => {
         const query: VideoSearchParams = {
           ...baseQuery,
-          aspect_ratio: '16:9',
+          aspectRatio: '16:9',
           emotions: ['happy'],
         }
 
         const results = await queryCollection(query)
         results.forEach((video) => {
-          expect(video.aspect_ratio).toBe('16:9')
+          expect(video.aspectRatio).toBe('16:9')
           const hasEmotion = video.emotions.some((e) => e.toLowerCase() === 'happy')
           expect(hasEmotion).toBe(true)
         })
@@ -550,7 +550,7 @@ describe('VectorDB Service', () => {
             startTime: 0,
             endTime: 5,
             duration: 120,
-            aspect_ratio: '16:9',
+            aspectRatio: '16:9',
             category: 'sports',
           },
         }),
@@ -562,7 +562,7 @@ describe('VectorDB Service', () => {
             startTime: 5,
             endTime: 10,
             duration: 120,
-            aspect_ratio: '16:9',
+            aspectRatio: '16:9',
             category: 'sports',
           },
         }),
@@ -583,7 +583,7 @@ describe('VectorDB Service', () => {
           expect(video).toMatchObject({
             source: expect.any(String),
             duration: expect.any(Number),
-            aspect_ratio: expect.any(String),
+            aspectRatio: expect.any(String),
           })
         })
       },
@@ -861,7 +861,7 @@ describe('VectorDB Service', () => {
             id: `scene-${Date.now()}-1`,
             metadata: {
               source: videoSource,
-              aspect_ratio: originalRatio,
+              aspectRatio: originalRatio,
               startTime: 0,
               endTime: 5,
               description: 'First scene',
@@ -871,7 +871,7 @@ describe('VectorDB Service', () => {
             id: `scene-${Date.now()}-2`,
             metadata: {
               source: videoSource,
-              aspect_ratio: originalRatio,
+              aspectRatio: originalRatio,
               startTime: 5,
               endTime: 10,
               description: 'Second scene',
@@ -881,7 +881,7 @@ describe('VectorDB Service', () => {
             id: `scene-${Date.now()}-3`,
             metadata: {
               source: videoSource,
-              aspect_ratio: originalRatio,
+              aspectRatio: originalRatio,
               startTime: 10,
               endTime: 15,
               description: 'Third scene',
@@ -898,12 +898,12 @@ describe('VectorDB Service', () => {
 
         // Verify original aspect ratio
         scenes.forEach((scene) => {
-          expect(scene.aspect_ratio).toBe(originalRatio)
+          expect(scene.aspectRatio).toBe(originalRatio)
         })
 
         const modifiedScenes = scenes.map((scene) => ({
           ...scene,
-          aspect_ratio: newRatio,
+          aspectRatio: newRatio,
         }))
 
         for (const scene of modifiedScenes) {
@@ -915,7 +915,7 @@ describe('VectorDB Service', () => {
         expect(updatedScenes.length).toBe(3)
 
         updatedScenes.forEach((scene) => {
-          expect(scene.aspect_ratio).toBe(newRatio)
+          expect(scene.aspectRatio).toBe(newRatio)
           expect(scene.source).toBe(videoSource)
         })
       },
@@ -928,11 +928,11 @@ describe('VectorDB Service', () => {
         const videoSource = `test-video-preserve-${Date.now()}.mp4`
         const originalMetadata = {
           source: videoSource,
-          aspect_ratio: '16:9',
+          aspectRatio: '16:9',
           startTime: 0,
           endTime: 5,
           description: 'Test scene description',
-          shot_type: 'close-up',
+          shotType: 'close-up',
           faces: 'person1, person2',
           objects: 'laptop, phone',
           emotions: JSON.stringify([{ name: 'person1', emotion: 'happy' }]),
@@ -950,7 +950,7 @@ describe('VectorDB Service', () => {
         const scenes = await getByVideoSource(videoSource)
         const modifiedScenes = scenes.map((scene) => ({
           ...scene,
-          aspect_ratio: '1:1',
+          aspectRatio: '1:1',
         }))
 
         for (const scene of modifiedScenes) {
@@ -962,8 +962,8 @@ describe('VectorDB Service', () => {
         expect(updatedScenes.length).toBe(1)
 
         const updatedScene = updatedScenes[0]
-        expect(updatedScene.aspect_ratio).toBe('1:1')
-        expect(updatedScene.shot_type).toBe(originalMetadata.shot_type)
+        expect(updatedScene.aspectRatio).toBe('1:1')
+        expect(updatedScene.shotType).toBe(originalMetadata.shotType)
         expect(updatedScene.faces).toEqual(['person1', 'person2'])
         expect(updatedScene.objects).toEqual(['laptop', 'phone'])
         expect(updatedScene.transcription).toBe(originalMetadata.transcription)
@@ -981,7 +981,7 @@ describe('VectorDB Service', () => {
 
         const modifiedScenes = scenes.map((scene) => ({
           ...scene,
-          aspect_ratio: '9:16',
+          aspectRatio: '9:16',
         }))
 
         // Should not throw when updating empty array
@@ -1006,7 +1006,7 @@ describe('VectorDB Service', () => {
           id: `scene-ratio-${Date.now()}`,
           metadata: {
             source: videoSource,
-            aspect_ratio: '16:9',
+            aspectRatio: '16:9',
             startTime: 0,
             endTime: 5,
           },
@@ -1019,7 +1019,7 @@ describe('VectorDB Service', () => {
           const scenes = await getByVideoSource(videoSource)
           const modifiedScenes = scenes.map((scene) => ({
             ...scene,
-            aspect_ratio: newRatio,
+            aspectRatio: newRatio,
           }))
 
           for (const scene of modifiedScenes) {
@@ -1027,7 +1027,7 @@ describe('VectorDB Service', () => {
           }
 
           const updatedScenes = await getByVideoSource(videoSource)
-          expect(updatedScenes[0].aspect_ratio).toBe(newRatio)
+          expect(updatedScenes[0].aspectRatio).toBe(newRatio)
         }
       },
       TEST_TIMEOUT
@@ -1047,7 +1047,7 @@ describe('VectorDB Service', () => {
             id: `batch-scene-${Date.now()}-${i}`,
             metadata: {
               source: videoSource,
-              aspect_ratio: originalRatio,
+              aspectRatio: originalRatio,
               startTime: i * 5,
               endTime: (i + 1) * 5,
               description: `Scene ${i}`,
@@ -1063,7 +1063,7 @@ describe('VectorDB Service', () => {
 
         const modifiedScenes = scenes.map((scene) => ({
           ...scene,
-          aspect_ratio: newRatio,
+          aspectRatio: newRatio,
         }))
 
         for (const scene of modifiedScenes) {
@@ -1075,7 +1075,7 @@ describe('VectorDB Service', () => {
         expect(updatedScenes.length).toBe(sceneCount)
 
         updatedScenes.forEach((scene) => {
-          expect(scene.aspect_ratio).toBe(newRatio)
+          expect(scene.aspectRatio).toBe(newRatio)
           expect(scene.source).toBe(videoSource)
         })
       },
@@ -1095,7 +1095,7 @@ describe('VectorDB Service', () => {
               id: `concurrent-scene-${Date.now()}-${videoIndex}-${sceneIndex}`,
               metadata: {
                 source,
-                aspect_ratio: '16:9',
+                aspectRatio: '16:9',
                 startTime: sceneIndex * 5,
                 endTime: (sceneIndex + 1) * 5,
               },
@@ -1111,7 +1111,7 @@ describe('VectorDB Service', () => {
             const scenes = await getByVideoSource(source)
             const modifiedScenes = scenes.map((scene) => ({
               ...scene,
-              aspect_ratio: newRatio,
+              aspectRatio: newRatio,
             }))
 
             for (const scene of modifiedScenes) {
@@ -1125,7 +1125,7 @@ describe('VectorDB Service', () => {
           const updatedScenes = await getByVideoSource(source)
           expect(updatedScenes.length).toBe(3)
           updatedScenes.forEach((scene) => {
-            expect(scene.aspect_ratio).toBe(newRatio)
+            expect(scene.aspectRatio).toBe(newRatio)
           })
         }
       },
