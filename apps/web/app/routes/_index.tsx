@@ -19,12 +19,10 @@ export default function IndexPage() {
   const { isOnboardingComplete } = useOnboarding()
 
   useEffect(() => {
-    if (!user) {
-      if (isOnboardingComplete) {
-        navigate('/auth/login')
-      } else {
-        navigate('/onboarding')
-      }
+    if (!user && isOnboardingComplete) {
+      navigate('/auth/login')
+    } else {
+      navigate('/onboarding')
     }
   }, [user, navigate, isOnboardingComplete])
 
