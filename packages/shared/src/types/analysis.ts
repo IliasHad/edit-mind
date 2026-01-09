@@ -38,7 +38,7 @@ export interface FrameAnalysis {
     is_vibrant: boolean
     is_muted: boolean
   }
-  environment: string
+  description: string
 }
 
 export interface DetectedText {
@@ -73,7 +73,6 @@ export interface FaceRecognitionSummary {
 
 export interface AnalysisSummary {
   total_frames_analyzed: number
-  primary_activity: string
   confidence: number
 }
 export interface PluginAnalysisSummary {
@@ -105,4 +104,36 @@ export interface AnalysisProgress {
   frames_analyzed: number
   total_frames: number
   job_id: string
+}
+
+export interface FrameAnalysisPluginAnalysis {
+  name: string
+  duration: number
+  frameProcessed: number
+}
+
+interface Appearance {
+  frame_index: number
+  timestamp_ms: number
+  timestamp_seconds: number
+  formatted_timestamp: string
+}
+
+export interface UnknownFace {
+  face_id: string
+  job_id: string
+
+  image_file: string
+  json_file: string
+  image_hash: string
+
+  created_at: string
+  last_updated: string
+
+  video_path: string
+  video_name: string
+
+  all_appearances: Appearance[]
+  total_appearances: number
+  last_appearance: Appearance
 }
