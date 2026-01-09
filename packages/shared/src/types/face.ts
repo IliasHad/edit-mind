@@ -1,15 +1,10 @@
-import z from 'zod'
-import { unknownFace } from '../schemas'
-
-export type UnknownFace = z.infer<typeof unknownFace>
-
 export interface FaceIndexingProgress {
   progress: number
   elapsed: string
 }
 export interface KnownFace {
   name: string
-  image: string
+  images: string[]
 }
 
 export type FaceIndexProgress = {
@@ -59,4 +54,9 @@ export interface FaceLabellingJobData {
 export interface FaceDeletionJobData {
   jsonFile: string
   imageFile: string
+}
+
+export interface FaceRenamingJobData {
+  oldName: string
+  newName: string
 }
