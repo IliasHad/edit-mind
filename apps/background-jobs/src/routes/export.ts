@@ -1,47 +1,61 @@
 import express from 'express'
 import { exportQueue } from '../queue'
-import { CollectionModel, ExportModel } from '@db/index'
+import { ChatMessageModel, CollectionModel, ExportModel } from '@db/index'
+import { ExportProcessingRouteSchema } from 'src/schemas/export'
+import { logger } from '@shared/services/logger'
 
 const router = express.Router()
 
-interface ExportRequest {
-  sceneIds: string[]
-  collectionId: string
-  userId: string
-}
-
 router.post('/', async (req, res) => {
-  const { sceneIds, collectionId, userId } = req.body as ExportRequest
+  const form = ExportProcessingRouteSchema.safeParse(req.body)
 
-  if (!sceneIds || !collectionId || !userId) {
-    return res.status(400).json({ error: 'sceneIds, collectionId, and userId are required' })
+  if (!form.success) {
+    logger.debug(JSON.stringify(form.error))
+    return res.status(400).json({ error: 'Error validation your export body' })
   }
 
-  try {
-    const collection = await CollectionModel.findById(collectionId)
-    const exportRecord = await ExportModel.create({
-      userId,
-      sceneIds,
-      name: collection?.name ?? null,
-      status: 'created',
-    })
+  const { selectedSceneIds, collectionId, chatMessageId } = form.data
 
-    await exportQueue.add(
-      'export-scenes',
-      {
-        exportId: exportRecord.id,
-      },
-      {
-        removeOnComplete: true,
+  try {
+    if (collectionId) {
+      const collection = await CollectionModel.findById(collectionId)
+      if (collection) {
+        const exportRecord = await ExportModel.create({
+          userId: collection?.userId,
+          sceneIds: selectedSceneIds,
+          name: collection?.name ?? null,
+          status: 'created',
+        })
+
+        await exportQueue.add('export-scenes-collection', {
+          exportId: exportRecord.id,
+          collectionId: collection.id,
+        })
       }
-    )
+    } else if (chatMessageId) {
+      const message = await ChatMessageModel.findByIdWithChat(chatMessageId)
+
+      if (message) {
+        const exportRecord = await ExportModel.create({
+          userId: message?.chat.userId,
+          sceneIds: selectedSceneIds,
+          name: message?.chat.title ?? null,
+          status: 'created',
+        })
+
+        await exportQueue.add('export-scenes-chat-message', {
+          exportId: exportRecord.id,
+          chatMessageId,
+          chatId: message.chatId,
+        })
+      }
+    }
 
     res.json({
       message: 'Export job queued',
-      exportId: exportRecord.id,
     })
   } catch (error) {
-    console.error(error)
+    logger.error(error)
     res.status(500).json({ error: 'Failed to queue export job' })
   }
 })
