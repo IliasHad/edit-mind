@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 import { logger } from '@shared/services/logger'
-import { config } from 'src/config'
+import { env } from 'src/utils/env'
 
 const prisma = new PrismaClient()
 
@@ -27,11 +27,8 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       })
       return
     }
-    if (!config.SESSION_SECRET?.toString()) {
-      throw new Error('SESSION_SECRET is not set')
-    }
 
-    const decoded = jwt.verify(token, config.SESSION_SECRET?.toString()) as JWTPayload
+    const decoded = jwt.verify(token, env.SESSION_SECRET?.toString()) as JWTPayload
 
     if (!decoded.userId) {
       res.status(401).json({

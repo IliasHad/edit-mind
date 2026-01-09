@@ -9,7 +9,7 @@ from pathlib import Path
 class AnalysisConfig:
     """Video analysis configuration."""
     sample_interval_seconds: float = 2.5
-    max_workers: 2
+    max_workers: int = 2
     cache_dir: str = 'ml-models/.yolo'
     enable_streaming: bool = True
     enable_aggressive_gc: bool = False
