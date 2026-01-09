@@ -101,7 +101,7 @@ class MessageHandlers:
                     if self.use_external_host:
                         logger.warning(
                             "You are using external host for the video processing, please make sure to run on the same host as you docker containers")
-                        return_data = result
+                        return_data = result.to_dict()
 
                     else:
                         return_data = {}
@@ -113,7 +113,7 @@ class MessageHandlers:
                     await self.connection_manager.send_message(
                         websocket,
                         MessageType.ANALYSIS_COMPLETED,
-                        return_data.to_dict(),
+                        return_data,
                         job_id=request.job_id
                     )
                     success = True

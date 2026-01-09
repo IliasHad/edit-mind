@@ -10,7 +10,6 @@ class AnalysisConfig:
     """Video analysis configuration."""
     sample_interval_seconds: float = 2.5
     max_workers: int = max(1, os.cpu_count() - 2) if os.cpu_count() else 2
-    output_dir: str = 'analysis_results'
     cache_dir: str = 'ml-models/.yolo'
     enable_streaming: bool = True
     enable_aggressive_gc: bool = False
@@ -28,7 +27,6 @@ class AnalysisConfig:
     def __post_init__(self) -> None:
         """Post-initialization adjustments."""
         self._adjust_for_memory()
-        self._ensure_output_dir()
 
     def _adjust_for_memory(self) -> None:
         """Auto-adjust settings based on available memory."""
@@ -44,10 +42,6 @@ class AnalysisConfig:
                 self.target_resolution_height = 720
         except ImportError:
             pass
-
-    def _ensure_output_dir(self) -> None:
-        """Ensure output directory exists."""
-        Path(self.output_dir).mkdir(parents=True, exist_ok=True)
 
     @property
     def device(self) -> str:
