@@ -42,8 +42,18 @@ class FrameProcessor:
             if total_video_frames <= 0:
                 raise AnalysisError("Cannot determine frame count")
 
-            sample_interval = max(
-                1, int(fps * self.config.sample_interval_seconds))
+            # Calculate video duration
+            video_duration_seconds = total_video_frames / fps
+
+            # Adaptive sampling: use 1 frame per second for videos under 90 seconds
+            if video_duration_seconds < 90:
+                sample_interval = max(1, int(fps))  # 1 frame per second
+                logger.info(
+                    f"Short video detected ({video_duration_seconds:.1f}s), using 1 frame/second sampling")
+
+            else:
+                sample_interval = max(
+                    1, int(fps * self.config.sample_interval_seconds))
 
             # TODO: make the sample internal short for very short videos to process more video frames
 
