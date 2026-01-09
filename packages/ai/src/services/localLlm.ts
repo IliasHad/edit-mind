@@ -56,7 +56,7 @@ class LocalLLM {
 
     if (!this.context) {
       this.context = await this.model!.createContext({
-        contextSize: 4096,
+        contextSize: 8192,
         sequences: 10,
       })
     }
@@ -86,7 +86,7 @@ class LocalLLM {
     try {
       const res = await session.prompt(fullPrompt, {
         maxTokens: max,
-        temperature: 0.4,
+        temperature: 0.2,
         topP: 0.95,
         grammar,
       })
@@ -94,11 +94,7 @@ class LocalLLM {
       return { data: res.trim(), tokens, error: undefined }
     } catch (err) {
       logger.error('LLM generation failed: ' + err)
-      return {
-        data: '',
-        tokens: 0,
-        error: 'Failed to generate response from local model.',
-      }
+      throw err
     } finally {
       session.dispose()
       seq.dispose()
@@ -121,22 +117,19 @@ class LocalLLM {
     const grammar = new loader.LlamaJsonSchemaGrammar(this.llama!, {
       type: 'object',
       properties: {
-        action: { type: ['string', 'null'] },
         limit: { type: ['number', 'null'] },
         emotions: {
           type: 'array',
           items: {
             type: 'string',
-            enum: ['happy', 'sad', 'angry', 'surprised', 'excited', 'neutral', 'fearful', 'disgusted'],
           },
         },
         objects: { type: 'array', items: { type: 'string' } },
         duration: { type: ['number', 'null'] },
-        shot_type: {
+        shotType: {
           type: ['string', 'null'],
-          enum: ['close-up', 'medium-shot', 'long-shot', null],
         },
-        aspect_ratio: {
+        aspectRatio: {
           type: 'string',
           enum: ['16:9', '9:16', '1:1', '4:3', '8:7'],
         },
@@ -146,8 +139,9 @@ class LocalLLM {
         detectedTextRegex: { type: ['string', 'null'] },
         description: { type: 'string' },
         faces: { type: 'array', items: { type: 'string' } },
+        semanticQuery: { type: 'string' },
       },
-      required: ['emotions', 'objects', 'duration', 'aspect_ratio', 'description', 'faces'],
+      required: ['emotions', 'objects', 'description', 'faces', 'limit'],
     } as const)
 
     const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
@@ -165,13 +159,7 @@ class LocalLLM {
     try {
       const parsed = JSON.parse(raw.trim())
       return {
-        data: VideoSearchParamsSchema.parse({
-          ...parsed,
-          semanticQuery: null,
-          locations: [],
-          camera: null,
-          detectedText: null,
-        }),
+        data: VideoSearchParamsSchema.parse(parsed),
         tokens,
         error: undefined,
       }
