@@ -1,3 +1,4 @@
+import { logger } from '@shared/services/logger'
 import { UserModel } from '@db/index'
 
 async function main() {
@@ -6,12 +7,11 @@ async function main() {
     await UserModel.create({
       name: 'Admin User',
       email: 'admin@example.com',
-      password: 'admin',
+      password: 'admin', // this will be hashed using bcrypt
       role: 'admin',
     })
+    logger.debug('Seeded admin user')
   }
-
-  console.debug('✅ Seeded admin user')
 }
 
 main()

@@ -15,14 +15,13 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "seed": "ts-node -r tsconfig-paths/register seed.ts",
+    "seed": "npx tsx seed.ts",
     "studio": "prisma studio",
     "format": "prisma format",
     "validate": "prisma validate"
   },
   "dependencies": {
-    "@prisma/client": "6.19.0",
-    "bcryptjs": "^2.4.3"
+    "@prisma/client": "6.19.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

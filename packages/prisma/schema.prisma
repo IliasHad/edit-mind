@@ -24,7 +24,7 @@ model User {
   chats       Chat[]
   folders     Folder[]
   jobs        Job[]
-  integration Integration?
+  integrations Integration[]
   settings    Settings?
 
   videos      Video[]
@@ -38,10 +38,8 @@ model Settings {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Face Recognition Settings
   primaryFaceLabel         String?
   
-  // Notification Settings
   notifyOnJobComplete Boolean @default(true)
   notifyOnErrors      Boolean @default(true)
   
@@ -67,10 +65,9 @@ model Folder {
   userId      String
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Watcher settings
   watcherEnabled    Boolean  @default(true)
   lastWatcherScan   DateTime?
-  excludePatterns   String[] @default([])
+  excludePatterns   String[] @default(["*.part", "*.temp"])
   includePatterns   String[] @default(["*.mp4", "*.mov", "*.avi", "*.mkv"])
 
   videos Video[]
@@ -172,32 +169,37 @@ model ChatMessage {
   tokensUsed        BigInt   @default(0)
   isError           Boolean  @default(false)
 
-  isThinking       Boolean  @default(true)
+  isThinking       Boolean  @default(false)
 
   stage            MessageStage? 
 
   intent           MessageIntent?
 
-  exportId            String?
+  exportId            String? @unique
   export              Export?     @relation(fields: [exportId], references: [id], onDelete: Cascade)
 
   @@index([chatId, createdAt])
 }
 
+enum IntegrationType {
+  Immich
+}
+
 model Integration {
   id            String   @id
-  userId        String   @unique
+  userId        String   
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  immichApiKey  String
-  immichBaseUrl String
+  type          IntegrationType @default(Immich)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  config       Json?
 }
 
 model Project {
   id           String   @id
   name         String
-  instructions String
+  instructions String @db.VarChar(5000)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   videos       Video[]
@@ -235,6 +237,8 @@ model Video {
 
   projects        Project[]
   collectionItems CollectionItem[]
+
+  @@unique([source, userId])
 }
 
 enum CollectionType {
@@ -286,6 +290,8 @@ model Collection {
 
   items CollectionItem[]
 
+  exports Export[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -330,6 +336,7 @@ enum ExportStatus {
 }
 
 model Export {
+  
   id String @id
 
   status ExportStatus @default(created)
@@ -343,8 +350,10 @@ model Export {
   updatedAt DateTime @updatedAt
 
 
-  chatMessage   ChatMessage[]
+  chatMessage   ChatMessage?
 
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
 
   name String?
