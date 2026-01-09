@@ -2,6 +2,19 @@ import path from 'path'
 import { Analysis, DetectedObject, Face } from '../types/analysis'
 import { Scene } from '../types/scene'
 import { Transcription } from '../types/transcription'
+import { createHash } from 'crypto'
+import { THUMBNAILS_DIR } from '@shared/constants'
+import {
+  generateThumbnail,
+  getCameraNameAndDate,
+  getLocationFromVideo,
+  getVideoMetadata,
+} from '@media-utils/utils/videos'
+import { formatLocation, getLocationName } from './location'
+import { extractGPS, getGoProDeviceName, getGoProVideoMetadata } from '@media-utils/lib/gopro'
+import { gcd } from '.'
+import { GoProMetadataWithStreams } from '@media-utils/types/gopro'
+import { logger } from '@shared/services/logger'
 
 export const generateSceneDescription = (objects: DetectedObject[], faces: Face[]): string => {
   const objectCounts: Record<string, number> = {}
@@ -48,6 +61,29 @@ export const generateSceneDescription = (objects: DetectedObject[], faces: Face[
 
   return `A scene with ${description}.`
 }
+const getTranscriptionForTimeRange = (
+  startTime: number,
+  endTime: number,
+  transcription: Transcription | null
+): string => {
+  if (!transcription?.segments) return ''
+
+  const words: string[] = []
+  for (const segment of transcription.segments) {
+    for (const word of segment.words) {
+      if (
+        (word.start >= startTime && word.start <= endTime) ||
+        (word.end >= startTime && word.end <= endTime) ||
+        (word.start <= startTime && word.end >= endTime)
+      ) {
+        words.push(word.word.trim())
+      }
+    }
+  }
+
+  return words.join(' ')
+}
+
 export const createScenes = async (
   analysis: Analysis,
   transcription: Transcription | null,
@@ -55,51 +91,81 @@ export const createScenes = async (
 ): Promise<Scene[]> => {
   const scenes: Scene[] = []
 
-  const getTranscriptionForTimeRange = (startTime: number, endTime: number): string => {
-    if (!transcription?.segments) return ''
+  const metadata = await getVideoMetadata(videoPath)
 
-    const words: string[] = []
-    for (const segment of transcription.segments) {
-      for (const word of segment.words) {
-        if (
-          (word.start >= startTime && word.start <= endTime) ||
-          (word.end >= startTime && word.end <= endTime) ||
-          (word.start <= startTime && word.end >= endTime)
-        ) {
-          words.push(word.word.trim())
-        }
+  const duration = metadata.duration
+  const { latitude, longitude, altitude } = await getLocationFromVideo(videoPath)
+  let location = formatLocation(latitude, longitude, altitude)
+
+  const { camera, createdAt } = await getCameraNameAndDate(videoPath)
+  const aspectRatio =
+    metadata?.displayAspectRatio ||
+    (metadata?.width && metadata?.height
+      ? (() => {
+          const divisor = gcd(metadata.width, metadata.height)
+          return `${metadata.width / divisor}:${metadata.height / divisor}`
+        })()
+      : 'Unknown')
+
+  let initialCamera = camera
+  if (initialCamera.toLocaleLowerCase().includes('gopro')) {
+    const goproTelemetry = await getGoProVideoMetadata(videoPath)
+    if (goproTelemetry) {
+      initialCamera = getGoProDeviceName(goproTelemetry)
+
+      const streamData = goproTelemetry['1']
+      const gpsCoordinates = extractGPS(streamData as GoProMetadataWithStreams)
+      if (gpsCoordinates.length > 0) {
+        location = formatLocation(gpsCoordinates[0]?.lat, gpsCoordinates[0]?.lon, gpsCoordinates[0]?.alt)
+      } else {
+        logger.warn(`No GPS data found in GoPro video: ${videoPath}`)
       }
     }
-
-    return words.join(' ')
   }
+
+  const locationName = await getLocationName(location)
 
   for (const frame of analysis.frame_analysis) {
     const startTime = frame.start_time_ms / 1000
     const endTime = frame.end_time_ms / 1000
 
+    const hash = createHash('sha256').update(`${videoPath}_${startTime}_${endTime}`).digest('hex')
+    const thumbnailFile = `${hash}.jpg`
+    const thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFile)
+
+    await generateThumbnail(videoPath, thumbnailPath, startTime)
+
     const currentScene: Scene = {
-      id: 'scene_' + (scenes.length + 1) + '_' + path.basename(videoPath),
+      id: hash,
       startTime,
       endTime,
       objects: frame.objects?.map((obj: DetectedObject) => obj.label) || [],
       faces: frame.faces?.map((face: Face) => face.name) || [],
-      transcription: getTranscriptionForTimeRange(startTime, endTime),
-      description: generateSceneDescription(frame.objects, frame.faces),
-      shot_type: frame.shot_type,
-      emotions: frame.faces?.map((face) => ({ name: face.name, emotion: face.emotion.label })),
+      transcription: getTranscriptionForTimeRange(startTime, endTime, transcription),
+      description: frame.description,
+      shotType: frame.shot_type,
+      emotions: frame.faces?.map((face) => ({
+        name: face.name,
+        emotion: face.emotion.label,
+        confidence: face.emotion.confidence,
+      })),
       source: videoPath,
-      camera: '',
-      createdAt: 0,
+      camera,
+      createdAt: new Date(createdAt).getTime(),
+      thumbnailUrl: thumbnailPath,
       dominantColorHex: frame.dominant_color?.hex || '',
       dominantColorName: frame.dominant_color?.name || '',
       detectedText: frame.detected_text?.map((item) => item.text) || [],
-      location: '',
-      duration: 0,
+      location: locationName,
+      duration,
       facesData: frame.faces?.map((face) => ({
         name: face?.name,
         bbox: face?.bbox,
         confidence: face?.confidence,
+        emotion: {
+          label: face.emotion.label,
+          confidence: face.emotion.confidence,
+        },
       })),
       transcriptionWords: transcription?.segments
         .filter((segment) => segment.end >= startTime && segment.start <= endTime)
@@ -124,7 +190,7 @@ export const createScenes = async (
         bbox: text.bbox,
         confidence: text.confidence,
       })),
-      aspect_ratio: '16:9',
+      aspectRatio: aspectRatio,
     }
 
     scenes.push(currentScene)
