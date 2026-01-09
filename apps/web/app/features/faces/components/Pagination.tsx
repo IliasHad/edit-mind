@@ -1,5 +1,10 @@
 import React from 'react'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  ChevronDoubleLeftIcon, 
+  ChevronDoubleRightIcon 
+} from '@heroicons/react/24/solid'
 
 interface PaginationProps {
   currentPage: number
@@ -70,7 +75,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="First page"
         >
-          <ChevronsLeft className="w-4 h-4" />
+          <ChevronDoubleLeftIcon className="w-4 h-4" />
         </button>
 
         <button
@@ -79,7 +84,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="Previous page"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeftIcon className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-1">
@@ -107,7 +112,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="Next page"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRightIcon className="w-4 h-4" />
         </button>
 
         <button
@@ -116,7 +121,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="Last page"
         >
-          <ChevronsRight className="w-4 h-4" />
+          <ChevronDoubleRightIcon className="w-4 h-4" />
         </button>
       </div>
     </div>
