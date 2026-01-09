@@ -1,7 +1,6 @@
 import z from 'zod'
-import { AspectRatio } from '.';
-import { searchSuggestionSchema, VideoMetadataSummarySchema } from '../schemas'
-import { VideoSearchParamsSchema } from '@shared/schemas/search'
+import { AspectRatio } from '.'
+import { searchSuggestionSchema, VideoMetadataSummarySchema, VideoSearchParamsSchema } from '../schemas/search'
 
 export type VideoSearchParams = z.infer<typeof VideoSearchParamsSchema>
 export type SearchSuggestion = z.infer<typeof searchSuggestionSchema>
