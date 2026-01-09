@@ -1,28 +1,32 @@
 import { type ActionFunctionArgs } from 'react-router'
-import { promises as fs } from 'fs'
-import path from 'path'
-import { existsSync } from 'fs'
+import { requireUser } from '~/services/user.sever'
+import { logger } from '@shared/services/logger'
+import { backgroundJobsFetch } from '~/services/background.server'
 
 export async function action({ request }: ActionFunctionArgs) {
-  if (request.method !== 'DELETE') {
-    return { success: false, error: 'Method not allowed' }
-  }
-
-  const { imageFile, jsonFile } = await request.json()
-  const unknownFacesDir = path.join(process.cwd(), 'analysis_results', 'unknown_faces')
-  const imagePath = path.join(unknownFacesDir, imageFile)
-  const jsonPath = path.join(unknownFacesDir, jsonFile)
-
   try {
-    if (existsSync(imagePath)) {
-      await fs.unlink(imagePath)
+    const user = await requireUser(request)
+    const { imageFile, jsonFile } = await request.json()
+
+    if (request.method === 'DELETE') {
+      try {
+        await backgroundJobsFetch('/face', { imageFile, jsonFile }, user, 'DELETE')
+      } catch (error) {
+        logger.error(error)
+        return new Response('Internal Server Error', { status: 500 })
+      }
     }
-    if (existsSync(jsonPath)) {
-      await fs.unlink(jsonPath)
+
+    if (request.method === 'PATCH') {
+      return new Response('Method not allowed', { status: 405 })
     }
-    return { success: true }
+
+    if (request.method === 'PUT') {
+      return new Response('Method not allowed', { status: 405 })
+    }
   } catch (error) {
-    console.error('Error deleting unknown face:', error)
-    return { success: false, error: 'Failed to delete face' }
+    logger.error('Error processing face')
+    logger.error(error)
+    return { success: false, error: 'Failed to process face' }
   }
 }

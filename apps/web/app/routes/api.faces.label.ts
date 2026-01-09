@@ -4,36 +4,31 @@ import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import path from 'path'
 import type { ActionFunctionArgs } from 'react-router'
+import { backgroundJobsFetch } from '~/services/background.server'
+import { getUser } from '~/services/user.sever'
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {
     return { success: false, error: 'Method not allowed' }
   }
+  const user = await getUser(request)
 
   const { faces, name } = await request.json()
 
   if (!faces?.length) return { success: false, error: 'No faces provided' }
   if (!name?.trim()) return { success: false, error: 'Name is required' }
 
+  if (!user) throw new Error('User not authorized')
+
   try {
     const personDir = path.join(FACES_DIR, name)
+
     if (!existsSync(personDir)) {
       await mkdir(personDir, { recursive: true })
     }
-    const backgroundJobsUrl = process.env.BACKGROUND_JOBS_URL
 
-    const res = await fetch(`${backgroundJobsUrl}/face/label`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ faces, name }),
-    })
+    await backgroundJobsFetch('/face', { faces, name }, user, 'PATCH')
 
-    const data = await res.json()
-    if (data.error) {
-      throw new Error(data.error)
-    }
     return { success: true }
   } catch (error) {
     logger.error(error)

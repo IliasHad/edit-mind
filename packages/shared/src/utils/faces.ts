@@ -1,33 +1,21 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import { existsSync } from 'fs'
-import { FACES_DIR, UNKNOWN_FACES_DIR } from '@shared/constants';
+import { FACES_DIR, UNKNOWN_FACES_DIR } from '@shared/constants'
+import { logger } from '@shared/services/logger'
 
-const FACES_PER_PAGE = 40
-
-export const getAllUnknownFaces = async (page = 1, limit = FACES_PER_PAGE) => {
+export const getAllUnknownFaces = async () => {
   if (UNKNOWN_FACES_DIR && !existsSync(UNKNOWN_FACES_DIR)) {
     return {
       faces: [],
-      total: 0,
-      page,
-      totalPages: 0,
-      hasMore: false,
     }
   }
 
   const files = await fs.readdir(UNKNOWN_FACES_DIR)
   const jsonFiles = files.filter((file) => file.endsWith('.json'))
 
-  const total = jsonFiles.length
-  const totalPages = Math.ceil(total / limit)
-  const startIndex = (page - 1) * limit
-  const endIndex = startIndex + limit
-
-  const paginatedFiles = jsonFiles.slice(startIndex, endIndex)
-
   const faces = await Promise.all(
-    paginatedFiles.map(async (file) => {
+    jsonFiles.map(async (file) => {
       try {
         const filePath = path.join(UNKNOWN_FACES_DIR, file)
         const content = await fs.readFile(filePath, 'utf-8')
@@ -39,11 +27,9 @@ export const getAllUnknownFaces = async (page = 1, limit = FACES_PER_PAGE) => {
   )
 
   return {
-    faces: faces.filter((face) => face),
-    total,
-    page,
-    totalPages,
-    hasMore: page < totalPages,
+    faces: faces
+      .filter((face) => face)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
   }
 }
 
@@ -54,7 +40,7 @@ export const getAllKnownFaces = async () => {
   }
   const peopleFolders = await fs.readdir(FACES_DIR, { withFileTypes: true })
 
-  const result: Record<string, string> = {}
+  const result: Record<string, string[]> = {}
 
   for (const entry of peopleFolders) {
     if (!entry.isDirectory()) continue
@@ -65,14 +51,50 @@ export const getAllKnownFaces = async () => {
     const files = await fs.readdir(personFolder)
     const jpgFiles = files.filter((f) => f.toLowerCase().endsWith('.jpg'))
 
-    if (jpgFiles.length === 0) continue
+    if (jpgFiles.length === 0) {
+      result[personName] = []
+      continue
+    }
 
     jpgFiles.sort()
 
-    const lastImage = jpgFiles[jpgFiles.length - 1]
-
-    result[personName] = path.join(personName, lastImage)
+    result[personName] = jpgFiles.map((file) => path.join(personName, file))
   }
 
   return result
+}
+export const getImagesByPersonName = async (personName: string) => {
+  try {
+    const personFiles = await fs.readdir(path.join(FACES_DIR, personName))
+
+    const jpgFiles = personFiles.filter((f) => f.toLowerCase().endsWith('.jpg'))
+
+    jpgFiles.sort()
+
+    return jpgFiles
+  } catch (error) {
+    logger.error(error)
+    return []
+  }
+}
+
+export async function rebuildFacesCache(): Promise<void> {
+  try {
+    const entries = await fs.readdir(FACES_DIR, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const fullPath = path.join(FACES_DIR, entry.name)
+
+      if (entry.isFile() && entry.name.endsWith('.pkl')) {
+        // Remove .pkl file
+        await fs.unlink(fullPath)
+        logger.debug(`Deleted: ${fullPath}`)
+      }
+    }
+
+    logger.debug('All .pkl files removed successfully')
+  } catch (error) {
+    console.error('Error removing .pkl files:', error)
+    throw error
+  }
 }
