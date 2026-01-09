@@ -1,6 +1,6 @@
 import chokidar from 'chokidar'
 import path from 'path'
-import { SUPPORTED_VIDEO_EXTENSIONS } from '@shared/constants/index'
+import { SUPPORTED_VIDEO_EXTENSIONS } from '@media-utils/constants/index'
 import { addVideoIndexingJob } from './services/videoIndexer.js'
 import { FolderModel, JobModel } from '@db/index.js'
 import { stat } from 'fs/promises'
