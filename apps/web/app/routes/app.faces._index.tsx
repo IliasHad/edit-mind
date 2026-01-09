@@ -17,7 +17,6 @@ const FaceTraining: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { unknownFaces, knownFaces, loading, unknownPagination, knownPagination, setActiveTab } = useFaces()
 
-  // Get active tab from URL, default to 'known'
   const activeTab = searchParams.get('tab') || 'known'
 
   useEffect(() => {
