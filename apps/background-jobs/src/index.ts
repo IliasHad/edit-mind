@@ -1,23 +1,59 @@
 import express from 'express'
 import cors from 'cors'
+import { createServer } from 'http'
 import { createBullBoard } from '@bull-board/api'
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { ExpressAdapter } from '@bull-board/express'
 import foldersRoute from './routes/folders'
 import stitcherRoute from './routes/stitcher'
+import chatRoute from './routes/chat'
+import exportRoute from './routes/export'
 import faceRoute from './routes/face'
-import { config } from './config'
-import { immichImporterQueue, videoQueue, videoStitcherQueue } from './queue'
-import './jobs/videoIndexer'
+import indexerRoute from './routes/indexer'
+import prisma from '@db/db'
+import { requireAuth } from './middleware/auth'
+
+import {
+  faceLabellingQueue,
+  immichImporterQueue,
+  smartCollectionQueue,
+  videoStitcherQueue,
+  chatQueue,
+  exportQueue,
+  transcriptionQueue,
+  frameAnalysisQueue,
+  sceneCreationQueue,
+  textEmbeddingQueue,
+  audioEmbeddingQueue,
+  visualEmbeddingQueue,
+  faceDeletionQueue,
+  videoFinalizationQueue,
+  faceRenameQueue,
+} from './queue'
+
+import './jobs/transcription'
+import './jobs/frameAnalysis'
+import './jobs/sceneCreation'
+import './jobs/textEmbedding'
+import './jobs/audioEmbedding'
+import './jobs/visualEmbedding'
+import './jobs/videoFinalization'
 import './jobs/ImmichImporter'
 import './jobs/videoStitcher'
 import './jobs/faceLabelling'
+import './jobs/faceDeletion'
+import './jobs/smartCollection'
+import './jobs/chat'
+import './jobs/export'
+import './jobs/faceRenaming'
 
-import { pythonService } from '@shared/services/pythonService'
 import { initializeWatchers } from './watcher'
-import { suggestionCache } from '@shared/services/suggestion'
+import { shutdownWorkers } from './utils/workers'
+import { logger } from '@shared/services/logger'
+import { env } from './utils/env'
 
 const app = express()
+const server = createServer(app)
 
 app.use(cors())
 app.use(express.json())
@@ -28,9 +64,21 @@ if (process.env.NODE_ENV === 'development') {
 
   createBullBoard({
     queues: [
-      new BullMQAdapter(videoQueue),
+      new BullMQAdapter(transcriptionQueue),
+      new BullMQAdapter(frameAnalysisQueue),
+      new BullMQAdapter(sceneCreationQueue),
+      new BullMQAdapter(textEmbeddingQueue),
+      new BullMQAdapter(audioEmbeddingQueue),
+      new BullMQAdapter(visualEmbeddingQueue),
+      new BullMQAdapter(videoFinalizationQueue),
       new BullMQAdapter(immichImporterQueue),
       new BullMQAdapter(videoStitcherQueue),
+      new BullMQAdapter(faceLabellingQueue),
+      new BullMQAdapter(smartCollectionQueue),
+      new BullMQAdapter(chatQueue),
+      new BullMQAdapter(exportQueue),
+      new BullMQAdapter(faceDeletionQueue),
+      new BullMQAdapter(faceRenameQueue),
     ],
     serverAdapter,
   })
@@ -38,18 +86,47 @@ if (process.env.NODE_ENV === 'development') {
   app.use('/', serverAdapter.getRouter())
 }
 
-app.use('/folders', foldersRoute)
-app.use('/stitcher', stitcherRoute)
-app.use('/face', faceRoute)
+// API endpoints that will be used only from the web app to handle background jobs
+// API requests should include authorization header with userId and email using JWT
+app.use(
+  cors({
+    origin: env.WEB_APP_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+)
+
+app.use('/folders', requireAuth, foldersRoute)
+app.use('/stitcher', requireAuth, stitcherRoute)
+app.use('/chat', requireAuth, chatRoute)
+app.use('/export', requireAuth, exportRoute)
+app.use('/face', requireAuth, faceRoute)
+app.use('/indexer', requireAuth, indexerRoute)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 
-app.listen(config.port, async () => {
-  await pythonService.start()
+server.listen(env.BACKGROUND_JOBS_PORT, async () => {
+  await prisma.$connect()
   await initializeWatchers()
-  await suggestionCache.initialize()
-  console.warn(`Server running on port ${config.port}`)
+
+  await smartCollectionQueue.add(
+    'smart-collections',
+    {},
+    {
+      repeat: {
+        pattern: '0 0 * * *',
+      },
+      jobId: 'generate-smart-collections-cron',
+      removeOnComplete: true,
+      removeOnFail: true,
+    }
+  )
+
+  logger.debug(`Background jobs server running on port ${env.BACKGROUND_JOBS_PORT}`)
   if (process.env.NODE_ENV === 'development') {
-    console.warn(`Bull Board UI available at http://localhost:${config.port}`)
+    logger.warn(`Bull Board UI available at http://localhost:${env.BACKGROUND_JOBS_PORT}`)
   }
 })
+
+process.on('SIGTERM', shutdownWorkers)
+process.on('SIGINT', shutdownWorkers)
