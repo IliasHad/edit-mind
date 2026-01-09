@@ -1,0 +1,73 @@
+import path from 'path'
+import { logger } from '@shared/services/logger'
+import { THUMBNAILS_DIR } from '@shared/constants'
+import { generateThumbnail } from '@media-utils/utils/videos'
+import { Video } from '@shared/types/video'
+import { FolderModel, UserModel, VideoModel } from '@db/index'
+
+export async function importVideoFromVectorDb(video: Video): Promise<void> {
+  try {
+    const user = await UserModel.findFirst()
+    if (!user) {
+      logger.error('No user found in database - cannot import videos')
+      throw new Error('User not found')
+    }
+
+    try {
+      if (!video.source) {
+        logger.warn('Skipping video with missing source')
+      }
+
+      const duration = video.duration ? BigInt(Math.round(parseInt(video.duration.toString()))) : BigInt(0)
+      const thumbnailPath = path.join(THUMBNAILS_DIR, `${path.basename(video.source)}_cover.jpg`)
+
+      await generateThumbnail(video.source, thumbnailPath, 2, { quality: '2', scale: '1280:-1' })
+
+      const existingVideo = await VideoModel.findFirst({
+        where: {
+          source: video.source,
+          userId: user.id,
+        },
+      })
+
+      if (existingVideo) {
+        await VideoModel.update(existingVideo.id, {
+          duration,
+          thumbnailUrl: thumbnailPath,
+          faces: video.faces || [],
+          objects: video.objects || [],
+          emotions: video.emotions || [],
+          shotTypes: video.shotTypes || [],
+          aspectRatio: video.aspectRatio,
+          shottedAt: video.createdAt ? new Date(video.createdAt) : new Date(),
+          importAt: new Date(),
+        })
+      } else {
+        const folder = await FolderModel.findByPath(path.dirname(video.source))
+        if (!folder) {
+          throw new Error('Folder not found')
+        }
+        await VideoModel.create({
+          source: video.source,
+          userId: user.id,
+          duration,
+          name: path.basename(video.source),
+          thumbnailUrl: thumbnailPath,
+          faces: video.faces || [],
+          objects: video.objects || [],
+          emotions: video.emotions || [],
+          shotTypes: video.shotTypes || [],
+          shottedAt: video.createdAt ? new Date(video.createdAt) : new Date(),
+          aspectRatio: video.aspectRatio,
+          folderId: folder?.id,
+        })
+      }
+    } catch (videoError) {
+      logger.error(`Failed to import video ${video.source}: ` + videoError)
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    logger.error('Failed to import videos from vector database: ' + errorMessage)
+    throw error
+  }
+}
