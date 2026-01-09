@@ -39,7 +39,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const audioEmbeddingWorker = new Worker('audio-embedding', processVideo, {
   connection,
   concurrency: 3,
-  lockDuration: 6 * 60 * 60 * 1000, // 6 hours (up from 15 minutes)
+  lockDuration: 6 * 60 * 60 * 1000, // 6 hour
   stalledInterval: 30 * 1000, // every 30 seconds
-  maxStalledCount: 3, // 3 attempts (up from 2)
+  maxStalledCount: 3, // 3 attempts
 })

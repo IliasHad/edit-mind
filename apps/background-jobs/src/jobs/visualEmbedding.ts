@@ -11,17 +11,19 @@ async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, scenesPath } = job.data
 
   try {
+    const embeddingStart = Date.now()
+
     const scenes = await fs.readFile(scenesPath, 'utf-8').then(JSON.parse)
 
     await updateJob(job, { stage: JobStage.embedding_visual, overallProgress: 80 })
 
-    logger.info({ jobId, videoPath, sceneCount: scenes.length }, '🔗 Starting scene text embedding')
-    const embeddingStart = Date.now()
+    logger.debug({ jobId, videoPath, sceneCount: scenes.length }, 'Starting scene visual embedding')
 
     await embedVisualScenes(scenes, videoPath)
 
     const embeddingDuration = (Date.now() - embeddingStart) / 1000
-    logger.info({ jobId, embeddingDuration }, '🔗 Embedding done')
+
+    logger.debug({ jobId, embeddingDuration }, 'Visual Embedding done')
 
     await updateJob(job, {
       visualEmbeddingTime: embeddingDuration,
@@ -31,7 +33,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
   } catch (error) {
     logger.error(
       { jobId, videoPath, error, stack: error instanceof Error ? error.stack : undefined },
-      '❌ Error processing video'
+      'Error processing visual embedding'
     )
     await updateJob(job, { status: JobStatus.error })
     throw error
@@ -40,8 +42,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
 export const visualEmbeddingWorker = new Worker('visual-embedding', processVideo, {
   connection,
-  concurrency: 3,
-  lockDuration: 6 * 60 * 60 * 1000, // 6 hours (up from 15 minutes)
+  concurrency: 1,
+  lockDuration: 6 * 60 * 60 * 1000, // 6 hour
   stalledInterval: 30 * 1000, // every 30 seconds
-  maxStalledCount: 3, // 3 attempts (up from 2)
+  maxStalledCount: 3, // 3 attempts
 })
