@@ -1,6 +1,6 @@
 import { logger } from '../services/logger'
 import { pythonService } from '../services/pythonService'
-import { TranscriptionProgress } from '../types/transcription'
+import { Transcription, TranscriptionProgress } from '../types/transcription'
 
 type ProgressCallback = (progress: TranscriptionProgress) => void
 
@@ -9,7 +9,7 @@ export function transcribeAudio(
   jsonFilePath: string,
   jobId: string,
   onProgress?: ProgressCallback
-): Promise<void> {
+): Promise<Transcription | undefined> {
   return new Promise((resolve, reject) => {
     pythonService.transcribe(
       videoPath,
@@ -20,12 +20,12 @@ export function transcribeAudio(
           try {
             onProgress(progress)
           } catch (error) {
-            logger.error('❌ Error in progress callback:' + error)
+            logger.error('Error in progress callback:' + error)
           }
         }
       },
-      (result) => {
-        resolve(result)
+      (data) => {
+        resolve(data)
       },
       (error) => {
         reject(error)

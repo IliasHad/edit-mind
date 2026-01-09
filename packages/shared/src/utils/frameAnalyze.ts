@@ -9,32 +9,28 @@ import { logger } from '../services/logger'
  */
 export function analyzeVideo(
   videoPath: string,
+  jsonFilePath: string,
   jobId: string,
   onProgress: (progress: AnalysisProgress) => void
-): Promise<{ analysis: Analysis; category: string }> {
+): Promise<Analysis | undefined> {
   return new Promise((resolve, reject) => {
     pythonService.analyzeVideo(
       videoPath,
+      jsonFilePath,
       jobId,
       (progress) => {
         if (onProgress) {
           try {
             onProgress(progress)
           } catch (error) {
-            logger.error('Error in progress callback: ' + error)
+            logger.error('Error in progress callback:' + error)
           }
         }
       },
-      (result) => {
-        let category = 'Uncategorized'
-        if (result?.scene_analysis?.environment) {
-          const env = result.scene_analysis.environment
-          category = env.charAt(0).toUpperCase() + env.slice(1).replace(/_/g, ' ')
-        }
-        resolve({ analysis: result, category })
+      (data) => {
+        resolve(data)
       },
       (error) => {
-        logger.error('❌ ERROR CALLBACK EXECUTED: ' + error)
         reject(error)
       }
     )
