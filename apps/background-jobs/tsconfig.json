@@ -15,14 +15,14 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../../packages/shared/dist/*"],
-      "@ai/*": ["../../packages/ai/dist/*"],
-      "@vector/*": ["../../packages/vector/dist/*"],
-      "@db/*": ["../../packages/db/dist/*"],
-      "@media-utils/*": ["../../packages/media-utils/dist/*"],
-      "@search/*": ["../../packages/search/dist/*"],
-      "@immich/*": ["../../packages/immich/dist/*"],
-      "@smart-collections/*": ["../../packages/smart-collections/dist/*"]
+      "@shared/*": ["../../packages/shared/src/*"],
+      "@ai/*": ["../../packages/ai/src/*"],
+      "@vector/*": ["../../packages/vector/src/*"],
+      "@db/*": ["../../packages/db/src/*"],
+      "@media-utils/*": ["../../packages/media-utils/src/*"],
+      "@search/*": ["../../packages/search/src/*"],
+      "@immich/*": ["../../packages/immich/src/*"],
+      "@smart-collections/*": ["../../packages/smart-collections/src/*"]
     }
   },
   "include": ["src/**/*"],
