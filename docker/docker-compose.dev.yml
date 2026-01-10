@@ -139,29 +139,20 @@ services:
     container_name: edit-mind-postgres-dev
     restart: unless-stopped
     env_file:
-    - path: ./.env.dev
-      required: true
-    - path: ./.env.system
-      required: true
+      - ./.env.dev
+      - ./.env.system
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - pgdata_edit_mind:/var/lib/postgresql/data
     networks:
       - app-network-dev
     healthcheck:
-      test: 
-        - "CMD"
-        - "pg_isready"
-        - "-U"
-        - "${POSTGRES_USER}"
-        - "-d" 
-        - "${POSTGRES_DB}"
+      test:
+        - "CMD-SHELL"
+        - "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
       interval: 10s
       timeout: 5s
       retries: 5
