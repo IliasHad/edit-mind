@@ -16,9 +16,9 @@ logger = get_logger(__name__)
 class FaceRecognizer:
     def __init__(
         self,
-        tolerance: float = 0.35,
+        tolerance: float = 0.30,
         model: str = 'VGG-Face',
-        min_face_confidence: float = 0.50,
+        min_face_confidence: float = 0.65,
         unknown_clustering_threshold: float = 0.60,
         detector_backend: str = "yolov8n"
     ):

@@ -10,10 +10,9 @@ class AnalysisConfig:
     """Video analysis configuration."""
     sample_interval_seconds: float = 2.5
     max_workers: int = 2
-    cache_dir: str = 'ml-models/.yolo'
     enable_streaming: bool = True
     enable_aggressive_gc: bool = False
-    frame_buffer_limit: int = 10
+    frame_buffer_limit: int = 5
     memory_cleanup_interval: int = 50
     target_resolution_height: int = 720
     plugin_skip_interval: Dict[str, int] = field(default_factory=lambda: {

@@ -26,8 +26,6 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
         # If you're running this script over Apple computer with M Chips
         self.batch_size: int = 8 if self.config.get("device") == "mps" else 1
 
-        os.makedirs(self.config.get("cache_dir"), exist_ok=True)
-
     def setup(self, video_path, job_id) -> None:
         """Initialize the YOLO model."""
         # Initialize YOLO model (will download to cache_dir if needed)

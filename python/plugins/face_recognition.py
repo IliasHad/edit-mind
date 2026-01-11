@@ -152,7 +152,15 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 appearance_data, job_id, scale_factor
             )
         else:
-            self._update_appearances(face_id, appearance_data)
+            json_path = self.saved_unknown_faces[face_id]["json_path"]
+            if os.path.exists(json_path):
+                self._update_appearances(face_id, appearance_data)
+            else:
+                # JSON file was deleted, treat as first occurrence
+                self._save_first_occurrence(
+                    frame, timestamp_ms, frame_idx, face, video_path,
+                    appearance_data, job_id, scale_factor
+                )
 
     def _save_first_occurrence(
         self,
@@ -165,15 +173,17 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         job_id: str,
         scale_factor: float
     ) -> None:
-        """" Save unknown face for the first if we don't save it yet """
         face_id = face['name']
         top, right, bottom, left = face['location']
 
+        # Load original frame
         original_frame = self._load_original_frame(
             frame, video_path, timestamp_ms)
-
         if original_frame is None:
+            logger.warning(
+                f"Using scaled frame for {face_id} - original frame unavailable")
             original_frame = frame
+            scale_factor = 1.0
 
         height, width = original_frame.shape[:2]
 
@@ -188,8 +198,19 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         bottom = min(height, bottom + pad)
         right = min(width, right + pad)
 
+        if left >= right or top >= bottom:
+            logger.error(
+                f"Invalid coordinates for {face_id}: "
+                f"left={left}, right={right}, top={top}, bottom={bottom}"
+            )
+            return
+
         face_image = original_frame[top:bottom, left:right]
         if face_image.size == 0:
+            logger.error(
+                f"Empty face image for {face_id} at frame {frame_idx}. "
+                f"Coords: ({left},{top})-({right},{bottom}), Frame size: {width}x{height}"
+            )
             return
 
         video_name = Path(video_path).stem
@@ -202,6 +223,11 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         json_path = self.unknown_faces_dir / f"{base_filename}.json"
 
         try:
+            if not os.access(self.unknown_faces_dir, os.W_OK):
+                logger.error(
+                    f"No write permission for {self.unknown_faces_dir}")
+                return
+
             cv2.imwrite(str(image_path), face_image, [
                         cv2.IMWRITE_JPEG_QUALITY, 85])
 
