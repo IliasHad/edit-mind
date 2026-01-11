@@ -77,7 +77,7 @@ class OllamaLLM {
 
     const { data: raw, tokens, error } = await this.generate(SEARCH_PROMPT(query, history, projectInstructions), 1024)
 
-    if (error || !raw) return { data: fallback, tokens: 0, error }
+    if (error || !raw) throw new Error('Error processing your ollama request')
     try {
       const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim())
       return {
@@ -132,7 +132,8 @@ class OllamaLLM {
 
       if (estimatedTokens > 2048) {
         logger.error('Prompt too long even after truncation')
-        return { data: null, tokens: 0, error: 'Prompt too long even after truncation' }
+
+        throw new Error('Prompt too long even after truncation')
       }
 
       const { data: raw, tokens, error } = await this.generate(prompt, 2048)
@@ -143,7 +144,7 @@ class OllamaLLM {
       return { data: validated, tokens, error: undefined }
     } catch (err) {
       logger.error('Unexpected error in generateYearInReviewResponse: ' + err)
-      return { data: null, tokens: 0, error: 'Unexpected error' }
+      throw err
     }
   }
 
@@ -177,7 +178,7 @@ class OllamaLLM {
 
       return { data: parsed, tokens, error: undefined }
     } catch {
-      return { data: { type: 'general', needsVideoData: false }, tokens: 0, error: 'Failed to parse intent' }
+      throw new Error("Failed to parse intent'")
     }
   }
 

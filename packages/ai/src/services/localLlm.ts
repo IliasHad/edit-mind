@@ -165,7 +165,7 @@ class LocalLLM {
       }
     } catch (parseError) {
       logger.error('Failed to parse JSON:' + parseError)
-      return { data: fallback, tokens: 0, error: 'Invalid JSON' }
+      throw new Error('Failed to parse JSON')
     }
   }
   async generateAssistantMessage(
@@ -310,11 +310,11 @@ class LocalLLM {
         return { data: validated, tokens, error: undefined }
       } catch (parseError) {
         logger.error('Failed to parse year in review JSON: ' + parseError)
-        return { data: null, tokens: 0, error: 'Invalid JSON response from AI' }
+        throw new Error('Failed to parse year in review JSON')
       }
     } catch (err) {
       logger.error('Unexpected error in generateYearInReviewResponse: ' + err)
-      return { data: null, tokens: 0, error: 'Unexpected error' }
+      throw err
     }
   }
 
@@ -360,14 +360,7 @@ class LocalLLM {
         error: undefined,
       }
     } catch {
-      return {
-        data: {
-          type: 'general',
-          needsVideoData: false,
-        },
-        tokens: 0,
-        error: 'Failed to parse intent from local model.',
-      }
+      throw new Error('Failed to parse intent from local model')
     }
   }
 
