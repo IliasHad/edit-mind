@@ -61,34 +61,28 @@ FROM base AS production
 
 WORKDIR /app
 
-WORKDIR /app
+COPY --from=dependencies /app/node_modules ./node_modules
 
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc ./
-COPY apps/background-jobs/package.json ./apps/background-jobs/
-COPY packages/shared/package.json ./packages/shared/
-COPY packages/db/package.json ./packages/db/
-COPY packages/vector/package.json ./packages/vector/
-COPY packages/ai/package.json ./packages/ai/
-COPY packages/immich/package.json ./packages/immich/
-COPY packages/media-utils/package.json ./packages/media-utils/
-COPY packages/search/package.json ./packages/search/
-COPY packages/smart-collections/package.json ./packages/smart-collections/
-COPY packages/prisma/schema.prisma ./packages/prisma/
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/prisma.config.ts ./
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/.npmrc ./
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm install --prod --frozen-lockfile
 
-COPY --from=builder /app/apps/background-jobs/dist ./apps/background-jobs/dist
+COPY --from=builder /app/packages/vector ./packages/vector
+COPY --from=builder /app/packages/ai ./packages/ai
+COPY --from=builder /app/packages/immich ./packages/immich
+COPY --from=builder /app/packages/media-utils ./packages/media-utils
+COPY --from=builder /app/packages/search ./packages/search
+COPY --from=builder /app/packages/smart-collections ./packages/smart-collections
 
-COPY --from=builder /app/packages/prisma/node_modules /app/packages/prisma
-COPY --from=builder /app/packages/db/dist ./packages/db/dist
-COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
-COPY --from=builder /app/packages/vector/dist ./packages/vector/dist
-COPY --from=builder /app/packages/ai/dist ./packages/ai/dist
-COPY --from=builder /app/packages/immich/dist ./packages/immich/dist
-COPY --from=builder /app/packages/media-utils/dist ./packages/media-utils/dist
-COPY --from=builder /app/packages/search/dist ./packages/search/dist
-COPY --from=builder /app/packages/smart-collections/dist ./packages/smart-collections/dist
+COPY --from=builder /app/packages/prisma ./packages/prisma
+COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/db ./packages/db
+COPY --from=builder /app/apps/background-jobs ./apps//background-jobs
+
 
 EXPOSE ${BACKGROUND_JOBS_PORT}
 
@@ -121,7 +115,7 @@ RUN pnpm run build
 
 ENV NODE_ENV=development
 
-EXPOSE 4000
+EXPOSE ${BACKGROUND_JOBS_PORT}
 
 CMD ["pnpm", "--filter", "background-jobs", "start"]
 
