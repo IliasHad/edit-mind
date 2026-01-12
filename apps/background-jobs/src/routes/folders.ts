@@ -7,10 +7,10 @@ import { deleteJobsByDataJobId } from '../utils/jobs'
 
 const router = express.Router()
 
-router.post('/:folderPath/trigger', async (req, res) => {
-  const { folderPath } = req.params
+router.post('/:id/trigger', async (req, res) => {
+  const { id } = req.params
 
-  if (!folderPath) return res.status(400).json({ error: 'folderPath required' })
+  if (!id) return res.status(400).json({ error: 'folder Id required' })
 
   try {
     const videosInDb = await JobModel.findMany({
@@ -19,18 +19,18 @@ router.post('/:folderPath/trigger', async (req, res) => {
       },
     })
 
-    const folder = await FolderModel.findByPath(folderPath)
+    const folder = await FolderModel.findById(id)
 
     if (!folder) return res.status(400).json({ error: 'Folder is not found' })
 
     await FolderModel.update(folder.id, { status: 'scanning' })
-    const videos = await findVideoFiles(folderPath, folder.includePatterns, folder.excludePatterns)
+    const videos = await findVideoFiles(folder.path, folder.includePatterns, folder.excludePatterns)
 
     const videosInDbPaths = videosInDb.map((item) => item.videoPath)
 
     const uniqueVideos = videos.filter((video) => !videosInDbPaths.includes(video.path.toString()))
 
-    await FolderModel.updateByPath(folderPath, {
+    await FolderModel.update(folder.id, {
       videoCount: uniqueVideos.length,
       lastScanned: new Date(),
     })

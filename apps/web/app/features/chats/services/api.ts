@@ -1,4 +1,4 @@
-import type { ChatMessage, Chat } from '@prisma/client';
+import type { ChatMessage, Chat } from '@prisma/client'
 import type { ChatMessageWithScenes, PaginationInfo } from '../types'
 import type { ChatSuggestion } from '@shared/types/chat'
 

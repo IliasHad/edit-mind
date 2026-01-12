@@ -1,14 +1,8 @@
-import type { Collection, CollectionItem, Video } from '@prisma/client'
 import type { Scene } from '@shared/schemas'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-
-type CollectionWithItems = Collection & {
-  items: (CollectionItem & {
-    video: Video
-  })[]
-  totalDuration: string
-}
+import type { CollectionWithItems } from '../types'
+import { apiClient } from '../services/api'
 
 interface CollectionsState {
   collections: CollectionWithItems[]
@@ -43,13 +37,7 @@ export const useCollectionsStore = create<CollectionsState>()(
         fetchCollections: async () => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch('/api/collections')
-
-            if (!response.ok) {
-              throw new Error(`Failed to fetch collections: ${response.statusText}`)
-            }
-
-            const { collections, totalDuration, totalVideos } = await response.json()
+            const { collections, totalDuration, totalVideos } = await apiClient.list()
 
             set({ collections, totalDuration, totalVideos, isLoading: false })
           } catch (error) {
@@ -63,13 +51,7 @@ export const useCollectionsStore = create<CollectionsState>()(
         fetchCollectionById: async (id: string) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch(`/api/collections/${id}`)
-
-            if (!response.ok) {
-              throw new Error(`Failed to fetch collection: ${response.statusText}`)
-            }
-
-            const { collection } = await response.json()
+            const { collection } = await apiClient.get(id)
 
             set({ currentCollection: collection, isLoading: false })
           } catch (error) {
@@ -84,13 +66,7 @@ export const useCollectionsStore = create<CollectionsState>()(
         fetchCollectionScenes: async (id: string) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch(`/api/collections/${id}/scenes`)
-
-            if (!response.ok) {
-              throw new Error(`Failed to fetch scenes: ${response.statusText}`)
-            }
-
-            const { scenes } = await response.json()
+            const { scenes } = await apiClient.scenes(id)
 
             set({ currentScenes: scenes, isLoading: false })
           } catch (error) {
@@ -104,17 +80,7 @@ export const useCollectionsStore = create<CollectionsState>()(
         exportCollectionSelectedScenes: async (id: string, selectedSceneIds: string[]) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch(`/api/collections/${id}/scenes/export`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ selectedSceneIds }),
-            })
-
-            if (!response.ok) {
-              throw new Error(`Failed to export scenes: ${response.statusText}`)
-            }
+            await apiClient.exportScenes(id, selectedSceneIds)
 
             set({ isLoading: false })
           } catch (error) {

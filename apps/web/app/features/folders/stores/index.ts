@@ -1,23 +1,7 @@
-import type { Folder, Job } from '@prisma/client'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-
-type FolderWithJobs = Folder & {
-    jobs: Job[]
-}
-
-export interface FolderCreateInput {
-    path: string
-    watcherEnabled?: boolean
-    includePatterns?: string[]
-    excludePatterns?: string[]
-}
-
-export interface FolderUpdateInput {
-    watcherEnabled?: boolean
-    includePatterns?: string[]
-    excludePatterns?: string[]
-}
+import type { FolderCreateInput, FolderUpdateInput, FolderWithJobs } from '../types'
+import { apiClient } from '../services/api'
 
 interface FoldersState {
     folders: FolderWithJobs[]
@@ -52,13 +36,7 @@ export const useFoldersStore = create<FoldersState>()(
                 fetchFolders: async () => {
                     set({ isLoading: true, error: null })
                     try {
-                        const response = await fetch('/api/folders')
-
-                        if (!response.ok) {
-                            throw new Error(`Failed to fetch folders: ${response.statusText}`)
-                        }
-
-                        const { folders } = await response.json()
+                        const { folders } = await apiClient.list()
 
                         set({ folders, isLoading: false })
                     } catch (error) {
@@ -72,13 +50,7 @@ export const useFoldersStore = create<FoldersState>()(
                 fetchFolderById: async (id: string) => {
                     set({ isLoading: true, error: null })
                     try {
-                        const response = await fetch(`/api/folders/${id}`)
-
-                        if (!response.ok) {
-                            throw new Error(`Failed to fetch folder: ${response.statusText}`)
-                        }
-
-                        const { folder } = await response.json()
+                        const { folder } = await apiClient.get(id)
 
                         set({
                             currentFolder: folder,
@@ -98,19 +70,7 @@ export const useFoldersStore = create<FoldersState>()(
                 createFolder: async (input: FolderCreateInput) => {
                     set({ isLoading: true, error: null })
                     try {
-                        const response = await fetch('/api/folders', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(input),
-                        })
-
-                        if (!response.ok) {
-                            throw new Error(`Failed to create folder: ${response.statusText}`)
-                        }
-
-                        const { folder } = await response.json()
+                        const { folder } = await apiClient.create(input)
 
                         set((state) => ({
                             folders: [...state.folders, folder],
@@ -133,19 +93,7 @@ export const useFoldersStore = create<FoldersState>()(
                 updateFolder: async (id: string, input: FolderUpdateInput) => {
                     set({ isLoading: true, error: null })
                     try {
-                        const response = await fetch(`/api/folders/${id}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(input),
-                        })
-
-                        if (!response.ok) {
-                            throw new Error(`Failed to update folder: ${response.statusText}`)
-                        }
-
-                        const { folder } = await response.json()
+                        const { folder } = await apiClient.update(id, input)
 
                         set((state) => ({
                             folders: state.folders.map((f) => (f.id === id ? folder : f)),
@@ -169,14 +117,7 @@ export const useFoldersStore = create<FoldersState>()(
                 deleteFolder: async (id: string) => {
                     set({ isLoading: true, error: null })
                     try {
-                        const response = await fetch(`/api/folders/${id}`, {
-                            method: 'DELETE',
-                        })
-
-                        if (!response.ok) {
-                            throw new Error(`Failed to delete folder: ${response.statusText}`)
-                        }
-
+                        await apiClient.delete(id)
                         set((state) => ({
                             folders: state.folders.filter((f) => f.id !== id),
                             currentFolder: state.currentFolder?.id === id ? null : state.currentFolder,
@@ -193,15 +134,7 @@ export const useFoldersStore = create<FoldersState>()(
                 rescanFolder: async (id: string) => {
                     set({ isLoading: true, error: null })
                     try {
-                        const response = await fetch(`/api/folders/${id}/rescan`, {
-                            method: 'POST',
-                        })
-
-                        if (!response.ok) {
-                            throw new Error(`Failed to rescan folder: ${response.statusText}`)
-                        }
-
-                        const { folder } = await response.json()
+                        const { folder } = await apiClient.rescan(id)
 
                         set((state) => ({
                             folders: state.folders.map((f) => (f.id === id ? folder : f)),

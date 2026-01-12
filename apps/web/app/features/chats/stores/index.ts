@@ -4,7 +4,7 @@ import { devtools, persist } from 'zustand/middleware'
 import type { Chat, ChatMessage } from '@prisma/client'
 import type { ChatSuggestion } from '@shared/types/chat'
 import type { ChatMessageWithScenes, PaginationInfo } from '../types'
-import { apiClient } from '../utils/apiClient'
+import { apiClient } from '../services/api'
 
 interface ChatState {
   // Chats
