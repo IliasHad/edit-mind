@@ -18,7 +18,6 @@ import path from 'path'
 import { logger } from '@shared/services/logger'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
-import { DeleteVideo } from '~/features/videos/components/DeleteVideo'
 import { ReindexVideo } from '~/features/videos/components/ReindexVideo'
 import { VideoHeader } from '~/features/videos/components/VideoHeader'
 import { ActiveSceneCard } from '~/features/videos/components/ActiveSceneCard'
@@ -29,6 +28,8 @@ import { CollectionModel, JobModel, ProjectModel, VideoModel } from '@db/index'
 import { CustomVideoPlayer } from '~/features/customVideoPlayer/components'
 import { RelinkVideo } from '~/features/videos/components/RelinkVideo'
 import { backgroundJobsFetch } from '~/services/background.server'
+import { useDeleteModal } from '~/features/shared/hooks/useDeleteModal'
+import { DeleteModal } from '~/features/shared/components/DeleteModal'
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { id } = params
@@ -217,7 +218,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
             fileSize: BigInt(0),
           })
           await backgroundJobsFetch(
-            '/indexer',
+            '/internal/indexer/reindex',
             { videoPath: source, forceReIndexing: true, priority: 1, jobId: job.id },
             user
           )
@@ -298,11 +299,10 @@ export default function Video() {
   const [currentTime, setCurrentTime] = useState(0)
   const [activeScene, setActiveScene] = useState(data.scenes[0])
   const [relinkModalOpen, setRelinkModalOpen] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [reindexModalOpen, setReindexModalOpen] = useState(false)
   const [relinkSuccess, setRelinkSuccess] = useState(false)
 
-  const isReindexing = reindexFetcher.state === 'submitting' || data.processingJobsCount > 0
+  const { isOpen, closeModal, openModal } = useDeleteModal()
 
   const onRelink = (oldSource: string, newSource: string) => {
     relinkFetcher.submit({ oldSource, newSource, intent: 'relink-video' }, { method: 'post' })
@@ -388,25 +388,28 @@ export default function Video() {
           projects={data.projects}
           videoSource={data.source}
           onReindex={() => setReindexModalOpen(true)}
-          onDelete={() => setDeleteModalOpen(true)}
+          onDelete={() => openModal()}
           importAt={data.importAt}
-          disabled={data.processingJobsCount > 0}
+          disabled={false}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <DeleteVideo
-              isOpen={deleteModalOpen}
-              source={data.source}
-              onClose={() => setDeleteModalOpen(false)}
-              onDelete={onDelete}
+            <DeleteModal
+              isOpen={isOpen}
+              onClose={closeModal}
+              onConfirm={async() => await onDelete(data.source)}
+              title="Delete video"
+              description="Removing this video will remove all indexed data. This action cannot be undone."
+              resourceName={data.source}
+              confirmText="Delete folder"
             />
             <ReindexVideo
               isOpen={reindexModalOpen}
               source={data.source}
               onClose={() => setReindexModalOpen(false)}
               onReindex={onReindex}
-              isReindexing={isReindexing}
+              isReindexing={false}
             />
 
             <RelinkVideo

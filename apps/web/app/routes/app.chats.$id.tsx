@@ -13,7 +13,8 @@ export const meta: MetaFunction = () => {
 }
 
 export default function ChatPage() {
-  const { chat, messages, addMessageToChat, id, refreshMessages, clearCurrentChat } = useCurrentChat()
+  const { chat, messages, addMessageToChat, id, refreshMessages, clearCurrentChat, fetchChatMessages } =
+    useCurrentChat()
 
   useEffect(() => {
     refreshMessages()
@@ -38,7 +39,14 @@ export default function ChatPage() {
           </AnimatePresence>
         </main>
 
-        <ChatInput sendMessage={(prompt) => id && addMessageToChat(id, prompt)} />
+        <ChatInput
+          sendMessage={async (prompt) => {
+            if (id) {
+              await addMessageToChat(id, prompt)
+              await fetchChatMessages(id, true)
+            }
+          }}
+        />
       </div>
     </DashboardLayout>
   )

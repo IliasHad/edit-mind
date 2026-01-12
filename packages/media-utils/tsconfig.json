@@ -16,7 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["../../packages/shared/dist/*"],
-      "@db/*": ["../../packages/db/dist/*"], 
+      "@db/*": ["../../packages/db/dist/*"],
       "@media-utils/*": ["./src/*"]
     }
   },

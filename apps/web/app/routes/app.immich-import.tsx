@@ -1,23 +1,27 @@
-import { CheckCircle2, AlertCircle, Loader2, Key, ExternalLink, Trash2, RefreshCw } from 'lucide-react'
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  ArrowPathIcon,
+  KeyIcon,
+  ArrowTopRightOnSquareIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { useLoaderData, useActionData, Form, useNavigation, type MetaFunction } from 'react-router'
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
-import { getImmichConfig, saveImmichIntegration, deleteImmichIntegration, addImmichImporterJob } from '../services/immich.server';
-import { getUser } from '~/services/user.sever'
-import { immichActionSchema, immichConfigFormSchema } from '@immich/schemas/immich'
+import { getImmichConfig, saveImmichIntegration, deleteImmichIntegration } from '../services/immich.server'
+import { getUser, requireUserId } from '~/services/user.sever'
+import { ImmichActionSchema, ImmichConfigFormSchema } from '@immich/schemas/immich'
+import { backgroundJobsFetch } from '~/services/background.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await getUser(request)
-
-  if (!user) {
-    throw new Response('Unauthorized', { status: 401 })
-  }
+  const userId = await requireUserId(request)
 
   try {
-    const config = await getImmichConfig(user.id)
+    const config = await getImmichConfig(userId)
     return { hasIntegration: !!config, baseUrl: config?.baseUrl }
   } catch (error) {
     console.error('Loader error:', error)
@@ -35,7 +39,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData()
     const rawData = Object.fromEntries(formData)
 
-    const actionResult = immichActionSchema.safeParse(rawData)
+    const actionResult = ImmichActionSchema.safeParse(rawData)
 
     if (!actionResult.success) {
       return {
@@ -47,10 +51,11 @@ export async function action({ request }: ActionFunctionArgs) {
     const action = actionResult.data
 
     switch (action.intent) {
-      case 'start-import': {
-        const configResult = immichConfigFormSchema.safeParse({
+      case 'start-import':
+        {
+        const configResult = ImmichConfigFormSchema.safeParse({
           apiKey: action.apiKey,
-          baseUrl: action.baseUrl || 'http://host.docker.internal:2283',
+          baseUrl: action.baseUrl,
         })
 
         if (!configResult.success) {
@@ -62,7 +67,13 @@ export async function action({ request }: ActionFunctionArgs) {
         }
 
         const integration = await saveImmichIntegration(user.id, configResult.data.apiKey, configResult.data.baseUrl)
-        await addImmichImporterJob(integration.id)
+        await backgroundJobsFetch(
+          '/internal/immich/import',
+          {
+            integrationId: integration.id,
+          },
+          user
+        )
 
         return { success: true, message: 'Import started successfully' }
       }
@@ -73,7 +84,14 @@ export async function action({ request }: ActionFunctionArgs) {
           return { success: false, error: 'No integration found' }
         }
         const integration = await getImmichConfig(user.id)
-        if (integration) await addImmichImporterJob(integration?.id)
+        if (integration)
+          await backgroundJobsFetch(
+            '/internal/immich/import',
+            {
+              integrationId: integration.id,
+            },
+            user
+          )
         return { success: true, message: 'Face labeling refresh triggered successfully' }
       }
 
@@ -108,7 +126,7 @@ export default function ImmichIntegrationPage() {
     const apiKey = formData.get('apiKey') as string
     const baseUrl = formData.get('baseUrl') as string
 
-    const result = immichConfigFormSchema.safeParse({ apiKey, baseUrl })
+    const result = ImmichConfigFormSchema.safeParse({ apiKey, baseUrl })
 
     if (!result.success) {
       e.preventDefault()
@@ -147,9 +165,9 @@ export default function ImmichIntegrationPage() {
             >
               <div className="flex items-center gap-3">
                 {actionData.success ? (
-                  <CheckCircle2 className="w-5 h-5 shrink-0" />
+                  <CheckCircleIcon className="w-5 h-5 shrink-0" />
                 ) : (
-                  <AlertCircle className="w-5 h-5 shrink-0" />
+                  <ExclamationCircleIcon className="w-5 h-5 shrink-0" />
                 )}
                 <p className="text-sm font-medium">{actionData.message || actionData.error}</p>
               </div>
@@ -176,7 +194,7 @@ export default function ImmichIntegrationPage() {
 
                 <div>
                   <label htmlFor="apiKey" className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    API Key <span className="text-red-500">*</span>
+                    API KeyIcon <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="password"
@@ -192,7 +210,7 @@ export default function ImmichIntegrationPage() {
                   />
                   {(errors.apiKey || actionData?.fieldErrors?.apiKey) && (
                     <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
+                      <ExclamationCircleIcon className="w-3.5 h-3.5" />
                       {errors.apiKey || actionData?.fieldErrors?.apiKey?.[0]}
                     </p>
                   )}
@@ -216,7 +234,7 @@ export default function ImmichIntegrationPage() {
                   />
                   {(errors.baseUrl || actionData?.fieldErrors?.baseUrl) && (
                     <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5" />
+                      <ExclamationCircleIcon className="w-3.5 h-3.5" />
                       {errors.baseUrl || actionData?.fieldErrors?.baseUrl?.[0]}
                     </p>
                   )}
@@ -233,12 +251,12 @@ export default function ImmichIntegrationPage() {
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
                         Saving...
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-4 h-4" />
+                        <CheckCircleIcon className="w-4 h-4" />
                         {data?.hasIntegration ? 'Update & Restart Import' : 'Connect & Start Import'}
                       </>
                     )}
@@ -258,10 +276,10 @@ export default function ImmichIntegrationPage() {
 
               <div className="mt-8 p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-xl">
                 <div className="flex gap-3">
-                  <ExternalLink className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                  <ArrowTopRightOnSquareIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                      How to Get Your API Key
+                      How to Get Your API KeyIcon
                     </h3>
                     <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1.5 mb-4">
                       <li className="flex items-start gap-2">
@@ -293,7 +311,7 @@ export default function ImmichIntegrationPage() {
                     <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
                       <li className="flex items-start gap-2">
                         <code className="bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded text-xs font-mono text-blue-900 dark:text-blue-100 shrink-0">
-                          people.read
+                          person.read
                         </code>
                         <span>Access people and face data</span>
                       </li>
@@ -336,7 +354,7 @@ export default function ImmichIntegrationPage() {
             <div className="p-8">
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-500" />
+                  <CheckCircleIcon className="w-8 h-8 text-green-600 dark:text-green-500" />
                 </div>
                 <h2 className="text-xl font-semibold text-black dark:text-white mb-2">Integration Active</h2>
                 <p className="text-base text-gray-600 dark:text-gray-400 mb-2">
@@ -358,12 +376,12 @@ export default function ImmichIntegrationPage() {
                     >
                       {isRefreshing ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <ArrowPathIcon className="w-4 h-4 animate-spin" />
                           Refreshing...
                         </>
                       ) : (
                         <>
-                          <RefreshCw className="w-4 h-4" />
+                          <ArrowPathIcon className="w-4 h-4" />
                           Refresh Face Labels
                         </>
                       )}
@@ -374,7 +392,7 @@ export default function ImmichIntegrationPage() {
                     onClick={() => setShowApiKeyForm(true)}
                     className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-[0.98]"
                   >
-                    <Key className="w-4 h-4" />
+                    <KeyIcon className="w-4 h-4" />
                     Update Settings
                   </button>
 
@@ -384,7 +402,7 @@ export default function ImmichIntegrationPage() {
                       type="submit"
                       className="inline-flex items-center gap-2 px-5 py-2.5 border border-red-300 dark:border-red-800/30 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-lg font-medium text-sm hover:bg-red-100 dark:hover:bg-red-900/20 transition-all active:scale-[0.98]"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <TrashIcon className="w-4 h-4" />
                       Remove Integration
                     </button>
                   </Form>

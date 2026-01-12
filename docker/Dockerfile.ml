@@ -80,4 +80,4 @@ ENV PATH="/app/.venv/bin:$PATH" \
     VIRTUAL_ENV="/app/.venv"
 
 WORKDIR /app/python
-RUN pytest tests
+RUN if [ -d tests ]; then pytest tests; else echo "No tests yet, skipping pytest"; fi

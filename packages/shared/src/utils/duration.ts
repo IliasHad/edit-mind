@@ -12,23 +12,23 @@ export const formatDate = (date: Date | string, formatStr?: string) => {
 
 export const smartFormatDate = (date: Date | string) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date
-  
+
   if (isToday(dateObj)) {
     return `Today at ${format(dateObj, 'h:mm a')}`
   }
-  
+
   if (isYesterday(dateObj)) {
     return `Yesterday at ${format(dateObj, 'h:mm a')}`
   }
-  
+
   if (isThisWeek(dateObj)) {
     return format(dateObj, 'EEEE • h:mm a')
   }
-  
+
   if (isThisYear(dateObj)) {
     return format(dateObj, 'MMM d • h:mm a')
   }
-  
+
   return format(dateObj, 'MMM d, yyyy')
 }
 

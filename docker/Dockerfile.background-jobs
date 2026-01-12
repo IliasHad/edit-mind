@@ -37,7 +37,21 @@ FROM base AS builder
 
 WORKDIR /app
 
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc turbo.json tsconfig.json ./
+
+COPY apps/background-jobs/package.json ./apps/background-jobs/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/db/package.json ./packages/db/
+COPY packages/vector/package.json ./packages/vector/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/immich/package.json ./packages/immich/
+COPY packages/media-utils/package.json ./packages/media-utils/
+COPY packages/search/package.json ./packages/search/
+COPY packages/smart-collections/package.json ./packages/smart-collections/
+COPY packages/prisma/schema.prisma ./packages/prisma/
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+  pnpm install --frozen-lockfile
 
 COPY apps/background-jobs ./apps/background-jobs/
 COPY packages/shared ./packages/shared/
@@ -49,7 +63,6 @@ COPY packages/media-utils ./packages/media-utils/
 COPY packages/search ./packages/search/
 COPY packages/smart-collections ./packages/smart-collections/
 COPY packages/prisma ./packages/prisma/
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc turbo.json tsconfig.json  ./
 
 RUN pnpm --filter prisma generate
 
@@ -81,7 +94,7 @@ COPY --from=builder /app/packages/smart-collections ./packages/smart-collections
 COPY --from=builder /app/packages/prisma ./packages/prisma
 COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/packages/db ./packages/db
-COPY --from=builder /app/apps/background-jobs ./apps//background-jobs
+COPY apps/background-jobs ./apps/background-jobs
 
 
 EXPOSE ${BACKGROUND_JOBS_PORT}

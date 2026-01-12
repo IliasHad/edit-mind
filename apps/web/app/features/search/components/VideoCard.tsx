@@ -236,7 +236,6 @@ export function VideoCard({
         </>
       )}
 
-      {/* Loading Spinner Overlay */}
       <AnimatePresence>
         {isLoading && isHovered && !imageError && hasMatchedScenes && (
           <motion.div

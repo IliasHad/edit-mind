@@ -1,5 +1,5 @@
 import { metadataToScene } from '@vector/utils/shared'
-import { COLLECTION_DEFINITIONS, COLLECTIONS_BATCH_SIZE } from '../constants/collections'
+import { COLLECTION_DEFINITIONS, COLLECTIONS_BATCH_SIZE, MIN_CONFIDENCE } from '../constants/collections'
 import { getVisualEmbeddingForText, getAudioEmbeddingForText, getEmbeddings } from '@vector/services/embedding'
 import { getAllSceneEmbeddings, getScenesCount } from '@vector/services/vectorDb'
 import { logger } from '@shared/services/logger'
@@ -118,7 +118,7 @@ export async function generateSmartCollections() {
         )
 
         // Check if scene matches collection
-        if (scoringResult.matched) {
+        if (scoringResult.finalScore >= MIN_CONFIDENCE) {
           // Initialize collection map if needed
           if (!collectionVideos.has(collectionName)) {
             collectionVideos.set(collectionName, new Map())

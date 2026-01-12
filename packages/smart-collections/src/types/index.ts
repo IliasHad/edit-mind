@@ -9,8 +9,6 @@ export interface ScoringBreakdown {
     boosters: BoosterPenalty[]
     penalties: BoosterPenalty[]
     finalScore: number
-    threshold: number
-    matched: boolean
 }
 
 export interface BoosterPenalty {

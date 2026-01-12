@@ -29,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         userId: user.id,
       },
       orderBy: {
-        duration: 'desc',
+        updatedAt: 'desc',
       },
       take: limit,
       skip: offset,

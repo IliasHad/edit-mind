@@ -6,7 +6,7 @@ import type {
     ScoringBreakdown,
     ScoringResult,
 } from '../types'
-import { COLLECTION_WEIGHTS, MIN_CONFIDENCE } from '@smart-collections/constants/collections';
+import { COLLECTION_WEIGHTS } from '@smart-collections/constants/collections';
 import { calculateSimilarity, calculateWeightedEmbeddingScore } from './similarity'
 import { calculateBRollScore } from './broll'
 import { calculateMultiSignalBoosters } from './multi-signal'
@@ -174,7 +174,6 @@ export function calculateSceneScore(
     // Combine all scores
     const finalScore = embeddingScore + metadataResult.score + multiSignalResult.score + bRollResult.score
 
-    const threshold = MIN_CONFIDENCE
 
     // Compile breakdown
     const breakdown: ScoringBreakdown = {
@@ -192,8 +191,6 @@ export function calculateSceneScore(
         ],
         penalties: bRollResult.breakdown.penalties || [],
         finalScore,
-        threshold,
-        matched: finalScore >= threshold,
     }
 
     return breakdown

@@ -1,7 +1,7 @@
 import { Worker, Job, FlowProducer } from 'bullmq'
 import { connection } from '../services/redis'
 import { existsSync, promises as fs } from 'fs'
-import { createScenes } from '@shared/utils/scenes'
+import { createScenes } from '@media-utils/utils/scenes'
 import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'

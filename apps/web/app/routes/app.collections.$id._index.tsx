@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/solid'
 import { VideoCard } from '~/features/shared/components/VideoCard'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
-import { humanizeDate } from '~/features/shared/utils/date'
+import { humanizeDate } from '@shared/utils/duration'
 import { useCurrentCollection } from '~/features/collections/hooks/useCurrentCollection'
 import { ICON_MAP, TYPE_LABELS } from '~/features/collections/constants'
 

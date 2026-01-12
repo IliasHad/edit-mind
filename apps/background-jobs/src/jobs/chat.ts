@@ -11,6 +11,7 @@ import {
 import { getSimilarScenes, searchScenes } from '@search/services'
 import { ChatMessageModel, ChatModel, ProjectModel } from '@db/index'
 import { getVideoAnalytics } from '@shared/utils/analytics'
+import { getAllVideos } from '@vector/services/vectorDb'
 
 interface ChatJobData {
   chatId: string
@@ -110,8 +111,8 @@ async function processChatMessageJob(job: Job<ChatJobData>) {
           await ChatMessageModel.update(newMessage.id, {
             stage: 'analyzing',
           })
-
-          const analytics = await getVideoAnalytics()
+          const videosWithScenes = await getAllVideos()
+          const analytics = await getVideoAnalytics(videosWithScenes)
           const response = await generateAnalyticsResponse(prompt, analytics, recentMessages)
           assistantText = response.data || 'Sorry, I could not generate an analytics response.'
           tokensUsed += response.tokens

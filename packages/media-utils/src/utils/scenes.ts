@@ -1,7 +1,7 @@
 import path from 'path'
-import { Analysis, DetectedObject, Face } from '../types/analysis'
-import { Scene } from '../types/scene'
-import { Transcription } from '../types/transcription'
+import { Analysis, DetectedObject, Face } from '@shared/types/analysis'
+import { Scene } from '@shared/types/scene'
+import { Transcription } from '@shared/types/transcription'
 import { createHash } from 'crypto'
 import { THUMBNAILS_DIR } from '@shared/constants'
 import {
@@ -10,11 +10,11 @@ import {
   getLocationFromVideo,
   getVideoMetadata,
 } from '@media-utils/utils/videos'
-import { formatLocation, getLocationName } from './location'
+import { formatLocation, getLocationName } from '@shared/utils/location'
 import { extractGPS, getGoProDeviceName, getGoProVideoMetadata } from '@media-utils/lib/gopro'
-import { gcd } from '.'
 import { GoProMetadataWithStreams } from '@media-utils/types/gopro'
 import { logger } from '@shared/services/logger'
+import { gcd } from './shared'
 
 export const generateSceneDescription = (objects: DetectedObject[], faces: Face[]): string => {
   const objectCounts: Record<string, number> = {}
@@ -102,9 +102,9 @@ export const createScenes = async (
     metadata?.displayAspectRatio ||
     (metadata?.width && metadata?.height
       ? (() => {
-          const divisor = gcd(metadata.width, metadata.height)
-          return `${metadata.width / divisor}:${metadata.height / divisor}`
-        })()
+        const divisor = gcd(metadata.width, metadata.height)
+        return `${metadata.width / divisor}:${metadata.height / divisor}`
+      })()
       : 'Unknown')
 
   let initialCamera = camera

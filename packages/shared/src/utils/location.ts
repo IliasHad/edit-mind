@@ -157,3 +157,32 @@ export async function getLocationName(location: string): Promise<string> {
 
   return locationName
 }
+
+export async function normalizeLocation(location?: string): Promise<string | undefined> {
+  if (!location) return undefined
+
+  const normalized = location?.trim()
+
+  // Remove common patterns and extract main location
+  // Example: "Times Square, New York, NY, USA" -> "New York, USA"
+  // Example: "Eiffel Tower, Paris, France" -> "Paris, France"
+
+  const parts = normalized.split(',').map((p) => p.trim())
+
+  const match = location.match(/([\d.]+)\s*°?\s*([NS]),?\s*([\d.]+)\s*°?\s*([EW])/i)
+
+  if (match) {
+    const locationName = await getLocationName(location)
+    return locationName
+  }
+  if (parts.length >= 2) {
+    // If last part looks like a country (common country names/codes)
+    const lastPart = parts[parts.length - 1]
+    const secondLastPart = parts[parts.length - 2]
+
+    return `${secondLastPart}, ${lastPart}`
+  }
+
+  // If only one part, return as is
+  return normalized
+}

@@ -16,6 +16,7 @@ export function useSearchSuggestions(enabled: boolean = true) {
     removeFilter,
     clearSuggestions,
     invalidateSuggestions,
+    clearQuery
   } = useSearchStore()
 
   const debouncedQuery = useDebounce(query, DEBOUNCE_MS)
@@ -47,5 +48,6 @@ export function useSearchSuggestions(enabled: boolean = true) {
     filters,
     addFilter,
     removeFilter,
+    clearQuery
   }
 }
