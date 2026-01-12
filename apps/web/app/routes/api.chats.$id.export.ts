@@ -42,12 +42,12 @@ export const action: ActionFunction = async ({ request, params }) => {
     })
 
     await backgroundJobsFetch(
-      '/export',
+      '/internal/exports',
       {
         selectedSceneIds,
         chatMessageId: newMessage.id,
       },
-      user,
+      user
     )
     return new Response(
       JSON.stringify({ message: 'Your video request has been to the background jobs for exporting' }),

@@ -4,9 +4,10 @@ import { logger } from '@shared/services/logger'
 import { VideoIndexJobData, VideoProcessingData } from '@shared/types/video'
 import path from 'path'
 import { PROCESSED_VIDEOS_DIR } from '@shared/constants'
-import { transcriptionQueue } from 'src/queue'
+import { transcriptionQueue } from '../queue'
 import { JobModel } from '@db/index'
 import { getVideoMetadata } from '@media-utils/utils/videos'
+import { createHash } from 'crypto'
 
 export async function updateJob(
   job: Job<VideoIndexJobData>,
@@ -64,7 +65,9 @@ export async function updateJob(
 }
 
 export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: number = 0) {
-  const videoDir = path.join(PROCESSED_VIDEOS_DIR, path.basename(jobData.videoPath))
+  const hash = createHash('sha256').update(jobData.videoPath).digest('hex')
+
+  const videoDir = path.join(PROCESSED_VIDEOS_DIR, hash)
 
   const analysisPath = path.join(encodeURI(videoDir), 'analysis.json')
   const transcriptionPath = path.join(encodeURI(videoDir), 'transcription.json')
@@ -86,7 +89,7 @@ export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: 
     jobPriority = priority // manual override
   } else {
     // Short videos (<10 min) = 1, Long videos (~1h) = 10
-    jobPriority = metadata.duration < 600 ? 1 : 10
+    jobPriority = metadata.duration < 600 ? 0 : 10
   }
 
   await transcriptionQueue.add('transcription', videoData, {

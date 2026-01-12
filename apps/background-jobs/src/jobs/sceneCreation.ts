@@ -1,12 +1,12 @@
 import { Worker, Job, FlowProducer } from 'bullmq'
 import { connection } from '../services/redis'
 import { existsSync, promises as fs } from 'fs'
-import { createScenes } from '@shared/utils/scenes'
+import { createScenes } from '@media-utils/utils/scenes'
 import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
-import { frameAnalysisQueue, transcriptionQueue } from 'src/queue'
+import { frameAnalysisQueue, transcriptionQueue } from '../queue'
 import { Analysis } from '@shared/types/analysis'
 import { deleteByVideoSource } from '@vector/services/vectorDb'
 import { VideoModel } from '@db/index'
@@ -34,6 +34,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     try {
       analysisData = (await fs.readFile(analysisPath, 'utf-8').then(JSON.parse)) as Analysis
     } catch (error) {
+      // In case we have the JSON file with broken data
       await frameAnalysisQueue.add(
         'frame-analysis-rebuild',
         { ...job.data, forceReIndexing: true },
@@ -47,6 +48,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     try {
       transcriptionData = await fs.readFile(transcriptionPath, 'utf-8').then(JSON.parse)
     } catch (error) {
+      // In case we have the JSON file with broken data
       await transcriptionQueue.add(
         'transcription-rebuild',
         { ...job.data, forceReIndexing: true },
@@ -70,10 +72,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
     }
     await updateJob(job, { stage: JobStage.creating_scenes, overallProgress: 70 })
 
-    logger.info({ jobId, scenesPath }, '🎬 Creating scenes')
     const scenes = await createScenes(analysisData, transcriptionData, videoPath)
     await fs.writeFile(scenesPath, JSON.stringify(scenes, null, 2))
-    logger.info({ jobId, sceneCount: scenes.length }, '✅ Scenes created and saved')
 
     const scenesDuration = (Date.now() - scenesStart) / 1000
     await updateJob(job, { sceneCreationTime: Math.round(scenesDuration) })
@@ -98,7 +98,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
   } catch (error) {
     logger.error(
       { jobId, videoPath, error, stack: error instanceof Error ? error.stack : undefined },
-      '❌ Scene creation failed'
+      'Scene creation failed'
     )
     await updateJob(job, { status: JobStatus.error })
     throw error

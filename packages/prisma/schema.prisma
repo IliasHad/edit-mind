@@ -194,6 +194,9 @@ model Integration {
   updatedAt     DateTime @updatedAt
 
   config       Json?
+
+  @@unique([type, userId])
+  @@index([type, userId])
 }
 
 model Project {
@@ -272,12 +275,6 @@ model Collection {
   isAutoPopulated   Boolean @default(true)
   autoUpdateEnabled Boolean @default(true)
 
-  filters          Json?
-  requiredObjects  String[] @default([])
-  requiredEmotions String[] @default([])
-  requiredFaces    String[] @default([])
-  locationName     String?
-
   status        CollectionStatus @default(active)
   itemCount     Int              @default(0)
   totalDuration BigInt           @default(0)
@@ -298,6 +295,10 @@ model Collection {
   @@index([userId, type])
   @@index([userId, status])
   @@index([type, status])
+
+  @@index([type, name])
+
+  @@unique([userId, type, name])
 }
 
 model CollectionItem {

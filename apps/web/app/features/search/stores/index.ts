@@ -21,7 +21,6 @@ interface PaginationInfo {
   hasMore: boolean
 }
 
-
 interface SearchState {
   // Search Query & Filters
   query: string
@@ -77,6 +76,8 @@ interface SearchState {
   // Actions - Utility
   clearSearch: () => void
   reset: () => void
+
+  clearQuery: () => void
 }
 
 const SUGGESTIONS_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
@@ -117,12 +118,7 @@ const apiClient = {
   },
 
   search: {
-    text: (params: {
-      query?: string
-      filters?: SearchFilters
-      page?: number
-      limit?: number
-    }) => {
+    text: (params: { query?: string; filters?: SearchFilters; page?: number; limit?: number }) => {
       const formData = new FormData()
 
       if (params.query) {
@@ -159,13 +155,7 @@ const apiClient = {
       })
     },
 
-    image: (params: {
-      image: File
-      query?: string
-      filters?: SearchFilters
-      page?: number
-      limit?: number
-    }) => {
+    image: (params: { image: File; query?: string; filters?: SearchFilters; page?: number; limit?: number }) => {
       const formData = new FormData()
       formData.append('image', params.image)
 
@@ -206,11 +196,7 @@ const apiClient = {
       })
     },
 
-    suggestions: (params: {
-      query: string
-      limitPerGroup?: number
-      totalLimit?: number
-    }) => {
+    suggestions: (params: { query: string; limitPerGroup?: number; totalLimit?: number }) => {
       const searchParams = new URLSearchParams({
         q: params.query,
         ...(params.limitPerGroup && { limitPerGroup: params.limitPerGroup.toString() }),
@@ -270,7 +256,7 @@ export const useSearchStore = create<SearchState>()(
               if (filtered.length === 0) {
                 delete newFilters[type]
               } else {
-                newFilters[type] = filtered as any
+                newFilters[type] = filtered
               }
 
               return { filters: newFilters }
@@ -413,7 +399,10 @@ export const useSearchStore = create<SearchState>()(
             suggestions: {},
             suggestionsLastFetched: null,
           }),
-
+        clearQuery: () =>
+          set({
+            query: '',
+          }),
         setShowSuggestions: (show) => set({ showSuggestions: show }),
 
         addRecentSearch: (search) =>
@@ -432,7 +421,6 @@ export const useSearchStore = create<SearchState>()(
 
         invalidateSuggestions: () => set({ suggestionsLastFetched: null }),
 
-        // Utility
         clearSearch: () =>
           set({
             query: '',

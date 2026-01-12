@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const immichConfigFormSchema = z.object({
+export const ImmichConfigFormSchema = z.object({
   apiKey: z
     .string()
     .min(1, 'API key is required')
@@ -9,13 +9,12 @@ export const immichConfigFormSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'API key contains invalid characters'),
   baseUrl: z
     .string()
-    .url('Must be a valid URL')
     .regex(/^https?:\/\//, 'URL must start with http:// or https://')
     .optional()
     .default('http://host.docker.internal:2283'),
 })
 
-export const immichActionSchema = z.discriminatedUnion('intent', [
+export const ImmichActionSchema = z.discriminatedUnion('intent', [
   z.object({
     intent: z.literal('start-import'),
     apiKey: z.string().min(1),

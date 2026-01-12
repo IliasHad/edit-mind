@@ -2,7 +2,6 @@ from typing import List, Dict, Optional, Union
 import numpy as np
 import torch
 from ultralytics import YOLO
-import os
 
 from plugins.base import AnalyzerPlugin, FrameAnalysis, PluginResult
 from services.logger import get_logger
@@ -25,8 +24,6 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
 
         # If you're running this script over Apple computer with M Chips
         self.batch_size: int = 8 if self.config.get("device") == "mps" else 1
-
-        os.makedirs(self.config.get("cache_dir"), exist_ok=True)
 
     def setup(self, video_path, job_id) -> None:
         """Initialize the YOLO model."""

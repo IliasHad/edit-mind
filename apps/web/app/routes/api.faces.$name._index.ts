@@ -15,11 +15,11 @@ export async function action({ request, params }: ActionFunctionArgs) {
     if (request.method === 'DELETE') {
       const form = FaceDeleteSchema.safeParse(payload)
       if (!form.success) {
-        return new Response('Failed to rename your face', { status: 500 })
+        return new Response('Failed to rename your face', { status: 400 })
       }
       const { imageFile, jsonFile } = form.data
 
-      await backgroundJobsFetch('/face', { imageFile, jsonFile }, user, 'DELETE')
+      await backgroundJobsFetch('/internal/faces', { imageFile, jsonFile }, user, 'DELETE')
       return new Response(JSON.stringify({ message: `Face ${imageFile} has been sent for deletion` }), {
         status: 200,
       })
@@ -31,8 +31,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         return new Response('Failed to rename your face', { status: 500 })
       }
       const { newName } = form.data
-      logger.debug(newName)
-      await backgroundJobsFetch(`/face/${name}/rename`, { newName }, user, 'POST')
+      await backgroundJobsFetch(`/internal/faces/${name}/rename`, { newName }, user, 'POST')
       return new Response(
         JSON.stringify({ message: `Face ${name} has been sent for renaming to ${newName}`, success: true }),
         {
@@ -41,10 +40,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
     }
     return new Response('Method not authorized', { status: 400 })
-
   } catch (error) {
-    logger.error('Error processing face')
-    logger.error(error)
-    return { success: false, error: 'Failed to process face' }
+    logger.error({ error }, 'Error processing face')
+    return new Response('Failed to process face', { status: 500 })
   }
 }

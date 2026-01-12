@@ -46,7 +46,6 @@ const generateAndCountTokens = async (prompt: string): Promise<ModelResponse<str
   return {
     data: result.response.text().trim(),
     tokens: totalTokens,
-    error: undefined,
   }
 }
 
@@ -105,13 +104,7 @@ export const GeminiModel = {
       }
     } catch (err) {
       logger.error('Gemini generateActionFromPrompt failed: ' + err)
-      const error = err instanceof Error ? err.message : 'Unknown error'
-
-      return {
-        data: fallback,
-        error,
-        tokens: 0,
-      }
+      throw err
     }
   },
 
@@ -130,12 +123,7 @@ export const GeminiModel = {
       return res
     } catch (error) {
       logger.error('Gemini generateAssistantMessage error: ' + error)
-      const err = error instanceof Error ? error.message : 'Unknown error'
-      return {
-        data: '',
-        error: err,
-        tokens: 0,
-      }
+      throw error
     }
   },
   async generateYearInReviewResponse(
@@ -168,12 +156,7 @@ export const GeminiModel = {
       }
     } catch (err) {
       logger.error('Gemini general response error:' + err)
-      const error = err instanceof Error ? err.message : 'Unknown error'
-      return {
-        data: null,
-        error,
-        tokens: 0,
-      }
+      throw err
     }
   },
 
@@ -189,12 +172,7 @@ export const GeminiModel = {
       return res
     } catch (err) {
       logger.error('Gemini general response error:' + err)
-      const error = err instanceof Error ? err.message : 'Unknown error'
-      return {
-        data: '',
-        error,
-        tokens: 0,
-      }
+      throw err
     }
   },
 
@@ -226,15 +204,8 @@ export const GeminiModel = {
       }
     } catch (error) {
       logger.error('Gemini classifyIntent error: ' + error)
-      const err = error instanceof Error ? error.message : 'Unknown error'
-      return {
-        data: {
-          type: 'general',
-          needsVideoData: false,
-        },
-        error: err,
-        tokens: 0,
-      }
+      throw error
+
     }
   },
   async generateCompilationResponse(
@@ -251,8 +222,7 @@ export const GeminiModel = {
       return res
     } catch (error) {
       logger.error('Gemini analytics error: ' + error)
-      const err = error instanceof Error ? error.message : 'Unknown error'
-      return { data: '', error: err, tokens: 0 }
+      throw error
     }
   },
   async generateAnalyticsResponse(
@@ -269,12 +239,7 @@ export const GeminiModel = {
       return res
     } catch (error) {
       logger.error('Gemini analytics error: ' + error)
-      const err = error instanceof Error ? error.message : 'Unknown error'
-      return {
-        data: '',
-        error: err,
-        tokens: 0,
-      }
+      throw error
     }
   },
 }

@@ -1,8 +1,7 @@
-import { VideoModel } from '@db/models/Video'
+import { VideoWithScenes } from '@shared/types/video'
 import { formatDuration } from 'date-fns'
 
-export async function getVideoAnalytics() {
-  const videosWithScenes = await VideoModel.findMany()
+export async function getVideoAnalytics(videosWithScenes: VideoWithScenes[]) {
 
   const totalDuration = videosWithScenes.reduce((sum, video) => {
     return sum + (parseInt(video.duration.toString()) || 0)
@@ -11,7 +10,7 @@ export async function getVideoAnalytics() {
   const uniqueVideos = new Set(videosWithScenes.map((v) => v.source)).size
   const totalScenes = videosWithScenes.length
 
-  const dates = videosWithScenes.map((v) => new Date(v.shottedAt)).sort((a, b) => a.getTime() - b.getTime())
+  const dates = videosWithScenes.map((v) => new Date(v.createdAt)).sort((a, b) => a.getTime() - b.getTime())
   const oldestDate = dates[0]
   const newestDate = dates[dates.length - 1]
 
@@ -53,9 +52,9 @@ export async function getVideoAnalytics() {
     dateRange:
       oldestDate && newestDate
         ? {
-            oldest: oldestDate,
-            newest: newestDate,
-          }
+          oldest: oldestDate,
+          newest: newestDate,
+        }
         : null,
     emotionCounts,
     faceOccurrences,

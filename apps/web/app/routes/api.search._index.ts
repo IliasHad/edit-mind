@@ -37,8 +37,6 @@ export async function action({ request }: LoaderFunctionArgs) {
       location,
     })
 
-    logger.debug(searchParams)
-
     const videos = await searchScenes(searchParams, undefined)
     const offset = (page - 1) * limit
     const paginatedVideos = videos.slice(offset, offset + limit)

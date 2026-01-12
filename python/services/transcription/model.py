@@ -23,6 +23,17 @@ class WhisperModelManager:
         self._model_lock = threading.Lock()
         self._loading_event = threading.Event()
         self._is_loading = False
+        self._ensure_cache_dir()
+
+    def _ensure_cache_dir(self) -> None:
+        """Ensure cache directory exists."""
+        cache_path = Path(self.config.cache_dir)
+        try:
+            cache_path.mkdir(parents=True, exist_ok=True)
+            logger.debug(f"Cache directory ready: {cache_path}")
+        except Exception as e:
+            logger.error(f"Failed to create cache directory: {e}")
+            raise ModelLoadError(f"Failed to create cache directory: {e}")
 
     def get_model(self) -> WhisperModel:
         """Get the Whisper model, loading if necessary."""
@@ -89,7 +100,8 @@ class WhisperModelManager:
         model_repo = self._get_model_repo()
 
         try:
-            logger.info(f"Downloading model {self.config.model_name}")
+            logger.info(
+                f"Downloading model {self.config.model_name} to {self.config.cache_dir}")
 
             snapshot_download(
                 repo_id=model_repo,

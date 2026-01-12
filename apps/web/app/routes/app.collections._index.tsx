@@ -19,8 +19,6 @@ export default function Collections() {
 
   const filteredCollections = selectedType === 'all' ? collections : collections.filter((c) => c.type === selectedType)
 
-  const totalCollections = collections.length
-
   return (
     <DashboardLayout sidebar={<Sidebar />}>
       <main className="w-full px-8 py-16">
@@ -52,7 +50,7 @@ export default function Collections() {
           >
             <div className="text-center">
               <div className="mb-1 text-5xl font-semibold tracking-tight text-black dark:text-white">
-                {totalCollections}
+                {collections.length}
               </div>
               <div className="text-sm font-medium tracking-wide text-black/50 dark:text-white/50">Collections</div>
             </div>
@@ -92,30 +90,31 @@ export default function Collections() {
                 )}
                 <span className="relative">All</span>
               </button>
-              {Object.entries(TYPE_LABELS).map(([type, label]) => {
-                const count = collections.filter((c) => c.type === type).length
-                if (count === 0) return null
-                return (
-                  <button
-                    key={type}
-                    onClick={() => setSelectedType(type)}
-                    className={`relative rounded-lg px-5 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 ${
-                      selectedType === type
-                        ? 'text-black dark:text-white'
-                        : 'text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70'
-                    }`}
-                  >
-                    {selectedType === type && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute inset-0 rounded-lg bg-white dark:bg-black shadow-sm border border-black/10 dark:border-white/10"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative">{label}</span>
-                  </button>
-                )
-              })}
+              {collections.length > 0 &&
+                Object.entries(TYPE_LABELS).map(([type, label]) => {
+                  const count = collections.filter((c) => c.type === type).length
+                  if (count === 0) return null
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => setSelectedType(type)}
+                      className={`relative rounded-lg px-5 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 ${
+                        selectedType === type
+                          ? 'text-black dark:text-white'
+                          : 'text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70'
+                      }`}
+                    >
+                      {selectedType === type && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute inset-0 rounded-lg bg-white dark:bg-black shadow-sm border border-black/10 dark:border-white/10"
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <span className="relative">{label}</span>
+                    </button>
+                  )
+                })}
             </div>
           </motion.div>
 

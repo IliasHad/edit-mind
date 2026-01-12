@@ -63,7 +63,6 @@ export async function getEmbeddings(texts: string[]): Promise<number[][]> {
         return Array.from(data)
       } catch (error) {
         logger.error(`Error embedding text "${text.substring(0, 50)}...": ${error}`)
-        logger.debug(error)
         // Return zero vector with known dimension - don't call the model again
         return new Array(MODEL_DIMENSIONS.text).fill(0)
       }

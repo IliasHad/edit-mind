@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 import { logger } from '@shared/services/logger'
-import { env } from 'src/utils/env'
+import { env } from '../utils/env'
 
 const prisma = new PrismaClient()
 

@@ -42,7 +42,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     })
 
     await backgroundJobsFetch(
-      '/stitcher',
+      `/internal/chats/${chatId}/stitcher`,
       {
         selectedSceneIds,
         messageId: newMessage.id,

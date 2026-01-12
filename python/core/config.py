@@ -2,7 +2,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 import os
-from pathlib import Path
 
 
 @dataclass
@@ -10,10 +9,9 @@ class AnalysisConfig:
     """Video analysis configuration."""
     sample_interval_seconds: float = 2.5
     max_workers: int = 2
-    cache_dir: str = 'ml-models/.yolo'
     enable_streaming: bool = True
     enable_aggressive_gc: bool = False
-    frame_buffer_limit: int = 10
+    frame_buffer_limit: int = 2
     memory_cleanup_interval: int = 50
     target_resolution_height: int = 720
     plugin_skip_interval: Dict[str, int] = field(default_factory=lambda: {
@@ -66,6 +64,11 @@ class TranscriptionConfig:
     vad_threshold: float = 0.5
     min_speech_duration_ms: int = 250
     min_silence_duration_ms: int = 2000
+
+    def __post_init__(self) -> None:
+        """Post-initialization adjustments."""
+        self.cache_dir = os.getenv(
+            'TRANSCRIPTION_MODEL_CACHE', 'ml-models/.whisper')
 
     @property
     def device(self) -> str:

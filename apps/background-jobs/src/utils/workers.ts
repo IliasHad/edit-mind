@@ -1,20 +1,21 @@
 import { logger } from '@shared/services/logger'
-import { audioEmbeddingWorker } from 'src/jobs/audioEmbedding'
-import { chatWorker } from 'src/jobs/chat'
-import { exportWorker } from 'src/jobs/export'
-import { faceDeletionWorker } from 'src/jobs/faceDeletion'
-import { faceLabellingWorker } from 'src/jobs/faceLabelling'
-import { faceRenamingWorker } from 'src/jobs/faceRenaming'
-import { frameAnalysisWorker } from 'src/jobs/frameAnalysis'
-import { smartCollectionWorker } from 'src/jobs/smartCollection'
-import { textEmbeddingWorker } from 'src/jobs/textEmbedding'
-import { audioTranscriptionWorker } from 'src/jobs/transcription'
-import { videoStitcherWorker } from 'src/jobs/videoStitcher'
-import { visualEmbeddingWorker } from 'src/jobs/visualEmbedding'
+import { audioEmbeddingWorker } from '../jobs/audioEmbedding'
+import { chatWorker } from '../jobs/chat'
+import { exportWorker } from '../jobs/export'
+import { faceDeletionWorker } from '../jobs/faceDeletion'
+import { faceLabellingWorker } from '../jobs/faceLabelling'
+import { faceRenamingWorker } from '../jobs/faceRenaming'
+import { frameAnalysisWorker } from '../jobs/frameAnalysis'
+import { smartCollectionWorker } from '../jobs/smartCollection'
+import { textEmbeddingWorker } from '../jobs/textEmbedding'
+import { audioTranscriptionWorker } from '../jobs/transcription'
+import { videoStitcherWorker } from '../jobs/videoStitcher'
+import { visualEmbeddingWorker } from '../jobs/visualEmbedding'
 
 export async function shutdownWorkers() {
     try {
         logger.debug('Shutting down workers...')
+
         await Promise.all([
             frameAnalysisWorker.close(),
             audioTranscriptionWorker.close(),
@@ -29,8 +30,10 @@ export async function shutdownWorkers() {
             videoStitcherWorker.close(),
             chatWorker.close(),
         ])
-    } catch (err) {
-        logger.error('Shutdown error ' + err)
+
+        logger.info('All workers closed successfully')
+    } catch (error) {
+        logger.error({ error })
     } finally {
         process.exit(0)
     }

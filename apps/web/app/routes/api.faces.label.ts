@@ -4,21 +4,26 @@ import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import path from 'path'
 import type { ActionFunctionArgs } from 'react-router'
+import { FaceLabelSchema } from '~/features/faces/schemas'
 import { backgroundJobsFetch } from '~/services/background.server'
-import { getUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.sever';
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {
     return { success: false, error: 'Method not allowed' }
   }
-  const user = await getUser(request)
+  const user = await requireUser(request)
 
-  const { faces, name } = await request.json()
+  const payload = await request.json()
 
-  if (!faces?.length) return { success: false, error: 'No faces provided' }
-  if (!name?.trim()) return { success: false, error: 'Name is required' }
+  const { data, success, error } = FaceLabelSchema.safeParse(payload)
 
-  if (!user) throw new Error('User not authorized')
+  if (!success) {
+    logger.error(error)
+    return new Response('Failed to label faces', { status: 400 })
+  }
+
+  const { faces, name } = data
 
   try {
     const personDir = path.join(FACES_DIR, name)
@@ -27,14 +32,11 @@ export async function action({ request }: ActionFunctionArgs) {
       await mkdir(personDir, { recursive: true })
     }
 
-    await backgroundJobsFetch('/face', { faces, name }, user, 'PATCH')
+    await backgroundJobsFetch('/internal/faces', { faces, name }, user, 'PATCH')
 
     return { success: true }
   } catch (error) {
     logger.error(error)
-    return {
-      success: false,
-      error: 'Error adding face labeling job',
-    }
+    return new Response('Error adding face labeling job', { status: 500 })
   }
 }

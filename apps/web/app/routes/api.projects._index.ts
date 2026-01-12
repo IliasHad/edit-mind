@@ -21,6 +21,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         _count: {
           select: { videos: true },
         },
+        videos: {
+          select: {
+            id: true,
+          },
+        },
       },
     })
 

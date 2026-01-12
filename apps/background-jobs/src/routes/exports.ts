@@ -1,7 +1,7 @@
 import express from 'express'
 import { exportQueue } from '../queue'
 import { ChatMessageModel, CollectionModel, ExportModel } from '@db/index'
-import { ExportProcessingRouteSchema } from 'src/schemas/export'
+import { ExportProcessingRouteSchema } from '../schemas/export'
 import { logger } from '@shared/services/logger'
 
 const router = express.Router()

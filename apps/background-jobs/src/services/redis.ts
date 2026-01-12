@@ -1,11 +1,9 @@
 import { logger } from '@shared/services/logger'
 import IORedis, { Redis, RedisOptions } from 'ioredis'
-import { env } from 'src/utils/env'
+import { env } from '../utils/env'
 
 class RedisConnection {
   private static instance: Redis | null = null
-  private static readonly MAX_RETRY_DELAY_MS = 30000
-  private static readonly INITIAL_RETRY_DELAY_MS = 1000
   private static readonly CONNECTION_TIMEOUT_MS = 30000
   private static readonly COMMAND_TIMEOUT_MS = 60000
   private static readonly KEEPALIVE_INTERVAL_MS = 30000
@@ -72,18 +70,10 @@ class RedisConnection {
    */
   private static createRetryStrategy() {
     return (times: number): number => {
-      if (times > 10) {
-        logger.error(`Redis retry limit exceeded after ${times} attempts. Manual intervention required.`)
-        // Return null to stop retrying (will emit error event)
-        return -1
-      }
-
       // Exponential backoff with jitter
-      const exponentialDelay = Math.pow(2, times) * this.INITIAL_RETRY_DELAY_MS
-      const jitter = Math.random() * 1000 // Add up to 1s of jitter
-      const delay = Math.min(exponentialDelay + jitter, this.MAX_RETRY_DELAY_MS)
+      const delay = Math.max(Math.min(Math.exp(times), 20000), 1000);
 
-      logger.warn(`Redis connection retry attempt ${times}/${10}. Next attempt in ${Math.round(delay)}ms`)
+      logger.warn(`Redis connection retry attempt ${times}. Next attempt in ${Math.round(delay)}ms`)
 
       return delay
     }

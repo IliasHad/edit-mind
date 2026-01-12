@@ -6,9 +6,11 @@ import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
-import { sceneCreationQueue } from 'src/queue'
+import { sceneCreationQueue } from '../queue'
 import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
+import { dirname } from 'path'
+import { mkdir } from 'fs/promises'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = true, analysisPath } = job.data
@@ -19,6 +21,9 @@ async function processVideo(job: Job<VideoProcessingData>) {
     if (!pythonService.isServiceRunning()) {
       await pythonService.start()
     }
+    const videoDir = dirname(analysisPath)
+    await mkdir(videoDir, { recursive: true })
+
     const analysisExists = existsSync(analysisPath)
 
     logger.debug(
@@ -55,7 +60,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     }
 
     const analysisDuration = (Date.now() - analysisStart) / 1000
-    logger.debug({ jobId, analysisDuration }, '🎥 Frame analysis done')
+    logger.debug({ jobId, analysisDuration }, 'Frame analysis done')
     await updateJob(job, { frameAnalysisTime: analysisDuration })
 
     await sceneCreationQueue.add('scene-creation', job.data, {
@@ -77,7 +82,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const frameAnalysisWorker = new Worker('frame-analysis', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 30 * 60 * 1000,
-  stalledInterval: 30 * 1000,
+  lockDuration: 5 * 60 * 1000,
+  stalledInterval: 15 * 1000,
   maxStalledCount: 3,
+  lockRenewTime: 30 * 1000,
 })

@@ -18,8 +18,8 @@
       "@shared/*": ["../../packages/shared/dist/*"],
       "@media-utils/*": ["../../packages/media-utils/dist/*"],
       "@vector/*": ["./src/*"],
-      "@search/*": ["./packages/search/dist/*"],
-      "@smart-collections/*": ["./packages/smart-collections/dist/*"]
+      "@search/*": ["../../packages/search/dist/*"],
+      "@smart-collections/*": ["../../packages/smart-collections/dist/*"]
     }
   },
   "include": ["src/**/*"],

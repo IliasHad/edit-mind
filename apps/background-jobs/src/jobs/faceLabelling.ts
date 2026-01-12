@@ -8,7 +8,7 @@ import { existsSync } from 'fs'
 import path from 'path'
 import { FACES_DIR, UNKNOWN_FACES_DIR } from '@shared/constants'
 import { getByVideoSource, updateMetadata } from '@vector/services/vectorDb'
-import { importVideoFromVectorDb } from 'src/utils/videos'
+import { importVideoFromVectorDb } from '../utils/videos'
 import { rebuildFacesCache } from '@shared/utils/faces'
 import { suggestionCache } from '@search/services/suggestion'
 import { JobModel } from '@db/index'
@@ -46,20 +46,6 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
 
         if (video) {
           for (const scene of video.scenes) {
-            const match = scene.faces.some((f) => {
-              const faceStr = String(f)
-              return (
-                faceStr === String(face.faceId) || // Match face_id
-                faceStr === String(faceData.face_id) || // Match from JSON
-                faceStr === faceData.image_hash || // Match image hash
-                faceStr.includes(face.faceId) || // Partial match
-                face.faceId.includes(faceStr)
-              )
-            })
-            if (match) {
-              logger.info({ sceneId: scene.id }, 'Found matching scene!')
-            }
-
             scene.faces = scene.faces.map((f) => (String(f) === String(face.faceId) ? name : f))
 
             if (scene.emotions) {

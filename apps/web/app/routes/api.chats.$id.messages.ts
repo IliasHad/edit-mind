@@ -93,14 +93,11 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     const messagesCount = await ChatMessageModel.countByChatId(chat.id)
 
-    logger.debug(messagesCount)
-
-    if (chat && messagesCount >= MAX_MESSAGES_PER_CHAT) {
+    if (messagesCount >= MAX_MESSAGES_PER_CHAT) {
       await ChatModel.update(chat.id, {
         lockReason: 'You exceed the number of messages you can have per chat, please create a new chat',
         isLocked: true,
       })
-    } else {
       return new Response(
         JSON.stringify({ error: 'You exceed the number of messages you can have per chat, please create a new chat' }),
         {
@@ -108,6 +105,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         }
       )
     }
+
     if (chat) {
       const message = await ChatMessageModel.create({
         chatId: chat.id,
@@ -116,7 +114,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         isThinking: false,
       })
 
-      await backgroundJobsFetch('/chat', { chat, prompt }, user)
+      await backgroundJobsFetch(`/internal/chats/${chat.id}/messages`, { prompt }, user)
       return {
         message: {
           ...message,
@@ -124,8 +122,9 @@ export const action: ActionFunction = async ({ request, params }) => {
         },
       }
     }
+    throw new Error('ailed to send message to background jobs service')
   } catch (error) {
-    logger.error('Failed to send message to background jobs service' + error)
+    logger.error({ error }, 'Failed to send message to background jobs service')
     return new Response(JSON.stringify({ error: 'Sorry, there was a problem connecting to the chat service.' }), {
       status: 500,
     })

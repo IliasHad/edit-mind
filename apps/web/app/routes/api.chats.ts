@@ -9,10 +9,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const payload = await request.json()
 
   try {
-    const { success, data, error } = ChatCreateSchema.safeParse(payload)
+    const { success, data } = ChatCreateSchema.safeParse(payload)
 
     if (!success) {
-      logger.debug(error)
       return new Response(JSON.stringify({ error: 'Error validating your chat input' }), {
         status: 500,
       })
@@ -35,7 +34,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       isThinking: false,
     })
 
-    await backgroundJobsFetch('/chat', { chat, prompt }, user)
+    await backgroundJobsFetch(`/internal/chats/${chat.id}/messages`, { prompt }, user)
     return {
       chat,
       message: {

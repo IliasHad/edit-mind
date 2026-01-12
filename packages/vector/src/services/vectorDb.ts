@@ -838,13 +838,16 @@ async function embedAudios(documents: EmbeddingAudioInput[]): Promise<void> {
   }
 }
 
-async function getAllSceneEmbeddings(batchSize: number = 1000): Promise<
+async function getAllSceneEmbeddings(
+  batchSize: number = 100,
+  offset?: number
+): Promise<
   {
     id: string
     metadata: Metadata
     visualEmbedding: number[]
     audioEmbedding: number[] | null
-    textEmbedding: number[] 
+    textEmbedding: number[]
   }[]
 > {
   const { visual_collection, audio_collection, collection } = await createVectorDbClient()
@@ -853,100 +856,80 @@ async function getAllSceneEmbeddings(batchSize: number = 1000): Promise<
   }
 
   const results = []
-  let offset = 0
-  let hasMore = true
-  const textCount = await collection.count()
 
-  logger.debug(`Text Embedding: ${textCount}`)
+  try {
+    const textScenes = await collection.get({
+      include: ['metadatas', 'embeddings'],
+      limit: batchSize,
+      offset: offset,
+    })
 
-  while (hasMore) {
-    try {
-      const visualScenes = await visual_collection.get({
-        include: ['embeddings'],
-        limit: batchSize,
-        offset: offset,
-      })
-
-      if (visualScenes.ids.length === 0) {
-        hasMore = false
-        break
-      }
-
-      const textScenes = await collection.get({
-        include: ['metadatas', 'embeddings'],
-        limit: batchSize,
-        offset: offset,
-      })
-
-      if (textScenes.ids.length === 0) {
-        hasMore = false
-        break
-      }
-
-      const audioScenes = await audio_collection.get({
-        ids: visualScenes.ids,
-        include: ['embeddings'],
-      })
-
-      const audioEmbeddingsMap = new Map<string, number[]>()
-      if (audioScenes.embeddings) {
-        for (let i = 0; i < audioScenes.ids.length; i++) {
-          const embedding = audioScenes.embeddings[i]
-          if (embedding) {
-            audioEmbeddingsMap.set(audioScenes.ids[i], embedding as number[])
-          }
-        }
-      }
-      const visualEmbeddingsMap = new Map<string, number[]>()
-      if (visualScenes.embeddings) {
-        for (let i = 0; i < visualScenes.ids.length; i++) {
-          const embedding = visualScenes.embeddings[i] as number[]
-
-          if (embedding) {
-            visualEmbeddingsMap.set(visualScenes.ids[i], embedding as number[])
-          }
-        }
-      }
-
-      if (textScenes.embeddings) {
-        for (let i = 0; i < textScenes.ids.length; i++) {
-          const id = textScenes.ids[i]
-          const metadata = textScenes.metadatas[i]
-          const textEmbedding = textScenes.embeddings[i] as number[]
-
-          const audioEmbedding = audioEmbeddingsMap.get(id) || null
-          const visualEmbedding = visualEmbeddingsMap.get(id) || null
-
-          if (!metadata) {
-            logger.warn(`No metadata for id ${id}`)
-            continue
-          }
-
-          if (textEmbedding && visualEmbedding) {
-            results.push({
-              id,
-              metadata,
-              visualEmbedding,
-              audioEmbedding,
-              textEmbedding,
-            })
-          }
-        }
-      }
-
-      offset += batchSize
-
-      if (textScenes.ids.length < batchSize) {
-        hasMore = false
-      }
-    } catch (error) {
-      logger.error(`Error fetching embeddings batch at offset ${offset}: ${error}`)
-      throw error
+    if (textScenes.ids.length === 0) {
+      return []
     }
-  }
+    const visualScenes = await visual_collection.get({
+      include: ['embeddings'],
+      ids: textScenes.ids,
+    })
 
-  return results
+    const audioScenes = await audio_collection.get({
+      include: ['embeddings'],
+      ids: textScenes.ids,
+    })
+
+    const audioEmbeddingsMap = new Map<string, number[]>()
+    if (audioScenes.embeddings) {
+      for (let i = 0; i < audioScenes.ids.length; i++) {
+        const embedding = audioScenes.embeddings[i]
+        if (embedding) {
+          audioEmbeddingsMap.set(audioScenes.ids[i], embedding as number[])
+        }
+      }
+    }
+    const visualEmbeddingsMap = new Map<string, number[]>()
+    if (visualScenes.embeddings) {
+      for (let i = 0; i < visualScenes.ids.length; i++) {
+        const embedding = visualScenes.embeddings[i] as number[]
+
+        if (embedding) {
+          visualEmbeddingsMap.set(visualScenes.ids[i], embedding as number[])
+        }
+      }
+    }
+
+    if (textScenes.embeddings) {
+      for (let i = 0; i < textScenes.ids.length; i++) {
+        const id = textScenes.ids[i]
+        const metadata = textScenes.metadatas[i]
+        const textEmbedding = textScenes.embeddings[i] as number[]
+
+        const audioEmbedding = audioEmbeddingsMap.get(id) || null
+        const visualEmbedding = visualEmbeddingsMap.get(id) || null
+
+        if (!metadata) {
+          logger.warn(`No metadata for id ${id}`)
+          continue
+        }
+
+        if (textEmbedding && visualEmbedding) {
+          results.push({
+            id,
+            metadata,
+            visualEmbedding,
+            audioEmbedding,
+            textEmbedding,
+          })
+        }
+      }
+    }
+
+    return results
+  } catch (error) {
+    logger.error(`Error fetching embeddings batch at offset ${offset}: ${error}`)
+    throw error
+  }
 }
+
 async function getAllDocs(): Promise<Scene[]> {
   try {
     const { collection } = await createVectorDbClient()
@@ -1097,6 +1080,22 @@ async function getSceneBySourceAndStartTime(source: string, startTime: number): 
   }
 }
 
+async function getScenesCount(): Promise<number> {
+  try {
+    const { collection } = await createVectorDbClient()
+    if (!collection) {
+      throw new Error('Collection not initialized')
+    }
+
+    const count = await collection.count()
+
+    return count
+  } catch (error) {
+    logger.error('Error getting scenes count: ' + error)
+    return 0
+  }
+}
+
 export {
   embedDocuments,
   getAllVideos,
@@ -1113,4 +1112,5 @@ export {
   getAllDocs,
   getVideosMetadataSummary,
   getSceneBySourceAndStartTime,
+  getScenesCount,
 }

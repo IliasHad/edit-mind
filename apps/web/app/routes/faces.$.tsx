@@ -35,7 +35,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       },
     })
   } catch (error) {
-    logger.debug(error)
+    logger.error(error)
   }
 }
 

@@ -1,55 +1,70 @@
-import { prisma } from '~/services/database'
-import { encryptApiKey, decryptApiKey } from '@shared/services/encryption'
+import { encryptApiKey, decryptApiKey } from '@immich/services/encryption'
+import { IntegrationModel } from '@db/index'
+import { ImmichConfigFormSchema } from '@immich/schemas/immich'
 
-export async function saveImmichIntegration(userId: string, apiKey: string, baseUrl?: string) {
+export async function saveImmichIntegration(userId: string, apiKey: string, baseUrl: string) {
   const encryptedKey = encryptApiKey(apiKey)
 
-  return await prisma.integration.upsert({
-    where: { userId },
-    update: {
-      immichApiKey: encryptedKey,
-      immichBaseUrl: baseUrl || 'http://host.docker.internal:2283',
-      updatedAt: new Date(),
-    },
-    create: {
-      userId,
-      immichApiKey: encryptedKey,
-      immichBaseUrl: baseUrl || 'http://host.docker.internal:2283',
-    },
+  return await IntegrationModel.upsert(userId, 'Immich', {
+    config: { baseUrl, apiKey: encryptedKey },
+    userId,
+    type: 'Immich',
   })
 }
 
 export async function getImmichApiKey(userId: string): Promise<string | null> {
-  const integration = await prisma.integration.findUnique({
-    where: { userId },
-    select: { immichApiKey: true, id: true },
+  const integration = await IntegrationModel.findFirst({
+    where: {
+      type: 'Immich',
+      userId,
+    },
+    select: { config: true, id: true },
   })
 
-  if (!integration?.immichApiKey) {
+  if (!integration) {
     return null
   }
+  const configResult = ImmichConfigFormSchema.safeParse(integration.config)
 
-  return decryptApiKey(integration.immichApiKey)
+  if (!configResult.success) {
+    throw new Error('Invalid Immich configuration: ' + configResult.error.message)
+  }
+
+  return decryptApiKey(configResult.data.apiKey)
 }
 
 export async function getImmichConfig(userId: string) {
-  const integration = await prisma.integration.findUnique({
-    where: { userId },
+  const integration = await IntegrationModel.findFirst({
+    where: {
+      type: 'Immich',
+      userId,
+    },
   })
 
-  if (!integration?.immichApiKey) {
+  if (!integration) {
     return null
+  }
+  const configResult = ImmichConfigFormSchema.safeParse(integration.config)
+
+  if (!configResult.success) {
+    throw new Error('Invalid Immich configuration: ' + configResult.error.message)
   }
 
   return {
-    apiKey: decryptApiKey(integration.immichApiKey),
-    baseUrl: integration.immichBaseUrl || 'http://host.docker.internal:2283',
-    id: integration.id
+    apiKey: decryptApiKey(configResult.data?.apiKey),
+    baseUrl: configResult.data.baseUrl,
+    id: integration.id,
   }
 }
 
 export async function deleteImmichIntegration(userId: string) {
-  return await prisma.integration.delete({
-    where: { userId },
+  const integration = await IntegrationModel.findFirst({
+    where: {
+      type: 'Immich',
+      userId,
+    },
   })
+  if (integration) {
+    return await IntegrationModel.delete(integration.id)
+  }
 }

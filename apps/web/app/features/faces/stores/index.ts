@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { KnownFace } from '@shared/types/face'
 import type { UnknownFace } from '@shared/types/unknownFace'
+import { apiClient } from '../services/api'
 
 interface PaginationData {
   total: number
@@ -47,7 +48,6 @@ interface FacesState {
   renameCurrentFace: (name: string) => void
 
   handleDeleteKnownFace: (name: string) => Promise<void>
-  handleMoveKnownFaceImage: (fromName: string, toName: string, imageFile: string) => Promise<void>
 }
 
 export const useFacesStore = create<FacesState>()(
@@ -78,13 +78,10 @@ export const useFacesStore = create<FacesState>()(
           hasMore: false,
         },
 
-        // Actions
         fetchKnownFaceImages: async (name) => {
           set({ loading: true })
           try {
-            const response = await fetch(`/api/faces/${name}/images`)
-            if (!response.ok) throw new Error('Failed to fetch face images')
-            const data = await response.json()
+            const data = await apiClient.faces.known.images(name)
 
             set({
               currentKnownFace: data,
@@ -95,13 +92,10 @@ export const useFacesStore = create<FacesState>()(
             set({ loading: false })
           }
         },
-        // Actions
         fetchUnknownFaces: async (page = 1) => {
           set({ loading: true })
           try {
-            const response = await fetch(`/api/faces/unknown?page=${page}&limit=40`)
-            if (!response.ok) throw new Error('Failed to fetch unknown faces')
-            const data = await response.json()
+            const data = await apiClient.faces.unknown.list(page)
 
             set({
               unknownFaces: data.faces,
@@ -121,9 +115,7 @@ export const useFacesStore = create<FacesState>()(
         fetchKnownFaces: async (page = 1) => {
           set({ loading: true })
           try {
-            const response = await fetch(`/api/faces/known?page=${page}&limit=40`)
-            if (!response.ok) throw new Error('Failed to fetch known faces')
-            const data = await response.json()
+            const data = await apiClient.faces.known.list(page)
 
             set({
               knownFaces: data.faces,
@@ -150,7 +142,7 @@ export const useFacesStore = create<FacesState>()(
         },
 
         handleUnknownPageChange: (newPage: number) => {
-          set({ selectedFaces: new Set() }) // Clear selections when changing page
+          set({ selectedFaces: new Set() })
           get().fetchUnknownFaces(newPage)
         },
 
@@ -210,22 +202,7 @@ export const useFacesStore = create<FacesState>()(
               })
               .filter((face): face is { jsonFile: string; faceId: string } => face !== null)
 
-            const response = await fetch('/api/faces/label', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                faces: facesToLabel,
-                name: targetName,
-              }),
-            })
-
-            const result = await response.json()
-
-            if (!response.ok || !result.success) {
-              throw new Error(result.error || 'Failed to label faces')
-            }
+            const result = await apiClient.faces.label(facesToLabel, targetName)
 
             const { labeledCount } = result
 
@@ -251,22 +228,7 @@ export const useFacesStore = create<FacesState>()(
 
         handleDeleteUnknownFace: async (face: UnknownFace) => {
           try {
-            const response = await fetch('/api/faces/delete', {
-              method: 'DELETE',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                imageFile: face.image_file,
-                jsonFile: face.json_file,
-              }),
-            })
-
-            const result = await response.json()
-
-            if (!response.ok || !result.success) {
-              throw new Error('Failed to delete face')
-            }
+            await apiClient.faces.unknown.delete(face.image_file, face.json_file)
 
             set((state) => ({
               unknownFaces: state.unknownFaces.filter(
@@ -282,21 +244,7 @@ export const useFacesStore = create<FacesState>()(
 
         handleRenameKnownFace: async (oldName: string, newName: string) => {
           try {
-            const response = await fetch(`/api/faces/${oldName}`, {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                newName: newName.trim(),
-              }),
-            })
-
-            const result = await response.json()
-
-            if (!response.ok || !result.success) {
-              throw new Error(result.error || 'Failed to rename face')
-            }
+            await apiClient.faces.known.rename(oldName, newName)
 
             set({
               successMessage: `Successfully renamed "${oldName}" to "${newName}"`,
@@ -311,19 +259,7 @@ export const useFacesStore = create<FacesState>()(
 
         handleDeleteKnownFace: async (name: string) => {
           try {
-            const response = await fetch(`/api/faces/${name}`, {
-              method: 'DELETE',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ name }),
-            })
-
-            const result = await response.json()
-
-            if (!response.ok || !result.success) {
-              throw new Error(result.error || 'Failed to delete face')
-            }
+            await apiClient.faces.known.delete(name)
 
             set({
               successMessage: `Successfully deleted "${name}"`,
@@ -332,37 +268,6 @@ export const useFacesStore = create<FacesState>()(
             await get().fetchData()
           } catch (error) {
             console.error('Error deleting known face:', error)
-            throw error
-          }
-        },
-
-        handleMoveKnownFaceImage: async (fromName: string, toName: string, imageFile: string) => {
-          try {
-            const response = await fetch(`/api/faces/${fromName}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                fromName,
-                toName: toName.trim(),
-                imageFile,
-              }),
-            })
-
-            const result = await response.json()
-
-            if (!response.ok || !result.success) {
-              throw new Error(result.error || 'Failed to move face image')
-            }
-
-            set({
-              successMessage: `Successfully moved image from "${fromName}" to "${toName}"`,
-            })
-
-            await get().fetchData()
-          } catch (error) {
-            console.error('Error moving face image:', error)
             throw error
           }
         },

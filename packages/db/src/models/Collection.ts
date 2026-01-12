@@ -6,9 +6,14 @@ type CollectionUpdateData = Partial<Omit<Collection, 'id' | 'userId'>>
 
 type CollectionCreateInput = Pick<
   Collection,
-  'name' | 'userId' | 'type' | 'description' | 'isAutoPopulated' | 'autoUpdateEnabled'
+  'name' | 'userId' | 'type' | 'description' | 'isAutoPopulated' | 'autoUpdateEnabled' | 'thumbnailUrl' | 'itemCount' | 'totalDuration'
 >
 
+type CollectionUpsertInput = {
+  where: Prisma.CollectionWhereUniqueInput
+  create: CollectionCreateInput
+  update: Prisma.CollectionUpdateInput
+}
 export class CollectionModel {
   static async create(data: CollectionCreateInput) {
     const collection = await prisma.collection.create({
@@ -31,12 +36,21 @@ export class CollectionModel {
     return prisma.collection.findFirst({ where: { name, userId } })
   }
 
+  static async upsert(options: CollectionUpsertInput) {
+    return prisma.collection.upsert({
+      ...options,
+      create: {
+        id: nanoid(),
+        ...options.create,
+      },
+    })
+  }
+
   static async update(id: string, data: CollectionUpdateData) {
     const collection: Collection = await prisma.collection.update({
       where: { id },
       data: {
         ...data,
-        filters: data.filters ?? undefined,
       },
     })
     return collection
@@ -44,5 +58,8 @@ export class CollectionModel {
 
   static async delete(id: string) {
     return prisma.collection.delete({ where: { id } })
+  }
+  static async deleteMany(options: Prisma.CollectionDeleteManyArgs) {
+    return prisma.collection.deleteMany(options)
   }
 }

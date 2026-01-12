@@ -1,6 +1,6 @@
 {
   "name": "edit-mind",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "AI-Powered Video Indexing and Search",
   "license": "MIT",
   "author": {
@@ -16,10 +16,16 @@
     "build:watch": "turbo watch build --filter='./packages/*'"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "prisma": "6.19.0",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "turbo": "^2.7.2"
+    "tsconfig-paths": "^4.2.0",
+    "turbo": "^2.7.2",
+    "typescript": "^5.9.3"
   },
   "pnpm": {
     "overrides": {

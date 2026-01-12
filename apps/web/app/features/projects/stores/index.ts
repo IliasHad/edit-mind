@@ -1,39 +1,26 @@
-import type { Project, Video } from '@prisma/client'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { ProjectCreateInput, ProjectUpdateInput } from '../schemas'
+import type { ProjectWithVideosIds, VideoWithFolderPath } from '../types';
+import { apiClient } from '../services/api'
 
-type ProjectWithVideos = Project & {
-  videos: {
-    id: string
-  }[]
-  _count?: {
-    videos: number
-  }
-}
-interface VideoWithFolderPath extends Video {
-  folder: {
-    path: string
-  }
-}
 interface ProjectsState {
-  projects: ProjectWithVideos[]
-  currentProject: ProjectWithVideos | null
+  projects: ProjectWithVideosIds[]
+  currentProject: ProjectWithVideosIds | null
   isLoading: boolean
   availableVideos: VideoWithFolderPath[]
   error: string | null
   showSuccess?: boolean
   fetchProjects: () => Promise<void>
-  fetchProjectById: (id: string) => Promise<ProjectWithVideos | null>
+  fetchProjectById: (id: string) => Promise<ProjectWithVideosIds | null>
   deleteProject: (id: string) => Promise<void>
-  createProject: (input: ProjectCreateInput) => Promise<ProjectWithVideos | null>
-  updateProject: (id: string, input: ProjectUpdateInput) => Promise<ProjectWithVideos | null>
+  createProject: (input: ProjectCreateInput) => Promise<ProjectWithVideosIds | null>
+  updateProject: (id: string, input: ProjectUpdateInput) => Promise<ProjectWithVideosIds | null>
   clearError: () => void
   clearCurrentProject: () => void
 
   refreshProjects: () => Promise<void>
-  setCurrentProject: (project: ProjectWithVideos | null) => void
-  fetchAvailableVideos: () => Promise<void>
+  setCurrentProject: (project: ProjectWithVideosIds | null) => void
 }
 
 export const useProjectsStore = create<ProjectsState>()(
@@ -67,39 +54,13 @@ export const useProjectsStore = create<ProjectsState>()(
           }
         },
 
-        fetchAvailableVideos: async () => {
-          set({ isLoading: true, error: null })
-          try {
-            const response = await fetch('/api/videos')
-
-            if (!response.ok) {
-              throw new Error(`Failed to fetch videos: ${response.statusText}`)
-            }
-
-            const { videos } = await response.json()
-
-            set({ availableVideos: videos, isLoading: false })
-          } catch (error) {
-            set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
-              isLoading: false,
-            })
-          }
-        },
-
         fetchProjectById: async (id: string) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch(`/api/projects/${id}`)
-
-            if (!response.ok) {
-              throw new Error(`Failed to fetch project: ${response.statusText}`)
-            }
-
-            const { project } = await response.json()
+            const { project } = await apiClient.get(id)
 
             set({
-              currentProject: { ...project, videoIds: project.videos.map((video: Video) => video.id) },
+              currentProject: project,
               isLoading: false,
             })
             return project
@@ -116,11 +77,7 @@ export const useProjectsStore = create<ProjectsState>()(
         deleteProject: async (id: string) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch(`/api/projects/${id}`, { method: 'DELETE' })
-
-            if (!response.ok) {
-              throw new Error(`Failed to fetch project: ${response.statusText}`)
-            }
+            await apiClient.delete(id)
 
             set((state) => ({
               projects: state.projects.filter((p) => p.id !== id),
@@ -139,19 +96,7 @@ export const useProjectsStore = create<ProjectsState>()(
         createProject: async (input: ProjectCreateInput) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch('/api/projects', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(input),
-            })
-
-            if (!response.ok) {
-              throw new Error(`Failed to create project: ${response.statusText}`)
-            }
-
-            const { project } = await response.json()
+            const { project } = await apiClient.create(input)
 
             set((state) => ({
               projects: [...state.projects, project],
@@ -172,26 +117,14 @@ export const useProjectsStore = create<ProjectsState>()(
         updateProject: async (id: string, input: ProjectUpdateInput) => {
           set({ isLoading: true, error: null })
           try {
-            const response = await fetch(`/api/projects/${id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(input),
-            })
-
-            if (!response.ok) {
-              throw new Error(`Failed to update project: ${response.statusText}`)
-            }
-
-            const { project } = await response.json()
+            const { project } = await apiClient.update(id, input)
 
             // Update the project in the list
             set((state) => ({
               projects: state.projects.map((p) => (p.id === id ? project : p)),
               currentProject:
                 state.currentProject?.id === id
-                  ? { ...project, videoIds: project.videos.map((video: Video) => video.id) }
+                  ? project
                   : state.currentProject,
               isLoading: false,
               showSuccess: true,
@@ -214,7 +147,7 @@ export const useProjectsStore = create<ProjectsState>()(
           await get().fetchProjects()
         },
 
-        setCurrentProject: (project: ProjectWithVideos | null) => {
+        setCurrentProject: (project: ProjectWithVideosIds | null) => {
           set({ currentProject: project })
         },
       }),

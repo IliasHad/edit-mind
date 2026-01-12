@@ -164,7 +164,7 @@ export const sanitizeMetadata = (metadata: Metadata): Record<string, string | nu
   return sanitized
 }
 
-export const validateDocument = (doc: { id: string; text: string; metadata?: any }): boolean => {
+export const validateDocument = (doc: { id: string; text: string; metadata?: Metadata }): boolean => {
   // Must have an ID
   if (!doc.id || typeof doc.id !== 'string' || doc.id.trim() === '') {
     logger.warn('Document missing valid ID')
@@ -236,21 +236,21 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
 
   const faces = metadata.faces
     ? (metadata.faces as string)
-        .split(',')
-        .map((f) => f.trim())
-        .filter(Boolean)
+      .split(',')
+      .map((f) => f.trim())
+      .filter(Boolean)
     : []
   const objects = metadata.objects
     ? (metadata.objects as string)
-        .split(',')
-        .map((o) => o.trim())
-        .filter(Boolean)
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
     : []
   const detectedText = metadata.detectedText
     ? (metadata.detectedText as string)
-        .split(',')
-        .map((o) => o.trim())
-        .filter(Boolean)
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
     : []
   let facesData: FaceData[] = []
   try {
@@ -316,7 +316,7 @@ export function gcd(a: number, b: number): number {
 export const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, errorMsg: string): Promise<T> => {
   return Promise.race([
     promise,
-    new Promise<T>((_, reject) => 
+    new Promise<T>((_, reject) =>
       setTimeout(() => reject(new Error(errorMsg)), timeoutMs)
     )
   ])

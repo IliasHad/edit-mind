@@ -1,41 +1,54 @@
 import express from 'express'
-import { prisma } from '../services/db'
-import { findVideoFiles } from '@shared/utils/videos';
-import { watchFolder } from '../watcher'
-import { videoQueue } from 'src/queue'
-import { getVideosNotEmbedded } from '@shared/services/vectorDb';
+import { findVideoFiles } from '@media-utils/utils/videos'
+import { addVideoIndexingJob } from '../services/videoIndexer'
+import { FolderModel, JobModel } from '@db/index'
+import { logger } from '@shared/services/logger'
+import { deleteJobsByDataJobId } from '../utils/jobs'
 
 const router = express.Router()
 
-router.post('/trigger', async (req, res) => {
-  const { folderPath } = req.body
-  if (!folderPath) return res.status(400).json({ error: 'folderPath required' })
+router.post('/:id/trigger', async (req, res) => {
+  const { id } = req.params
+
+  if (!id) return res.status(400).json({ error: 'folder Id required' })
 
   try {
-    const videos = await findVideoFiles(folderPath)
-    const uniqueVideos = await getVideosNotEmbedded(videos.map((video) => video.path))
-    const folder = await prisma.folder.update({
-      where: { path: folderPath },
-      data: {
-        videoCount: uniqueVideos.length,
-        lastScanned: new Date(),
+    const videosInDb = await JobModel.findMany({
+      where: {
+        status: { in: ['pending', 'processing'] },
       },
     })
 
-    watchFolder(folderPath)
+    const folder = await FolderModel.findById(id)
 
-    for (const video of uniqueVideos) {
-      const job = await prisma.job.upsert({
-        where: { videoPath: video, id: '' },
-        create: {
-          videoPath: video,
-          userId: folder?.userId,
-          folderId: folder.id,
-        },
-        update: { folderId: folder.id},
+    if (!folder) return res.status(400).json({ error: 'Folder is not found' })
+
+    await FolderModel.update(folder.id, { status: 'scanning' })
+    const videos = await findVideoFiles(folder.path, folder.includePatterns, folder.excludePatterns)
+
+    const videosInDbPaths = videosInDb.map((item) => item.videoPath)
+
+    const uniqueVideos = videos.filter((video) => !videosInDbPaths.includes(video.path.toString()))
+
+    await FolderModel.update(folder.id, {
+      videoCount: uniqueVideos.length,
+      lastScanned: new Date(),
+    })
+
+    for await (const video of uniqueVideos) {
+      const job = await JobModel.create({
+        videoPath: video.path,
+        userId: folder.userId,
+        folderId: folder.id,
+        fileSize: BigInt(video.size),
       })
-      await videoQueue.add('index-video', { videoPath: video, jobId: job.id, folderId: folder.id })
+      await addVideoIndexingJob({
+        videoPath: video.path,
+        jobId: job.id,
+      })
     }
+
+    await FolderModel.update(folder.id, { status: 'idle' })
 
     res.json({
       message: 'Folder added and videos queued for processing',
@@ -43,8 +56,38 @@ router.post('/trigger', async (req, res) => {
       queuedVideos: uniqueVideos.length,
     })
   } catch (error) {
-    console.error(error)
+    logger.error(error)
     res.status(500).json({ error: 'Failed to process folder' })
+  }
+})
+
+router.post('/:id/delete', async (req, res) => {
+  const { id } = req.params
+
+  try {
+    const folder = await FolderModel.findById(id)
+    if (!folder) {
+      throw new Error('Error finding the folder over database')
+    }
+
+    const jobs = await JobModel.findMany({
+      where: {
+        folderId: folder.id,
+      },
+    })
+    for await (const job of jobs) {
+      await deleteJobsByDataJobId(job.id)
+    }
+
+    await FolderModel.delete(id)
+
+    res.json({
+      message: 'Folder and videos jobs deleted',
+      folder,
+    })
+  } catch (error) {
+    logger.error(error)
+    res.status(500).json({ error: 'Failed to delete a folder' })
   }
 })
 

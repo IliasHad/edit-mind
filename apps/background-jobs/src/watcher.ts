@@ -4,9 +4,21 @@ import { SUPPORTED_VIDEO_EXTENSIONS } from '@media-utils/constants/index'
 import { addVideoIndexingJob } from './services/videoIndexer.js'
 import { FolderModel, JobModel } from '@db/index.js'
 import { stat } from 'fs/promises'
+import { logger } from '@shared/services/logger.js'
+
+const watchers = new Map<string, chokidar.FSWatcher>()
 
 export function watchFolder(folderPath: string) {
-  const watcher = chokidar.watch(folderPath, { ignored: /^\./, persistent: true, ignoreInitial: true })
+  if (watchers.has(folderPath)) {
+    logger.warn(`Watcher already exists for ${folderPath}`)
+    return watchers.get(folderPath)!
+  }
+
+  const watcher = chokidar.watch(folderPath, {
+    ignored: /^\./,
+    persistent: true,
+    ignoreInitial: true
+  })
 
   watcher.on('add', async (filePath) => {
     try {
@@ -28,9 +40,13 @@ export function watchFolder(folderPath: string) {
         jobId: job.id,
       })
     } catch (error) {
-      console.error('Error adding new video file while watching for new folder changes: ', error)
+      logger.error('Error adding new video file while watching for new folder changes: ' + error)
     }
   })
+
+  watchers.set(folderPath, watcher)
+
+  return watcher
 }
 
 export async function initializeWatchers() {
@@ -42,14 +58,23 @@ export async function initializeWatchers() {
     for (const folder of folders) {
       watchFolder(folder.path)
     }
+
+    logger.info(`Initialized ${watchers.size} folder watchers`)
   } catch (error) {
-    console.error('Failed to initialize watchers:', error)
+    logger.error('Failed to initialize watchers:' + error)
   }
 }
 
-export function stopWatcher(folderPath: string) {
-  const watcher = chokidar.watch(folderPath, { ignored: /^\./, persistent: true, ignoreInitial: true })
+export async function stopWatcher(folderPath: string) {
+  const watcher = watchers.get(folderPath)
+
   if (watcher) {
-    watcher.close()
+    await watcher.close()
+    watchers.delete(folderPath)
+    logger.info(`Stopped watcher for ${folderPath}`)
+    return true
   }
+
+  logger.warn(`No watcher found for ${folderPath}`)
+  return false
 }

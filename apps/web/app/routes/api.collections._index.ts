@@ -17,7 +17,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
           select: {
             video: {
               select: {
-                thumbnailUrl: true,
                 duration: true,
                 source: true,
               },

@@ -56,14 +56,14 @@ services:
       - .env.dev
       - .env.system
     environment:
-      NODE_ENV: development
-      YOLO_CONFIG_DIR: "/app/ml-models"
-      DEEPFACE_HOME: "/app/ml-models"
+      YOLO_CONFIG_DIR: /ml-models/ultralytics
+      DEEPFACE_HOME: /ml-models/deepface
+      TRANSCRIPTION_MODEL_CACHE: /ml-models/whisper
     networks:
       - app-network-dev
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ml-models:/app/ml-models:rw
+      - ml-models-dev:/app/ml-models:rw
       - ../.data:/app/data
       - ../python:/app/python
   web:
@@ -125,7 +125,7 @@ services:
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - redis_data:/data
+      - redis_data-dev:/data
     networks:
       - app-network-dev
     healthcheck:
@@ -146,7 +146,7 @@ services:
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - pgdata_edit_mind:/var/lib/postgresql/data
+      - ../.pgdata/:/var/lib/postgresql/data
     networks:
       - app-network-dev
     healthcheck:
@@ -158,11 +158,9 @@ services:
       retries: 5
 
 volumes:
-  pgdata_edit_mind:
+  redis_data-dev:
     driver: local
-  redis_data:
-    driver: local
-  ml-models:
+  ml-models-dev:
     driver: local
 
 networks:

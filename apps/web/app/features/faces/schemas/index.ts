@@ -6,5 +6,10 @@ export const FaceRenameSchema = z.object({
 
 export const FaceDeleteSchema = z.object({
   imageFile: z.string(),
-  jsonFile: z.string()
+  jsonFile: z.string(),
+})
+
+export const FaceLabelSchema = z.object({
+  name: z.string(),
+  faces: z.array(z.string()).min(0),
 })
