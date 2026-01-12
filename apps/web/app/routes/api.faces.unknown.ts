@@ -21,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const processingFaces = await backgroundJobsFetch<
       undefined,
       { type: 'labelling' | 'deletion'; jsonFile: string }[]
-    >('/face/processing', undefined, user, 'GET')
+    >('/internal/faces/processing', undefined, user, 'GET')
 
     const processingSet = new Set(processingFaces.map((f) => f.jsonFile))
 
@@ -29,7 +29,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // 2. Check if we have a processing job running for that video in the background jobs queue (check all video processing queues)
     // and push the face for the user to label only if the video is done with the processing, because in the face labelling queue,
     // we except the video saved over the vector (text, audio and visual) and over the postgres DB
-
 
     // After filtering for duplicates and processing faces
     const uniqueFaces = faces.filter((face) => face?.video_path && !processingSet.has(face.json_file))

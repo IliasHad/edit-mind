@@ -12,14 +12,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
       const user = await requireUser(request)
       const folder = await FolderModel.findById(id)
 
-      await backgroundJobsFetch(
-        '/folders/trigger',
-        {
-          folderPath: folder?.path,
-        },
-        user,
-        'POST'
-      )
+      await backgroundJobsFetch(`/internal/folders/${folder?.path}/trigger`, undefined, user, 'POST')
       return {
         folder,
       }

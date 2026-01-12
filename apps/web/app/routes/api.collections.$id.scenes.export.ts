@@ -31,18 +31,14 @@ export const action: ActionFunction = async ({ request, params }) => {
 
     const { selectedSceneIds } = form.data
 
-    logger.debug(    {
-        selectedSceneIds,
-        collectionId: collection.id,
-      },)
     await backgroundJobsFetch(
-      '/export',
+      '/internal/exports',
       {
         selectedSceneIds,
         collectionId: collection.id,
       },
       user,
-      "POST"
+      'POST'
     )
     return new Response(
       JSON.stringify({ message: 'Your video request has been to the background jobs for exporting' }),
