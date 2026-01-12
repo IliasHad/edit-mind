@@ -15,7 +15,7 @@ interface SuggestionSectionProps {
 }
 
 export function SuggestionSection({ title, icon: Icon, items, type }: SuggestionSectionProps) {
-  const { filters, addFilter, removeFilter } = useSearchSuggestions()
+  const { filters, addFilter, removeFilter, clearQuery } = useSearchSuggestions()
 
   const selectedItems = (filters[type as keyof typeof filters] as string[]) || []
 
@@ -24,6 +24,7 @@ export function SuggestionSection({ title, icon: Icon, items, type }: Suggestion
       removeFilter(type, item.text)
     } else {
       addFilter(type, item.text)
+      clearQuery()
     }
   }
 
