@@ -21,7 +21,7 @@ services:
       - app-network
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ../.data:/app/data
+      - .data:/app/data
   web:
     restart: unless-stopped
     image: ghcr.io/iliashad/edit-mind-web:${VERSION:-latest}
@@ -42,7 +42,7 @@ services:
       - .env.system
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ../.data:/app/data
+      - .data:/app/data
     networks:
       - app-network
 
@@ -55,7 +55,7 @@ services:
     ports:
       - "${CHROMA_PORT:-8000}:8000"
     volumes:
-      - ../.data/chroma:/chroma/chroma
+      - .data/chroma:/chroma/chroma
     networks:
       - app-network
 
@@ -87,7 +87,7 @@ services:
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ../.pgdata/:/var/lib/postgresql/data
+      - .pgdata/:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -105,11 +105,12 @@ services:
       - .env.system
     environment:
       NODE_ENV: production
-    networks:
-      - app-network
+      YOLO_CONFIG_DIR: /ml-models/ultralytics
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
       - ml-models:/ml-models:rw
+    networks:
+      - app-network
 volumes:
   redis_data:
     driver: local
