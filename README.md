@@ -90,11 +90,9 @@ Edit Mind uses a **two-file environment configuration**:
 Copy the example file and customize it:
 
 ```bash
-git clone https://github.com/iliashad/edit-mind
-cd edit-mind
-
-cp .env.system.example docker/.env.system
-cp .env.example docker/.env
+curl -L https://raw.githubusercontent.com/IliasHad/edit-mind/refs/heads/main/.env.example -o .env
+curl -L https://raw.githubusercontent.com/IliasHad/edit-mind/refs/heads/main/.env.system.example -o .env.system
+curl -L https://raw.githubusercontent.com/IliasHad/edit-mind/refs/heads/main/docker-compose.yml -o docker-compose.yml
  ```
 
 **Edit the `.env` file and configure these critical settings:**
@@ -147,8 +145,7 @@ openssl rand -hex 32
 Start all services with a single command:
 
 ```bash
-cd docker
-docker-compose up --build
+docker compose up
 ```
 
 
@@ -279,6 +276,7 @@ cp .env.example docker/.env.dev
 
 ### 3. Start docker container in dev mode
 ```bash
+pnpm install
 cd docker 
 docker-compose -f docker-compose.dev.yml up --build
 ```
