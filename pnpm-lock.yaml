@@ -491,6 +491,9 @@ importers:
       chromadb-default-embed:
         specifier: ^2.14.0
         version: 2.14.0
+      shared:
+        specifier: workspace:*
+        version: link:../shared
 
 packages:
 
