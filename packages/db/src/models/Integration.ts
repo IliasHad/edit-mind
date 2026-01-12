@@ -1,10 +1,10 @@
-import type { Integration, Prisma } from '@prisma/client'
+import type { Integration, IntegrationType, Prisma } from '@prisma/client'
 import prisma from '../db'
 import { nanoid } from 'nanoid'
 
 type IntegrationUpdateData = Partial<Omit<Integration, 'id' | 'userId'>>
 
-type IntegrationCreateData = Pick<Integration, 'type' | 'userId'>
+type IntegrationCreateData = Pick<Integration, 'type' | 'userId' | 'config'>
 
 export class IntegrationModel {
   static async create(data: IntegrationCreateData) {
@@ -12,6 +12,7 @@ export class IntegrationModel {
       data: {
         id: nanoid(),
         ...data,
+        config: data.config ?? undefined,
       },
     })
     return integration
@@ -28,6 +29,9 @@ export class IntegrationModel {
   static async findUnique(options: Prisma.IntegrationFindUniqueArgs) {
     return prisma.integration.findUnique(options)
   }
+  static async findFirst(options: Prisma.IntegrationFindFirstArgs) {
+    return prisma.integration.findFirst(options)
+  }
   static async update(id: string, data: IntegrationUpdateData) {
     const integration: Integration = await prisma.integration.update({
       where: { id },
@@ -39,20 +43,23 @@ export class IntegrationModel {
     return integration
   }
 
-  static async upsert(userId: string, options: IntegrationCreateData) {
-    const integration = await prisma.integration.findFirst({ where: { userId } })
+  static async upsert(userId: string, type: IntegrationType, options: IntegrationCreateData) {
     return await prisma.integration.upsert({
       where: {
-        userId,
-        id: integration?.id,
+        type_userId: {
+          type,
+          userId,
+        },
       },
       create: {
         ...options,
         id: nanoid(),
+        config: options.config ?? undefined,
       },
       update: {
         ...options,
         updatedAt: new Date(),
+        config: options.config ?? undefined,
       },
     })
   }

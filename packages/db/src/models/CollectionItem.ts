@@ -4,7 +4,10 @@ import { nanoid } from 'nanoid'
 
 type CollectionItemUpdateData = Partial<Omit<CollectionItem, 'id' | 'userId'>>
 
-type CollectionItemCreateInput = Pick<CollectionItem, 'videoId' | 'confidence' | 'collectionId' | 'sceneIds' | 'matchType'>
+type CollectionItemCreateInput = Pick<
+  CollectionItem,
+  'videoId' | 'confidence' | 'collectionId' | 'sceneIds' | 'matchType'
+>
 
 type CollectionItemUpsertInput = {
   where: Prisma.CollectionItemWhereUniqueInput
@@ -31,8 +34,8 @@ export class CollectionItemModel {
     return prisma.collectionItem.upsert({
       ...options,
       create: {
-        ...options.create,
         id: nanoid(),
+        ...options.create,
       },
     })
   }
@@ -64,5 +67,8 @@ export class CollectionItemModel {
 
   static async delete(id: string) {
     return prisma.collectionItem.delete({ where: { id } })
+  }
+  static async deleteMany(options: Prisma.CollectionItemDeleteManyArgs) {
+    return prisma.collectionItem.deleteMany(options)
   }
 }
