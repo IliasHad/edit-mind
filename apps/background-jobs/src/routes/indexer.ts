@@ -1,14 +1,14 @@
 import express from 'express'
 import path from 'path'
-import { addVideoIndexingJob } from 'src/services/videoIndexer'
+import { addVideoIndexingJob } from '../services/videoIndexer'
 import { logger } from '@shared/services/logger'
 import { FolderModel, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
-import { VideoReIndexingSchema } from 'src/schemas/indexer'
+import { VideoReIndexingSchema } from '../schemas/indexer'
 
 const router = express.Router()
 
-router.post('/', async (req, res) => {
+router.post('/reindex', async (req, res) => {
   const form = VideoReIndexingSchema.safeParse(req.body)
 
   if (!form.success) {
@@ -55,8 +55,8 @@ router.post('/', async (req, res) => {
       message: 'Video indexer job queued',
       jobId: job.id,
     })
-  } catch {
-    logger.error('Failed to queue video indexer job')
+  } catch (error) {
+    logger.error({ error }, 'Failed to queue video indexer job')
     res.status(500).json({ error: 'Failed to queue video indexer job' })
   }
 })

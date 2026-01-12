@@ -7,7 +7,7 @@ import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 import path from 'path'
-import { frameAnalysisQueue } from 'src/queue'
+import { frameAnalysisQueue } from '../queue'
 import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
 
@@ -87,14 +87,12 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const audioTranscriptionWorker = new Worker('transcription', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 30 * 60 * 1000,
-  stalledInterval: 30 * 1000,
+  lockDuration: 60 * 1000,
+  stalledInterval: 15 * 1000,
   maxStalledCount: 3,
+  lockRenewTime: 30 * 1000, // Renew lock every 30 seconds while processing
 })
 
 audioTranscriptionWorker.on('completed', async (job: Job) => {
-  await frameAnalysisQueue.add('frame-analysis', job.data, {
-    removeOnComplete: false,
-    removeOnFail: false,
-  })
+  await frameAnalysisQueue.add('frame-analysis', job.data)
 })

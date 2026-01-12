@@ -8,7 +8,7 @@ import { existsSync } from 'fs'
 import path from 'path'
 import { UNKNOWN_FACES_DIR } from '@shared/constants'
 import { getByVideoSource, updateMetadata } from '@vector/services/vectorDb'
-import { importVideoFromVectorDb } from 'src/utils/videos'
+import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
 
 async function processFaceDeletionJob(job: Job<FaceDeletionJobData>) {

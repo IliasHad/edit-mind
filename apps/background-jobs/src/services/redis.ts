@@ -1,6 +1,6 @@
 import { logger } from '@shared/services/logger'
 import IORedis, { Redis, RedisOptions } from 'ioredis'
-import { env } from 'src/utils/env'
+import { env } from '../utils/env'
 
 class RedisConnection {
   private static instance: Redis | null = null
@@ -80,8 +80,7 @@ class RedisConnection {
 
       // Exponential backoff with jitter
       const exponentialDelay = Math.pow(2, times) * this.INITIAL_RETRY_DELAY_MS
-      const jitter = Math.random() * 1000 // Add up to 1s of jitter
-      const delay = Math.min(exponentialDelay + jitter, this.MAX_RETRY_DELAY_MS)
+      const delay = Math.min(exponentialDelay, this.MAX_RETRY_DELAY_MS)
 
       logger.warn(`Redis connection retry attempt ${times}/${10}. Next attempt in ${Math.round(delay)}ms`)
 

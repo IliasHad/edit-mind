@@ -7,7 +7,7 @@ import { JobStatus } from '@prisma/client'
 import { unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import { getByVideoSource } from '@vector/services/vectorDb'
-import { importVideoFromVectorDb } from 'src/utils/videos'
+import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
 
 async function finalizeVideo(job: Job<VideoProcessingData>) {

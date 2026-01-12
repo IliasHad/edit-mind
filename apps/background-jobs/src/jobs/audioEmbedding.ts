@@ -4,7 +4,7 @@ import { promises as fs } from 'fs'
 import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
-import { embedVisualScenes } from '@vector/utils/visualEmbedding'
+import { embedAudioScenes } from '@vector/utils/audioEmbedding'
 import { updateJob } from '../services/videoIndexer'
 
 async function processVideo(job: Job<VideoProcessingData>) {
@@ -17,10 +17,10 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     const embeddingStart = Date.now()
 
-    await embedVisualScenes(scenes, videoPath)
+    await embedAudioScenes(scenes, videoPath)
 
     const embeddingDuration = (Date.now() - embeddingStart) / 1000
-    logger.info({ jobId, embeddingDuration }, '🔗 Embedding done')
+    logger.info({ jobId, embeddingDuration }, 'Audio Embedding done')
 
     await updateJob(job, {
       audioEmbeddingTime: embeddingDuration,
@@ -29,7 +29,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
   } catch (error) {
     logger.error(
       { jobId, videoPath, error, stack: error instanceof Error ? error.stack : undefined },
-      '❌ Error processing video'
+      'Error embedding audios'
     )
     await updateJob(job, { status: JobStatus.error })
     throw error
@@ -38,8 +38,9 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
 export const audioEmbeddingWorker = new Worker('audio-embedding', processVideo, {
   connection,
-  concurrency: 3,
-  lockDuration: 6 * 60 * 60 * 1000, // 6 hour
-  stalledInterval: 30 * 1000, // every 30 seconds
-  maxStalledCount: 3, // 3 attempts
+  concurrency: 1,
+  lockDuration: 60 * 1000,
+  stalledInterval: 15 * 1000,
+  maxStalledCount: 3,
+  lockRenewTime: 30 * 1000,
 })

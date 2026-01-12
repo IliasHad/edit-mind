@@ -4,7 +4,7 @@ import { logger } from '@shared/services/logger'
 import { VideoIndexJobData, VideoProcessingData } from '@shared/types/video'
 import path from 'path'
 import { PROCESSED_VIDEOS_DIR } from '@shared/constants'
-import { transcriptionQueue } from 'src/queue'
+import { transcriptionQueue } from '../queue'
 import { JobModel } from '@db/index'
 import { getVideoMetadata } from '@media-utils/utils/videos'
 

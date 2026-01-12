@@ -48,8 +48,9 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
 export const textEmbeddingWorker = new Worker('text-embedding', processVideo, {
   connection,
-  concurrency: 1,
-  lockDuration: 15 * 60 * 1000, // 1 hour
-  stalledInterval: 30 * 1000, // every 30 seconds
-  maxStalledCount: 3, // 3 attempts (up from 2)
+  concurrency: 3,
+  lockDuration: 60 * 1000,
+  stalledInterval: 15 * 1000,
+  maxStalledCount: 3,
+  lockRenewTime: 30 * 1000,
 })

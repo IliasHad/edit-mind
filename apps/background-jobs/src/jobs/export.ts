@@ -9,7 +9,7 @@ import { promises as fs, existsSync, createWriteStream } from 'fs'
 import { EXPORTS_DIR } from '@media-utils/constants'
 import archiver from 'archiver'
 import { createStackedThumbnail } from '@media-utils/utils/videos'
-import { ExportProcessingJob } from 'src/schemas/export'
+import { ExportProcessingJob } from '../schemas/export'
 
 async function processExportJob(job: Job<ExportProcessingJob>) {
   const { exportId, chatMessageId, collectionId } = job.data

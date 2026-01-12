@@ -6,7 +6,7 @@ import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
-import { sceneCreationQueue } from 'src/queue'
+import { sceneCreationQueue } from '../queue'
 import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
 
@@ -77,7 +77,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const frameAnalysisWorker = new Worker('frame-analysis', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 30 * 60 * 1000,
-  stalledInterval: 30 * 1000,
+  lockDuration: 60 * 1000,
+  stalledInterval: 15 * 1000,
   maxStalledCount: 3,
+  lockRenewTime: 30 * 1000,
 })

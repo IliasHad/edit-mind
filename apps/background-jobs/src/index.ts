@@ -5,11 +5,11 @@ import { createBullBoard } from '@bull-board/api'
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { ExpressAdapter } from '@bull-board/express'
 import foldersRoute from './routes/folders'
-import stitcherRoute from './routes/stitcher'
-import chatRoute from './routes/chat'
-import exportRoute from './routes/export'
-import faceRoute from './routes/face'
+import chatsRoute from './routes/chats'
+import exportsRoute from './routes/exports'
+import facesRoute from './routes/faces'
 import indexerRoute from './routes/indexer'
+import immichRoute from './routes/immich'
 import prisma from '@db/db'
 import { requireAuth } from './middleware/auth'
 
@@ -51,6 +51,7 @@ import { initializeWatchers } from './watcher'
 import { shutdownWorkers } from './utils/workers'
 import { logger } from '@shared/services/logger'
 import { env } from './utils/env'
+import { SMART_COLLECTION_CRON_PATTERN } from '@smart-collections/constants/collections'
 
 const app = express()
 const server = createServer(app)
@@ -71,14 +72,14 @@ if (process.env.NODE_ENV === 'development') {
       new BullMQAdapter(audioEmbeddingQueue),
       new BullMQAdapter(visualEmbeddingQueue),
       new BullMQAdapter(videoFinalizationQueue),
-      new BullMQAdapter(immichImporterQueue),
       new BullMQAdapter(videoStitcherQueue),
       new BullMQAdapter(faceLabellingQueue),
+      new BullMQAdapter(faceDeletionQueue),
+      new BullMQAdapter(faceRenameQueue),
       new BullMQAdapter(smartCollectionQueue),
       new BullMQAdapter(chatQueue),
       new BullMQAdapter(exportQueue),
-      new BullMQAdapter(faceDeletionQueue),
-      new BullMQAdapter(faceRenameQueue),
+      new BullMQAdapter(immichImporterQueue),
     ],
     serverAdapter,
   })
@@ -96,12 +97,12 @@ app.use(
   })
 )
 
-app.use('/folders', requireAuth, foldersRoute)
-app.use('/stitcher', requireAuth, stitcherRoute)
-app.use('/chat', requireAuth, chatRoute)
-app.use('/export', requireAuth, exportRoute)
-app.use('/face', requireAuth, faceRoute)
-app.use('/indexer', requireAuth, indexerRoute)
+app.use('/internal/folders', requireAuth, foldersRoute)
+app.use('/internal/chats', requireAuth, chatsRoute)
+app.use('/internal/exports', requireAuth, exportsRoute)
+app.use('/internal/faces', requireAuth, facesRoute)
+app.use('/internal/indexer', requireAuth, indexerRoute)
+app.use('/internal/immich', requireAuth, immichRoute)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 
@@ -114,7 +115,7 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
     {},
     {
       repeat: {
-        pattern: '0 0 * * *',
+        pattern: SMART_COLLECTION_CRON_PATTERN,
       },
       jobId: 'generate-smart-collections-cron',
       removeOnComplete: true,
