@@ -28,3 +28,4 @@ internal
 .data
 ml-models
 .pytest_cache
+tsconfig.tsbuildinfo
