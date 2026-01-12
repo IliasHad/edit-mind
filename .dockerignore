@@ -25,3 +25,4 @@ packages/*/node_modules
 *.gguf
 models
 models/yolo/*
+.pgdata

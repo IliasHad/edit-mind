@@ -6,10 +6,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libcurl4-openssl-dev libssl-dev && \
     rm -rf /var/lib/apt/lists/*
 
+RUN mkdir -p /ml-models/ultralytics && \
+    chmod -R 777 /ml-models
+
 WORKDIR /app
-
-RUN mkdir -p /app/ml-models && chmod 777 /app/ml-models
-
 
 FROM base AS python-deps
 
@@ -33,7 +33,7 @@ FROM python-deps AS production
 
 WORKDIR /app
 
-COPY --from=python-deps /app/.venv /app/.venv
+COPY --from=python-deps /app/.venv ./.venv
 COPY python ./python
 
 ENV VIRTUAL_ENV=/app/.venv
@@ -42,13 +42,13 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE ${ML_PORT}
 
 
-CMD ["sh", "-c", "/app/.venv/bin/python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
+CMD ["sh", "-c", "python ./python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
 
 FROM python-deps AS development
 
 WORKDIR /app
 
-COPY --from=python-deps /app/.venv /app/.venv
+COPY --from=python-deps /app/.venv ./.venv
 COPY python ./python
 
 ENV ML_PORT=8765
@@ -56,7 +56,7 @@ ENV ML_PORT=8765
 EXPOSE ${ML_PORT}
 
 
-CMD ["sh", "-c", "/app/.venv/bin/python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
+CMD ["sh", "-c", "python ./python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
 
 FROM base AS testing
 

@@ -96,6 +96,7 @@ COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/packages/db ./packages/db
 COPY apps/background-jobs ./apps/background-jobs
 
+RUN pnpm --filter prisma generate
 
 EXPOSE ${BACKGROUND_JOBS_PORT}
 

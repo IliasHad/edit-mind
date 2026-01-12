@@ -101,7 +101,7 @@ services:
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - pgdata_edit_mind:/var/lib/postgresql/data
+      - ../.pgdata/:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -134,8 +134,6 @@ services:
       - ../.data:/app/data
       - ../python:/app/python
 volumes:
-  pgdata_edit_mind:
-    driver: local
   redis_data:
     driver: local
   ml-models:
