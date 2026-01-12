@@ -9,7 +9,7 @@ import { existsSync } from 'fs'
 import { getByVideoSource } from '@vector/services/vectorDb'
 import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
-import { dirname } from 'path';
+import { dirname } from 'path'
 
 async function finalizeVideo(job: Job<VideoProcessingData>) {
   const { jobId, videoPath, scenesPath, analysisPath, transcriptionPath } = job.data
@@ -44,7 +44,9 @@ async function finalizeVideo(job: Job<VideoProcessingData>) {
     }
     const videoDir = dirname(transcriptionPath)
 
-    await rmdir(videoDir)
+    await rmdir(videoDir, {
+      recursive: true,
+    })
 
     await updateJob(job, { status: 'done', overallProgress: 100 })
     await suggestionCache.refresh()
