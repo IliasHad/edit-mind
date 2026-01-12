@@ -23,7 +23,6 @@ jobs:
       packages: write
       artifact-metadata: write
       attestations: write
-
     strategy:
       matrix:
         service:
@@ -36,7 +35,6 @@ jobs:
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
-
     steps:
       - name: Maximize build space
         run: |
@@ -51,9 +49,11 @@ jobs:
           sudo apt-get clean
           sudo docker system prune -a -f
           df -h
+
       - name: Set lowercase image prefix
         run: |
           echo "IMAGE_PREFIX=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/edit-mind" >> $GITHUB_ENV
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -83,8 +83,10 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           tags: |
             type=ref,event=branch
+            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Set up env files
         run: |
@@ -125,7 +127,7 @@ jobs:
 
       - name: Generate artifact attestation
         if: github.event_name != 'pull_request'
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v2
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           subject-digest: ${{ steps.push.outputs.digest }}
