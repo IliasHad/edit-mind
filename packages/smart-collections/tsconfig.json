@@ -18,8 +18,9 @@
       "@shared/*": ["../../packages/shared/dist/*"],
       "@db/*": ["../../packages/db/dist/*"],
       "@vector/*": ["../../packages/vector/dist/*"],
-      "@ai/*": ["./src/*"],
-      "@media-utils/*": ["../../packages/media-utils/dist/*"]
+      "@ai/*": ["../../packages/ai/src/*"],
+      "@media-utils/*": ["../../packages/media-utils/dist/*"],
+      "@smart-collections/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"],

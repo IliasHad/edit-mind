@@ -1,119 +1,268 @@
+import { CollectionType } from '@prisma/client'
+import { generateSmartCollections } from '@smart-collections/services/collection'
+import { generateFacesBasedCollections } from '@smart-collections/generators/faces'
 import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
 import { logger } from '@shared/services/logger'
-import { generateSmartCollections } from '@smart-collections/services/collection'
 import { CollectionItemModel, CollectionModel, UserModel, VideoModel } from '@db/index'
+import { generateLocationBasedCollections } from '@smart-collections/generators/locations'
 import { COLLECTION_DEFINITIONS } from '@smart-collections/constants/collections'
-import { CollectionType } from '@prisma/client'
-import { audioEmbeddingQueue, frameAnalysisQueue, textEmbeddingQueue, visualEmbeddingQueue } from 'src/queue'
 
 async function processSmartCollectionJob(job: Job) {
   logger.info({ jobId: job.id }, 'Starting smart collection generation job')
 
   try {
-    const [visualEmbeddingJobs, textEmbeddingJobs, frameAnalysisJobs, audioEmbeddingJobs] = await Promise.all([
-      visualEmbeddingQueue.getActive(),
-      textEmbeddingQueue.getActive(),
-      frameAnalysisQueue.getActive(),
-      audioEmbeddingQueue.getActive(),
-    ])
-
-    if (
-      visualEmbeddingJobs.length > 0 ||
-      textEmbeddingJobs.length > 0 ||
-      frameAnalysisJobs.length > 0 ||
-      audioEmbeddingJobs.length > 0
-    ) {
-      // If we have a running job, we'll skip the smart collections generation
-      return { skip: true }
-    }
-
-    const collectionVideos = await generateSmartCollections()
-
+    // TODO: Improve the logic of smart collection
     const user = await UserModel.findFirst()
-
-    if (!collectionVideos) throw new Error('Collection videos not found')
 
     if (!user) throw new Error('User not found')
 
-    const allDbVideos = await VideoModel.findMany({ select: { id: true, source: true } })
-    const videoSourceToIdMap = new Map<string, string>()
-    allDbVideos.forEach((v) => videoSourceToIdMap.set(v.source, v.id))
+    // Fetch all videos once and create the mapping
+    const allVideos = await VideoModel.findMany({
+      select: { id: true, source: true, thumbnailUrl: true, duration: true },
+    })
 
-    for (const [collectionName, videosMap] of collectionVideos.entries()) {
-      const definition = COLLECTION_DEFINITIONS[collectionName]
-      let fallbackDescription
-      let fallbackCategory
-      const firstEntry = videosMap.entries().next().value
+    // Build a map of ids and video source to link the collection item with the video source
 
-      if (!definition && firstEntry && firstEntry[1].match_type === 'geographic_location') {
-        fallbackDescription = `Moments Captured at ${collectionName}`
-        fallbackCategory = 'geographic_location'
-      }
-      if (!definition && firstEntry && firstEntry[1].match_type === 'person') {
-        fallbackDescription = `Moments Captured with ${collectionName}`
-        fallbackCategory = 'person'
-      }
+    const videoSourceToIdMap = new Map(allVideos.map((v) => [v.source, v.id]))
 
-      let collection = await CollectionModel.findByNameAndUser(collectionName, user.id)
+    // Build a map of thumbnail and video source to link the collection item with the video source
+    const videoSourceToThumbnailMap = new Map(allVideos.map((v) => [v.source, v.thumbnailUrl]))
 
-      if (collection && !collection.autoUpdateEnabled) {
-        return
-      }
-      if (collection) {
-        collection = await CollectionModel.update(collection.id, {
-          lastUpdated: new Date(),
-        })
-      } else {
-        collection = await CollectionModel.create({
-          name: collectionName,
-          description: (definition?.description.toString() || fallbackDescription) ?? null,
-          type: (definition?.category.toString() as CollectionType) || fallbackCategory,
-          userId: user.id,
-          isAutoPopulated: true,
-          autoUpdateEnabled: true,
-        })
+    // Build a map of video duration and video source to link the collection item with the video source
+    const videoSourceToDurationMap = new Map(allVideos.map((v) => [v.source, v.duration]))
+
+    // Generate location-based collections
+    const locationCollections = await generateLocationBasedCollections()
+    for (const [locationName, videoMap] of locationCollections) {
+      const description = `Moments Captured at ${locationName}`
+      const [videoSource] = videoMap.keys()
+      const thumbnailUrl = videoSourceToThumbnailMap.get(videoSource) ?? null
+      let totalDuration = 0
+
+      for (const videoSource of videoMap.keys()) {
+        const duration = videoSourceToDurationMap.get(videoSource) ?? 0
+        totalDuration += parseFloat(duration.toString())
       }
 
-      for (const [videoSource, videoData] of videosMap.entries()) {
-        const videoId = videoSourceToIdMap.get(videoSource)
-        if (!videoId) continue
-
-        const avgConfidence = videoData.scenes.reduce((acc, s) => acc + s.confidence, 0) / videoData.scenes.length
-        const sceneIds = videoData.scenes.map((s) => s.sceneId)
-
-        await CollectionItemModel.upsert({
-          where: { collectionId_videoId: { collectionId: collection.id, videoId: videoId } },
-          create: {
-            collectionId: collection.id,
-            videoId: videoId,
-            sceneIds: sceneIds,
-            confidence: avgConfidence,
-            matchType: videoData.match_type,
+      if (description && videoMap.size > 0) {
+        const collection = await CollectionModel.upsert({
+          where: {
+            userId_type_name: {
+              name: locationName,
+              type: 'geographic_location',
+              userId: user.id,
+            },
           },
           update: {
-            sceneIds: sceneIds,
-            confidence: avgConfidence,
-            matchType: videoData.match_type,
+            lastUpdated: new Date(),
+            thumbnailUrl,
+            itemCount: videoMap.size,
+            totalDuration: BigInt(totalDuration),
+          },
+          create: {
+            name: locationName,
+            description: description,
+            type: 'geographic_location',
+            userId: user.id,
+            isAutoPopulated: true,
+            autoUpdateEnabled: true,
+            thumbnailUrl,
+            itemCount: videoMap.size,
+            totalDuration: BigInt(totalDuration),
+          },
+        })
+
+        const currentVideoIds = []
+        for (const [videoSource, videoData] of videoMap.entries()) {
+          const videoId = videoSourceToIdMap.get(videoSource)
+          if (!videoId) continue
+
+          currentVideoIds.push(videoId)
+
+          const avgConfidence = videoData.scenes.reduce((acc, s) => acc + s.confidence, 0) / videoData.scenes.length
+          const sceneIds = videoData.scenes.map((s) => s.sceneId)
+
+          await CollectionItemModel.upsert({
+            where: { collectionId_videoId: { collectionId: collection.id, videoId: videoId } },
+            create: {
+              collectionId: collection.id,
+              videoId: videoId,
+              sceneIds: sceneIds,
+              confidence: avgConfidence,
+              matchType: videoData.match_type,
+            },
+            update: {
+              sceneIds: sceneIds,
+              confidence: avgConfidence,
+              matchType: videoData.match_type,
+            },
+          })
+        }
+
+        // Delete no longer match video items
+        await CollectionItemModel.deleteMany({
+          where: {
+            collectionId: collection.id,
+            videoId: { notIn: currentVideoIds },
           },
         })
       }
-
-      const itemCount = await CollectionItemModel.count(collection.id)
-
-      const items = await CollectionItemModel.findManyAndVideos(collection.id)
-      const thumbnailUrl = items[0]?.video?.thumbnailUrl
-      const totalDuration = items.reduce(
-        (acc, item) => acc + (item.video.duration ? BigInt(item.video.duration) : BigInt(0)),
-        BigInt(0)
-      )
-
-      await CollectionModel.update(collection.id, {
-        itemCount: itemCount,
-        totalDuration: totalDuration,
-        thumbnailUrl,
-      })
     }
+
+    // Generate face-based collections
+    const facesCollections = await generateFacesBasedCollections()
+    for (const [personName, videoMap] of facesCollections) {
+      const description = `Moments Captured with ${personName}`
+      const [videoSource] = videoMap.keys()
+      const thumbnailUrl = videoSourceToThumbnailMap.get(videoSource) ?? null
+      let totalDuration = 0
+
+      for (const videoSource of videoMap.keys()) {
+        const duration = videoSourceToDurationMap.get(videoSource) ?? 0
+        totalDuration += parseFloat(duration.toString())
+      }
+
+      if (description && videoMap.size > 0) {
+        const collection = await CollectionModel.upsert({
+          where: {
+            userId_type_name: {
+              name: personName,
+              type: 'person',
+              userId: user.id,
+            },
+          },
+          update: {
+            lastUpdated: new Date(),
+            thumbnailUrl,
+            itemCount: videoMap.size,
+            totalDuration: BigInt(totalDuration),
+          },
+          create: {
+            name: personName,
+            description: description,
+            type: 'person',
+            userId: user.id,
+            isAutoPopulated: true,
+            autoUpdateEnabled: true,
+            thumbnailUrl,
+            itemCount: videoMap.size,
+            totalDuration: BigInt(totalDuration),
+          },
+        })
+
+        const currentVideoIds = []
+        for (const [videoSource, videoData] of videoMap.entries()) {
+          const videoId = videoSourceToIdMap.get(videoSource)
+          if (!videoId) continue
+          currentVideoIds.push(videoId)
+
+          const avgConfidence = videoData.scenes.reduce((acc, s) => acc + s.confidence, 0) / videoData.scenes.length
+          const sceneIds = videoData.scenes.map((s) => s.sceneId)
+
+          await CollectionItemModel.upsert({
+            where: { collectionId_videoId: { collectionId: collection.id, videoId: videoId } },
+            create: {
+              collectionId: collection.id,
+              videoId: videoId,
+              sceneIds: sceneIds,
+              confidence: avgConfidence,
+              matchType: videoData.match_type,
+            },
+            update: {
+              sceneIds: sceneIds,
+              confidence: avgConfidence,
+              matchType: videoData.match_type,
+            },
+          })
+        }
+        // Delete no longer match video items
+        await CollectionItemModel.deleteMany({
+          where: {
+            collectionId: collection.id,
+            videoId: { notIn: currentVideoIds },
+          },
+        })
+      }
+    }
+    // Generate smart collections based on embedding and Collection Definitions
+    const smartCollections = await generateSmartCollections()
+    for (const [collectionName, videoMap] of smartCollections) {
+      const description = COLLECTION_DEFINITIONS[collectionName].description
+      const type = COLLECTION_DEFINITIONS[collectionName].category
+      const [videoSource] = videoMap.keys()
+      const thumbnailUrl = videoSourceToThumbnailMap.get(videoSource) ?? null
+      let totalDuration = 0
+
+      for (const videoSource of videoMap.keys()) {
+        const duration = videoSourceToDurationMap.get(videoSource) ?? 0
+        totalDuration += parseFloat(duration.toString())
+      }
+
+      if (type && description && videoMap.size > 0) {
+        const collection = await CollectionModel.upsert({
+          where: {
+            userId_type_name: {
+              name: collectionName,
+              type: type as CollectionType,
+              userId: user.id,
+            },
+          },
+          update: {
+            lastUpdated: new Date(),
+            thumbnailUrl,
+            itemCount: videoMap.size,
+            totalDuration: BigInt(totalDuration),
+          },
+          create: {
+            name: collectionName,
+            description: description,
+            type: type as CollectionType,
+            userId: user.id,
+            isAutoPopulated: true,
+            autoUpdateEnabled: true,
+            thumbnailUrl,
+            itemCount: videoMap.size,
+            totalDuration: BigInt(totalDuration),
+          },
+        })
+
+        const currentVideoIds = []
+
+        for (const [videoSource, videoData] of videoMap.entries()) {
+          const videoId = videoSourceToIdMap.get(videoSource)
+          if (!videoId) continue
+          currentVideoIds.push(videoId)
+
+          const avgConfidence = videoData.scenes.reduce((acc, s) => acc + s.confidence, 0) / videoData.scenes.length
+          const sceneIds = videoData.scenes.map((s) => s.sceneId)
+
+          await CollectionItemModel.upsert({
+            where: { collectionId_videoId: { collectionId: collection.id, videoId: videoId } },
+            create: {
+              collectionId: collection.id,
+              videoId: videoId,
+              sceneIds: sceneIds,
+              confidence: avgConfidence,
+              matchType: videoData.match_type,
+            },
+            update: {
+              sceneIds: sceneIds,
+              confidence: avgConfidence,
+              matchType: videoData.match_type,
+            },
+          })
+        }
+        // Delete no longer match video items
+        await CollectionItemModel.deleteMany({
+          where: {
+            collectionId: collection.id,
+            videoId: { notIn: currentVideoIds },
+          },
+        })
+      }
+    }
+
     logger.info({ jobId: job.id }, 'Smart collection generation job completed successfully')
   } catch (error) {
     logger.error({ jobId: job.id, error }, 'Smart collection generation job failed')

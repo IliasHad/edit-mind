@@ -1,76 +1,63 @@
+import { COLLECTION_DEFINITIONS_TYPE } from '@smart-collections/types'
 
-export const THRESHOLDS: Record<string, Record<string, number>> = {
-  visual_style: {
-    embedding: 0.48,
-    metadata: 0.28,
-    hybrid: 0.38,
+export const COLLECTION_WEIGHTS: Record<string, { visual: number; audio: number; text: number }> = {
+  'Cinematic Gold': {
+    visual: 0.6,
+    audio: 0.3,
+    text: 0.1,
   },
-  subject_matter: {
-    embedding: 0.35,
-    metadata: 0.25,
-    hybrid: 0.3,
+  'B-Roll': {
+    visual: 0.7,
+    audio: 0.2,
+    text: 0.1,
   },
-  emotional_tone: {
-    embedding: 0.32,
-    metadata: 0.22,
-    hybrid: 0.27,
+  'Upbeats Music': {
+    visual: 0.1,
+    audio: 0.8,
+    text: 0.1,
   },
-  technical: {
-    embedding: 0.52,
-    metadata: 0.32,
-    hybrid: 0.42,
-  },
-  time_of_day: {
-    embedding: 0.45,
-    metadata: 0.28,
-    hybrid: 0.37,
-  },
-  use_case: {
-    embedding: 0.33,
-    metadata: 0.23,
-    hybrid: 0.28,
-  },
-  b_roll: {
-    embedding: 0.52,
-    metadata: 0.32,
-    hybrid: 0.42,
-  },
-  location: {
-    embedding: 0.38,
-    metadata: 0.18,
-    hybrid: 0.28,
-  },
-  geographic_location: {
-    metadata: 0.65,
-  },
-  person: {
-    metadata: 0.7,
-    embedding: 0.4,
-    hybrid: 0.55,
-  },
-  aspect_ratio: {
-    metadata: 0.75,
-    embedding: 0.25,
-    hybrid: 0.5,
+  default: {
+    visual: 0.5,
+    audio: 0.3,
+    text: 0.2,
   },
 }
 
-export const MIN_CONFIDENCE = 0.35
-
-export const COLLECTION_DEFINITIONS: Record<
+export const MULTI_SIGNAL_BOOSTERS: Record<
   string,
-  Record<
-    string,
-    | string[]
-    | string
-    | number[][]
-    | Record<string, number>
-    | Record<string, string[]>
-    | Record<string, number[]>
-    | Record<string, number[]>
-    | Record<string, number[] | number>
-  >
+  { conditions: Record<string, string | number | boolean | string[]>; boost: number }[]
 > = {
+  'Cinematic Gold': [
+    {
+      conditions: {
+        has_camera_movement: true,
+        min_duration: 3,
+        shallow_dof: true,
+      },
+      boost: 0.15,
+    },
+    {
+      conditions: {
+        dramatic_lighting: true,
+        emotions: ['surprise', 'happy'],
+      },
+      boost: 0.1,
+    },
+  ],
+  'B-Roll': [
+    {
+      conditions: {
+        no_faces: true,
+        camera_movement: true,
+      },
+      boost: 0.2,
+    },
+  ],
+}
+
+export const MIN_CONFIDENCE = 0.60
+
+export const COLLECTION_DEFINITIONS: COLLECTION_DEFINITIONS_TYPE = {
   'Cinematic Gold': {
     category: 'visual_style',
     description: 'Dramatic lighting, slow motion, professional composition, cinematic shots',
@@ -109,26 +96,6 @@ export const COLLECTION_DEFINITIONS: Record<
     },
   },
 
-  'Corporate Clean': {
-    category: 'visual_style',
-    description: 'Professional, stable footage, neutral tones, business environment',
-    visual_queries: [
-      'professional corporate video',
-      'clean business footage with neutral colors',
-      'stable professional office shots',
-      'corporate presentation style',
-      'business professional environment',
-    ],
-    audio_queries: ['quiet professional environment', 'office ambience', 'business meeting sounds'],
-    filters: {
-      min_duration: 2.0,
-    },
-    metadata_boosters: {
-      objects: ['laptop', 'desk', 'chair', 'tie'],
-      emotions: ['neutral'],
-    },
-  },
-
   'Moody & Atmospheric': {
     category: 'visual_style',
     description: 'Low-key lighting, shadows, high contrast, dramatic atmosphere',
@@ -161,24 +128,6 @@ export const COLLECTION_DEFINITIONS: Record<
     required_objects: ['sky'],
     metadata_boosters: {
       objects: ['cloud', 'airplane'],
-    },
-  },
-
-  Water: {
-    category: 'subject_matter',
-    description: 'Ocean, waves, rivers, rain, waterfalls, water features',
-    visual_queries: [
-      'ocean waves and water',
-      'flowing river and waterfall',
-      'rain and water drops',
-      'swimming pool water',
-      'lake or pond scene',
-    ],
-    audio_queries: ['water flowing sounds', 'ocean waves crashing', 'rain and water', 'splashing water'],
-    filters: {},
-    required_objects: [],
-    metadata_boosters: {
-      objects: ['boat', 'surfboard', 'swimming pool'],
     },
   },
 
@@ -317,55 +266,6 @@ export const COLLECTION_DEFINITIONS: Record<
     },
   },
 
-  Contemplative: {
-    category: 'emotional_tone',
-    description: 'Solitude, reflection, thoughtful moments, introspection',
-    visual_queries: [
-      'thoughtful contemplative moment',
-      'person in solitude reflecting',
-      'introspective quiet scene',
-      'pensive thoughtful mood',
-      'reflective solitary moment',
-    ],
-    audio_queries: ['quiet reflective atmosphere', 'minimal ambient sound', 'contemplative silence'],
-    filters: {},
-    required_emotions: [],
-    metadata_boosters: {
-      emotions: ['sad', 'neutral', 'fear'],
-      objects: ['person', 'book'],
-    },
-  },
-
-  'Portrait Mode Ready (9:16)': {
-    category: 'aspect_ratio',
-    description: 'Vertically-friendly, center-composed shots for mobile/social media',
-    visual_queries: [
-      'centered vertical composition',
-      'portrait orientation subject',
-      'mobile-friendly framing',
-      'vertical video format',
-      'smartphone optimized shot',
-    ],
-    audio_queries: [],
-    filters: {
-      aspect_ratio_range: [0.5, 0.7], // 9:16 ≈ 0.5625
-    },
-  },
-
-  'With Natural Sound': {
-    category: 'aspect_ratio',
-    description: 'Strong ambient audio, environmental sounds',
-    visual_queries: [],
-    audio_queries: [
-      'clear natural ambient sound',
-      'environmental audio recording',
-      'real world sound capture',
-      'authentic location audio',
-      'natural soundscape',
-    ],
-    filters: {},
-  },
-
   'Golden Hour': {
     category: 'time_of_day',
     description: 'Warm soft lighting, sunrise and sunset, golden tones',
@@ -502,7 +402,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['ocean waves and seagulls', 'beach ambient sounds', 'coastal water sounds'],
     filters: {},
-    location_keywords: ['beach', 'coast', 'shore', 'seaside', 'ocean', 'sea'],
     metadata_boosters: {
       objects: ['surfboard', 'umbrella', 'boat'],
     },
@@ -519,7 +418,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['mountain wind sounds', 'alpine atmosphere', 'mountain ambient audio'],
     filters: {},
-    location_keywords: ['mountain', 'peak', 'alpine', 'summit', 'ridge', 'hill'],
     metadata_boosters: {
       objects: ['mountain', 'snow', 'ski'],
     },
@@ -537,7 +435,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['desert wind sounds', 'arid environment atmosphere', 'desert ambient audio'],
     filters: {},
-    location_keywords: ['desert', 'sand', 'dune', 'arid', 'dry', 'canyon'],
     metadata_boosters: {
       objects: [],
     },
@@ -554,7 +451,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['forest birds and nature', 'woodland ambience', 'forest sounds'],
     filters: {},
-    location_keywords: ['forest', 'woods', 'woodland', 'jungle', 'rainforest'],
     metadata_boosters: {
       objects: ['tree', 'plant', 'bird'],
     },
@@ -572,7 +468,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['city traffic sounds', 'urban downtown ambience', 'metropolitan noise'],
     filters: {},
-    location_keywords: ['downtown', 'city center', 'urban', 'metropolitan', 'district'],
     metadata_boosters: {
       objects: ['building', 'car', 'bus', 'traffic light', 'person'],
     },
@@ -590,7 +485,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['park birds and nature', 'garden ambience', 'outdoor park sounds'],
     filters: {},
-    location_keywords: ['park', 'garden', 'botanical', 'green space', 'plaza'],
     metadata_boosters: {
       objects: ['tree', 'flower', 'plant', 'grass', 'bench'],
     },
@@ -607,7 +501,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['farm animal sounds', 'rural countryside ambience', 'nature and farm audio'],
     filters: {},
-    location_keywords: ['farm', 'rural', 'countryside', 'field', 'barn', 'ranch', 'village'],
     metadata_boosters: {
       objects: ['horse', 'cow', 'sheep', 'bird'],
     },
@@ -918,117 +811,47 @@ export const COLLECTION_DEFINITIONS: Record<
     },
   },
 
-  'Airport & Aviation': {
-    category: 'location',
-    description: 'Airports, planes, aviation, air travel',
-    visual_queries: [
-      'airport terminal travel',
-      'airplane and aviation',
-      'air travel airport scene',
-      'flight departure arrival',
-      'aviation airport environment',
-    ],
-    audio_queries: ['airport ambience sounds', 'airplane engine', 'aviation audio'],
-    filters: {},
-    location_keywords: ['airport', 'terminal', 'gate', 'runway'],
-    metadata_boosters: {
-      objects: ['airplane', 'suitcase', 'backpack'],
-    },
-  },
-
-  'Sports Venues': {
-    category: 'location',
-    description: 'Stadiums, gyms, sports facilities, athletic venues',
-    visual_queries: [
-      'sports stadium venue',
-      'gym fitness facility',
-      'athletic sports arena',
-      'sports field stadium',
-      'indoor sports facility',
-    ],
-    audio_queries: ['stadium crowd noise', 'gym workout sounds', 'sports venue audio'],
-    filters: {},
-    location_keywords: ['stadium', 'arena', 'gym', 'field', 'court', 'track'],
-    metadata_boosters: {
-      objects: ['sports ball', 'bench', 'baseball bat', 'tennis racket'],
-    },
-  },
-
-  'Entertainment Venues': {
-    category: 'location',
-    description: 'Theaters, concerts, clubs, entertainment spaces',
-    visual_queries: [
-      'concert venue performance',
-      'theater entertainment space',
-      'club nightlife venue',
-      'performance stage theater',
-      'entertainment event venue',
-    ],
-    audio_queries: ['concert music sounds', 'theater performance audio', 'nightlife club sounds', 'live entertainment'],
-    filters: {},
-    location_keywords: ['theater', 'concert', 'club', 'stage', 'venue', 'cinema'],
-    metadata_boosters: {
-      objects: ['tv', 'chair'],
-      emotions: ['happy', 'surprise'],
-    },
-  },
-
-  'Historic Sites': {
-    category: 'location',
-    description: 'Historical landmarks, monuments, heritage sites',
-    visual_queries: [
-      'historic landmark monument',
-      'heritage historical site',
-      'ancient historic structure',
-      'historical building landmark',
-      'cultural heritage site',
-    ],
-    audio_queries: ['historic site ambience', 'cultural location audio'],
-    filters: {},
-    location_keywords: ['monument', 'historic', 'heritage', 'memorial', 'ancient', 'castle', 'palace'],
-    metadata_boosters: {
-      objects: ['clock', 'bench'],
-    },
-  },
   'B-Roll': {
     category: 'b_roll',
     description:
-      'Supplemental footage, establishing shots, cutaways, transitions, and contextual scenes perfect for editing',
+      'Pure supplemental footage without dialogue - establishing shots, cutaways, transitions, environmental scenes, and detail shots perfect for editing',
     visual_queries: [
-      'establishing shot wide angle view',
-      'smooth pan or tilt camera movement',
-      'detailed close-up object shot',
-      'scenic landscape establishing view',
-      'architectural building exterior shot',
-      'nature scenery background footage',
-      'urban cityscape establishing shot',
-      'slow motion action detail',
-      'texture and detail close-up',
-      'atmospheric background scene',
-      'transition cutaway shot',
-      'environmental context footage',
-      'product detail close-up view',
-      'hands working activity closeup',
-      'abstract texture pattern detail',
-      'time-lapse movement sequence',
-      'dolly or tracking shot movement',
-      'overhead flat-lay composition',
-      'bokeh background depth of field',
-      'silhouette atmospheric shot',
+      'establishing shot scenic view',
+      'smooth camera movement no people talking',
+      'detailed close-up object texture',
+      'empty scenic landscape',
+      'architectural detail shot',
+      'nature background footage',
+      'urban environment no dialogue',
+      'slow motion detail',
+      'product close-up detail',
+      'atmospheric environmental scene',
+      'transition shot movement',
+      'texture pattern detail',
+      'time-lapse sequence',
+      'overhead flat-lay shot',
+      'silhouette atmospheric',
+      'abstract visual detail',
+      'hands working silent activity',
+      'empty street or space',
     ],
     audio_queries: [
-      'natural ambient sound',
-      'environmental background audio',
-      'atmospheric ambient noise',
-      'clean location sound',
-      'subtle background atmosphere',
+      'ambient sound no dialogue',
+      'environmental background only',
+      'atmospheric sounds no speech',
+      'natural ambience no talking',
+      'quiet location sound',
+      'pure environmental audio',
     ],
     filters: {
-      min_duration: 2.0,
+      min_duration: 1.5,
+      max_duration: 15,
+      max_faces: 1,
     },
+
     metadata_boosters: {
       objects: [
-        // Nature & landscapes
+        // Environmental/Nature
         'sky',
         'cloud',
         'tree',
@@ -1036,26 +859,27 @@ export const COLLECTION_DEFINITIONS: Record<
         'plant',
         'flower',
         'grass',
-        // Urban & architecture
+        'water',
+        // Architecture/Urban
         'building',
         'traffic light',
         'bench',
         'clock',
-        // Objects & details
+        'street',
+        // Objects/Details
         'cup',
         'bottle',
         'book',
         'vase',
         'potted plant',
-        // Food & dining
+        // Food
         'bowl',
         'fork',
         'knife',
         'spoon',
         'wine glass',
-        // Technology
+        // Tech (when not in use)
         'laptop',
-        'cell phone',
         'keyboard',
         'mouse',
         // Transportation
@@ -1063,24 +887,27 @@ export const COLLECTION_DEFINITIONS: Record<
         'bicycle',
         'boat',
         'airplane',
-        // Work & office
+        // Furniture
         'desk',
         'chair',
-        'tie',
+        'table',
       ],
-      shot_types: ['wide shot', 'close-up', 'extreme close-up', 'establishing shot', 'detail shot', 'insert shot'],
-    },
-    // Exclude shots that are clearly NOT b-roll
-    exclude_patterns: {
-      min_faces_for_exclusion: 3,
-    },
-    b_roll_indicators: {
-      no_faces: 0.08, // B-roll often has no people
-      camera_movement: 0.06, // Pans, tilts, tracking shots
-      short_duration: 0.04, // 2-5 second clips are ideal b-roll length
-      shallow_depth_of_field: 0.05, // Cinematic look
-      symmetrical_composition: 0.03, // Well-composed shots
-      golden_hour_lighting: 0.04, // Beautiful lighting
+      shotTypes: [
+        'wide shot',
+        'establishing shot',
+        'close-up',
+        'extreme close-up',
+        'detail shot',
+        'insert shot',
+        'cutaway',
+        'pan',
+        'tilt',
+        'tracking shot',
+        'dolly',
+        'crane shot',
+        'overhead',
+        'flat lay',
+      ],
     },
   },
   'Happy Moments': {
@@ -1338,36 +1165,6 @@ export const COLLECTION_DEFINITIONS: Record<
       objects: ['dining table', 'chair', 'umbrella', 'wine glass', 'fork', 'knife'],
     },
   },
-  'Slow Motion': {
-    category: 'technical',
-    description: 'Slow-motion footage, time manipulation, slowed action',
-    visual_queries: [
-      'slow motion dramatic movement',
-      'slowed down action sequence',
-      'time slowed cinematic shot',
-      'super slow motion capture',
-      'frame by frame slow action',
-    ],
-    audio_queries: [],
-    filters: {},
-    metadata_boosters: {},
-  },
-  'Time-Lapse': {
-    category: 'technical',
-    description: 'Time-lapse sequences, sped up time, fast motion',
-    visual_queries: [
-      'time-lapse fast movement',
-      'sped up time sequence',
-      'accelerated motion timelapse',
-      'fast forward time passage',
-      'compressed time movement',
-    ],
-    audio_queries: [],
-    filters: {},
-    metadata_boosters: {
-      objects: ['sky', 'cloud', 'traffic light', 'car'],
-    },
-  },
   'Running & Jogging': {
     category: 'subject_matter',
     description: 'Running, jogging, cardio exercise, track running',
@@ -1433,7 +1230,7 @@ export const COLLECTION_DEFINITIONS: Record<
     audio_queries: ['person speaking to camera', 'vlog narration', 'direct address audio'],
     filters: {
       min_faces: 1,
-      aspect_ratio_range: [0.5, 1.0],
+      aspectRatio_range: [0.5, 1.0],
     },
     metadata_boosters: {
       objects: ['cell phone'],
@@ -1499,7 +1296,6 @@ export const COLLECTION_DEFINITIONS: Record<
     ],
     audio_queries: ['home office sounds', 'workspace ambience', 'typing and work audio'],
     filters: {},
-    location_keywords: ['home office', 'study', 'office', 'workspace', 'studio'],
     metadata_boosters: {
       objects: ['desk', 'chair', 'laptop', 'keyboard', 'mouse', 'monitor', 'book'],
     },
@@ -1508,7 +1304,25 @@ export const COLLECTION_DEFINITIONS: Record<
     category: 'audio',
     description: 'Moments captured while having upbeats music',
     visual_queries: [],
-    audio_queries: ['upbeat music', 'upbeat music background', 'high energy beats'],
+    audio_queries: [
+      'upbeat energetic music',
+      'positive high energy music',
+      'feel good upbeat track',
+      'happy energetic background music',
+
+      'fast tempo rhythmic music',
+      'high bpm electronic beat',
+      'driving rhythm upbeat song',
+
+      'upbeat pop instrumental',
+      'energetic electronic music',
+      'modern upbeat indie music',
+
+      'uplifting vlog background music',
+      'energetic travel video music',
+      'upbeat workout background music',
+      'motivational intro music',
+    ],
     filters: {},
     metadata_boosters: {},
   },
@@ -1518,7 +1332,7 @@ export const TYPE_LABELS: Record<string, string> = {
   visual_style: 'Visual Style',
   subject_matter: 'Subject Matter',
   emotional_tone: 'Tone',
-  aspect_ratio: 'Aspect Ratio',
+  aspectRatio: 'Aspect Ratio',
   time_of_day: 'Time of Day',
   use_case: 'Use Case',
   location: 'Locations',
@@ -1529,3 +1343,6 @@ export const TYPE_LABELS: Record<string, string> = {
   b_roll: 'B Rolls',
   audio: 'Audio',
 }
+export const COLLECTIONS_BATCH_SIZE = 100
+
+export const SMART_COLLECTION_CRON_PATTERN = '0 0 * * *'
