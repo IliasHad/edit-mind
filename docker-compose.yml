@@ -106,6 +106,7 @@ services:
     environment:
       NODE_ENV: production
       YOLO_CONFIG_DIR: /ml-models/ultralytics
+      DEEPFACE_HOME: /ml-models/deepface
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
       - ml-models:/ml-models:rw
