@@ -124,8 +124,9 @@ services:
       - .env
       - .env.system
     environment:
-      YOLO_CONFIG_DIR: "/app/ml-models"
-      DEEPFACE_HOME: "/app/ml-models"
+      YOLO_CONFIG_DIR: /ml-models/ultralytics
+      DEEPFACE_HOME: /ml-models/deepface
+      TRANSCRIPTION_MODEL_CACHE: /ml-models/whisper
     networks:
       - app-network
     volumes:
