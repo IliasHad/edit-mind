@@ -110,6 +110,14 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
   await prisma.$connect()
   await initializeWatchers()
 
+  // Remove existing repeatable job before adding a new one
+  const repeatableJobs = await smartCollectionQueue.getRepeatableJobs()
+  for (const job of repeatableJobs) {
+    if (job.id === 'generate-smart-collections-cron') {
+      await smartCollectionQueue.removeRepeatableByKey(job.key)
+    }
+  }
+
   await smartCollectionQueue.add(
     'smart-collections',
     {},
@@ -117,7 +125,6 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
       repeat: {
         pattern: SMART_COLLECTION_CRON_PATTERN,
       },
-      jobId: 'generate-smart-collections-cron',
       removeOnComplete: true,
       removeOnFail: true,
     }

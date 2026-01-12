@@ -15,6 +15,7 @@ import { visualEmbeddingWorker } from '../jobs/visualEmbedding'
 export async function shutdownWorkers() {
     try {
         logger.debug('Shutting down workers...')
+
         await Promise.all([
             frameAnalysisWorker.close(),
             audioTranscriptionWorker.close(),
@@ -29,8 +30,10 @@ export async function shutdownWorkers() {
             videoStitcherWorker.close(),
             chatWorker.close(),
         ])
-    } catch (err) {
-        logger.error('Shutdown error ' + err)
+
+        logger.info('All workers closed successfully')
+    } catch (error) {
+        logger.error({ error })
     } finally {
         process.exit(0)
     }

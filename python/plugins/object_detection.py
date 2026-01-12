@@ -2,7 +2,6 @@ from typing import List, Dict, Optional, Union
 import numpy as np
 import torch
 from ultralytics import YOLO
-import os
 
 from plugins.base import AnalyzerPlugin, FrameAnalysis, PluginResult
 from services.logger import get_logger

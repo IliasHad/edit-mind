@@ -2,7 +2,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 import os
-from pathlib import Path
 
 
 @dataclass
@@ -65,6 +64,11 @@ class TranscriptionConfig:
     vad_threshold: float = 0.5
     min_speech_duration_ms: int = 250
     min_silence_duration_ms: int = 2000
+
+    def __post_init__(self) -> None:
+        """Post-initialization adjustments."""
+        self.cache_dir = os.getenv(
+            'TRANSCRIPTION_MODEL_CACHE', 'ml-models/.whisper')
 
     @property
     def device(self) -> str:

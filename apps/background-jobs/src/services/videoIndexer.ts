@@ -8,7 +8,6 @@ import { transcriptionQueue } from '../queue'
 import { JobModel } from '@db/index'
 import { getVideoMetadata } from '@media-utils/utils/videos'
 import { createHash } from 'crypto'
-import { existsSync, mkdirSync } from 'fs'
 
 export async function updateJob(
   job: Job<VideoIndexJobData>,
@@ -69,10 +68,6 @@ export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: 
   const hash = createHash('sha256').update(jobData.videoPath).digest('hex')
 
   const videoDir = path.join(PROCESSED_VIDEOS_DIR, hash)
-
-  if (!existsSync(videoDir)) {
-    mkdirSync(videoDir)
-  }
 
   const analysisPath = path.join(encodeURI(videoDir), 'analysis.json')
   const transcriptionPath = path.join(encodeURI(videoDir), 'transcription.json')

@@ -34,6 +34,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     try {
       analysisData = (await fs.readFile(analysisPath, 'utf-8').then(JSON.parse)) as Analysis
     } catch (error) {
+      // In case we have the JSON file with broken data
       await frameAnalysisQueue.add(
         'frame-analysis-rebuild',
         { ...job.data, forceReIndexing: true },
@@ -47,6 +48,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     try {
       transcriptionData = await fs.readFile(transcriptionPath, 'utf-8').then(JSON.parse)
     } catch (error) {
+      // In case we have the JSON file with broken data
       await transcriptionQueue.add(
         'transcription-rebuild',
         { ...job.data, forceReIndexing: true },
@@ -96,7 +98,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
   } catch (error) {
     logger.error(
       { jobId, videoPath, error, stack: error instanceof Error ? error.stack : undefined },
-      '❌ Scene creation failed'
+      'Scene creation failed'
     )
     await updateJob(job, { status: JobStatus.error })
     throw error

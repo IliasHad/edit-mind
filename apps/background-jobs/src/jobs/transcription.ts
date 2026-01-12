@@ -87,10 +87,10 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const audioTranscriptionWorker = new Worker('transcription', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 60 * 1000,
+  lockDuration: 5 * 60 * 1000,
   stalledInterval: 15 * 1000,
   maxStalledCount: 3,
-  lockRenewTime: 30 * 1000, // Renew lock every 30 seconds while processing
+  lockRenewTime: 30 * 1000,
 })
 
 audioTranscriptionWorker.on('completed', async (job: Job) => {
