@@ -13,30 +13,18 @@
     "@bull-board/express": "^6.14.1",
     "@bull-board/ui": "^6.14.1",
     "archiver": "^7.0.1",
-    "axios": "^1.7.0",
-    "body-parser": "^2.2.0",
     "bullmq": "^5.6.0",
     "chokidar": "^3.5.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "ioredis": "^5.4.2",
-    "jimp": "^1.6.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.13.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",
-    "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.0.0",
-    "@types/pg": "^8.15.6",
-    "ts-node-dev": "^2.0.0",
-    "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.20.6",
-    "typescript": "5.9.2"
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }
