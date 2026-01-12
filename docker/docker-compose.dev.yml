@@ -56,7 +56,6 @@ services:
       - .env.dev
       - .env.system
     environment:
-      NODE_ENV: development
       YOLO_CONFIG_DIR: "/app/ml-models"
       DEEPFACE_HOME: "/app/ml-models"
     networks:

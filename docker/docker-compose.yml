@@ -124,12 +124,15 @@ services:
       - .env
       - .env.system
     environment:
-      NODE_ENV: production
+      YOLO_CONFIG_DIR: "/app/ml-models"
+      DEEPFACE_HOME: "/app/ml-models"
     networks:
       - app-network
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ml-models:/ml-models:rw
+      - ml-models:/app/ml-models:rw
+      - ../.data:/app/data
+      - ../python:/app/python
 volumes:
   pgdata_edit_mind:
     driver: local
