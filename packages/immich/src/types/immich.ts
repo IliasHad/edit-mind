@@ -1,11 +1,11 @@
 import z from 'zod'
-import { immichConfigFormSchema } from '../schemas/immich'
+import { ImmichConfigFormSchema } from '../schemas/immich'
 
 export interface ImmichImporterJobData {
   integrationId: string
 }
 
-export type ImmichConfig = z.infer<typeof immichConfigFormSchema>
+export type ImmichConfig = z.infer<typeof ImmichConfigFormSchema>
 
 export interface Person {
   id: string
