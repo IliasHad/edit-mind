@@ -5,7 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDirs": ["./src", "./tests"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
