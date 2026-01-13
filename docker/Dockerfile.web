@@ -106,7 +106,7 @@ RUN pnpm --filter prisma generate
 
 ENV NODE_ENV=development
 
-EXPOSE 4000
+EXPOSE ${PORT}
 
 CMD ["sh", "-c", "\
   pnpm --filter prisma migrate:deploy && \
