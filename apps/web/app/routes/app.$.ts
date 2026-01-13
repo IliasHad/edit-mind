@@ -10,6 +10,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   } catch (error) {
     logger.error(error)
-    return null
+    return redirect('/auth/login')
   }
 }
