@@ -2,12 +2,13 @@ import { ArrowPathIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { CollectionBadge } from '~/features/collections/components/CollectionBadge'
 import { ProjectBadge } from '~/features/projects/components/ProjectBadge'
 import { smartFormatDate } from '@shared/utils/duration'
+import type { Collection, CollectionItem, Project, Video } from '@prisma/client'
 
 interface VideoHeaderProps {
   fileName: string
   sceneCount: number
-  collections: Array<any>
-  projects: Array<any>
+  collections: Array<Collection & { items: (CollectionItem & { video: Video })[] }>
+  projects: Array<Project & { videos: Video[] }>
   videoSource: string
   onReindex: () => void
   onDelete: () => void
@@ -91,7 +92,7 @@ export function VideoHeader({
                       key={collection.id}
                       collection={{
                         ...collection,
-                        confidence: collection.items.find((item: any) => item.video.source === videoSource)?.confidence,
+                        confidence: collection.items.find((item) => item.video.source === videoSource)?.confidence,
                       }}
                     />
                   ))}

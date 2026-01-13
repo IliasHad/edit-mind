@@ -9,7 +9,7 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
-import { $getRoot, $isElementNode } from 'lexical'
+import { $getRoot, $isElementNode, type EditorState } from 'lexical'
 import { FaceMentionNode } from '../utils/FaceMentionNode'
 import { FaceMentionsPlugin } from '../plugins/FaceMentionsPlugin'
 import { DefaultValuePlugin } from '../plugins/DefaultValuePlugin'
@@ -66,7 +66,7 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
     editable: !loading || !chat?.isLocked,
   }
 
-  function onChange(editorState: any) {
+  function onChange(editorState: EditorState) {
     editorState.read(() => {
       const root = $getRoot()
       const tokens: Array<
