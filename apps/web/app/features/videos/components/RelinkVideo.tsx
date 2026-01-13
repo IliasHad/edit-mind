@@ -21,7 +21,7 @@ interface RelinkVideoProps {
   isOpen: boolean
   oldSource: string
   onClose: () => void
-  onRelink: (oldSource: string, newSource: string) => void
+  onRelink: (oldSource: string, newSource: string) => Promise<void>
   relinkSuccess: boolean
 }
 
