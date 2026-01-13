@@ -15,9 +15,7 @@
     "url": "https://github.com/iliashad/edit-mind"
   },
   "scripts": {
-    "build": "tsc --outDir dist",
-    "test": "NODE_ENV=testing vitest run",
-    "test:ui": "NODE_ENV=testing  vitest --ui"
+    "build": "tsc --outDir dist"
   },
   "dependencies": {
     "compute-cosine-similarity": "^1.1.0",

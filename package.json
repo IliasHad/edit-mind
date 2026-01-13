@@ -23,9 +23,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@vitest/ui": "^4.0.17",
     "tsconfig-paths": "^4.2.0",
     "turbo": "^2.7.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   },
   "pnpm": {
     "overrides": {

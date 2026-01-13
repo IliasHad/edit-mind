@@ -16,8 +16,8 @@
   },
   "scripts": {
     "build": "tsc --outDir dist",
-    "test": "NODE_ENV=testing vitest run",
-    "test:ui": "NODE_ENV=testing  vitest --ui"
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@chroma-core/default-embed": "^0.1.9",

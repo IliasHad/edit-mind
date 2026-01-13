@@ -11,7 +11,9 @@
     "url": "https://github.com/iliashad"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "repository": {
     "type": "git",
