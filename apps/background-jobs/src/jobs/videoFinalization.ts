@@ -4,7 +4,7 @@ import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 import { JobStatus } from '@prisma/client'
-import { unlink, rmdir } from 'fs/promises'
+import { unlink, rm } from 'fs/promises';
 import { existsSync } from 'fs'
 import { getByVideoSource } from '@vector/services/vectorDb'
 import { importVideoFromVectorDb } from '../utils/videos'
@@ -44,7 +44,7 @@ async function finalizeVideo(job: Job<VideoProcessingData>) {
     }
     const videoDir = dirname(transcriptionPath)
 
-    await rmdir(videoDir, {
+    await rm(videoDir, {
       recursive: true,
     })
 

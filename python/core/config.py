@@ -19,7 +19,7 @@ class AnalysisConfig:
         'TextDetectionPlugin': 1,
         'EnvironmentPlugin': 3,
         'ShotTypePlugin': 3,
-        "DescriptorPlugin": 4
+        "DescriptorPlugin": 1
     })
 
     def __post_init__(self) -> None:

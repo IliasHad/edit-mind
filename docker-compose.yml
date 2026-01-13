@@ -104,7 +104,7 @@ services:
       - .env
       - .env.system
     environment:
-      NODE_ENV: production
+      LOG_LEVEL: "INFO"
       YOLO_CONFIG_DIR: /ml-models/ultralytics
       DEEPFACE_HOME: /ml-models/deepface
       TRANSCRIPTION_MODEL_CACHE: /ml-models/whisper
