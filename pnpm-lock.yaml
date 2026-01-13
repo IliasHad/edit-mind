@@ -64,9 +64,6 @@ importers:
       ioredis:
         specifier: ^5.4.2
         version: 5.8.2
-      jsonwebtoken:
-        specifier: ^9.0.3
-        version: 9.0.3
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -80,9 +77,6 @@ importers:
       '@types/express':
         specifier: ^5.0.5
         version: 5.0.5
-      '@types/jsonwebtoken':
-        specifier: ^9.0.10
-        version: 9.0.10
 
   apps/desktop:
     dependencies:
@@ -240,9 +234,6 @@ importers:
       isbot:
         specifier: ^5.1.31
         version: 5.1.32
-      jsonwebtoken:
-        specifier: ^9.0.3
-        version: 9.0.3
       lexical:
         specifier: ^0.39.0
         version: 0.39.0
@@ -292,9 +283,6 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.13
         version: 4.1.17(vite@5.4.21(@types/node@22.19.1)(lightningcss@1.30.2))
-      '@types/jsonwebtoken':
-        specifier: ^9.0.10
-        version: 9.0.10
       '@types/lodash':
         specifier: ^4.17.21
         version: 4.17.21
@@ -439,10 +427,16 @@ importers:
       ioredis:
         specifier: ^5.8.2
         version: 5.8.2
+      jsonwebtoken:
+        specifier: ^9.0.3
+        version: 9.0.3
       zod:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
+      '@types/jsonwebtoken':
+        specifier: ^9.0.10
+        version: 9.0.10
       pino:
         specifier: ^10.1.0
         version: 10.1.0
@@ -9456,7 +9450,7 @@ snapshots:
   config-file-ts@0.2.8-rc1:
     dependencies:
       glob: 10.5.0
-      typescript: 5.9.2
+      typescript: 5.9.3
 
   consola@3.4.2: {}
 
