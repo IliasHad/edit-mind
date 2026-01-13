@@ -43,7 +43,7 @@ services:
     environment:
       NODE_ENV: "production"
     ports:
-      - "${WEB_PORT:-3745}:3745"
+      - "${PORT:-3745}:3745"
     depends_on:
       postgres:
         condition: service_healthy

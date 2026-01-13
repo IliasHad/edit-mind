@@ -4,7 +4,7 @@ services:
     image: ghcr.io/iliashad/edit-mind-background-jobs:${VERSION:-latest}
     container_name: edit-mind-background-jobs
     ports:
-      - "${BACKGROUND_JOBS_PORT:-4000}:4000"
+      - "${BACKGROUND_JOBS_PORT}:4000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -29,7 +29,7 @@ services:
     environment:
       NODE_ENV: "production"
     ports:
-      - "${WEB_PORT:-3745}:3745"
+      - "${PORT}:3745"
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,7 +64,7 @@ services:
     image: redis:7
     container_name: edit-mind-redis
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -83,7 +83,7 @@ services:
       - .env
       - .env.system
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "${POSTGRES_PORT}:5432"
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
@@ -99,7 +99,7 @@ services:
     image: ghcr.io/iliashad/edit-mind-ml:${VERSION:-latest}
     container_name: edit-mind-ml
     ports:
-      - "${ML_WS_PORT:-8765}:8765"
+      - "${ML_WS_PORT}:8765"
     env_file:
       - .env
       - .env.system

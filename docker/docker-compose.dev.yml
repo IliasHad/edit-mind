@@ -10,7 +10,7 @@ services:
     image: edit-mind-background-jobs:dev
     container_name: edit-mind-background-jobs-dev
     ports:
-      - "${BACKGROUND_JOBS_PORT:-4000}:4000"
+      - "${BACKGROUND_JOBS_PORT}:4000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -79,7 +79,7 @@ services:
     environment:
       NODE_ENV: development
     ports:
-      - "${WEB_PORT:-3745}:3745"
+      - "${PORT}:3745"
     depends_on:
       postgres:
         condition: service_healthy
@@ -113,7 +113,7 @@ services:
     environment:
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
     ports:
-      - "${CHROMA_PORT:-8000}:8000"
+      - "${CHROMA_PORT}:8000"
     volumes:
       - ../.data/chroma:/chroma/chroma
     networks:
@@ -142,7 +142,7 @@ services:
       - ./.env.dev
       - ./.env.system
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT}:5432"
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
