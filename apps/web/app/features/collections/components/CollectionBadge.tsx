@@ -1,8 +1,12 @@
-import { type Collection } from '@prisma/client'
 import { Link } from 'react-router'
 import { ICON_MAP } from '../constants'
+import type { CollectionType } from '@prisma/client'
 
-export function CollectionBadge({ collection }: { collection: Collection & { confidence?: number } }) {
+export function CollectionBadge({
+  collection,
+}: {
+  collection: { confidence?: number; name: string; id: string; type: CollectionType }
+}) {
   const Icon = ICON_MAP[collection.type]
 
   return (
