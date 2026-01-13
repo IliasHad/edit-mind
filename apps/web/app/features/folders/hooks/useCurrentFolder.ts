@@ -13,6 +13,7 @@ export const useCurrentFolder = () => {
         error,
         clearCurrentFolder,
         rescanFolder,
+        setCurrentFolder
     } = useFoldersStore()
 
     useEffect(() => {
@@ -32,5 +33,6 @@ export const useCurrentFolder = () => {
         currentFolder,
         error,
         rescanFolder,
+        setCurrentFolder
     }
 }

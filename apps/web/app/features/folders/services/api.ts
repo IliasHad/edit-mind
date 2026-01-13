@@ -15,7 +15,7 @@ export const apiClient = {
         return response.json()
     },
 
-    list: () => apiClient.request<{ folders: FolderWithJobs[] }>('/api/folders'),
+    list: () => apiClient.request<{ folders: FolderWithJobs[], totalDuration: number, totalVideos: number }>('/api/folders'),
 
     get: (id: string) => apiClient.request<{ folder: FolderWithJobs }>(`/api/folders/${id}`),
 

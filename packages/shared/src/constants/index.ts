@@ -14,6 +14,8 @@ export const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000 // 30 days
 
 export const MEDIA_BASE_PATH = '/media/videos'
 
+export const HOST_MEDIA_PATH = process.env.HOST_MEDIA_PATH
+
 export const STITCHED_VIDEOS_DIR = process.env.STITCHED_VIDEOS_DIR
 
 export const ML_PORT = process.env.ML_PORT || '8765'

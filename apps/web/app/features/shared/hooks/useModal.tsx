@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export function useDeleteModal() {
+export function useModal() {
   const [isOpen, setIsOpen] = useState(false)
 
   const openModal = () => setIsOpen(true)
