@@ -51,7 +51,8 @@ WORKDIR /app
 COPY --from=python-deps /app/.venv ./.venv
 COPY python ./python
 
-ENV ML_PORT=8765
+ENV VIRTUAL_ENV=/app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE ${ML_PORT}
 
