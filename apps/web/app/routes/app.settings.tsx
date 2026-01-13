@@ -5,97 +5,65 @@ import {
   TrashIcon,
   CircleStackIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon,
-  ArrowPathIcon,
-  ArrowUpTrayIcon,
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
-import { useLoaderData, type MetaFunction } from 'react-router'
-import type { Folder, FolderStatus as PrismaFolderStatus } from '@prisma/client'
-import { useState } from 'react'
+import { type MetaFunction } from 'react-router'
+import type { Folder } from '@prisma/client'
+import { useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AddFolder } from '~/features/folders/components/AddFolder'
 import { humanizeSeconds, smartFormatDate } from '~/features/shared/utils/duration'
-import { logger } from '@shared/services/logger'
-import { FolderModel } from '@db/index'
 import { DeleteModal } from '~/features/shared/components/DeleteModal'
-import { useDeleteModal } from '~/features/shared/hooks/useDeleteModal'
-
-export async function loader() {
-  try {
-    const folders = await FolderModel.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: {
-        videos: {
-          select: {
-            duration: true,
-          },
-        },
-      },
-    })
-    const totalDuration = folders
-      .flatMap((folder) => folder.videos)
-      .reduce((a, b) => a + parseFloat(b.duration.toString()), 0)
-    const totalVideos = folders.reduce((acc, f) => acc + (f?.videoCount || 0), 0)
-
-    return {
-      folders,
-      totalDuration,
-      totalVideos,
-    }
-  } catch (error) {
-    logger.error(error)
-    return { folders: [] }
-  }
-}
+import { useFolders } from '~/features/folders/hooks/useFolders'
+import { ArrowUpTrayIcon } from '@heroicons/react/24/solid'
+import { getStatusInfo } from '~/features/folders/utils'
+import { useCurrentFolder } from '~/features/folders/hooks/useCurrentFolder'
+import { useModal } from '~/features/shared/hooks/useModal'
 
 export const meta: MetaFunction = () => [{ title: 'Settings | Edit Mind' }]
 
 export default function SettingsPage() {
-  const data = useLoaderData<typeof loader>()
-  const [folders, setFolders] = useState(data?.folders || [])
-  const [showAddModal, setShowAddModal] = useState(false)
-  const { isOpen, openModal, closeModal } = useDeleteModal()
-  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null)
+  const { folders, createFolder, totalVideos, totalDuration } = useFolders()
+    const { deleteFolder, setCurrentFolder, currentFolder } = useCurrentFolder()
 
-  const handleOpenAddModal = () => {
-    setShowAddModal(true)
-  }
+  const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
+  const { isOpen: isAddModalOpen, openModal: openAddModal, closeModal: closeAddModal } = useModal()
+
+
+  const stats = useMemo(
+    () => [
+      {
+        id: 'folders',
+        icon: <FolderIcon className="size-5 text-black/60 dark:text-white/60" />,
+        label: 'Total Folders',
+        value: folders.length.toString(),
+      },
+      {
+        id: 'videos',
+        icon: <CheckCircleIcon className="size-5 text-black/60 dark:text-white/60" />,
+        label: 'Videos Scanned',
+        value: totalVideos.toString(),
+      },
+      {
+        id: 'duration',
+        icon: <ArrowUpTrayIcon className="size-5 text-black/60 dark:text-white/60" />,
+        label: 'Total Processed Duration',
+        value: humanizeSeconds(totalDuration),
+      },
+    ],
+    [folders.length, totalVideos, totalDuration]
+  )
 
   const handleOpenDeleteModal = (folder: Folder) => {
-    setSelectedFolder(folder)
-    openModal()
+    setCurrentFolder({ ...folder, jobs: [] })
+    openDeleteModal()
   }
 
-  const handleAddFolder = async (path: string) => {
+  const handleAddFolder = async (path: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/folders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path }),
-      })
-
-      if (!response.ok) throw new Error('Failed to add folder')
-
-      const data = await response.json()
-      const { folder } = data
-
-      setFolders((prev) => [
-        {
-          ...folder,
-          size: 0,
-          lastScanned: null,
-          watcherEnabled: true,
-          excludePatterns: [],
-          includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
-        },
-        ...prev,
-      ])
-
+      await createFolder({ path })
       return true
     } catch (error) {
       console.error('Failed to add folder:', error)
@@ -104,79 +72,34 @@ export default function SettingsPage() {
   }
 
   const handleDeleteFolder = async () => {
+    if (!currentFolder) return
+
     try {
-      const response = await fetch(`/api/folders/${selectedFolder?.id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) throw new Error('Failed to delete folder')
-
-      setFolders((prev) => prev.filter((f) => f.id !== selectedFolder?.id))
+      await deleteFolder(currentFolder.id)
+      setCurrentFolder(null)
+      closeDeleteModal()
     } catch (error) {
       console.error('Failed to delete folder:', error)
     }
   }
 
-  const getStatusInfo = (status: PrismaFolderStatus) => {
-    switch (status) {
-      case 'scanning':
-        return {
-          icon: <ArrowPathIcon className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />,
-          text: 'Scanning...',
-          color: 'text-blue-600 dark:text-blue-400',
-        }
-      case 'indexed':
-        return {
-          icon: <CheckCircleIcon className="w-4 h-4 text-green-600 dark:text-green-400" />,
-          text: 'Indexed',
-          color: 'text-green-600 dark:text-green-400',
-        }
-      case 'error':
-        return {
-          icon: <ExclamationCircleIcon className="w-4 h-4 text-red-600 dark:text-red-400" />,
-          text: 'Error',
-          color: 'text-red-600 dark:text-red-400',
-        }
-      default:
-        return {
-          icon: null,
-          text: 'Idle',
-          color: 'text-black/50 dark:text-white/50',
-        }
-    }
-  }
-
-  const stats = [
-    {
-      icon: <FolderIcon className="size-5 text-black/60 dark:text-white/60" />,
-      label: 'Total Folders',
-      value: folders.length,
-    },
-    {
-      icon: <CheckCircleIcon className="size-5 text-black/60 dark:text-white/60" />,
-      label: 'Videos Scanned',
-      value: data.totalVideos,
-    },
-    {
-      icon: <ArrowUpTrayIcon className="size-5 text-black/60 dark:text-white/60" />,
-      label: 'Total Processed Duration',
-      value: humanizeSeconds(data.totalDuration),
-    },
-  ]
+  const hasFolders = folders.length > 0
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
-      <main className="max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <header className="mb-12">
+      <motion.main initial="hidden" animate="visible" className="max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <motion.header className="mb-12">
           <h1 className="text-3xl font-semibold text-black dark:text-white">Settings</h1>
           <p className="text-base text-black/50 dark:text-white/50 mt-1">Manage video folders to scan and index.</p>
-        </header>
+        </motion.header>
 
-        <section className="mb-12">
+        <motion.section className="mb-12">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {stats.map((stat, i) => (
-              <div
-                key={i}
+            {stats.map((stat) => (
+              <motion.div
+                key={stat.id}
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 className="bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl p-6 flex items-start gap-5"
               >
                 <div className="p-3 flex items-center justify-center rounded-xl bg-black/5 dark:bg-white/5">
@@ -186,13 +109,13 @@ export default function SettingsPage() {
                   <p className="text-sm text-black/60 dark:text-white/60">{stat.label}</p>
                   <p className="text-2xl font-semibold text-black dark:text-white mt-1">{stat.value}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section>
-          <div className="flex items-center justify-between mb-6">
+        <motion.section>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-semibold text-black dark:text-white">Video Folders</h2>
               <p className="text-sm text-black/50 dark:text-white/50">
@@ -200,7 +123,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <button
-              onClick={handleOpenAddModal}
+              onClick={openAddModal}
               className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition-all"
             >
               <PlusIcon className="size-4" />
@@ -209,12 +132,14 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <AnimatePresence>
-              {folders.length === 0 ? (
+            <AnimatePresence mode="wait">
+              {!hasFolders ? (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  key="empty-state"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
                   className="text-center py-20 px-6 bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl"
                 >
                   <FolderIcon className="size-12 mx-auto text-black/20 dark:text-white/20 mb-4" />
@@ -224,87 +149,97 @@ export default function SettingsPage() {
                   </p>
                 </motion.div>
               ) : (
-                folders.map((folder) => {
-                  const statusInfo = getStatusInfo(folder.status)
-                  const isScanning = folder.status === 'scanning'
-                  return (
-                    <motion.div
-                      key={folder.id}
-                      layout
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      transition={{ duration: 0.2 }}
-                      className="bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden"
-                    >
-                      <div className="p-6">
-                        <div className="flex flex-col sm:flex-row items-start gap-4">
-                          <Link to={`/app/folders/${folder.id}`} className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                              <FolderIcon className="size-5 shrink-0 text-black/70 dark:text-white/70" />
-                              <h3 className="text-base font-medium text-black dark:text-white truncate">
-                                {folder.path.split('/').pop() || folder.path}
-                              </h3>
-                            </div>
-                            <p className="text-xs text-black/50 dark:text-white/50 truncate font-mono ml-8">
-                              {folder.path}
-                            </p>
-                          </Link>
+                <motion.div key="folders-list" className="space-y-4">
+                  {folders.map((folder) => {
+                    const statusInfo = getStatusInfo(folder.status)
+                    const isScanning = folder.status === 'scanning'
+                    const folderName = folder.path?.split('/').pop() || folder.path
 
-                          <div className="flex items-center gap-2 self-start sm:self-center">
+                    return (
+                      <motion.div
+                        key={folder.id}
+                        layout
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        transition={{ duration: 0.2 }}
+                        className="bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden hover:border-black/20 dark:hover:border-white/20 transition-colors"
+                      >
+                        <div className="p-6">
+                          <div className="flex flex-col sm:flex-row items-start gap-4">
+                            <Link to={`/app/folders/${folder.id}`} className="flex-1 min-w-0 group">
+                              <div className="flex items-center gap-3 mb-2">
+                                <FolderIcon className="size-5 shrink-0 text-black/70 dark:text-white/70 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                <h3 className="text-base font-medium text-black dark:text-white truncate group-hover:text-black/80 dark:group-hover:text-white/80 transition-colors">
+                                  {folderName}
+                                </h3>
+                              </div>
+                              <p className="text-xs text-black/50 dark:text-white/50 truncate font-mono ml-8">
+                                {folder.path}
+                              </p>
+                            </Link>
+
                             <button
                               onClick={() => handleOpenDeleteModal(folder)}
                               disabled={isScanning}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors text-red-600 dark:text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                              aria-label={`Delete folder ${folderName}`}
+                              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors text-red-600 dark:text-red-400 hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <TrashIcon className="size-3.5" />
                             </button>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="px-6 py-4 bg-black/5 dark:bg-white/5 border-t border-black/10 dark:border-white/10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
-                        <div className={`flex items-center gap-1.5 font-medium ${statusInfo.color}`}>
-                          {statusInfo.icon}
-                          <span>{statusInfo.text}</span>
-                        </div>
-                        <span className="text-black/40 dark:text-white/40">•</span>
-                        <div className="text-black/60 dark:text-white/60">
-                          <span className="font-medium text-black dark:text-white">{folder.videoCount || 0}</span>{' '}
-                          videos
-                        </div>
-                        {folder.lastScanned && (
-                          <>
-                            <span className="text-black/40 dark:text-white/40">•</span>
-                            <div className="text-black/60 dark:text-white/60">
-                              Last scan:{' '}
-                              <span className="font-medium text-black dark:text-white">
-                                {smartFormatDate(folder.lastScanned)}
+                        <div className="px-6 py-4 bg-black/5 dark:bg-white/5 border-t border-black/10 dark:border-white/10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
+                          <div className={`flex items-center gap-1.5 font-medium ${statusInfo.color}`}>
+                            {statusInfo.icon}
+                            <span>{statusInfo.text}</span>
+                          </div>
+                          <span className="text-black/40 dark:text-white/40" aria-hidden="true">
+                            •
+                          </span>
+                          <div className="text-black/60 dark:text-white/60">
+                            <span className="font-medium text-black dark:text-white">{folder.videoCount || 0}</span>{' '}
+                            {folder.videoCount === 1 ? 'video' : 'videos'}
+                          </div>
+                          {folder.lastScanned && (
+                            <>
+                              <span className="text-black/40 dark:text-white/40" aria-hidden="true">
+                                •
                               </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </motion.div>
-                  )
-                })
+                              <div className="text-black/60 dark:text-white/60">
+                                Last scan:{' '}
+                                <span className="font-medium text-black dark:text-white">
+                                  {smartFormatDate(folder.lastScanned)}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </motion.div>
+                    )
+                  })}
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
-        </section>
-        <section className="my-12">
-          <div className="bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-3 flex items-center justify-center rounded-xl bg-black/5 dark:bg-white/5">
-                  <ArrowTopRightOnSquareIcon className="size-5 text-black/70 dark:text-white/70" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-black dark:text-white">Immich Import</h2>
-                  <p className="text-sm text-black/60 dark:text-white/60">
-                    Import videos directly from your Immich library.
-                  </p>
-                </div>
+        </motion.section>
+
+        <motion.section className="my-12">
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+          >
+            <div className="flex items-start gap-4 flex-1">
+              <div className="p-3 flex items-center justify-center rounded-xl bg-black/5 dark:bg-white/5">
+                <ArrowTopRightOnSquareIcon className="size-5 text-black/70 dark:text-white/70" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-black dark:text-white">Immich Import</h2>
+                <p className="text-sm text-black/60 dark:text-white/60 mt-1">
+                  Import videos directly from your Immich library.
+                </p>
               </div>
             </div>
             <Link
@@ -314,22 +249,23 @@ export default function SettingsPage() {
               <CircleStackIcon className="size-4" />
               Go to Immich Import
             </Link>
-          </div>
-        </section>
-        <p className="text-sm text-black/50 dark:text-white/50 text-center mt-10">
-          Videos are indexed automatically when folders are added or modified.
-        </p>
-      </main>
+          </motion.div>
+        </motion.section>
 
-      <AddFolder isOpen={showAddModal} onClose={() => setShowAddModal(false)} onAdd={handleAddFolder} />
+        <motion.p className="text-sm text-black/50 dark:text-white/50 text-center mt-10">
+          Videos are indexed automatically when folders are added or modified.
+        </motion.p>
+      </motion.main>
+
+      <AddFolder isOpen={isAddModalOpen} onClose={closeAddModal} onAdd={handleAddFolder} />
 
       <DeleteModal
-        isOpen={isOpen}
-        onClose={closeModal}
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
         onConfirm={handleDeleteFolder}
         title="Delete folder"
         description="Removing this folder will stop indexing new videos. Existing videos in your system will remain intact."
-        resourceName={selectedFolder?.path || 'Untitled folder'}
+        resourceName={currentFolder?.path || 'Untitled folder'}
         confirmText="Delete folder"
       />
     </DashboardLayout>
