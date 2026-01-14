@@ -9,6 +9,9 @@ services:
         PNPM_VERSION: 10.20.0
     image: edit-mind-background-jobs:dev
     container_name: edit-mind-background-jobs-dev
+    env_file:
+      - .env.system
+      - .env.dev
     ports:
       - "${BACKGROUND_JOBS_PORT}:4000"
     depends_on:
@@ -20,9 +23,6 @@ services:
         condition: service_started
       ml:
           condition: service_started
-    env_file:
-      - .env.dev
-      - .env.system
     environment:
       NODE_ENV: development
     networks:
@@ -50,11 +50,11 @@ services:
         PYTHON_VERSION: 3.11
     image: edit-mind-ml:dev
     container_name: edit-mind-ml-dev
-    ports:
-      - "${ML_PORT:-8765}:8765"
     env_file:
-      - .env.dev
       - .env.system
+      - .env.dev
+    ports:
+      - "${ML_PORT}:8765"
     environment:
       YOLO_CONFIG_DIR: /ml-models/ultralytics
       DEEPFACE_HOME: /ml-models/deepface
@@ -78,6 +78,9 @@ services:
     container_name: edit-mind-web-dev
     environment:
       NODE_ENV: development
+    env_file:
+      - .env.system
+      - .env.dev
     ports:
       - "${PORT}:3745"
     depends_on:
@@ -87,9 +90,6 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
-    env_file:
-      - .env.dev
-      - .env.system
     volumes:
       - ../.data:/app/data
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
@@ -110,6 +110,9 @@ services:
     image: chromadb/chroma:1.3.5
     container_name: edit-mind-chroma-dev
     restart: unless-stopped
+    env_file:
+      - .env.system
+      - .env.dev
     environment:
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
     ports:
@@ -122,6 +125,9 @@ services:
   redis:
     image: redis:7
     container_name: edit-mind-redis-dev
+    env_file:
+      - .env.system
+      - .env.dev
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
@@ -139,8 +145,8 @@ services:
     container_name: edit-mind-postgres-dev
     restart: unless-stopped
     env_file:
-      - ./.env.dev
-      - ./.env.system
+      - .env.dev
+      - .env.system
     ports:
       - "${POSTGRES_PORT}:5432"
     environment:
