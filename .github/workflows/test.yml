@@ -6,6 +6,7 @@ on:
       - Build, Push & Release Docker Images
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   tests:
@@ -33,12 +34,12 @@ jobs:
           cp .env.system.example docker/.env.system
 
       - name: Start Docker Compose web service
-        run: docker-compose up web -d
+        run: docker compose up web -d
         env:
           VERSION: test
 
       - name: Check service status
-        run: docker-compose ps
+        run: docker compose ps
 
       - name: Install dependencies
         run: pnpm install
@@ -58,4 +59,4 @@ jobs:
 
       - name: Stop containers
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
