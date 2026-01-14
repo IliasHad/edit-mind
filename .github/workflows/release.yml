@@ -94,8 +94,8 @@ jobs:
           target: testing
           platforms: linux/amd64,linux/arm64
           push: false
-          cache-from: type=gha,scope=${{ matrix.service.name }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Build and push Docker image
         id: push
@@ -111,8 +111,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service.name }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           sbom: false
 
       - name: Generate artifact attestation
