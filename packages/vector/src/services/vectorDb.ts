@@ -4,7 +4,7 @@ import { EmbeddingInput, EmbeddingAudioInput, EmbeddingVisualInput } from '../ty
 import { VideoWithScenes } from '@shared/types/video'
 import { Scene } from '@shared/types/scene'
 import { metadataToScene, sanitizeMetadata, sceneToVectorFormat } from '../utils/shared'
-import { CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME, IS_TESTING } from '@vector/constants'
+import { CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME } from '@vector/constants'
 import { getEmbeddings } from './embedding'
 import { getCache, setCache } from '@shared/services/cache'
 import { logger } from '@shared/services/logger'
@@ -42,6 +42,7 @@ export const createVectorDbClient = async (
   }
 
   try {
+    logger.info(`Initializing ChromaDB client with host: ${CHROMA_HOST}, port: ${CHROMA_PORT}`)
     cachedClient = new ChromaClient({ host: CHROMA_HOST, port: parseInt(CHROMA_PORT) })
 
     cachedCollection = await cachedClient.getOrCreateCollection({ name: collectionName })
@@ -523,17 +524,10 @@ async function getScenesByYear(year: number): Promise<{
   stats: YearStats
 }> {
   try {
-    const cacheKey = `videos:yearly:${year}`
-
     const { collection } = await createVectorDbClient()
 
     if (!collection) {
       throw new Error('Collection not initialized')
-    }
-
-    const cached = await getCache<{ videos: VideoWithScenes[]; stats: YearStats }>(cacheKey)
-    if (cached) {
-      return cached
     }
 
     const start = new Date(`${year}-01-01T00:00:00.000Z`).getTime()
@@ -715,10 +709,6 @@ async function getScenesByYear(year: number): Promise<{
     const result = {
       videos: videosList,
       stats,
-    }
-
-    if (!IS_TESTING) {
-      await setCache(cacheKey, result, 300)
     }
 
     return result

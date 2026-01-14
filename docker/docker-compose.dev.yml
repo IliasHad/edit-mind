@@ -114,6 +114,7 @@ services:
       - .env.system
       - .env.dev
     environment:
+      IS_PERSISTENT: TRUE
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
     ports:
       - "${CHROMA_PORT}:8000"

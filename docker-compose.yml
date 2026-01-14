@@ -21,7 +21,7 @@ services:
       - app-network
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ../.data:/app/data
+      - .data:/app/data
   web:
     restart: unless-stopped
     image: ghcr.io/iliashad/edit-mind-web:latest
@@ -40,7 +40,7 @@ services:
         condition: service_healthy
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ../.data:/app/data
+      - .data:/app/data
     networks:
       - app-network
 
@@ -52,11 +52,12 @@ services:
       - .env.system
       - .env
     environment:
+      IS_PERSISTENT: TRUE
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
     ports:
       - "${CHROMA_PORT}:8000"
     volumes:
-      - ../.chroma:/chroma/chroma
+      - .chroma:/chroma/chroma
     networks:
       - app-network
 
@@ -91,7 +92,7 @@ services:
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ../.pgdata/:/var/lib/postgresql/data
+      - .pgdata/:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -116,8 +117,7 @@ services:
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
       - ml-models:/app/ml-models:rw
-      - ../.data:/app/data
-      - ../python:/app/python
+      - .data:/app/data
 volumes:
   redis_data:
     driver: local
