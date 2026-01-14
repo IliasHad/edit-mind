@@ -1,6 +1,9 @@
 import { logger } from '@shared/services/logger'
-import { requireUserId } from '~/services/user.sever'
+import { requireUser, requireUserId } from '~/services/user.sever'
 import { FolderModel, VideoModel } from '@db/index'
+import type { ActionFunctionArgs } from 'react-router'
+import { FolderCreateSchema } from '~/features/folders/schemas/folder'
+import { backgroundJobsFetch } from '~/services/background.server'
 
 export async function loader({ request }: { request: Request }) {
   try {
@@ -31,5 +34,41 @@ export async function loader({ request }: { request: Request }) {
   } catch (error) {
     logger.error({ error }, 'Failed to fetch folders')
     return { folders: [], totalVideos: 0, totalDuration: 0 }
+  }
+}
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const payload = await request.json()
+
+  try {
+    const { success, data } = FolderCreateSchema.safeParse(payload)
+
+    if (!success) {
+      return new Response(JSON.stringify({ error: 'Error validating your folder input' }), {
+        status: 500,
+      })
+    }
+
+    const user = await requireUser(request)
+
+    const { path, watcherEnabled, excludePatterns, includePatterns } = data
+
+    const folder = await FolderModel.create({
+      path,
+      watcherEnabled,
+      excludePatterns,
+      includePatterns,
+      userId: user.id,
+    })
+
+    await backgroundJobsFetch(`/internal/folder/${folder.id}/trigger`, undefined, user)
+    return {
+      folder,
+    }
+  } catch (error) {
+    logger.error('Failed to send folder to background jobs service' + error)
+    return new Response(JSON.stringify({ error: 'Sorry, there was a problem creating your folder.' }), {
+      status: 500,
+    })
   }
 }

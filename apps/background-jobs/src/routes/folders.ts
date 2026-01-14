@@ -61,7 +61,7 @@ router.post('/:id/trigger', async (req, res) => {
   }
 })
 
-router.post('/:id/delete', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   const { id } = req.params
 
   try {
