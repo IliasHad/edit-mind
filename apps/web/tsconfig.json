@@ -1,4 +1,5 @@
 {
+  "extends": "../../tsconfig.json",
   "include": ["app", "react-router.config.ts", "vite.config.ts", ".react-router/types/**/*", "server.ts"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
@@ -10,15 +11,7 @@
     "rootDirs": [".", "./.react-router/types"],
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"],
-      "@shared/*": ["../../packages/shared/src/*"],
-      "@ui/*": ["../../packages/ui/src/*"],
-      "@vector/*": ["../../packages/vector/src/*"],
-      "@db/*": ["../../packages/db/src/*"],
-      "@ai/*": ["../../packages/ai/src/*"],
-      "@search/*": ["../../packages/search/src/*"],
-      "@immich/*": ["../../packages/immich/src/*"],
-      "@media-utils/*": ["../../packages/media-utils/src/*"]
+      "~/*": ["./app/*"]
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

@@ -1,8 +1,7 @@
-import type { Project } from "@prisma/client";
 import { FolderIcon } from '@heroicons/react/24/solid'
 import { Link } from "react-router";
 
-export function ProjectBadge({ project }: { project: Project & { videos: number } }) {
+export function ProjectBadge({ project }: { project: { videos: number, name: string, id: string } }) {
   return (
     <Link
       to={`/app/projects/${project.id}`}

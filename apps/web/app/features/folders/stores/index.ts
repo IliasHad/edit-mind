@@ -9,6 +9,8 @@ interface FoldersState {
     isLoading: boolean
     error: string | null
     showSuccess?: boolean
+    totalVideos: number
+    totalDuration: number
 
     fetchFolders: () => Promise<void>
     fetchFolderById: (id: string) => Promise<FolderWithJobs | null>
@@ -32,13 +34,15 @@ export const useFoldersStore = create<FoldersState>()(
                 isLoading: false,
                 error: null,
                 showSuccess: false,
+                totalVideos: 0,
+                totalDuration: 0,
 
                 fetchFolders: async () => {
                     set({ isLoading: true, error: null })
                     try {
-                        const { folders } = await apiClient.list()
+                        const { folders, totalDuration, totalVideos } = await apiClient.list()
 
-                        set({ folders, isLoading: false })
+                        set({ folders, isLoading: false, totalVideos, totalDuration })
                     } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Unknown error occurred',

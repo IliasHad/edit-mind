@@ -1,18 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  FolderIcon, 
-  PlusIcon, 
-  ArrowPathIcon, 
-  XMarkIcon, 
-  ChevronRightIcon 
-} from '@heroicons/react/24/solid'
-interface ServerFolder {
-  path: string
-  name: string
-  isDirectory: boolean
-  mtime?: number
-}
+import { FolderIcon, PlusIcon, ArrowPathIcon, XMarkIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
+import type { ServerFolder } from '@shared/types/folder'
 
 interface AddFolderProps {
   isOpen: boolean
@@ -28,22 +17,24 @@ export function AddFolder({ isOpen, onClose, onAdd }: AddFolderProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const fetchAvailableFolders = async (path: string = '/') => {
-    setLoadingFolders(true)
-    try {
-      const params = new URLSearchParams({ path, search: searchQuery })
-      const response = await fetch(`/api/folders?${params.toString()}`)
-      const data = await response.json()
-      // Filter out files, only show directories
-      setAvailableFolders(data.folders?.filter((f: ServerFolder) => f.isDirectory) || [])
-      setCurrentPath(path)
-    } catch (error) {
-      console.error(error)
-      setAvailableFolders([])
-    } finally {
-      setLoadingFolders(false)
-    }
-  }
+  const fetchAvailableFolders = useCallback(
+    async (path: string = '/') => {
+      setLoadingFolders(true)
+      try {
+        const params = new URLSearchParams({ path, search: searchQuery })
+        const response = await fetch(`/api/media/folders?${params.toString()}`)
+        const data = await response.json()
+        setAvailableFolders(data.folders?.filter((f: ServerFolder) => f.isDirectory) || [])
+        setCurrentPath(path)
+      } catch (error) {
+        console.error(error)
+        setAvailableFolders([])
+      } finally {
+        setLoadingFolders(false)
+      }
+    },
+    [searchQuery]
+  )
 
   useEffect(() => {
     if (isOpen) {
@@ -52,13 +43,11 @@ export function AddFolder({ isOpen, onClose, onAdd }: AddFolderProps) {
       setCurrentPath('/')
       fetchAvailableFolders('/')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen])
+  }, [fetchAvailableFolders, isOpen])
 
   useEffect(() => {
     if (isOpen) fetchAvailableFolders(currentPath)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, currentPath])
+  }, [searchQuery, currentPath, isOpen, fetchAvailableFolders])
 
   const handleNavigateToFolder = (folderPath: string) => {
     fetchAvailableFolders(folderPath)

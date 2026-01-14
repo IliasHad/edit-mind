@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { ScenePreview } from './ScenePreview'
 import { formatTime } from '../utils/formatting'
 import type { Scene } from '@shared/types/scene'
+import type { Bucket } from '../types';
 
 
 interface ProgressBarProps {
@@ -50,7 +51,7 @@ export function ProgressBar({ scenes, duration, currentTime, onSeek }: ProgressB
   }, [scenes, duration])
 
   // Seek inside bucket precisely
-  const handleBucketClick = (e: React.MouseEvent<HTMLDivElement>, bucket: any) => {
+  const handleBucketClick = (e: React.MouseEvent<HTMLDivElement>, bucket: Bucket) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     const fraction = x / rect.width
@@ -59,7 +60,7 @@ export function ProgressBar({ scenes, duration, currentTime, onSeek }: ProgressB
   }
 
   // Hover → pick correct scene inside the bucket
-  const handleBucketHover = (e: React.MouseEvent<HTMLDivElement>, bucket: any) => {
+  const handleBucketHover = (e: React.MouseEvent<HTMLDivElement>, bucket: Bucket) => {
     const bar = e.currentTarget.closest('.progress-container') as HTMLElement
     if (!bar) return
 

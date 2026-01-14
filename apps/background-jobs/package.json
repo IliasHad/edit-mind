@@ -17,14 +17,22 @@
     "chokidar": "^3.5.3",
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.2.1",
     "ioredis": "^5.4.2",
-    "jsonwebtoken": "^9.0.3",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "search": "workspace:*",
+    "shared": "workspace:*",
+    "ai": "workspace:*",
+            "vector": "workspace:*",
+    "media-utils": "workspace:*",
+        "db": "workspace:*"
+,    "smart-collections": "workspace:*",
+ "immich": "workspace:*"
+
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.5",
-    "@types/jsonwebtoken": "^9.0.10"
+    "@types/express": "^5.0.5"
   }
 }

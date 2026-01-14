@@ -13,7 +13,8 @@
   },
   "scripts": {
     "build": "turbo build --filter='./packages/*'",
-    "build:watch": "turbo watch build --filter='./packages/*'"
+    "build:watch": "turbo watch build --filter='./packages/*'",
+    "build:background-jobs": "turbo build --filter='./apps/background-jobs'"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -23,9 +24,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@vitest/ui": "^4.0.17",
     "tsconfig-paths": "^4.2.0",
     "turbo": "^2.7.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   },
   "pnpm": {
     "overrides": {

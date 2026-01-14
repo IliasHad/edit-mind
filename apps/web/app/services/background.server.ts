@@ -1,5 +1,5 @@
+import { createJWTService } from '@shared/services/jwt'
 import { logger } from '@shared/services/logger'
-import jwt from 'jsonwebtoken'
 import { env } from '~/env'
 
 export async function backgroundJobsFetch<B, R>(
@@ -11,7 +11,8 @@ export async function backgroundJobsFetch<B, R>(
   const backgroundJobsUrl = env.BACKGROUND_JOBS_URL
 
   try {
-    const token = generateToken({
+    const jwt = createJWTService(env.SESSION_SECRET)
+    const token = jwt.encode({
       userId: user.id,
       email: user.email,
     })
@@ -37,13 +38,4 @@ export async function backgroundJobsFetch<B, R>(
     logger.error(error)
     throw error
   }
-}
-
-interface TokenPayload {
-  userId: string
-  email?: string
-}
-
-export function generateToken(payload: TokenPayload, expiresIn: `${number}d` = '30d'): string {
-  return jwt.sign(payload, env.SESSION_SECRET, { expiresIn })
 }

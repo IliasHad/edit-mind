@@ -5,11 +5,14 @@ import { getUser } from '~/services/user.sever'
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const user = await getUser(request)
+
     if (!user) {
-      return redirect('/auth/login')
+      throw redirect('/auth/login')
     }
+
+    return redirect('/app/home')
   } catch (error) {
     logger.error(error)
-    return redirect('/auth/login')
+    throw redirect('/auth/login')
   }
 }

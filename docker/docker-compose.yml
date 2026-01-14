@@ -10,8 +10,11 @@ services:
         PNPM_VERSION: 10.20.0
     image: edit-mind-background-jobs:${VERSION:-latest}
     container_name: edit-mind-background-jobs
+    env_file:
+      - .env.system
+      - .env
     ports:
-      - "${BACKGROUND_JOBS_PORT:-4000}:4000"
+      - "${BACKGROUND_JOBS_PORT}:4000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -21,9 +24,6 @@ services:
         condition: service_started
       ml:
           condition: service_started
-    env_file:
-      - .env
-      - .env.system
     networks:
       - app-network
     volumes:
@@ -40,10 +40,11 @@ services:
         PNPM_VERSION: 10.20.0
     image: edit-mind-web:${VERSION:-latest}
     container_name: edit-mind-web
-    environment:
-      NODE_ENV: "production"
+    env_file:
+      - .env.system
+      - .env
     ports:
-      - "${WEB_PORT:-3745}:3745"
+      - "${PORT}:3745"
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,9 +52,6 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
-    env_file:
-      - .env
-      - .env.system
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
       - ../.data:/app/data
@@ -64,10 +62,13 @@ services:
     image: chromadb/chroma:1.3.5
     container_name: edit-mind-chroma
     restart: unless-stopped
+    env_file:
+      - .env.system
+      - .env
     environment:
       CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
     ports:
-      - "${CHROMA_PORT:-8000}:8000"
+      - "${CHROMA_PORT}:8000"
     volumes:
       - ../.data/chroma:/chroma/chroma
     networks:
@@ -77,6 +78,9 @@ services:
     restart: unless-stopped
     image: redis:7
     container_name: edit-mind-redis
+    env_file:
+      - .env.system
+      - .env
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
@@ -94,10 +98,10 @@ services:
     container_name: edit-mind-postgres
     restart: unless-stopped
     env_file:
-      - .env
       - .env.system
+      - .env
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "${POSTGRES_PORT}:5432"
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
@@ -118,11 +122,11 @@ services:
         PYTHON_VERSION: 3.11
     image: edit-mind-ml:latest
     container_name: edit-mind-ml
-    ports:
-      - "${ML_WS_PORT:-8765}:8765"
     env_file:
-      - .env
       - .env.system
+      - .env
+    ports:
+      - "${ML_PORT}:8765"
     environment:
       YOLO_CONFIG_DIR: /ml-models/ultralytics
       DEEPFACE_HOME: /ml-models/deepface

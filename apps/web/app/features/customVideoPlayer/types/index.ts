@@ -66,3 +66,9 @@ export interface OverlayManagerProps {
   videoDimensions: VideoDimensions
   videoRef: React.RefObject<HTMLVideoElement | null>
 }
+
+export interface Bucket {
+  end: number
+  start: number
+  scenes: Scene[]
+}

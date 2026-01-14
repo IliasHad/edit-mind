@@ -10,7 +10,7 @@ import {
   ANALYTICS_RESPONSE_PROMPT,
 } from '../constants/prompts'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
-import { YearInReviewDataSchema } from '@shared/schemas/yearInReview'
+import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import type { VideoWithScenes } from '@shared/types/video'
 import type { YearStats } from '@shared/types/stats'
 import { getVideoAnalytics } from '@shared/utils/analytics'
@@ -118,7 +118,7 @@ class OllamaLLM {
     videos: VideoWithScenes[],
     extraDetails: string,
     projectInstructions?: string
-  ): Promise<ModelResponse<any>> {
+  ): Promise<ModelResponse<YearInReviewData | null>> {
     try {
       let prompt = YEAR_IN_REVIEW(stats, videos, extraDetails, projectInstructions)
       let estimatedTokens = Math.ceil(prompt.length / 4)

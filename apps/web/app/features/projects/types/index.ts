@@ -1,14 +1,8 @@
-import type { Project, Video } from '@prisma/client'
+import type { Project } from '@prisma/client';
 
 export type ProjectWithVideosIds = Project & {
-    videosIds: { id: string }[]
+    videos: { id: string }[]
     _count?: {
         videos: number
-    }
-}
-
-export interface VideoWithFolderPath extends Video {
-    folder: {
-        path: string
     }
 }

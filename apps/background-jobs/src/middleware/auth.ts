@@ -1,3 +1,4 @@
+import { createJWTService } from '@shared/services/jwt'
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
@@ -9,16 +10,11 @@ const prisma = new PrismaClient()
 export interface AuthenticatedRequest extends Request {
   userId: string
 }
-interface JWTPayload {
-  userId: string
-  email?: string
-  iat?: number
-  exp?: number
-}
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const token = req.headers['authorization']?.replace('Bearer ', '')
+    const jwt = createJWTService(env.SESSION_SECRET)
+    const token = jwt.extractFromHeader(req.headers['authorization'])
 
     if (!token) {
       res.status(401).json({
@@ -28,7 +24,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return
     }
 
-    const decoded = jwt.verify(token, env.SESSION_SECRET?.toString()) as JWTPayload
+    const decoded = jwt.verify(token)
 
     if (!decoded.userId) {
       res.status(401).json({

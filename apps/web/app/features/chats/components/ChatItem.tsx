@@ -4,15 +4,15 @@ import { smartFormatDate } from '@shared/utils/duration'
 import type { Chat } from '@prisma/client'
 import { useChats } from '../hooks/useChats'
 import { DeleteModal } from '~/features/shared/components/DeleteModal'
-import { useDeleteModal } from '~/features/shared/hooks/useDeleteModal'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useModal } from '~/features/shared/hooks/useModal'
 
 export function ChatItem({ chat }: { chat: Chat }) {
   const { chatId } = useParams()
   const isActive = chatId === chat.id
   const { deleteChat } = useChats()
-  const { isOpen, openModal, closeModal } = useDeleteModal()
+  const { isOpen, openModal, closeModal } = useModal()
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 

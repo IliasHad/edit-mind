@@ -8,7 +8,7 @@ export async function loader({ request }: { request: Request }) {
   const startTime = url.searchParams.get('startTime')
 
   if (!source) {
-    throw new Response('Video not found', { status: 404 })
+    return new Response('source is required', { status: 400 })
   }
 
   try {
@@ -20,8 +20,10 @@ export async function loader({ request }: { request: Request }) {
     if (video) {
       return redirect(`/app/videos/${video.id}?startTime=${startTime}`)
     }
+
+    return new Response('Video not found', { status: 404 })
   } catch (error) {
     logger.error(error)
-    throw new Error('Video not found')
+    return new Response('Error loading your video', { status: 500 })
   }
 }

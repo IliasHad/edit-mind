@@ -1,14 +1,13 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { ProjectCreateInput, ProjectUpdateInput } from '../schemas'
-import type { ProjectWithVideosIds, VideoWithFolderPath } from '../types';
+import type { ProjectWithVideosIds } from '../types';
 import { apiClient } from '../services/api'
 
 interface ProjectsState {
   projects: ProjectWithVideosIds[]
   currentProject: ProjectWithVideosIds | null
   isLoading: boolean
-  availableVideos: VideoWithFolderPath[]
   error: string | null
   showSuccess?: boolean
   fetchProjects: () => Promise<void>
@@ -31,7 +30,6 @@ export const useProjectsStore = create<ProjectsState>()(
         currentProject: null,
         isLoading: false,
         error: null,
-        availableVideos: [],
         showSuccess: false,
 
         fetchProjects: async () => {
@@ -60,7 +58,7 @@ export const useProjectsStore = create<ProjectsState>()(
             const { project } = await apiClient.get(id)
 
             set({
-              currentProject: project,
+              currentProject: { ...project },
               isLoading: false,
             })
             return project
@@ -119,7 +117,6 @@ export const useProjectsStore = create<ProjectsState>()(
           try {
             const { project } = await apiClient.update(id, input)
 
-            // Update the project in the list
             set((state) => ({
               projects: state.projects.map((p) => (p.id === id ? project : p)),
               currentProject:

@@ -143,4 +143,4 @@ COPY --from=builder /app/apps/web ./apps/web
 
 ENV NODE_ENV=testing
 
-CMD ["pnpm", "--filter", "ai", "test"]
+CMD ["pnpm", "--filter", "''./packages/**'", "test"]

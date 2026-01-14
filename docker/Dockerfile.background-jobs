@@ -153,4 +153,4 @@ COPY turbo.json ./
 
 RUN pnpm --filter prisma generate
 
-CMD ["pnpm", "--filter", "ai", "test"]
+CMD ["pnpm", "--filter", "''./packages/**'", "test"]

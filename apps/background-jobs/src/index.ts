@@ -52,6 +52,7 @@ import { shutdownWorkers } from './utils/workers'
 import { logger } from '@shared/services/logger'
 import { env } from './utils/env'
 import { SMART_COLLECTION_CRON_PATTERN } from '@smart-collections/constants/collections'
+import { rateLimiter } from './middleware/rateLimiter'
 
 const app = express()
 const server = createServer(app)
@@ -97,12 +98,12 @@ app.use(
   })
 )
 
-app.use('/internal/folders', requireAuth, foldersRoute)
-app.use('/internal/chats', requireAuth, chatsRoute)
-app.use('/internal/exports', requireAuth, exportsRoute)
-app.use('/internal/faces', requireAuth, facesRoute)
-app.use('/internal/indexer', requireAuth, indexerRoute)
-app.use('/internal/immich', requireAuth, immichRoute)
+app.use('/internal/folders', requireAuth, rateLimiter, foldersRoute)
+app.use('/internal/chats', requireAuth, rateLimiter, chatsRoute)
+app.use('/internal/exports', requireAuth, rateLimiter, exportsRoute)
+app.use('/internal/faces', requireAuth, rateLimiter, facesRoute)
+app.use('/internal/indexer', requireAuth, rateLimiter, indexerRoute)
+app.use('/internal/immich', requireAuth, rateLimiter, immichRoute)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 

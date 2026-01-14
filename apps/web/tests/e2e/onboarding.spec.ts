@@ -34,6 +34,8 @@ test.describe('Onboarding Page', () => {
     await page.goto('/onboarding')
     await page.getByRole('button', { name: 'Skip' }).click()
 
+    await page.waitForLoadState('networkidle')
+
     await expect(page).toHaveURL(/.*auth\/login/)
     await expect(page.getByText('Welcome back')).toBeVisible()
   })

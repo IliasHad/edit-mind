@@ -2,7 +2,7 @@ import { CalendarIcon, FilmIcon } from '@heroicons/react/24/outline'
 import { smartFormatDate } from '@shared/utils/duration'
 import clsx from 'clsx'
 import { Link } from 'react-router'
-import { useDeleteModal } from '~/features/shared/hooks/useDeleteModal'
+import { useModal } from '~/features/shared/hooks/useModal'
 import { DeleteModal } from '~/features/shared/components/DeleteModal'
 import { useCurrentProject } from '../hooks/useCurrentProject'
 
@@ -17,7 +17,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ id, name, _count, createdAt, className }: ProjectCardProps) {
-  const { isOpen, openModal, closeModal } = useDeleteModal()
+  const { isOpen, openModal, closeModal } = useModal()
 
   const { deleteProject } = useCurrentProject()
 

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useFoldersStore } from '../stores'
 
 export const useFolders = () => {
-    const { fetchFolders, folders, isLoading, error } = useFoldersStore()
+    const { fetchFolders, folders, isLoading, error, createFolder, totalVideos, totalDuration } = useFoldersStore()
 
     useEffect(() => {
         fetchFolders()
@@ -13,5 +13,8 @@ export const useFolders = () => {
         folders,
         loading: isLoading,
         error,
+        createFolder,
+        totalVideos,
+        totalDuration
     }
 }
