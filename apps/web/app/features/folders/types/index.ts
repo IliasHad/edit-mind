@@ -1,18 +1,11 @@
 import type { Folder, Job } from '@prisma/client'
+import { z } from 'zod'
+import type { FolderCreateSchema,FolderUpdateSchema } from '../schemas/folder'
 
 export type FolderWithJobs = Folder & {
-    jobs: Job[]
+  jobs: Job[]
 }
 
-export interface FolderCreateInput {
-    path: string
-    watcherEnabled?: boolean
-    includePatterns?: string[]
-    excludePatterns?: string[]
-}
+export type FolderCreateInput = z.infer<typeof FolderCreateSchema>
 
-export interface FolderUpdateInput {
-    watcherEnabled?: boolean
-    includePatterns?: string[]
-    excludePatterns?: string[]
-}
+export type FolderUpdateInput = z.infer<typeof FolderUpdateSchema>
