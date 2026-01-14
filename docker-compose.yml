@@ -57,7 +57,7 @@ services:
     ports:
       - "${CHROMA_PORT}:8000"
     volumes:
-      - .chroma:/chroma/chroma
+      - chroma_data:/chroma/chroma
     networks:
       - app-network
 
@@ -92,7 +92,7 @@ services:
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - .pgdata/:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -122,6 +122,10 @@ volumes:
   redis_data:
     driver: local
   ml-models:
+    driver: local
+  chroma_data:
+    driver: local
+  pg_data:
     driver: local
 
 networks:
