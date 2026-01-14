@@ -16,7 +16,6 @@
   },
   "scripts": {
     "build": "tsc --outDir dist",
-    "test": "vitest run",
     "test:ui": "vitest --ui"
   },
   "dependencies": {
