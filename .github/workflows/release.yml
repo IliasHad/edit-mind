@@ -6,9 +6,15 @@ on:
       - main
     tags:
       - 'v*'
+    paths-ignore:
+      - '**.md'
+      - '**/*.md'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - '**/*.md'
   workflow_dispatch:
 
 env:
