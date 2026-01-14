@@ -119,7 +119,7 @@ services:
     ports:
       - "${CHROMA_PORT}:8000"
     volumes:
-      - ../.chroma:/chroma/chroma
+      - ../.chroma:/data
     networks:
       - app-network-dev
 

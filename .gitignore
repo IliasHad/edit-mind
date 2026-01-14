@@ -31,3 +31,4 @@ ml-models
 tsconfig.tsbuildinfo
 .pgdata
 playwright-auth.json
+.chroma
