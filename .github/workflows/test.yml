@@ -1,0 +1,61 @@
+name: Test
+
+on:
+  workflow_run:
+    workflows:
+      - Build, Push & Release Docker Images
+    types:
+      - completed
+
+jobs:
+  tests:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '10.20.0'
+
+      - name: Copy environment files
+        run: |
+          cp .env.example docker/.env
+          cp .env.system.example docker/.env.system
+
+      - name: Start Docker Compose services
+        run: docker-compose up -d
+        env:
+          VERSION: test
+
+      - name: Check service status
+        run: docker-compose ps
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Playwright tests
+        run: pnpm --filter web test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            **/test-results/
+            **/playwright-report/
+          retention-days: 7
+
+      - name: Stop containers
+        if: always()
+        run: docker-compose down -v
