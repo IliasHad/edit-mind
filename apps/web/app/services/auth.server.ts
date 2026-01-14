@@ -10,7 +10,7 @@ export async function login(request: Request, values: z.infer<typeof LoginSchema
   if (!user) return { error: 'Invalid email or password' }
 
   const passwordMatch = await bcrypt.compare(values.password, user.password)
-  if (!passwordMatch) return { error: 'Invalid email or password' }
+  if (!passwordMatch) return { error: 'Invalid email or password', fieldErrors: [] }
 
   const session = await getSession(request.headers.get('Cookie'))
   session.set('userId', user.id)

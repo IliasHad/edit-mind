@@ -30,3 +30,4 @@ ml-models
 .pytest_cache
 tsconfig.tsbuildinfo
 .pgdata
+playwright-auth.json
