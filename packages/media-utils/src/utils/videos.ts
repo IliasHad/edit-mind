@@ -89,6 +89,41 @@ export async function generateThumbnail(
   const ffmpegProcess = await spawnFFmpeg(args)
   return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
 }
+export async function generateVideoCover(
+  videoPath: string,
+  thumbnailPath: string,
+  options?: {
+    keyframe?: number
+    quality?: string
+    scale?: string
+  }
+): Promise<void> {
+  await validateFile(videoPath)
+
+  const quality = options?.quality ?? THUMBNAIL_QUALITY
+  const scale = options?.scale ?? THUMBNAIL_SCALE
+  const keyframe = options?.keyframe ?? 0
+
+  const args = [
+    '-skip_frame',
+    'nokey',
+    '-i',
+    videoPath,
+    '-vf',
+    `select='eq(pict_type\\,I)*eq(n\\,${keyframe})',scale=${scale}`,
+    '-vframes',
+    '1',
+    '-q:v',
+    quality,
+    thumbnailPath,
+    '-y',
+    '-loglevel',
+    'error',
+  ]
+
+  const ffmpegProcess = await spawnFFmpeg(args)
+  return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
+}
 
 export async function generateAllThumbnails(
   videoPath: string,

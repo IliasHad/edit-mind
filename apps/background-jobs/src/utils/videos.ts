@@ -1,7 +1,7 @@
 import path from 'path'
 import { logger } from '@shared/services/logger'
 import { THUMBNAILS_DIR } from '@shared/constants'
-import { generateThumbnail } from '@media-utils/utils/videos'
+import { generateVideoCover } from '@media-utils/utils/videos'
 import { Video } from '@shared/types/video'
 import { FolderModel, UserModel, VideoModel } from '@db/index'
 
@@ -21,7 +21,7 @@ export async function importVideoFromVectorDb(video: Video): Promise<void> {
       const duration = video.duration ? BigInt(Math.round(parseInt(video.duration.toString()))) : BigInt(0)
       const thumbnailPath = path.join(THUMBNAILS_DIR, `${path.basename(video.source)}_cover.jpg`)
 
-      await generateThumbnail(video.source, thumbnailPath, 2, { quality: '2', scale: '1280:-1' })
+      await generateVideoCover(video.source, thumbnailPath, { quality: '2', scale: '1280:-1', keyframe: 0 })
 
       const existingVideo = await VideoModel.findFirst({
         where: {
