@@ -281,6 +281,11 @@ cd docker
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
+## Community Presentations
+
+[![Edit Mind at Twelve Labs](https://img.youtube.com/vi/k_aesDa3sFw/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_aesDa3sFw&t=1272s)  
+*Watch the Edit Mind presentation at Twelve Labs (starts at 21:12)*
+
 ---
 
 ## 📄 License
