@@ -32,8 +32,8 @@ jobs:
           cp .env.example docker/.env
           cp .env.system.example docker/.env.system
 
-      - name: Start Docker Compose services
-        run: docker-compose up -d
+      - name: Start Docker Compose web service
+        run: docker-compose up web -d
         env:
           VERSION: test
 
