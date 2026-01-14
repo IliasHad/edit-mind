@@ -5,7 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDirs": ["./src", "../.."],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -13,13 +13,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["../../packages/shared/dist/*"],
-      "@db/*": ["../../packages/db/dist/*"],
-      "@ai/*": ["./src/*"],
-      "@vector/*": ["../../packages/vector/dist/*"]
-    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

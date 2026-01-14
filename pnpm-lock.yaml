@@ -52,6 +52,9 @@ importers:
       '@bull-board/ui':
         specifier: ^6.14.1
         version: 6.14.2
+      ai:
+        specifier: workspace:*
+        version: link:../../packages/ai
       archiver:
         specifier: ^7.0.1
         version: 7.0.1
@@ -64,15 +67,36 @@ importers:
       cors:
         specifier: ^2.8.5
         version: 2.8.5
+      db:
+        specifier: workspace:*
+        version: link:../../packages/db
       express:
         specifier: ^4.21.2
         version: 4.21.2
       express-rate-limit:
         specifier: ^8.2.1
         version: 8.2.1(express@4.21.2)
+      immich:
+        specifier: workspace:*
+        version: link:../../packages/immich
       ioredis:
         specifier: ^5.4.2
         version: 5.8.2
+      media-utils:
+        specifier: workspace:*
+        version: link:../../packages/media-utils
+      search:
+        specifier: workspace:*
+        version: link:../../packages/search
+      shared:
+        specifier: workspace:*
+        version: link:../../packages/shared
+      smart-collections:
+        specifier: workspace:*
+        version: link:../../packages/smart-collections
+      vector:
+        specifier: workspace:*
+        version: link:../../packages/vector
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -186,9 +210,6 @@ importers:
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.9.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.1))
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.1)(@vitest/ui@4.0.17)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.1)
 
   apps/web:
     dependencies:

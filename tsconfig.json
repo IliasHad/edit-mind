@@ -2,14 +2,14 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@ai/*": ["./packages/ai/dist/*"],
-      "@media-utils/*": ["./packages/media-utils/dist/*"],
-      "@vector/*": ["./packages/vector/dist/*"],
-      "@db/*": ["./packages/db/dist/*"],
-      "@shared/*": ["./packages/shared/dist/*"],
-      "@ui/*": ["./packages/ui/dist/*"],
-      "@search/*": ["./packages/search/dist/*"],
-      "@smart-collections/*": ["./packages/smart-collections/dist/*"]
+      "@ai/*": ["./packages/ai/src/*"],
+      "@media-utils/*": ["./packages/media-utils/src/*"],
+      "@vector/*": ["./packages/vector/src/*"],
+      "@db/*": ["./packages/db/src/*"],
+      "@shared/*": ["./packages/shared/src/*"],
+      "@search/*": ["./packages/search/src/*"],
+      "@smart-collections/*": ["./packages/smart-collections/src/*"],
+      "@immich/*": ["./packages/immich/src/*"]
     }
   },
   "exclude": ["node_modules", "**/dist", "**/node_modules"]

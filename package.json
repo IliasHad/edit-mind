@@ -13,7 +13,8 @@
   },
   "scripts": {
     "build": "turbo build --filter='./packages/*'",
-    "build:watch": "turbo watch build --filter='./packages/*'"
+    "build:watch": "turbo watch build --filter='./packages/*'",
+    "build:background-jobs": "turbo build --filter='./apps/background-jobs'"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

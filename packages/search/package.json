@@ -15,7 +15,7 @@
     "url": "https://github.com/iliashad/edit-mind"
   },
   "scripts": {
-    "build": "tsc --outDir dist"
+    "build": "tsc"
   },
   "dependencies": {
     "compute-cosine-similarity": "^1.1.0",
