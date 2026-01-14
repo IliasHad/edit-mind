@@ -42,7 +42,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE ${ML_PORT}
 
 
-CMD ["sh", "-c", "python ./python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
+CMD ["sh", "-c", "python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
 
 FROM python-deps AS development
 
@@ -57,7 +57,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE ${ML_PORT}
 
 
-CMD ["sh", "-c", "python ./python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
+CMD ["sh", "-c", "python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
 
 FROM base AS testing
 
