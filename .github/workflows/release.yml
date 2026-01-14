@@ -44,19 +44,6 @@ jobs:
             context: .
 
     steps:
-      - name: Maximize build space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo rm -rf /usr/local/.ghcup
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /usr/local/share/boost
-          sudo apt-get autoremove -y
-          sudo apt-get clean
-          sudo docker system prune -a -f
-          df -h
       - name: Set lowercase image prefix
         run: |
           echo "IMAGE_PREFIX=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/edit-mind" >> $GITHUB_ENV
