@@ -30,8 +30,8 @@ jobs:
 
       - name: Copy environment files
         run: |
-          cp .env.example docker/.env
-          cp .env.system.example docker/.env.system
+          cp .env.example .env
+          cp .env.system.example .env.system
 
       - name: Start Docker Compose web service
         run: docker compose up web -d
