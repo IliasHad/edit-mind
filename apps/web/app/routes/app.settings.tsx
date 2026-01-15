@@ -25,12 +25,11 @@ import { useModal } from '~/features/shared/hooks/useModal'
 export const meta: MetaFunction = () => [{ title: 'Settings | Edit Mind' }]
 
 export default function SettingsPage() {
-  const { folders, createFolder, totalVideos, totalDuration } = useFolders()
-    const { deleteFolder, setCurrentFolder, currentFolder } = useCurrentFolder()
+  const { folders, createFolder, totalVideos, totalDuration, refreshFolders } = useFolders()
+  const { deleteFolder, setCurrentFolder, currentFolder } = useCurrentFolder()
 
   const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
   const { isOpen: isAddModalOpen, openModal: openAddModal, closeModal: closeAddModal } = useModal()
-
 
   const stats = useMemo(
     () => [
@@ -64,6 +63,7 @@ export default function SettingsPage() {
   const handleAddFolder = async (path: string): Promise<boolean> => {
     try {
       await createFolder({ path })
+      await refreshFolders()
       return true
     } catch (error) {
       console.error('Failed to add folder:', error)

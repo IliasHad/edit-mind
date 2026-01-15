@@ -22,6 +22,10 @@ async function processSmartCollectionJob(job: Job) {
       select: { id: true, source: true, thumbnailUrl: true, duration: true },
     })
 
+    if (allVideos.length === 0) {
+      return { skip: true }
+    }
+
     // Build a map of ids and video source to link the collection item with the video source
 
     const videoSourceToIdMap = new Map(allVideos.map((v) => [v.source, v.id]))
