@@ -116,7 +116,7 @@ services:
       - app-network
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ml-models:/app/ml-models:rw
+      - ml-models:/ml-models:rw
       - .data:/app/data
 volumes:
   redis_data:
