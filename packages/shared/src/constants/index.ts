@@ -11,6 +11,8 @@ export const CACHE_FILE = '.locations.json'
 // Redis Cache
 export const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 export const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000 // 30 days
+export const REDIS_HOST = process.env.REDIS_HOST || 'localhost'
+export const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379')
 
 export const MEDIA_BASE_PATH = '/media/videos'
 

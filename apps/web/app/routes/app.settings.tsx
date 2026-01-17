@@ -25,7 +25,7 @@ import { useModal } from '~/features/shared/hooks/useModal'
 export const meta: MetaFunction = () => [{ title: 'Settings | Edit Mind' }]
 
 export default function SettingsPage() {
-  const { folders, createFolder, totalVideos, totalDuration, refreshFolders } = useFolders()
+  const { folders, createFolder, totalVideos, totalDuration, error, loading } = useFolders()
   const { deleteFolder, setCurrentFolder, currentFolder } = useCurrentFolder()
 
   const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
@@ -62,8 +62,10 @@ export default function SettingsPage() {
 
   const handleAddFolder = async (path: string): Promise<boolean> => {
     try {
-      await createFolder({ path })
-      await refreshFolders()
+      const folder = await createFolder({ path })
+      if (folder) {
+        closeAddModal()
+      }
       return true
     } catch (error) {
       console.error('Failed to add folder:', error)
@@ -257,7 +259,13 @@ export default function SettingsPage() {
         </motion.p>
       </motion.main>
 
-      <AddFolder isOpen={isAddModalOpen} onClose={closeAddModal} onAdd={handleAddFolder} />
+      <AddFolder
+        isOpen={isAddModalOpen}
+        onClose={closeAddModal}
+        onAdd={handleAddFolder}
+        error={error}
+        loading={loading}
+      />
 
       <DeleteModal
         isOpen={isDeleteModalOpen}

@@ -17,7 +17,6 @@ export const UnknownFacesGrid = () => {
     loading,
   } = useFacesStore()
 
-
   return (
     <>
       <div className="flex flex-col h-full bg-white dark:bg-black">
@@ -103,7 +102,6 @@ export const UnknownFacesGrid = () => {
           </div>
         )}
       </div>
-
     </>
   )
 }
@@ -228,15 +226,6 @@ const FaceCard = ({ face, isSelected, onSelect, onDelete }: FaceCardProps) => {
                 </p>
               </div>
             </div>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-              }}
-              className="mt-3 w-full py-2 bg-white/10 backdrop-blur-sm rounded-lg text-xs font-medium text-white hover:bg-white/20 transition-colors duration-200"
-            >
-              View Details
-            </button>
           </motion.div>
 
           <motion.div

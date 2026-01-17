@@ -7,14 +7,15 @@ interface AddFolderProps {
   isOpen: boolean
   onClose: () => void
   onAdd: (path: string) => Promise<boolean>
+  error: string | null
+  loading: boolean
 }
 
-export function AddFolder({ isOpen, onClose, onAdd }: AddFolderProps) {
+export function AddFolder({ isOpen, onClose, onAdd, loading, error }: AddFolderProps) {
   const [availableFolders, setAvailableFolders] = useState<ServerFolder[]>([])
   const [currentPath, setCurrentPath] = useState('/')
   const [loadingFolders, setLoadingFolders] = useState(false)
   const [selectedPath, setSelectedPath] = useState('')
-  const [isAdding, setIsAdding] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
   const fetchAvailableFolders = useCallback(
@@ -59,14 +60,7 @@ export function AddFolder({ isOpen, onClose, onAdd }: AddFolderProps) {
 
   const handleAddFolder = async () => {
     if (!selectedPath) return
-    setIsAdding(true)
-    const success = await onAdd(selectedPath)
-    if (success) {
-      onClose()
-      setTimeout(() => setIsAdding(false), 300)
-    } else {
-      setIsAdding(false)
-    }
+    await onAdd(selectedPath)
   }
 
   const getBreadcrumbs = () => {
@@ -112,7 +106,15 @@ export function AddFolder({ isOpen, onClose, onAdd }: AddFolderProps) {
                 <XMarkIcon className="size-4 text-black/40 dark:text-white/40" />
               </button>
             </div>
-
+            {error && (
+              <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="px-6 block py-3text-sm text-red-500 truncate">
+                    {error}
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="px-6 py-3 flex items-center gap-2 overflow-x-auto text-sm text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5">
               {getBreadcrumbs().map((crumb, idx) => (
                 <div key={crumb.path} className="flex items-center gap-2 shrink-0">
@@ -191,10 +193,10 @@ export function AddFolder({ isOpen, onClose, onAdd }: AddFolderProps) {
               </button>
               <button
                 onClick={handleAddFolder}
-                disabled={!selectedPath || isAdding}
+                disabled={!selectedPath || loading}
                 className="flex items-center gap-2 px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isAdding ? (
+                {loading ? (
                   <>
                     <ArrowPathIcon className="size-4 animate-spin" />
                     Adding...

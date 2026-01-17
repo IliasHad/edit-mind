@@ -1,9 +1,5 @@
-import { IS_TESTING } from '../constants'
+import { CACHE_TTL, IS_TESTING, REDIS_HOST, REDIS_PORT } from '../constants';
 import Redis from 'ioredis'
-
-const REDIS_HOST = process.env.REDIS_HOST || 'localhost'
-const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379')
-const REDIS_TTL = 3600 // 1 hour default TTL
 
 // Only create Redis client if not testing
 export const redisClient = IS_TESTING
@@ -20,7 +16,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
   return JSON.parse(cached) as T
 }
 
-export async function setCache<T>(key: string, value: T, ttl = REDIS_TTL): Promise<void> {
+export async function setCache<T>(key: string, value: T, ttl = CACHE_TTL): Promise<void> {
   if (IS_TESTING || !redisClient) return
   await redisClient.set(key, JSON.stringify(value), 'EX', ttl)
 }
