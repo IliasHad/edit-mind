@@ -4,12 +4,13 @@ import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 import { JobStatus } from '@prisma/client'
-import { unlink, rm } from 'fs/promises';
+import { unlink, rm } from 'fs/promises'
 import { existsSync } from 'fs'
 import { getByVideoSource } from '@vector/services/vectorDb'
 import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
 import { dirname } from 'path'
+import { FolderModel, JobModel } from '@db/index'
 
 async function finalizeVideo(job: Job<VideoProcessingData>) {
   const { jobId, videoPath, scenesPath, analysisPath, transcriptionPath } = job.data
@@ -24,6 +25,24 @@ async function finalizeVideo(job: Job<VideoProcessingData>) {
 
     if (video) {
       await importVideoFromVectorDb(video)
+      const folder = await FolderModel.findByPath(dirname(videoPath))
+
+      if (folder) {
+        // We need to count all processing and pending to update the folder status to be indexed in the case of zero jobs count
+        const jobsCount = await JobModel.count({
+          where: {
+            status: {
+              in: ['pending', 'processing'],
+            },
+            folderId: folder.id
+          },
+        })
+        if (jobsCount === 0) {
+          await FolderModel.update(folder.id, {
+            status: 'indexed',
+          })
+        }
+      }
     }
 
     const filesToClean = [scenesPath, analysisPath, transcriptionPath]

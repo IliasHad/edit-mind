@@ -57,6 +57,7 @@ router.post('/:id/trigger', async (req, res) => {
     })
   } catch (error) {
     logger.error(error)
+    await FolderModel.update(id, { status: "error" })
     res.status(500).json({ error: 'Failed to process folder' })
   }
 })
