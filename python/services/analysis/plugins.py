@@ -150,3 +150,8 @@ class PluginManager:
         """Get plugin performance metrics."""
         metrics = self.metrics_collector.get_metrics()
         return [m.to_dict() for m in metrics]
+    
+    def reset_metrics(self) -> List[Dict]:
+        """Get plugin performance metrics."""
+        self.metrics_collector = PluginMetricsCollector()
+        self.frame_counters = {}
