@@ -69,7 +69,7 @@ class FaceRecognizer:
 
     def _process_face(self, face_obj: Dict) -> Optional[Dict]:
         if face_obj.get("confidence", 1.0) < self.min_face_confidence:
-            logger.info(f"Skip a face detected because it's lower than minimum confidence: {self.min_face_confidence}, confidence: {face_obj.get("confidence", 1.0)}")
+            logger.info(f"Skip a face detected because it's lower than minimum confidence: {self.min_face_confidence}, confidence: {face_obj.get('confidence', 1.0)}")
             return None
 
         face_img = face_obj["face"]
