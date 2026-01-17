@@ -65,17 +65,25 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 face, scale_factor, width, height)
             output_faces.append(scaled_face)
 
-            self.all_faces.append({
+       
+            if face['name'].startswith("Unknown_"):
+               saved =  self._track_unknown_face(
+                    frame, timestamp_ms, frame_idx, face,
+                    video_path, frame_analysis["job_id"], scale_factor
+                )
+               if saved:
+                    self.all_faces.append({
+                        "timestamp": timestamp_ms / 1000,
+                        "name": face['name'],
+                        "frame_idx": frame_idx
+                    })
+            else: 
+             self.all_faces.append({
                 "timestamp": timestamp_ms / 1000,
                 "name": face['name'],
                 "frame_idx": frame_idx
             })
 
-            if face['name'].startswith("Unknown_"):
-                self._track_unknown_face(
-                    frame, timestamp_ms, frame_idx, face,
-                    video_path, frame_analysis["job_id"], scale_factor
-                )
 
         if output_faces:
             names = [f['name'] for f in output_faces]
@@ -145,23 +153,24 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         # face images, we use the scale_factor that we pass when we scale down the frame, revert back to original frame and save it the image using _load_original_frame and opencv
         # save a json file that we can keep track of the face data, so later on the user can label the face once per video and we'll get all scenes where the face recognized
         # over FaceRecognizer._recognize_or_cluster, we're recognize the face or cluster the unknown using the embedding
-
+         
         if face_id not in self.saved_unknown_faces:
-            self._save_first_occurrence(
+            result = self._save_first_occurrence(
                 frame, timestamp_ms, frame_idx, face, video_path,
                 appearance_data, job_id, scale_factor
             )
         else:
             json_path = self.saved_unknown_faces[face_id]["json_path"]
             if os.path.exists(json_path):
-                self._update_appearances(face_id, appearance_data)
+             result = self._update_appearances(face_id, appearance_data)
             else:
                 # JSON file was deleted, treat as first occurrence
-                self._save_first_occurrence(
+                result = self._save_first_occurrence(
                     frame, timestamp_ms, frame_idx, face, video_path,
                     appearance_data, job_id, scale_factor
                 )
-
+        return result
+    
     def _save_first_occurrence(
         self,
         frame: np.ndarray,
@@ -203,7 +212,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 f"Invalid coordinates for {face_id}: "
                 f"left={left}, right={right}, top={top}, bottom={bottom}"
             )
-            return
+            return False
 
         face_image = original_frame[top:bottom, left:right]
         if face_image.size == 0:
@@ -211,7 +220,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 f"Empty face image for {face_id} at frame {frame_idx}. "
                 f"Coords: ({left},{top})-({right},{bottom}), Frame size: {width}x{height}"
             )
-            return
+            return False
 
         video_name = Path(video_path).stem
         unique_suffix = hashlib.md5(
@@ -253,9 +262,10 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 "image_path": str(image_path),
                 "appearances": [appearance_data]
             }
-
+            return True
         except Exception as e:
             logger.error(f"Failed to save unknown face {face_id}: {e}")
+            return False
 
     def _update_appearances(self, face_id: str, appearance_data: Dict) -> None:
         """" Update exciting unknown face appearances """
@@ -272,9 +282,11 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 metadata, indent=2, ensure_ascii=False))
             self.saved_unknown_faces[face_id]["appearances"].append(
                 appearance_data)
+            return True
 
         except Exception as e:
             logger.error(f"Failed to update appearances for {face_id}: {e}")
+            return False
 
     def _load_original_frame(self, frame: np.ndarray, video_path: str, timestamp_ms: int) -> Optional[np.ndarray]:
         """" Load original frame to save the unknown face image with high resolution """
