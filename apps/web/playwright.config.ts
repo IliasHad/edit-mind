@@ -14,7 +14,8 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
 
-  timeout: 1000 * 10, // 10 minutes
+  timeout: 1000 * 60, // 60 seconds
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -25,7 +26,6 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-
   },
 
   /* Configure projects for major browsers */
@@ -46,9 +46,10 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
+  // Only start webServer locally, not in CI (Docker Compose handles it in CI)
+  webServer: process.env.CI ? undefined : {
     command: 'pnpm dev',
     url: 'http://localhost:3745',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
   },
 })

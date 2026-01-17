@@ -36,10 +36,16 @@ jobs:
       - name: Start Docker Compose web service
         run: docker compose up web -d
         env:
-          VERSION: test
+          NODE_ENV: testing
 
       - name: Check service status
         run: docker compose ps
+
+      - name: Wait for service to be ready
+        run: |
+          echo "Waiting for service to be ready on port 3745..."
+          timeout 120 bash -c 'until curl -f http://localhost:3745 2>/dev/null; do echo "Waiting..."; sleep 2; done'
+          echo "Service is ready!"
 
       - name: Install dependencies
         run: pnpm install
