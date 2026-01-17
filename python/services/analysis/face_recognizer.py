@@ -18,14 +18,12 @@ class FaceRecognizer:
         self,
         tolerance: float = 0.30,
         model: str = 'VGG-Face',
-        min_face_confidence: float = 0.40,
         unknown_clustering_threshold: float = 0.60,
         detector_backend: str = "yolov8n"
     ):
         self.tolerance = tolerance
         self.model = model
         self.detector_backend = detector_backend
-        self.min_face_confidence = min_face_confidence
         self.unknown_clustering_threshold = unknown_clustering_threshold
         self.unknown_face_counter = 0
         self.unknown_faces_registry: Dict[str, Dict] = {}
@@ -34,8 +32,7 @@ class FaceRecognizer:
         logger.info(
             f"FaceRecognizer initialized: model={model}, tolerance={tolerance}, "
             f"clustering_threshold={unknown_clustering_threshold}, "
-            f"detector_backend={detector_backend}, "
-            f"min_face_confidence={min_face_confidence}"
+            f"detector_backend={detector_backend}"
         )
 
     def reset_unknown_registry(self) -> None:
@@ -68,9 +65,6 @@ class FaceRecognizer:
         return recognized_faces
 
     def _process_face(self, face_obj: Dict) -> Optional[Dict]:
-        if face_obj.get("confidence", 1.0) < self.min_face_confidence:
-            logger.info(f"Skip a face detected because it's lower than minimum confidence: {self.min_face_confidence}, confidence: {face_obj.get('confidence', 1.0)}")
-            return None
 
         face_img = face_obj["face"]
         facial_area = face_obj['facial_area']
