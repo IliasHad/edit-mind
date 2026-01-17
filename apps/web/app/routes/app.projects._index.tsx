@@ -35,7 +35,7 @@ export default function ProjectsIndexPage() {
               Start your first project to search and interact with your video library using AI
             </p>
             <Link
-              to="/app/project/new"
+              to="/app/projects/new"
               className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-sm hover:shadow-md"
             >
               <PlusIcon className="w-4 h-4" />
