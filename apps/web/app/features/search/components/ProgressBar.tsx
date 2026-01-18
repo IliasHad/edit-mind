@@ -1,13 +1,21 @@
 import type { SceneAndMatch } from '@shared/types/video'
-import { useMemo } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 
 interface ProgressBarProps {
   scenes: SceneAndMatch[]
   duration: number
 }
 
-function bucketScenes(scenes: SceneAndMatch[], duration: number, buckets = 200) {
-  const result = Array.from({ length: buckets }, () => false)
+interface BucketData {
+  matched: boolean
+  thumbnailUrl: string | null
+}
+
+function bucketScenes(scenes: SceneAndMatch[], duration: number, buckets = 200): BucketData[] {
+  const result: BucketData[] = Array.from({ length: buckets }, () => ({
+    matched: false,
+    thumbnailUrl: null,
+  }))
 
   for (const scene of scenes) {
     const start = Math.floor((scene.startTime / duration) * buckets)
@@ -15,7 +23,12 @@ function bucketScenes(scenes: SceneAndMatch[], duration: number, buckets = 200) 
 
     if (scene.matched) {
       for (let i = start; i < end; i++) {
-        result[i] = true
+        if (i >= 0 && i < buckets) {
+          result[i] = {
+            matched: true,
+            thumbnailUrl: scene.thumbnailUrl,
+          }
+        }
       }
     }
   }
@@ -24,19 +37,71 @@ function bucketScenes(scenes: SceneAndMatch[], duration: number, buckets = 200) 
 }
 
 export function ProgressBar({ scenes, duration }: ProgressBarProps) {
+  const [hoveredBucket, setHoveredBucket] = useState<number | null>(null)
+  const [mouseX, setMouseX] = useState(0)
+
   const buckets = useMemo(() => bucketScenes(scenes, duration, 200), [scenes, duration])
 
+  const hoveredThumbnail = useMemo(() => {
+    if (hoveredBucket === null) return null
+    return buckets[hoveredBucket]?.thumbnailUrl
+  }, [hoveredBucket, buckets])
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const container = e.currentTarget
+      const rect = container.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const bucketIndex = Math.floor((x / rect.width) * buckets.length)
+
+      setMouseX(x)
+
+      if (bucketIndex >= 0 && bucketIndex < buckets.length && buckets[bucketIndex].matched) {
+        setHoveredBucket(bucketIndex)
+      } else {
+        setHoveredBucket(null)
+      }
+    },
+    [buckets]
+  )
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredBucket(null)
+  }, [])
+
   return (
-    <div className="flex h-4 w-full rounded-full overflow-hidden">
-      {buckets.map((matched, i) => (
-        <div key={i} className="relative flex-1">
-          <div
-            className={`absolute left-0 right-0 ${
-              matched ? 'top-0 bottom-0 w-2 z-10 bg-green-600' : 'top-0 bottom-0  bg-white/50'
-            }`}
-          />
+    <div className="relative bottom-0 flex h-full w-full" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+      {buckets.map((bucket, i) => (
+        <div key={i} className="relative flex-1 w-full h-full">
+          {bucket.matched ? (
+            <div className="absolute bg-green-500 h-1 bottom-0 right-0 left-0" />
+          ) : (
+            <div className="absolute bg-white/50 h-1 bottom-0 right-0 left-0" />
+          )}
         </div>
       ))}
+
+      {hoveredThumbnail && (
+        <div
+          className="absolute z-300 pointer-events-none"
+          style={{
+            left: `${mouseX}px`,
+            bottom: '20px',
+            marginBottom: '8px',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <div className="relative rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/20 bg-black">
+            <img
+              src={`/thumbnails/${encodeURIComponent(hoveredThumbnail)}`}
+              alt="Scene preview"
+              className="w-full h-27 object-cover"
+              loading="eager"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-2"></div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
