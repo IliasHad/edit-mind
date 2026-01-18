@@ -59,10 +59,10 @@ export const smartCollectionQueue = createQueue('smart-collection')
 
 export const chatQueue = createQueue('chat-message', {
   defaultJobOptions: {
-    attempts: 2,
+    attempts: 10,
     backoff: {
       type: 'exponential',
-      delay: 1000,
+      delay: 1000 * 60 * 2, // 2 minutes delay
     },
   },
 })
