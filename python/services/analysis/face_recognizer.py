@@ -18,12 +18,14 @@ class FaceRecognizer:
         self,
         tolerance: float = 0.30,
         model: str = 'VGG-Face',
-        unknown_clustering_threshold: float = 0.60,
+        min_face_confidence: float = 0.60,
+        unknown_clustering_threshold: float = 0.50,
         detector_backend: str = "yolov8n"
     ):
         self.tolerance = tolerance
         self.model = model
         self.detector_backend = detector_backend
+        self.min_face_confidence = min_face_confidence
         self.unknown_clustering_threshold = unknown_clustering_threshold
         self.unknown_face_counter = 0
         self.unknown_faces_registry: Dict[str, Dict] = {}
@@ -32,7 +34,8 @@ class FaceRecognizer:
         logger.info(
             f"FaceRecognizer initialized: model={model}, tolerance={tolerance}, "
             f"clustering_threshold={unknown_clustering_threshold}, "
-            f"detector_backend={detector_backend}"
+            f"detector_backend={detector_backend}, "
+            f"min_face_confidence={min_face_confidence}"
         )
 
     def reset_unknown_registry(self) -> None:
@@ -65,9 +68,15 @@ class FaceRecognizer:
         return recognized_faces
 
     def _process_face(self, face_obj: Dict) -> Optional[Dict]:
+        facial_area = face_obj['facial_area']
+        print(facial_area)
+        if facial_area.get("confidence", 1.0) < self.min_face_confidence:
+            logger.warning(f"Skip a face detected because it's lower than minimum confidence: {self.min_face_confidence}, confidence: {face_obj.get('confidence', 1.0)}")
+            return None
+        
+        logger.debug(f"Face passed the confidence check with confidence: {facial_area.get('confidence', 1.0)}")
 
         face_img = face_obj["face"]
-        facial_area = face_obj['facial_area']
 
         top = facial_area['y']
         left = facial_area['x']
@@ -83,7 +92,7 @@ class FaceRecognizer:
             "emotion_label": emotion_data.get('emotion') if emotion_data else None,
             "emotion_confidence": emotion_data.get('confidence') if emotion_data else None,
             "is_clustered": is_clustered,
-            "detection_confidence": face_obj.get("confidence", 1.0) * 100
+            "detection_confidence": facial_area.get("confidence", 1.0) * 100
         }
 
     def _recognize_or_cluster(self, face_img: np.ndarray) -> Tuple[str, float, bool]:
