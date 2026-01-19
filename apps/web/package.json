@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "react-router-serve build/server/index.js",
+    "dev": "cross-env NODE_ENV=development node server.js",
+    "start": "node server.js",
     "typecheck": "react-router typegen && tsc",
     "test": "playwright test"
   },
@@ -21,8 +21,6 @@
     "@remix-run/file-storage": "^0.13.0",
     "@remix-run/form-data-parser": "^0.14.0",
     "@tanstack/react-virtual": "^3.13.12",
-    "bcryptjs": "^2.4.3",
-    "chromadb": "^3.1.1",
     "clsx": "^2.1.1",
     "cross-env": "^10.1.0",
     "date-fns": "^4.1.0",
@@ -39,7 +37,11 @@
     "react-router": "^7.9.2",
     "react-router-dom": "^7.9.5",
     "zod": "^4.1.12",
-    "zustand": "^5.0.9"
+    "zustand": "^5.0.9",
+    "@react-router/express": "7.12.0",
+    "compression": "^1.8.1",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
@@ -58,6 +60,10 @@
     "tailwindcss": "^4.1.16",
     "typescript": "5.9.2",
     "vite": "^5.2.0",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.3",
+    "@types/express-serve-static-core": "^5.0.7",
+    "@types/morgan": "^1.9.10"
   }
 }
