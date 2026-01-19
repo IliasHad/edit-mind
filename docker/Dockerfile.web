@@ -49,6 +49,8 @@ COPY .npmrc ./
 COPY prisma.config.ts ./
 COPY turbo.json ./
 
+RUN pnpm --filter prisma generate
+
 RUN pnpm run build 
 
 RUN pnpm rebuild @tailwindcss/oxide rollup
@@ -73,12 +75,21 @@ COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 COPY --from=builder /app/packages/db/package.json ./packages/db/
 COPY --from=builder /app/packages/prisma/package.json ./packages/prisma/
 COPY --from=builder /app/packages/prisma/schema.prisma ./packages/prisma
+COPY --from=builder /app/packages/immich/package.json ./packages/immich/
+COPY --from=builder /app/packages/search/package.json ./packages/search/
+COPY --from=builder /app/packages/vector/package.json ./packages/vector/
+COPY --from=builder /app/packages/media-utils/package.json ./packages/media-utils/
 
-
+COPY --from=builder /app/packages/vector ./packages/vector
+COPY --from=builder /app/packages/media-utils ./packages/media-utils
 COPY --from=builder /app/packages/prisma ./packages/prisma
+COPY --from=builder /app/packages/immich ./packages/immich
 COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/packages/db ./packages/db
+COPY --from=builder /app/packages/search ./packages/search
 COPY --from=builder /app/apps/web ./apps/web
+
+RUN pnpm --filter prisma generate
 
 ENV NODE_ENV=production
 EXPOSE ${PORT}
@@ -86,7 +97,7 @@ EXPOSE ${PORT}
 CMD ["sh", "-c", "\
   pnpm --filter prisma migrate:deploy && \
   pnpm --filter prisma seed && \
-  pnpm --filter web start --host 0.0.0.0 --port ${PORT} \
+  pnpm --filter web start --host 0.0.0.0 --port ${PORT}  \
   "]
 
 
