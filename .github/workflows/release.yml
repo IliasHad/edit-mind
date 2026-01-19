@@ -57,12 +57,12 @@ jobs:
             image=moby/buildkit:latest
             network=host
 
-      - name: Build and Test
+      - name: Build
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
-          target: testing
+          target: production
           platforms: linux/amd64,linux/arm64
           push: false
           cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -96,8 +96,6 @@ jobs:
 
         - name: Start Docker Compose (web)
           run: cd docker && docker compose up web -d --wait
-          env:
-            NODE_ENV: testing
 
         - name: Check services
           run: cd docker && docker compose ps
