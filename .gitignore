@@ -30,5 +30,5 @@ ml-models
 .pytest_cache
 tsconfig.tsbuildinfo
 .pgdata
-playwright-auth.json
+playwright-auth-*.json
 .chroma

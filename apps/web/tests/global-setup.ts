@@ -1,33 +1,44 @@
-import { chromium, FullConfig } from '@playwright/test';
+import { chromium, firefox, FullConfig } from '@playwright/test'
 
 async function globalSetup(config: FullConfig) {
-  const { baseURL, storageState } = config.projects[0].use;
+  const { baseURL } = config.projects[0].use
 
   // Ensure baseURL is defined
   if (!baseURL) {
-    throw new Error('baseURL is not defined in Playwright configuration.');
+    throw new Error('baseURL is not defined in Playwright configuration.')
   }
 
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
+  // Create auth state for ALL browser types
+  const browserTypes = [
+    { type: chromium, name: 'chromium' },
+    { type: firefox, name: 'firefox' },
+  ]
 
-  // 1. Navigate to the login page
-  await page.goto(`${baseURL}/auth/login`);
+  for (const { type: browserType, name } of browserTypes) {
+    const browser = await browserType.launch()
+    const context = await browser.newContext()
+    const page = await context.newPage()
 
-  // 2. Fill in the login form (replace with actual test user credentials)
-  await page.fill('input[name="email"]', 'admin@example.com'); 
-  await page.fill('input[name="password"]', 'admin');
+    try {
+      // 1. Navigate to the login page
+      await page.goto(`${baseURL}/auth/login`)
 
-  // 3. Click the login button
-  await page.click('button:has-text("Sign In")');
+      // 2. Fill in the login form
+      await page.fill('input[name="email"]', 'admin@example.com')
+      await page.fill('input[name="password"]', 'admin')
 
-  // 4. Wait for successful login (e.g., redirect to /app/home)
-  await page.waitForURL(`${baseURL}/app/home`);
+      // 3. Click the login button and wait for navigation
+      await page.click('button:has-text("Sign In")')
 
-  // 5. Save the storage state (cookies, local storage, etc.)
-  await page.context().storageState({ path: storageState as string });
-
-  await browser.close();
+      // 4. Save the storage state
+      await context.storageState({ path: `playwright-auth-${name}.json` })
+    } catch (error) {
+      console.error(`Auth setup failed for ${name}:`, error)
+      throw error
+    } finally {
+      await browser.close()
+    }
+  }
 }
 
-export default globalSetup;
+export default globalSetup
