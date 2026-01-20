@@ -1,4 +1,4 @@
-import { chromium, firefox, FullConfig } from '@playwright/test'
+import { chromium, firefox, FullConfig, webkit } from '@playwright/test'
 
 async function globalSetup(config: FullConfig) {
   const { baseURL } = config.projects[0].use
@@ -12,6 +12,7 @@ async function globalSetup(config: FullConfig) {
   const browserTypes = [
     { type: chromium, name: 'chromium' },
     { type: firefox, name: 'firefox' },
+    { type: webkit, name: 'webkit' },
   ]
 
   for (const { type: browserType, name } of browserTypes) {
