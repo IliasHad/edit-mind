@@ -65,8 +65,8 @@ jobs:
           target: production
           platforms: linux/amd64,linux/arm64
           push: false
-          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
 
 
   test:
@@ -207,8 +207,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
           sbom: false
 
       - name: Generate artifact attestation
