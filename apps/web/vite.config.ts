@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import path from 'path'
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths({ ignoreConfigErrors: true })],
   server: {
     allowedHosts: ['web', 'localhost', '127.0.0.1'],
@@ -30,8 +30,6 @@ export default defineConfig({
     external: ['pino-pretty'],
   },
   build: {
-    rollupOptions: {
-      external: [],
-    },
+    rollupOptions: isSsrBuild ? { input: './server/app.ts' } : undefined,
   },
-})
+}))

@@ -1,4 +1,4 @@
-name: Build, Push & Release Docker Images
+name: Build, Test & Release Docker Images
 
 on:
   push:
@@ -19,15 +19,134 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  NODE_VERSION: 22.20.0
+  PNPM_VERSION: 10.20.0
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        service:
+          - name: background-jobs
+            dockerfile: docker/Dockerfile.background-jobs
+            context: .
+          - name: web
+            dockerfile: docker/Dockerfile.web
+            context: .
+          - name: ml
+            dockerfile: docker/Dockerfile.ml
+            context: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.dockerfile }}
+          target: production
+          platforms: linux/amd64,linux/arm64
+          push: false
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+
+  test:
+      name: Playwright Tests
+      needs: build
+      runs-on: ubuntu-latest
+      timeout-minutes: 30
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: ${{ env.NODE_VERSION }}
+
+        - name: Install pnpm
+          uses: pnpm/action-setup@v2
+          with:
+            version: ${{ env.PNPM_VERSION }}
+
+        - name: Copy environment files
+          run: |
+            cp .env.example docker/.env
+            cp .env.system.example docker/.env.system
+
+            ENCRYPTION_KEY=$(openssl rand -base64 32)
+            SESSION_SECRET=$(openssl rand -hex 32)
+            
+            sed -i "s|SESSION_SECRET=\"\"|SESSION_SECRET=\"${SESSION_SECRET}\"|g" docker/.env
+            sed -i "s|ENCRYPTION_KEY=\"\"|ENCRYPTION_KEY=\"${ENCRYPTION_KEY}\"|g" docker/.env
+            
+        - name: Start Docker Compose (web)
+          run: cd docker && docker compose up web -d --wait --wait-timeout 200
+
+        - name: Check services
+          run: cd docker && docker compose ps
+
+        - name: Check web container logs
+          if: always()
+          run: cd docker && docker compose logs web
+
+        - name: Check all container logs
+          if: always()
+          run: cd docker && docker compose logs
+
+        - name: Install dependencies
+          run: pnpm install
+
+        - name: Install Playwright browsers
+          run: pnpm exec playwright install
+
+        - name: Run Playwright tests
+          run: pnpm --filter web test
+
+        - name: Upload test results
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: playwright-results
+            path: |
+              **/test-results/
+              **/playwright-report/
+            retention-days: 7
+
+        - name: Stop containers
+          if: always()
+          run: cd docker && docker compose down -v
+
+  release:
+    name: Release Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
     permissions:
       contents: read
       id-token: write
       packages: write
-      artifact-metadata: write
       attestations: write
 
     strategy:
@@ -47,50 +166,33 @@ jobs:
       - name: Set lowercase image prefix
         run: |
           echo "IMAGE_PREFIX=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/edit-mind" >> $GITHUB_ENV
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64,linux/arm64
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            image=moby/buildkit:latest
-            network=host
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and Test
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.service.context }}
-          file: ${{ matrix.service.dockerfile }}
-          target: testing
-          platforms: linux/amd64,linux/arm64
-          push: false
-          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         id: push
@@ -101,9 +203,9 @@ jobs:
           target: production
           platforms: linux/amd64,linux/arm64
           build-args: |
-            NODE_VERSION=22.20.0
-            PNPM_VERSION=10.20.0
-          push: ${{ github.event_name != 'pull_request' }}
+            NODE_VERSION=${{ env.NODE_VERSION }}
+            PNPM_VERSION=${{ env.PNPM_VERSION }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -111,9 +213,8 @@ jobs:
           sbom: false
 
       - name: Generate artifact attestation
-        if: github.event_name != 'pull_request'
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
           subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: ${{ github.event_name != 'pull_request' }}
+          push-to-registry: true

@@ -21,6 +21,7 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:3745',
 
+
     /* Authenticate once and reuse the state */
     storageState: 'playwright-auth.json',
 
@@ -32,24 +33,27 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright-auth-chromium.json',
+      },
     },
-
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'playwright-auth-firefox.json',
+      },
+      // TODO: Add support for localhost with SSL certificate to use Safari (webkit) with secure cookies for session authentication
     },
   ],
 
   // Only start webServer locally, not in CI (Docker Compose handles it in CI)
-  webServer: process.env.CI ? undefined : {
-    command: 'pnpm dev',
+  webServer: process.env.CI
+    ? undefined
+    : {
+        command: 'pnpm dev',
     url: 'http://localhost:3745',
-    reuseExistingServer: true,
-  },
+        reuseExistingServer: true,
+      },
 })

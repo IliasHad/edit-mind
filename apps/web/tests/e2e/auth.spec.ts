@@ -74,6 +74,8 @@ test.describe('Authentication Pages - Login', () => {
       await page.getByRole('button', { name: /sign in/i }).click()
 
       // Wait for navigation or success indicator
+      await page.waitForLoadState('networkidle')
+
       await expect(page).toHaveURL(/\/app\/home/, { timeout: 5000 })
     })
   })
@@ -103,6 +105,9 @@ test.describe('Authentication Pages - Login', () => {
       await page.getByPlaceholder('Password').fill('admin')
       await page.getByRole('button', { name: /sign in/i }).click()
 
+      // Wait for navigation or success indicator
+      await page.waitForLoadState('networkidle')
+
       await expect(page).toHaveURL(/\/app\/home/, { timeout: 5000 })
 
       await context.clearCookies()
@@ -129,6 +134,9 @@ test.describe('Authentication Pages - Login', () => {
       await page.getByPlaceholder('Email').fill('admin@example.com')
       await page.getByPlaceholder('Password').fill('admin')
       await page.getByPlaceholder('Password').press('Enter')
+
+      // Wait for navigation or success indicator
+      await page.waitForLoadState('networkidle')
 
       // Should trigger submission
       await expect(page).toHaveURL(/\/app\/home/, { timeout: 5000 })

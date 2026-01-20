@@ -14,7 +14,7 @@ services:
       - .env.system
       - .env
     ports:
-      - "${BACKGROUND_JOBS_PORT}:4000"
+      - "${BACKGROUND_JOBS_PORT}:${BACKGROUND_JOBS_PORT}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
       - .env.system
       - .env
     ports:
-      - "${PORT}:3745"
+      - "${PORT}:${PORT}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,7 +57,12 @@ services:
       - ../.data:/app/data
     networks:
       - app-network
-
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3745/auth/login"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+      start_period: 60s
   chroma:
     image: chromadb/chroma:1.3.5
     container_name: edit-mind-chroma
@@ -127,7 +132,7 @@ services:
       - .env.system
       - .env
     ports:
-      - "${ML_PORT}:8765"
+      - "${ML_PORT}:${ML_PORT}"
     environment:
       YOLO_CONFIG_DIR: /ml-models/ultralytics
       DEEPFACE_HOME: /ml-models/deepface
