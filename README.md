@@ -153,7 +153,9 @@ docker compose up
 
 Once all services are running (look for "ready" messages in logs):
 
-*   **Web App:** [http://localhost:3745](http://localhost:3745)
+* **Web App:** [http://localhost:3745](http://localhost:3745)
+
+If you're using Safari, use [http://127.0.0.1:3745](http://127.0.0.1:3745)
 
 ### 6. Add Your First Videos
 
