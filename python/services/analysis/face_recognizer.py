@@ -57,7 +57,7 @@ class FaceRecognizer:
             - 0.40-0.50: Strict clustering (fewer false groupings, more unique IDs)
             - 0.50-0.65: Balanced clustering (default range)
             - 0.65-0.80: Lenient clustering (may group different people together)
-            Default: 0.60
+            Default: 0.65
             Note: Should typically be higher than `tolerance` to avoid over-clustering
             
         detector_backend (str, optional): Face detection algorithm backend.
@@ -88,7 +88,7 @@ class FaceRecognizer:
         tolerance: float = 0.25,
         model: str = 'VGG-Face',
         min_face_confidence: float = 0.70,
-        unknown_clustering_threshold: float = 0.60,
+        unknown_clustering_threshold: float = 0.65,
         detector_backend: str = "retinaface"
     ):
         self.tolerance = tolerance
