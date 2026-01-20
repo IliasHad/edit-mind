@@ -88,3 +88,11 @@ class AnalyzerPlugin(ABC):
         Called after processing is complete.
         """
         pass
+
+    @abstractmethod
+    def cleanup(self) -> None:
+        """
+        Clean up any data from previous processing job.
+        Called after processing is complete.
+        """
+        pass

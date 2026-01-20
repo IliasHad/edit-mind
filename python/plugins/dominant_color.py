@@ -339,3 +339,7 @@ class DominantColorPlugin(AnalyzerPlugin):
             'overall_saturation': results.overall_saturation,
             'color_temperature': 'warm' if results.overall_warmth > 20 else 'cool' if results.overall_warmth < -20 else 'neutral',
         }
+        
+    def cleanup(self) -> None:
+        """Clean up any data from previous processing job."""
+        return None

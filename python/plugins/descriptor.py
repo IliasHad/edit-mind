@@ -56,3 +56,7 @@ class DescriptorPlugin(AnalyzerPlugin):
 
     def get_summary(self) -> Optional[Dict[str, Union[str, float, Dict[str, int]]]]:
         return None
+    
+    def cleanup(self) -> None:
+        """Clean up any data from previous processing job."""
+        return None

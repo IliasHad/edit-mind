@@ -378,3 +378,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 for face_id, data in self.saved_unknown_faces.items()
             }
         }
+    def cleanup(self) -> None:
+        """Clean up any data from previous processing job."""
+        self.face_recognizer.reset_unknown_registry()
+        self.saved_unknown_faces  = {}
+        self.all_faces = []
