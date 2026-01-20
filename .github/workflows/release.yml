@@ -93,12 +93,22 @@ jobs:
           run: |
             cp .env.example docker/.env
             cp .env.system.example docker/.env.system
+            cat docker/.env
+            cat docker/.env.system
 
         - name: Start Docker Compose (web)
-          run: cd docker && docker compose up web -d --wait
+          run: cd docker && docker compose up web -d --wait --wait-timeout 200
 
         - name: Check services
           run: cd docker && docker compose ps
+
+        - name: Check web container logs
+          if: always()
+          run: cd docker && docker compose logs web
+
+        - name: Check all container logs
+          if: always()
+          run: cd docker && docker compose logs
 
         - name: Install dependencies
           run: pnpm install
