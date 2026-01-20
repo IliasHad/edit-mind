@@ -68,3 +68,7 @@ class ShotTypePlugin(AnalyzerPlugin):
 
     def get_summary(self) -> PluginResult:
         return None
+
+    def cleanup(self) -> None:
+        """Clean up any data from previous processing job."""
+        return None

@@ -144,6 +144,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                     )
 
         self._record_stage_metric(timer, frames_processed=len(frame_analyses))
+        self.plugin_manager.cleanup_plugins()
         logger.info(
             f"Completed analysis: {len(frame_analyses)} frames processed")
         return frame_analyses

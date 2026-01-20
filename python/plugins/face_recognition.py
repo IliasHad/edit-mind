@@ -58,31 +58,36 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         timestamp_ms = int(frame_analysis['start_time_ms'])
 
         recognized_faces = self.face_recognizer.recognize_faces(frame)
+        
+        logger.info(f"We recognized {len(recognized_faces)} faces")
 
         output_faces = []
         for face in recognized_faces:
-            scaled_face = self._scale_face_coordinates(
-                face, scale_factor, width, height)
+            scaled_face = self._scale_face_coordinates(face, scale_factor, width, height)
             output_faces.append(scaled_face)
 
-       
             if face['name'].startswith("Unknown_"):
-               saved =  self._track_unknown_face(
+                saved = self._track_unknown_face(
                     frame, timestamp_ms, frame_idx, face,
                     video_path, frame_analysis["job_id"], scale_factor
                 )
-               if saved:
+                if saved:
                     self.all_faces.append({
                         "timestamp": timestamp_ms / 1000,
                         "name": face['name'],
                         "frame_idx": frame_idx
                     })
+                else:
+                    logger.warning(
+                        f"Failed to save unknown face {face['name']} "
+                        f"at frame {frame_idx}, timestamp {timestamp_ms}ms"
+                    )
             else: 
-             self.all_faces.append({
-                "timestamp": timestamp_ms / 1000,
-                "name": face['name'],
-                "frame_idx": frame_idx
-            })
+                self.all_faces.append({
+                    "timestamp": timestamp_ms / 1000,
+                    "name": face['name'],
+                    "frame_idx": frame_idx
+                })
 
 
         if output_faces:
@@ -224,7 +229,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
 
         video_name = Path(video_path).stem
         unique_suffix = hashlib.md5(
-            f"{video_name}{face_id}{job_id}{timestamp_ms}".encode()
+            f"{video_name}{face_id}{job_id}".encode()
         ).hexdigest()[:8]
 
         base_filename = f"{face_id}_{unique_suffix}"
@@ -373,3 +378,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
                 for face_id, data in self.saved_unknown_faces.items()
             }
         }
+    def cleanup(self) -> None:
+        """Clean up any data from previous processing job."""
+        self.face_recognizer.reset_unknown_registry()
+        self.saved_unknown_faces  = {}
+        self.all_faces = []

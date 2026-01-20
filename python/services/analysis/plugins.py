@@ -155,3 +155,13 @@ class PluginManager:
         """Get plugin performance metrics."""
         self.metrics_collector = PluginMetricsCollector()
         self.frame_counters = {}
+        
+    def cleanup_plugins(self) -> None:
+        """Cleanup all plugins after processing."""
+        for plugin in self.plugins:
+            try:
+                plugin.cleanup()
+                logger.info(f"Cleaned up plugin: {plugin.__class__.__name__}")
+            except Exception as e:
+                logger.error(
+                    f"Failed to cleanup {plugin.__class__.__name__}: {e}")
