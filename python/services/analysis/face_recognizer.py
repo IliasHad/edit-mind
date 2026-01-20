@@ -138,11 +138,11 @@ class FaceRecognizer:
 
     def _process_face(self, face_obj: Dict) -> Optional[Dict]:
         facial_area = face_obj['facial_area']
-        if facial_area.get("confidence", 1.0) < self.min_face_confidence:
-            logger.warning(f"Skip a face detected because it's lower than minimum confidence: {self.min_face_confidence}, confidence: {facial_area.get('confidence', 1.0)}")
+        if face_obj.get("confidence", 1.0) < self.min_face_confidence:
+            logger.warning(f"Skip a face detected because it's lower than minimum confidence: {self.min_face_confidence}, confidence: {face_obj.get('confidence', 1.0)}")
             return None
         
-        logger.info(f"Face passed the confidence check with confidence: {facial_area.get('confidence', 1.0)}")
+        logger.info(f"Face passed the confidence check with confidence: {face_obj.get('confidence', 1.0)}")
 
         face_img = face_obj["face"]
 
@@ -161,7 +161,7 @@ class FaceRecognizer:
             "emotion_label": emotion_data.get('emotion') if emotion_data else None,
             "emotion_confidence": emotion_data.get('confidence') if emotion_data else None,
             "is_clustered": is_clustered,
-            "detection_confidence": facial_area.get("confidence", 1.0) * 100
+            "detection_confidence": face_obj.get("confidence", 1.0) * 100
         }
 
     def _recognize_or_cluster(self, face_img: np.ndarray) -> Tuple[str, float, bool]:
