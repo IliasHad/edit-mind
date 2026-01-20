@@ -15,7 +15,8 @@ export async function login(request: Request, values: z.infer<typeof LoginSchema
   const session = await getSession(request.headers.get('Cookie'))
   session.set('userId', user.id)
 
-  return redirect('/app/home', {
-    headers: { 'Set-Cookie': await commitSession(session) },
-  })
+  const headers = new Headers()
+  headers.set('Set-Cookie', await commitSession(session))
+
+  return redirect('/app/home', { headers })
 }
