@@ -18,17 +18,16 @@
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "express-rate-limit": "^8.2.1",
-    "ioredis": "^5.4.2",
+    "ioredis": "^5.9.2",
     "zod": "^4.1.12",
     "search": "workspace:*",
     "shared": "workspace:*",
     "ai": "workspace:*",
-            "vector": "workspace:*",
+    "vector": "workspace:*",
     "media-utils": "workspace:*",
-        "db": "workspace:*"
-,    "smart-collections": "workspace:*",
- "immich": "workspace:*"
-
+    "db": "workspace:*",
+    "smart-collections": "workspace:*",
+    "immich": "workspace:*"
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",

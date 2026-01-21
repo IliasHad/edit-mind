@@ -5,6 +5,7 @@ import { addVideoIndexingJob } from './services/videoIndexer.js'
 import { FolderModel, JobModel } from '@db/index.js'
 import { stat } from 'fs/promises'
 import { logger } from '@shared/services/logger.js'
+import { existsSync } from 'fs'
 
 const watchers = new Map<string, chokidar.FSWatcher>()
 
@@ -17,7 +18,7 @@ export function watchFolder(folderPath: string) {
   const watcher = chokidar.watch(folderPath, {
     ignored: /^\./,
     persistent: true,
-    ignoreInitial: true
+    ignoreInitial: true,
   })
 
   watcher.on('add', async (filePath) => {
@@ -56,7 +57,13 @@ export async function initializeWatchers() {
     })
 
     for (const folder of folders) {
-      watchFolder(folder.path)
+      try {
+        if (existsSync(folder.path)) {
+          watchFolder(folder.path)
+        }
+      } catch (error) {
+        logger.error({ error }, 'Failed to initialize watchers')
+      }
     }
 
     logger.info(`Initialized ${watchers.size} folder watchers`)

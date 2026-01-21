@@ -84,13 +84,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, index }) => {
                 <span className="text-white/60">Scene Creation: {humanizeSeconds(job.sceneCreationTime)}</span>
               </div>
             )}
-            {job.textEmbeddingTime ||
-              (job.textEmbeddingTime === 0 && (
+            {(job.textEmbeddingTime ||
+              job.textEmbeddingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-white/60">Text Embedding: {humanizeSeconds(job.textEmbeddingTime)}</span>
                 </div>
-              ))}
+              )}
             {job.visualEmbeddingTime && (
               <div className="flex items-center gap-2">
                 <PhotoIcon className="w-3.5 h-3.5 text-white/40" />

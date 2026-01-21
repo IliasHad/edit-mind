@@ -14,7 +14,7 @@ WORKDIR /app
 FROM base AS python-deps
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake libopenblas-dev \
+    build-essential cmake \
     libglib2.0-0 libgl1 libsm6 libxext6 libxrender1 \
     curl \
     && rm -rf /var/lib/apt/lists/* \
