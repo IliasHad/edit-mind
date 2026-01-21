@@ -13,14 +13,12 @@ class RedisConnection {
     'ETIMEDOUT',
     'ECONNRESET',
     'ECONNREFUSED',
-    'EPIPE',
     'ENOTFOUND',
   ] as const
 
   static getConnection(): Redis {
     if (!this.instance) {
       this.instance = this.createConnection()
-      this.setupEventHandlers(this.instance)
     }
     return this.instance
   }
@@ -56,25 +54,29 @@ class RedisConnection {
       autoResendUnfulfilledCommands: true,
 
       // Performance optimizations
-      enableAutoPipelining: true,
+      enableAutoPipelining: false,
 
       // Graceful degradation
       showFriendlyErrorStack: process.env.NODE_ENV !== 'production',
     }
 
-    return new IORedis(options)
-  }
+    const redis = new IORedis(options)
 
-  /**
+    this.setupEventHandlers(redis)
+
+    return redis
+  }
+  
+    /**
    * Creates retry strategy with exponential backoff and jitter
    */
   private static createRetryStrategy() {
     return (times: number): number => {
-      // Exponential backoff with jitter
-      const delay = Math.max(Math.min(Math.exp(times), 20000), 1000);
+      const baseDelay = Math.min(1000 * Math.pow(2, times), 20000)
+      const jitter = baseDelay * (Math.random() * 0.4 - 0.2)
+      const delay = Math.max(1000, baseDelay + jitter)
 
-      logger.warn(`Redis connection retry attempt ${times}. Next attempt in ${Math.round(delay)}ms`)
-
+      logger.warn(`Redis retry attempt ${times}, retrying in ${Math.round(delay)}ms`)
       return delay
     }
   }
@@ -85,7 +87,7 @@ class RedisConnection {
 
       if (shouldReconnect) {
         logger.warn(`Redis reconnecting due to retriable error: ${err.message}`)
-        return 1 // Reconnect immediately
+        return 1
       }
 
       logger.error(`Redis non-retriable error encountered: ${err.message}`)
@@ -94,6 +96,8 @@ class RedisConnection {
   }
 
   private static setupEventHandlers(redis: Redis): void {
+    redis.removeAllListeners()
+
     redis.on('connect', () => {
       logger.info('Redis connection established')
     })
@@ -103,7 +107,20 @@ class RedisConnection {
     })
 
     redis.on('error', (err: Error) => {
-      logger.error(`Redis connection error ${err}`)
+      const errorMessage = err.message || err.toString()
+      const isRetriable = this.RETRIABLE_ERRORS.some((errorCode) => errorMessage.includes(errorCode))
+
+      if (errorMessage.includes('EPIPE') || errorMessage.includes('ECONNRESET')) {
+        // Broken pipe or connection reset - expected during reconnections
+        logger.warn(`Redis connection error (will auto-recover): ${errorMessage}`)
+      } else if (isRetriable) {
+        logger.warn(`Redis retriable error (auto-reconnecting): ${errorMessage}`)
+      } else {
+        logger.error(`Redis error: ${errorMessage}`)
+      }
+
+      // IMPORTANT: By having this handler, the error is now "handled"
+      // and won't crash the process or show as unhandled
     })
 
     redis.on('close', () => {
@@ -116,7 +133,7 @@ class RedisConnection {
 
     redis.on('end', () => {
       logger.warn('Redis connection ended permanently')
-      this.instance = null // Allow recreation on next getConnection()
+      this.instance = null
     })
   }
 
@@ -124,11 +141,13 @@ class RedisConnection {
     if (this.instance) {
       logger.info('Gracefully disconnecting Redis connection...')
       try {
+        // Remove listeners before disconnecting
+        this.instance.removeAllListeners()
         await this.instance.quit()
         this.instance = null
         logger.info('Redis connection closed successfully')
       } catch (error) {
-        logger.error(`Error during Redis disconnect ${error}`)
+        logger.error({ error }, `Error during Redis disconnect`)
         this.instance?.disconnect()
         this.instance = null
       }
@@ -141,14 +160,13 @@ class RedisConnection {
       const result = await redis.ping()
       return result === 'PONG'
     } catch (error) {
-      logger.error(`Redis health check failed ${error}`)
+      logger.error({ error }, `Redis health check failed`)
       return false
     }
   }
 }
 
 export const connection = RedisConnection.getConnection()
-
 export const disconnectRedis = () => RedisConnection.disconnect()
 export const redisHealthCheck = () => RedisConnection.healthCheck()
 
