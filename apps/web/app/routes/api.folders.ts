@@ -3,7 +3,6 @@ import { requireUser, requireUserId } from '~/services/user.sever'
 import { FolderModel, VideoModel } from '@db/index'
 import type { ActionFunctionArgs } from 'react-router'
 import { FolderCreateSchema } from '~/features/folders/schemas/folder'
-import { backgroundJobsFetch } from '~/services/background.server'
 
 export async function loader({ request }: { request: Request }) {
   try {
@@ -61,7 +60,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       userId: user.id,
     })
 
-    await backgroundJobsFetch(`/internal/folder/${folder.id}/trigger`, undefined, user)
     return {
       folder,
     }
