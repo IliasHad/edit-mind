@@ -3,6 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import { logger } from '@shared/services/logger'
 import { requireUser } from '~/services/user.sever'
+import { createPathValidator } from '@shared/services/pathValidator'
+import { MEDIA_BASE_PATH } from '@shared/constants'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
@@ -15,7 +17,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     await requireUser(request)
 
+    const pathValidator = createPathValidator(MEDIA_BASE_PATH)
+
     const decodedPath = decodeURIComponent(source)
+
+    const validation = pathValidator.validatePath(decodedPath)
+
+    if (!validation.isValid) {
+      logger.warn(`Path validation failed: ${path} - ${validation.error}`)
+      throw new Response('Access denied', { status: 403 })
+    }
 
     if (!fs.existsSync(decodedPath)) {
       return new Response('Video File not found', { status: 404 })

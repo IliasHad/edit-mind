@@ -1,16 +1,11 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import fs from 'fs'
 import path from 'path'
-import { getCache, setCache } from '@shared/services/cache'
 import crypto from 'crypto'
 import { requireUser } from '~/services/user.sever'
-
-interface CachedFileMetadata {
-  contentType: string
-  size: number
-  etag: string
-  lastModified: number
-}
+import { createPathValidator } from '@shared/services/pathValidator'
+import { THUMBNAILS_DIR } from '@shared/constants'
+import { logger } from '@shared/services/logger'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const filePath = params['*'] || ''
@@ -19,7 +14,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   try {
     await requireUser(request)
 
+    const pathValidator = createPathValidator(THUMBNAILS_DIR)
+
     const decodedPath = path.normalize(decodeURIComponent(filePath))
+
+    const validation = pathValidator.validatePath(decodedPath)
+
+    if (!validation.isValid) {
+      logger.warn(`Path validation failed: ${path} - ${validation.error}`)
+      throw new Response('Access denied', { status: 403 })
+    }
 
     if (!fs.existsSync(decodedPath)) {
       throw new Response('File not found', { status: 404 })
@@ -28,70 +32,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const stats = fs.statSync(decodedPath)
     if (!stats.isFile()) throw new Response('Not a file', { status: 400 })
 
-    const cacheKey = `file:${decodedPath}:${stats.mtimeMs}`
-    const metadataCacheKey = `file:metadata:${decodedPath}`
-
-    const cachedMetadata = await getCache<CachedFileMetadata>(metadataCacheKey)
-    const requestEtag = request.headers.get('if-none-match')
-
-    if (cachedMetadata && requestEtag === cachedMetadata.etag) {
-      return new Response(null, { status: 304 })
-    }
-
     const contentType = getContentType(decodedPath)
 
-    const MAX_REDIS_SIZE = 5 * 1024 * 1024 // 5MB max for Redis
-
-    if (stats.size <= MAX_REDIS_SIZE) {
-      const cachedBuffer = await getCache<string>(cacheKey)
-
-      if (cachedBuffer) {
-        const buffer = Buffer.from(cachedBuffer, 'base64')
-        const uint8Array = new Uint8Array(buffer)
-
-        return new Response(uint8Array, {
-          status: 200,
-          headers: {
-            'Content-Type': contentType,
-            'Content-Length': stats.size.toString(),
-            'Cache-Control': 'public, max-age=86400', // 24 hours
-            ETag: cachedMetadata?.etag || generateEtag(decodedPath, stats),
-          },
-        })
-      }
-
-      const fileBuffer = fs.readFileSync(decodedPath)
-      const base64Buffer = fileBuffer.toString('base64')
-      const etag = generateEtag(decodedPath, stats)
-
-      // Cache the file buffer (TTL: 1 hour for images)
-      await setCache(cacheKey, base64Buffer, 3600)
-
-      await setCache<CachedFileMetadata>(
-        metadataCacheKey,
-        {
-          contentType,
-          size: stats.size,
-          etag,
-          lastModified: stats.mtimeMs,
-        },
-        7200 // 2 hours
-      )
-
-      const stream = fs.createReadStream(decodedPath)
-
-      return new Response(stream as unknown as ReadableStream, {
-        status: 200,
-        headers: {
-          'Content-Type': contentType,
-          'Content-Length': stats.size.toString(),
-          'Accept-Ranges': 'bytes',
-          'Cache-Control': 'no-cache',
-        },
-      })
-    }
-
     const etag = generateEtag(decodedPath, stats)
+
+    const ifNoneMatch = request.headers.get('If-None-Match')
+    if (ifNoneMatch === etag) {
+      return new Response(null, { status: 304 })
+    }
 
     const stream = fs.createReadStream(decodedPath)
 
@@ -99,9 +47,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Length': stats.size.toString(),
-        'Accept-Ranges': 'bytes',
-        'Cache-Control': 'public, max-age=86400', // 1 day
+        'Cache-Control': `public, max-age=${60 * 60 * 24 * 30}, immutable`, // 30 days
         ETag: etag,
       },
     })

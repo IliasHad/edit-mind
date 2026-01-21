@@ -23,7 +23,7 @@
     "@types/ws": "^8.18.1",
     "date-fns": "^4.1.0",
     "db": "workspace:*",
-    "ioredis": "^5.8.2",
+    "ioredis": "^5.9.2",
     "zod": "^4.1.12",
     "jsonwebtoken": "^9.0.3"
   },

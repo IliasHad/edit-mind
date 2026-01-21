@@ -1,36 +1,70 @@
-import { CACHE_TTL, IS_TESTING, REDIS_HOST, REDIS_PORT } from '../constants'
 import Redis from 'ioredis'
+import { CACHE_TTL, IS_TESTING, REDIS_HOST, REDIS_PORT } from '../constants'
 
-// Only create Redis client if not testing
 let redisClient: Redis | null = null
 
-async function initializeCacheClient() {
-  if (!IS_TESTING) {
+function getRedisClient() {
+  if (IS_TESTING) return null
+
+  if (!redisClient) {
     redisClient = new Redis({
       host: REDIS_HOST,
       port: REDIS_PORT,
+      maxRetriesPerRequest: 3,
+      enableReadyCheck: true,
+    })
+
+    redisClient.on('error', (err) => {
+      console.error('[Redis error]', err)
+    })
+
+    redisClient.on('end', () => {
+      console.warn('[Redis connection closed]')
+      redisClient = null
     })
   }
+
+  return redisClient
 }
+
 export async function getCache<T>(key: string): Promise<T | null> {
-  await initializeCacheClient()
-  if (!redisClient) return null
-  const cached = await redisClient.get(key)
-  if (!cached) return null
-  return JSON.parse(cached) as T
+  const redis = getRedisClient()
+  if (!redis) return null
+
+  const cached = await redis.get(key)
+  return cached ? (JSON.parse(cached) as T) : null
 }
 
-export async function setCache<T>(key: string, value: T, ttl = CACHE_TTL): Promise<void> {
-  await initializeCacheClient()
-  if (!redisClient) return
-  await redisClient.set(key, JSON.stringify(value), 'EX', ttl)
+export async function setCache<T>(
+  key: string,
+  value: T,
+  ttl = CACHE_TTL
+): Promise<void> {
+  const redis = getRedisClient()
+  if (!redis) return
+
+  await redis.set(key, JSON.stringify(value), 'EX', ttl)
 }
 
-export async function invalidateCache(keyPattern: string): Promise<void> {
-  await initializeCacheClient()
-  if (!redisClient) return
-  const keys = await redisClient.keys(keyPattern)
-  if (keys.length > 0) {
-    await redisClient.del(...keys)
-  }
+export async function invalidateCache(pattern: string): Promise<void> {
+  const redis = getRedisClient()
+  if (!redis) return
+
+  let cursor = '0'
+
+  do {
+    const [nextCursor, keys] = await redis.scan(
+      cursor,
+      'MATCH',
+      pattern,
+      'COUNT',
+      100
+    )
+
+    if (keys.length) {
+      await redis.del(...keys)
+    }
+
+    cursor = nextCursor
+  } while (cursor !== '0')
 }
