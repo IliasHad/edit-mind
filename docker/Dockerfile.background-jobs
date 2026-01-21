@@ -98,8 +98,6 @@ COPY apps/background-jobs ./apps/background-jobs
 
 RUN pnpm --filter prisma generate
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm install --frozen-lockfile
 
 EXPOSE ${BACKGROUND_JOBS_PORT}
 
