@@ -3,8 +3,15 @@ ARG PYTHON_VERSION=3.11
 FROM python:${PYTHON_VERSION}-slim-bookworm AS base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcurl4-openssl-dev libssl-dev && \
-    rm -rf /var/lib/apt/lists/*
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libgomp1 \
+    libglib2.0-0 \
+    libgl1 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /ml-models/ultralytics &&  mkdir -p /ml-models/whisper && \
     chmod -R 777 /ml-models
