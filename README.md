@@ -56,6 +56,11 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be editor's
 
 Edit Mind uses Docker Compose to run everything in containers.
 
+## Setup Video
+
+[![Edit Setup Guide](https://img.youtube.com/vi/WVNuP8ic3uY/maxresdefault.jpg)](https://www.youtube.com/watch?v=WVNuP8ic3uY)  
+*Click to watch a walkthrough of Edit Mind's setup guide.*
+
 ### Prerequisites
 
 *   [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
