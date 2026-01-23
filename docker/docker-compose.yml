@@ -137,6 +137,8 @@ services:
       YOLO_CONFIG_DIR: /ml-models/ultralytics
       DEEPFACE_HOME: /ml-models/deepface
       TRANSCRIPTION_MODEL_CACHE: /ml-models/whisper
+      TORCH_HOME: /ml-models/torch  
+      HF_HOME: /ml-models/huggingface 
     networks:
       - app-network
     volumes:
