@@ -93,7 +93,7 @@ export function ProjectCard({ id, name, _count, createdAt, className }: ProjectC
         title="Delete project"
         description="Are you sure you want to delete this project? This action cannot be undone."
         resourceName={name || 'Untitled project'}
-        confirmText="Delete project"
+        confirmText="Confirm"
       />
     </>
   )

@@ -22,7 +22,7 @@ export const apiClient = {
             videos: VideoWithFolderPath[]
             page: number
             hasMore: boolean
-        }>(`/api/videos/?page=${page}&limit=${limit}&search=${encodeURIComponent(query)}`),
+        }>(`/api/videos?page=${page}&limit=${limit}&search=${encodeURIComponent(query)}`),
 
     get: (id: string) =>
         apiClient.request<{

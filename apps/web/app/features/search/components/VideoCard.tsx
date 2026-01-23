@@ -1,12 +1,7 @@
 import { Link } from 'react-router'
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  UserIcon, 
-  CubeIcon, 
-  PhotoIcon, 
-  ArrowPathIcon 
-} from '@heroicons/react/24/solid'
+import { UserIcon, CubeIcon, PhotoIcon, ArrowPathIcon } from '@heroicons/react/24/solid'
 import { format } from 'date-fns'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import type { SceneAndMatch } from '@shared/types/video'
@@ -37,7 +32,6 @@ interface MatchedRange {
 }
 
 const HOVER_ANIMATION_DURATION = 0.2
-const PROGRESS_UPDATE_THRESHOLD = 0.1
 
 export function VideoCard({
   source,
@@ -47,18 +41,11 @@ export function VideoCard({
   aspectRatio = '16:9',
   metadata,
   initialStartTime = 0,
-  forceMetadataLoad = false,
   scenes,
 }: VideoCardProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [imageError, setImageError] = useState(false)
 
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const sceneIndexRef = useRef(0)
-  const isTransitioningRef = useRef(false)
+  const [imageError, setImageError] = useState(false)
 
   const fileName = source.split('/').pop() || 'Untitled Video'
   const isPortrait = aspectRatio === '9:16'
@@ -71,105 +58,16 @@ export function VideoCard({
   const hasMatchedScenes = matchedRanges.length > 0
   const hasPartialMatches = scenes.some((scene) => !scene.matched)
 
-  const playNextScene = useCallback(() => {
-    const video = videoRef.current
-    if (!video || isTransitioningRef.current) return
-
-    const scene = matchedRanges[sceneIndexRef.current]
-    if (!scene) return
-
-    isTransitioningRef.current = true
-
-    // Seek to the start of the matched scene
-    video.currentTime = scene.start
-    setIsLoading(true)
-    video
-      .play()
-      .then(() => {
-        setIsPlaying(true)
-        setIsLoading(false)
-        isTransitioningRef.current = false
-      })
-      .catch(() => {
-        setIsLoading(false)
-        isTransitioningRef.current = false
-      })
-  }, [matchedRanges])
-
-  const handleTimeUpdate = useCallback(() => {
-    const video = videoRef.current
-    if (!video || !hasMatchedScenes || !video.played) return
-    const currentScene = matchedRanges[sceneIndexRef.current]
-    if (!currentScene) return
-
-    const sceneDuration = currentScene.end - currentScene.start
-    const sceneProgress = video.currentTime - currentScene.start
-
-    // Update progress bar
-    const progressPercentage = (sceneProgress / sceneDuration) * 100
-    setProgress(Math.min(Math.max(progressPercentage, 0), 100))
-
-    // Check if we need to advance to the next scene
-    if (video.currentTime >= currentScene.end - PROGRESS_UPDATE_THRESHOLD) {
-      sceneIndexRef.current = (sceneIndexRef.current + 1) % matchedRanges.length
-      playNextScene()
-    }
-  }, [hasMatchedScenes, matchedRanges, playNextScene])
-
-  const handleLoadedMetadata = useCallback(() => {
-    if (hasMatchedScenes) {
-      setIsLoading(true)
-      playNextScene()
-    }
-  }, [hasMatchedScenes, playNextScene])
-
-  const handlePlay = () => {
-    const video = videoRef.current
-    if (!video) return
-
-    if (isPlaying) {
-      setIsPlaying(false)
-      video.pause()
-      return
-    }
-    setIsLoading(true)
-
-    // Initialize video source
-    const mediaUrl = `/media?source=${encodeURIComponent(source)}`
-    video.setAttribute('src', mediaUrl)
-    video.load()
-  }
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    video.addEventListener('loadedmetadata', handleLoadedMetadata)
-    video.addEventListener('timeupdate', handleTimeUpdate)
-
-    return () => {
-      video.pause()
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      video.removeEventListener('timeupdate', handleTimeUpdate)
-    }
-  }, [handleLoadedMetadata, handleTimeUpdate])
-
   const handleImageError = useCallback(() => {
     setImageError(true)
   }, [])
 
-  const handleVideoError = useCallback(() => {
-    setIsLoading(false)
-  }, [])
-
   const videoUrl = `/app/videos?source=${encodeURIComponent(source)}&startTime=${initialStartTime}`
   const thumbnailSrc = thumbnailUrl ? `/thumbnails/${encodeURIComponent(thumbnailUrl)}` : ''
-  const mediaUrl = forceMetadataLoad ? `/media?source=${encodeURIComponent(source)}` : undefined
 
   return (
-    <div
-      onMouseLeave={() => setIsHovered(false)}
-      onMouseEnter={() => setIsHovered(true)}
+    <Link
+      to={videoUrl}
       className={`
         relative block h-full cursor-pointer overflow-hidden
         rounded-sm bg-white dark:bg-zinc-900
@@ -180,30 +78,9 @@ export function VideoCard({
         ${isPortrait ? 'row-span-3' : 'row-span-2'}
       `}
       aria-label={`View ${fileName}`}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setIsHovered(false)}
     >
-      {!isLoading && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: isHovered || !isPlaying ? 1 : 0, y: isHovered || !isPlaying ? 0 : 20 }}
-          className="absolute flex items-center justify-center h-full w-full bg-black/20 gap-4 pointer-events-auto"
-        >
-          <button
-            className="w-11 h-11 flex items-center justify-center rounded-full bg-white hover:bg-white/90 transition-all active:scale-95 shadow-lg  z-100"
-            aria-label={isPlaying ? 'Pause video' : 'Play video'}
-            onClick={handlePlay}
-          >
-            {isPlaying ? (
-              <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </button>
-        </motion.div>
-      )}
       {imageError ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800">
           <PhotoIcon className="mb-2 h-12 w-12 text-zinc-400 dark:text-zinc-600" />
@@ -217,27 +94,11 @@ export function VideoCard({
             onError={handleImageError}
             className="h-full w-full object-cover transition-all duration-300 ease-out"
           />
-
-          <video
-            ref={videoRef}
-            src={mediaUrl}
-            preload={forceMetadataLoad ? 'metadata' : 'none'}
-            playsInline
-            controls={false}
-            onError={handleVideoError}
-            className={`
-              absolute inset-0 h-full w-full rounded-2xl object-cover
-              transition-opacity duration-300
-              ${aspectRatio === '16:9' ? 'aspect-video' : 'aspect-9/16'}
-              ${isPlaying ? 'opacity-100' : 'opacity-0'}
-            `}
-            aria-hidden="true"
-          />
         </>
       )}
 
       <AnimatePresence>
-        {isLoading && isHovered && !imageError && hasMatchedScenes && (
+        {!imageError && hasMatchedScenes && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -262,23 +123,6 @@ export function VideoCard({
                 Loading preview...
               </motion.p>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isHovered && !imageError && hasMatchedScenes && !isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute bottom-0 left-0 z-30 h-1 w-full overflow-hidden rounded-b-2xl bg-white/20"
-          >
-            <motion.div
-              className="h-full bg-white"
-              style={{ width: `${progress}%` }}
-              transition={{ ease: 'linear', duration: 0.1 }}
-            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -324,7 +168,7 @@ export function VideoCard({
         </div>
       )}
 
-      <Link to={videoUrl}>
+      <Link to={videoUrl} aria-label={`View ${fileName} details`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{
@@ -349,6 +193,6 @@ export function VideoCard({
       >
         {humanizeSeconds(duration)}
       </motion.div>
-    </div>
+    </Link>
   )
 }

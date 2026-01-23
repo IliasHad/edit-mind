@@ -23,7 +23,7 @@ export const meta: MetaFunction = () => {
 }
 
 export default function SearchPage() {
-  const { results, total, isLoading, hasQuery, showSuggestions, setShowSuggestions, searchMode } = useSearchResults()
+  const { results, total, loading, hasQuery, showSuggestions, setShowSuggestions, searchMode } = useSearchResults()
 
   const { suggestions, hasSuggestions } = useSearchSuggestions(showSuggestions)
 
@@ -83,7 +83,7 @@ export default function SearchPage() {
         </div>
 
         <section className="max-w-7xl mx-auto">
-          <SearchResults results={results} total={total} isLoading={isLoading} hasQuery={hasQuery} />
+          <SearchResults results={results} total={total} loading={loading} hasQuery={hasQuery} />
         </section>
       </main>
     </DashboardLayout>

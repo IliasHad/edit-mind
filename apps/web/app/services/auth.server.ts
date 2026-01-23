@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { LoginSchema } from '~/features/auth/schemas/auth'
-import { getSession, commitSession } from './session'
+import { getSession, commitSession, destroySession } from './session'
 import bcrypt from 'bcryptjs'
 import { redirect } from 'react-router'
 import { UserModel } from '@db/index'
@@ -19,4 +19,12 @@ export async function login(request: Request, values: z.infer<typeof LoginSchema
   headers.set('Set-Cookie', await commitSession(session))
 
   return redirect('/app/home', { headers })
+}
+export async function logout(request: Request) {
+  const session = await getSession(request.headers.get('Cookie'))
+
+  const headers = new Headers()
+  headers.set('Set-Cookie', await destroySession(session))
+
+  return redirect('/auth/login', { headers })
 }

@@ -30,8 +30,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
     if (request.method === 'DELETE') {
       await backgroundJobsFetch(`/internal/folders/${id}`, undefined, user, 'DELETE')
-      return new Response(JSON.stringify({ error: 'Folder has been deleted', success: true }), {
-        status: 200,
+      return new Response(JSON.stringify({ message: 'Folder has been deleted', success: true }), {
+        status: 204,
       })
     }
   } catch (error) {

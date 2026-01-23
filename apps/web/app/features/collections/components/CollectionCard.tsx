@@ -3,12 +3,12 @@ import { Link } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { humanizeSeconds } from '~/features/shared/utils/duration'
-import type { Collection } from '@prisma/client'
 import { ICON_MAP, TYPE_LABELS } from '~/features/collections/constants'
 import { PlayIcon } from '@heroicons/react/24/solid';
+import type { CollectionWithItems } from '../types';
 
 interface CollectionCardProps {
-  collection: Collection & { totalDuration: number }
+  collection: CollectionWithItems
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
