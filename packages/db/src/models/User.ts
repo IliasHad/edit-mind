@@ -1,4 +1,4 @@
-import type { User, UserRole } from '@prisma/client'
+import type { User, UserRole, Prisma } from '@prisma/client'
 import prisma from '../db'
 import * as bcrypt from 'bcryptjs'
 import { nanoid } from 'nanoid'
@@ -37,6 +37,10 @@ export class UserModel {
       select: { email: true, createdAt: true, id: true, role: true },
     })
     return user
+  }
+
+  static async findUnique(options: Prisma.UserFindUniqueArgs) {
+    return prisma.user.findFirst(options)
   }
 
   static async update(id: string, data: UserUpdateData) {

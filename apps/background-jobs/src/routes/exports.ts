@@ -1,5 +1,5 @@
 import express from 'express'
-import { exportQueue } from '../queue'
+import { exportQueue } from '@background-jobs/queue'
 import { ChatMessageModel, CollectionModel, ExportModel } from '@db/index'
 import { ExportProcessingRouteSchema } from '../schemas/export'
 import { logger } from '@shared/services/logger'

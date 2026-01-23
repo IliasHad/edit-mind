@@ -7,7 +7,7 @@ import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 import path from 'path'
-import { frameAnalysisQueue } from '../queue'
+import { frameAnalysisQueue } from '@background-jobs/queue'
 import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
 

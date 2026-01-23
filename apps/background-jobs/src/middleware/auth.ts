@@ -1,11 +1,8 @@
-import { createJWTService } from '@shared/services/jwt'
+import { createJWTService, JWTExpiredError, JWTInvalidError } from '@shared/services/jwt'
 import { Request, Response, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { env } from '../utils/env'
-
-const prisma = new PrismaClient()
+import { UserModel } from '@db/models/User'
 
 export interface AuthenticatedRequest extends Request {
   userId: string
@@ -26,7 +23,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
     const decoded = jwt.verify(token)
 
-    if (!decoded.userId) {
+    if (!decoded || !decoded.userId) {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'Invalid token payload',
@@ -34,7 +31,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await UserModel.findUnique({
       where: { id: decoded.userId },
     })
 
@@ -46,11 +43,11 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return
     }
 
-    ; (req as AuthenticatedRequest).userId = decoded.userId
+    ;(req as AuthenticatedRequest).userId = decoded.userId
 
     next()
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
+    if (error instanceof JWTInvalidError) {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'Invalid token',
@@ -58,7 +55,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return
     }
 
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof JWTExpiredError) {
       res.status(401).json({
         error: 'Unauthorized',
         message: 'Token expired',
@@ -66,7 +63,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return
     }
 
-    logger.error('Auth middleware error: ' + error)
+    logger.error({ error }, 'Auth middleware error')
     res.status(500).json({
       error: 'Server error',
       message: 'Authentication failed',

@@ -1,5 +1,5 @@
 import { logger } from '@shared/services/logger'
-import { videoProcessingQueues } from '../queue'
+import { videoProcessingQueues } from '@background-jobs/queue'
 
 const JOB_STATUSES = ['waiting', 'delayed', 'active', 'failed'] as const
 

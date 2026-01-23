@@ -8,7 +8,7 @@ export interface JWTPayload {
 
 export interface JWTOptions {
     expiresIn: `${number}d`
-    algorithm: jwt.Algorithm
+    algorithm?: jwt.Algorithm
 }
 
 export class JWTService {

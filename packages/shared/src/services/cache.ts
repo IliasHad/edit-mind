@@ -9,7 +9,7 @@ function getRedisClient() {
   if (!redisClient) {
     redisClient = new Redis({
       host: REDIS_HOST,
-      port: REDIS_PORT,
+      port: 6379,
       maxRetriesPerRequest: 3,
       enableReadyCheck: true,
     })

@@ -21,9 +21,10 @@
       "@media-utils/*": ["../../packages/media-utils/src/*"],
       "@search/*": ["../../packages/search/src/*"],
       "@immich/*": ["../../packages/immich/src/*"],
-      "@smart-collections/*": ["../../packages/smart-collections/src/*"]
+      "@smart-collections/*": ["../../packages/smart-collections/src/*"],
+      "@background-jobs/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests"],
   "exclude": ["node_modules", "dist"]
 }

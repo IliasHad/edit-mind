@@ -1,15 +1,20 @@
 import express from 'express'
-import { chatQueue, videoStitcherQueue } from '../queue'
-import { ChatRequestSchema } from '../schemas/chat'
+import { chatQueue, videoStitcherQueue } from '@background-jobs/queue'
+import { ChatRequestSchema, ChatStitcherRequestSchema } from '../schemas/chat'
 import { ChatModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 
 const router = express.Router()
 
 router.post('/:id/messages', async (req, res) => {
+  const { id } = req.params
+
   try {
-    const { id } = req.params
-    const validatedData = ChatRequestSchema.parse(req.body)
+    const { data: validatedData, error } = ChatRequestSchema.safeParse(req.body)
+
+    if (!validatedData || error) {
+      return res.status(400).json({ error: 'Invalid chat data' })
+    }
     const chat = await ChatModel.findById(id)
 
     const job = await chatQueue.add('process-chat-message', {
@@ -18,7 +23,7 @@ router.post('/:id/messages', async (req, res) => {
       projectId: validatedData.projectId,
     })
 
-    res.json({
+    return res.json({
       message: 'Chat message job queued',
       jobId: job.id,
     })
@@ -31,10 +36,15 @@ router.post('/:id/messages', async (req, res) => {
 router.post('/:id/stitcher', async (req, res) => {
   const { id } = req.params
 
-  const { selectedSceneIds, messageId } = req.body
-  const chat = await ChatModel.findById(id)
-
   try {
+    const { data, error } = ChatStitcherRequestSchema.safeParse(req.body)
+
+    if (!data || error) {
+      return res.status(400).json({ error: 'Invalid chat message stitcher data' })
+    }
+
+    const { selectedSceneIds, messageId } = data
+    const chat = await ChatModel.findById(id)
     await videoStitcherQueue.add('stitch-video', {
       selectedSceneIds,
       messageId,

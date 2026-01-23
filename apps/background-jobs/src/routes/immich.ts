@@ -1,6 +1,6 @@
 import express from 'express'
 import { logger } from '@shared/services/logger'
-import { immichImporterQueue } from '../queue'
+import { immichImporterQueue } from '@background-jobs/queue'
 import { ImmichImporterRequestSchema } from '../schemas/immich'
 
 const router = express.Router()
