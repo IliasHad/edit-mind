@@ -11,11 +11,12 @@ const createQueue = (name: string, customOptions?: Partial<QueueOptions>): Queue
         delay: 1000 * 60 * 2,
       },
       removeOnComplete: {
-        age: 86400,
-        count: 100,
+        age: 1800,
+        count: 5,
       },
       removeOnFail: {
-        age: 604800,
+        age: 86400, // Keep failed jobs for 24h for debugging
+        count: 20,
       },
     },
     ...customOptions,

@@ -1,5 +1,5 @@
 import { logger } from '@shared/services/logger'
-import { RedisOptions } from 'ioredis';
+import { RedisOptions } from 'ioredis'
 import { env } from '../utils/env'
 
 export const connection: RedisOptions = {
@@ -22,16 +22,18 @@ export const connection: RedisOptions = {
     if (
       errorMessage.includes('READONLY') ||
       errorMessage.includes('ETIMEDOUT') ||
-      errorMessage.includes('ECONNRESET')
+      errorMessage.includes('ECONNRESET') ||
+      errorMessage.includes('OOM') ||
+      errorMessage.includes('LOADING')
     ) {
       logger.warn(`Redis reconnecting: ${errorMessage}`)
-      return 1
+      return 2
     }
     return false
   },
 
   connectTimeout: 30000,
-  commandTimeout: 60000,
+  commandTimeout: 120000,
   keepAlive: 30000,
   enableReadyCheck: true,
   enableOfflineQueue: true,
