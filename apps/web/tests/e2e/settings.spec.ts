@@ -166,8 +166,8 @@ test.describe('Settings Page', () => {
         const folders = [
           {
             isDirectory: true,
-            path: '/path/to/your/media',
-            name: 'videos',
+            path: '/path/to/your/mediaFolder',
+            name: 'mediaFolder',
           },
         ]
         await route.fulfill({ json: { folders } })
@@ -175,8 +175,10 @@ test.describe('Settings Page', () => {
 
       await page.getByRole('button', { name: 'Add Folder' }).click()
       await expect(page.getByRole('heading', { name: 'Add Folder' })).toBeVisible()
+      page.on('dialog', (dialog) => dialog.accept())
+      await page.waitForTimeout(2000)
 
-      await expect(page.getByText('media')).toBeVisible()
+      await expect(page.getByText('mediaFolder').filter()).toBeVisible()
       await page.getByRole('button', { name: 'Cancel' }).click()
       await expect(page.getByRole('heading', { name: 'Add a new Folder' })).not.toBeVisible()
     })
