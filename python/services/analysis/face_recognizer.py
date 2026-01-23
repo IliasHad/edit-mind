@@ -26,7 +26,7 @@ class FaceRecognizer:
             - 0.20-0.30: Strict matching (recommended for high accuracy)
             - 0.30-0.40: Balanced matching (default range)
             - 0.40-0.60: Lenient matching (may increase false positives)
-            Default: 0.25
+            Default: 0.29
             
         model (str, optional): DeepFace face recognition model to use for generating
             face embeddings. Available options:
@@ -57,7 +57,7 @@ class FaceRecognizer:
             - 0.40-0.50: Strict clustering (fewer false groupings, more unique IDs)
             - 0.50-0.65: Balanced clustering (default range)
             - 0.65-0.80: Lenient clustering (may group different people together)
-            Default: 0.65
+            Default: 0.50
             Note: Should typically be higher than `tolerance` to avoid over-clustering
             
         detector_backend (str, optional): Face detection algorithm backend.
@@ -85,10 +85,10 @@ class FaceRecognizer:
     
     def __init__(
         self,
-        tolerance: float = 0.25,
+        tolerance: float = 0.29,
         model: str = 'VGG-Face',
         min_face_confidence: float = 0.70,
-        unknown_clustering_threshold: float = 0.65,
+        unknown_clustering_threshold: float = 0.50,
         detector_backend: str = "retinaface"
     ):
         self.tolerance = tolerance
