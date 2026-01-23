@@ -6,6 +6,7 @@ from ultralytics import YOLO
 from plugins.base import AnalyzerPlugin, FrameAnalysis, PluginResult
 from services.logger import get_logger
 from core.config import AnalysisConfig
+import os 
 
 logger = get_logger(__name__)
 
@@ -27,11 +28,17 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
 
     def setup(self, video_path, job_id) -> None:
         """Initialize the YOLO model."""
-        # Initialize YOLO model (will download to cache_dir if needed)
+        yolo_cache_dir = os.environ.get('YOLO_CONFIG_DIR', '/ml-models/ultralytics')
+        os.makedirs(yolo_cache_dir, exist_ok=True)
+        
+        from ultralytics.utils import SETTINGS
+        SETTINGS['weights_dir'] = yolo_cache_dir
+        
         self.yolo_model = YOLO(self.model)
 
         self.yolo_model.to(self.config.get("device"))
         self.yolo_model.fuse()
+
 
     def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
         detections_results = self._run_object_detection([frame])
