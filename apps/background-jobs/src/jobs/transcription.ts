@@ -19,7 +19,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
       jobId,
       videoPath,
       bullJobId: job.id,
-      transcriptionPath
+      transcriptionPath,
     },
     'Starting transcription job'
   )
@@ -73,6 +73,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     await updateJob(job, { transcriptionTime })
 
+    await frameAnalysisQueue.add('frame-analysis', job.data)
+
     return { transcriptionPath, videoPath }
   } catch (error) {
     logger.error(
@@ -87,12 +89,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const audioTranscriptionWorker = new Worker('transcription', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 5 * 60 * 1000,
-  stalledInterval: 15 * 1000,
+  lockDuration: 6 * 60 * 60 * 1000, // 6 hours
+  stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,
   lockRenewTime: 30 * 1000,
-})
-
-audioTranscriptionWorker.on('completed', async (job: Job) => {
-  await frameAnalysisQueue.add('frame-analysis', job.data)
 })
