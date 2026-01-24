@@ -5,7 +5,7 @@ import { logger } from '@shared/services/logger'
 import { FolderModel, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
 import { VideoReIndexingSchema } from '../schemas/indexer'
-import { retryFailedJobs } from '@background-jobs/utils/jobs'
+import { removeFailedJobs } from '@background-jobs/utils/jobs'
 
 const router = express.Router()
 
@@ -64,16 +64,33 @@ router.post('/reindex', async (req, res) => {
 
 router.post('/retry', async (req, res) => {
   try {
-    const jobIds = await retryFailedJobs()
-
-    await JobModel.updateMany({
+    const failedJobs = await JobModel.findMany({
       where: {
-        id: {
-          in: jobIds,
-        },
+        status: 'error',
       },
-      data: {
-        status: 'pending',
+    })
+    const failedJobsIds = failedJobs.map((job) => job.id)
+    await removeFailedJobs(failedJobsIds)
+
+    for await (const jobId of failedJobsIds) {
+      const job = await JobModel.findById(jobId)
+      if (job) {
+        const newJob = await JobModel.create({
+          videoPath: job.videoPath,
+          folderId: job.folderId,
+          fileSize: job.fileSize,
+          userId: job.userId,
+        })
+        await addVideoIndexingJob({
+          jobId: newJob.id,
+          videoPath: job.videoPath,
+        })
+      }
+    }
+
+    await JobModel.deleteMany({
+      where: {
+        status: 'error',
       },
     })
 

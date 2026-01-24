@@ -10,7 +10,7 @@ export async function action({ request }: ActionFunctionArgs) {
     await backgroundJobsFetch(`/internal/indexer/retry`, undefined, user, 'POST')
     return new Response(JSON.stringify({ success: true }), { status: 200 })
   } catch (error) {
-    logger.error('Error fetching folder details: ' + error)
-    return new Response(JSON.stringify({ error: 'Failed to fetch folder details' }), { status: 500 })
+    logger.error('Failed to retry failed job: ' + error)
+    return new Response(JSON.stringify({ error: 'Failed to retry failed job' }), { status: 500 })
   }
 }

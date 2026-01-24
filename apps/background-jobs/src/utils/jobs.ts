@@ -24,18 +24,14 @@ export async function deleteJobsByDataJobId(targetJobId: string) {
   return deletedCount
 }
 
-export async function retryFailedJobs() {
-  const jobsIds = []
+export async function removeFailedJobs(failedJobsIds: string[]) {
   for (const queue of videoProcessingQueues) {
-    const jobs = await queue.getJobs(['failed'], 0, -1)
+    const jobs = await queue.getJobs()
 
-    for (const job of jobs) {
-      await job.retry()
-      if (job.data.jobId) {
-        jobsIds.push(job.data.jobId)
+    for await (const job of jobs) {
+      if (job.data.id.includes(failedJobsIds)) {
+        await job.remove()
       }
     }
   }
-
-  return jobsIds
 }
