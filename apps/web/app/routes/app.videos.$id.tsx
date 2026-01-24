@@ -13,7 +13,7 @@ import { VideoHeader } from '~/features/videos/components/VideoHeader'
 import { ProcessingJobDetails } from '~/features/videos/components/ProcessingJobDetails'
 import { ConfirmModal } from '~/features/shared/components/ConfirmationModal'
 import { RelinkVideo } from '~/features/videos/components/RelinkVideo'
-import { VideoPageSkeleton } from '~/features/videos/components/VideoPageSkeleton'
+import { PageSkeleton } from '~/features/videos/components/PageSkeleton'
 
 export const meta = () => {
   return [
@@ -109,7 +109,7 @@ export default function Video() {
     }
   }
 
-  if (loading) return <VideoPageSkeleton />
+  if (loading) return <PageSkeleton />
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
