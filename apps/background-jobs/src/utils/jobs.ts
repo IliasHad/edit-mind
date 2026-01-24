@@ -29,7 +29,7 @@ export async function removeFailedJobs(failedJobsIds: string[]) {
     const jobs = await queue.getJobs()
 
     for await (const job of jobs) {
-      if (job.data.id.includes(failedJobsIds)) {
+      if (failedJobsIds.includes(job.data.id)) {
         await job.remove()
       }
     }

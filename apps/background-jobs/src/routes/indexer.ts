@@ -69,23 +69,19 @@ router.post('/retry', async (req, res) => {
         status: 'error',
       },
     })
-    const failedJobsIds = failedJobs.map((job) => job.id)
-    await removeFailedJobs(failedJobsIds)
+    await removeFailedJobs(failedJobs.map((job) => job.id))
 
-    for await (const jobId of failedJobsIds) {
-      const job = await JobModel.findById(jobId)
-      if (job) {
-        const newJob = await JobModel.create({
-          videoPath: job.videoPath,
-          folderId: job.folderId,
-          fileSize: job.fileSize,
-          userId: job.userId,
-        })
-        await addVideoIndexingJob({
-          jobId: newJob.id,
-          videoPath: job.videoPath,
-        })
-      }
+    for (const job of failedJobs) {
+      const newJob = await JobModel.create({
+        videoPath: job.videoPath,
+        folderId: job.folderId,
+        fileSize: job.fileSize,
+        userId: job.userId,
+      })
+      await addVideoIndexingJob({
+        jobId: newJob.id,
+        videoPath: job.videoPath,
+      })
     }
 
     await JobModel.deleteMany({
