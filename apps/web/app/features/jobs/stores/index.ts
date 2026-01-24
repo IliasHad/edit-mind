@@ -25,6 +25,8 @@ interface JobsState {
   setCurrentJob: (job: Job | null) => void
   refreshJobs: () => Promise<void>
 
+  retryAllFailedJobs: () => Promise<void>
+
   page: number
 
   total: number
@@ -131,6 +133,22 @@ export const useJobsStore = create<JobsState>()(
       setCurrentJob: (job: Job | null) => set({ currentJob: job }),
       refreshJobs: async () => {
         await get().fetchJobs()
+      },
+      retryAllFailedJobs: async () => {
+        set({ isLoading: true, error: null })
+        try {
+          await apiClient.retryAllFailedJobs()
+
+          set((state) => ({
+            ...state,
+            isLoading: false,
+          }))
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+            isLoading: false,
+          })
+        }
       },
     }),
     { name: 'jobs-store' }
