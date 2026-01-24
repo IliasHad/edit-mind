@@ -23,3 +23,19 @@ export async function deleteJobsByDataJobId(targetJobId: string) {
 
   return deletedCount
 }
+
+export async function retryFailedJobs() {
+  const jobsIds = []
+  for (const queue of videoProcessingQueues) {
+    const jobs = await queue.getJobs(['failed'], 0, -1)
+
+    for (const job of jobs) {
+      await job.retry()
+      if (job.data.jobId) {
+        jobsIds.push(job.data.jobId)
+      }
+    }
+  }
+
+  return jobsIds
+}
