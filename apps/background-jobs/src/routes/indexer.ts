@@ -5,6 +5,7 @@ import { logger } from '@shared/services/logger'
 import { FolderModel, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
 import { VideoReIndexingSchema } from '../schemas/indexer'
+import { retryFailedJobs } from '@background-jobs/utils/jobs'
 
 const router = express.Router()
 
@@ -58,6 +59,30 @@ router.post('/reindex', async (req, res) => {
   } catch (error) {
     logger.error({ error }, 'Failed to queue video indexer job')
     res.status(500).json({ error: 'Failed to queue video indexer job' })
+  }
+})
+
+router.post('/retry', async (req, res) => {
+  try {
+    const jobIds = await retryFailedJobs()
+
+    await JobModel.updateMany({
+      where: {
+        id: {
+          in: jobIds,
+        },
+      },
+      data: {
+        status: 'pending',
+      },
+    })
+
+    res.json({
+      message: 'All video indexing failed jobs has been triggered',
+    })
+  } catch (error) {
+    logger.error({ error }, 'Failed to retry failed jobs')
+    res.status(500).json({ error: 'Failed to retry failed jobs' })
   }
 })
 
