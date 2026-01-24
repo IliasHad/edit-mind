@@ -13,6 +13,7 @@ import { VideoHeader } from '~/features/videos/components/VideoHeader'
 import { ProcessingJobDetails } from '~/features/videos/components/ProcessingJobDetails'
 import { ConfirmModal } from '~/features/shared/components/ConfirmationModal'
 import { RelinkVideo } from '~/features/videos/components/RelinkVideo'
+import { VideoPageSkeleton } from '~/features/videos/components/VideoPageSkeleton'
 
 export const meta = () => {
   return [
@@ -33,7 +34,8 @@ export default function Video() {
     relinkVideo,
     reindexVideo,
     relinkSuccess,
-    videoExist
+    videoExist,
+    loading,
   } = useCurrentVideo()
 
   const { id } = useParams()
@@ -86,6 +88,7 @@ export default function Video() {
       console.error('Error deleting video ', error)
     }
   }
+
   const handleReindex = async () => {
     try {
       if (id) {
@@ -95,6 +98,7 @@ export default function Video() {
       console.error('Error reindexing video ', error)
     }
   }
+
   const handleRelink = async (newSource: string) => {
     try {
       if (id) {
@@ -104,6 +108,8 @@ export default function Video() {
       console.error('Error relink video ', error)
     }
   }
+
+  if (loading) return <VideoPageSkeleton />
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
