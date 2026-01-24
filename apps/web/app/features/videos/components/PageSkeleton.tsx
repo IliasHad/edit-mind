@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 export const PageSkeleton = () => {
   return (
     <DashboardLayout sidebar={<Sidebar />}>
-      <main className="max-w-7xl px-6 py-12">
+      <main className="max-w-7xl px-6 mx-6 py-12">
         <div className="mb-8">
           <motion.div 
             initial={{ opacity: 0 }}
