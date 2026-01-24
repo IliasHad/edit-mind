@@ -55,7 +55,7 @@ export const MULTI_SIGNAL_BOOSTERS: Record<
   ],
 }
 
-export const MIN_CONFIDENCE = 0.60
+export const MIN_CONFIDENCE = 0.4
 
 export const COLLECTION_DEFINITIONS: COLLECTION_DEFINITIONS_TYPE = {
   'Cinematic Gold': {
@@ -284,24 +284,6 @@ export const COLLECTION_DEFINITIONS: COLLECTION_DEFINITIONS_TYPE = {
     ], // 5-8 AM, 5-8 PM
   },
 
-  'Blue Hour': {
-    category: 'time_of_day',
-    description: 'Twilight, dusk, cool blue tones, pre-dawn or post-sunset',
-    visual_queries: [
-      'blue hour twilight atmosphere',
-      'dusk with cool blue tones',
-      'evening twilight scene',
-      'pre-dawn blue light',
-      'twilight hour photography',
-    ],
-    audio_queries: ['twilight evening sounds', 'dusk ambient audio', 'evening transition sounds'],
-    filters: {},
-    time_ranges: [
-      [4, 6],
-      [19, 21],
-    ], // 4-6 AM, 7-9 PM
-  },
-
   Nighttime: {
     category: 'time_of_day',
     description: 'Low light, artificial lighting, night scenes',
@@ -503,40 +485,6 @@ export const COLLECTION_DEFINITIONS: COLLECTION_DEFINITIONS_TYPE = {
     filters: {},
     metadata_boosters: {
       objects: ['horse', 'cow', 'sheep', 'bird'],
-    },
-  },
-
-  'Vintage & Retro': {
-    category: 'visual_style',
-    description: 'Vintage aesthetics, retro colors, nostalgic film-like quality',
-    visual_queries: [
-      'vintage retro film aesthetic',
-      'nostalgic old-fashioned look',
-      'classic retro style video',
-      'vintage color grading',
-      'retro nostalgic footage',
-    ],
-    audio_queries: ['vintage audio quality', 'retro music style', 'nostalgic sound'],
-    filters: {},
-    metadata_boosters: {
-      objects: ['clock', 'tv', 'book'],
-    },
-  },
-
-  'High Contrast B&W': {
-    category: 'visual_style',
-    description: 'Black and white, high contrast, dramatic monochrome',
-    visual_queries: [
-      'black and white high contrast',
-      'dramatic monochrome footage',
-      'noir black and white style',
-      'grayscale high contrast video',
-      'artistic black and white',
-    ],
-    audio_queries: ['minimal atmospheric sound', 'stark audio atmosphere'],
-    filters: {},
-    metadata_boosters: {
-      emotions: ['neutral', 'sad'],
     },
   },
 

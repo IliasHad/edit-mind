@@ -125,6 +125,7 @@ export default function Video() {
             importAt={video.importAt}
             disabled={isProcessing}
             source={video.source}
+            shottedAt={video.shottedAt}
           />
         )}
         {video && (
