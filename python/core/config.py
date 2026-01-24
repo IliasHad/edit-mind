@@ -15,10 +15,9 @@ class AnalysisConfig:
     memory_cleanup_interval: int = 50
     target_resolution_height: int = 720
     plugin_skip_interval: Dict[str, int] = field(default_factory=lambda: {
-        'DominantColorPlugin': 3,
+        'DominantColorPlugin': 1,
         'TextDetectionPlugin': 1,
-        'EnvironmentPlugin': 3,
-        'ShotTypePlugin': 3,
+        'ShotTypePlugin': 1,
         "DescriptorPlugin": 1
     })
 
