@@ -50,7 +50,7 @@ import './jobs/faceRenaming'
 import { initializeWatchers } from './watcher'
 import { shutdownWorkers } from './utils/workers'
 import { logger } from '@shared/services/logger'
-import { env } from './utils/env'
+import { env } from '@background-jobs/utils/env'
 import { SMART_COLLECTION_CRON_PATTERN } from '@smart-collections/constants/collections'
 import { rateLimiter } from './middleware/rateLimiter'
 

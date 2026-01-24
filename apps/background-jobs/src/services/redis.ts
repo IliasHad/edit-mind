@@ -4,7 +4,7 @@ import { env } from '../utils/env'
 
 export const connection: RedisOptions = {
   host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
+  port: 6379,
   maxRetriesPerRequest: null,
 
   retryStrategy: (times: number) => {

@@ -1,5 +1,5 @@
 import express from 'express'
-import { faceDeletionQueue, faceLabellingQueue, faceRenameQueue } from '../queue'
+import { faceDeletionQueue, faceLabellingQueue, faceRenameQueue } from '@background-jobs/queue'
 import { FaceDeletionSchema, FaceLabellingSchema, FaceRenameSchema } from '../schemas/face'
 import { logger } from '@shared/services/logger'
 import { FaceDeletionJobData, FaceLabellingJobData } from '@shared/types/face'

@@ -5,12 +5,12 @@ import type { VideoWithScenesAndMatch } from '@shared/types/video'
 interface SearchResultsProps {
   results: VideoWithScenesAndMatch[]
   total: number
-  isLoading: boolean
+  loading: boolean
   hasQuery: boolean
 }
 
-export function SearchResults({ results, total, isLoading, hasQuery }: SearchResultsProps) {
-  if (isLoading) {
+export function SearchResults({ results, total, loading, hasQuery }: SearchResultsProps) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-2">
         <div className="flex flex-col items-center gap-4">

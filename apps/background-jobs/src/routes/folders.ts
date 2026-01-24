@@ -3,7 +3,7 @@ import { findVideoFiles } from '@media-utils/utils/videos'
 import { addVideoIndexingJob } from '../services/videoIndexer'
 import { FolderModel, JobModel } from '@db/index'
 import { logger } from '@shared/services/logger'
-import { deleteJobsByDataJobId } from '../utils/jobs'
+import { deleteJobsByDataJobId } from '@background-jobs/utils/jobs'
 
 const router = express.Router()
 
@@ -21,8 +21,10 @@ router.post('/:id/trigger', async (req, res) => {
 
     const folder = await FolderModel.findById(id)
 
-    if (!folder) return res.status(400).json({ error: 'Folder is not found' })
-
+    if (!folder) {
+      return res.status(404).json({ error: 'Folder not found' })
+    }
+    
     await FolderModel.update(folder.id, { status: 'scanning' })
     const videos = await findVideoFiles(folder.path, folder.includePatterns, folder.excludePatterns)
 
@@ -57,7 +59,7 @@ router.post('/:id/trigger', async (req, res) => {
     })
   } catch (error) {
     logger.error(error)
-    await FolderModel.update(id, { status: "error" })
+    await FolderModel.update(id, { status: 'error' })
     res.status(500).json({ error: 'Failed to process folder' })
   }
 })
@@ -68,7 +70,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const folder = await FolderModel.findById(id)
     if (!folder) {
-      throw new Error('Error finding the folder over database')
+      return res.status(404).json({ error: 'Folder not found' })
     }
 
     const jobs = await JobModel.findMany({
@@ -76,8 +78,12 @@ router.delete('/:id', async (req, res) => {
         folderId: folder.id,
       },
     })
-    for await (const job of jobs) {
-      await deleteJobsByDataJobId(job.id)
+    for (const job of jobs) {
+      try {
+        await deleteJobsByDataJobId(job.id)
+      } catch (error) {
+        logger.warn({ error }, 'Failed to delete job data')
+      }
     }
 
     await FolderModel.delete(id)

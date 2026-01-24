@@ -37,6 +37,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(({ onS
 
   return (
     <div
+      aria-label='Search'
       className={`relative flex items-center gap-3 px-5 py-4 
         bg-black/5 dark:bg-white/5 
         backdrop-blur-xl

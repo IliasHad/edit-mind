@@ -12,7 +12,7 @@ export const rateLimiter = rateLimit({
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false,
     handler: (req, res) => {
-        logger.warn(`Rate limit exceeded for IP: ${req.ip}`)
+        logger.error(`Rate limit exceeded for IP: ${req.ip}`)
         res.status(429).json({
             error: 'Too Many Requests',
             message: 'Too many requests from this IP, please try again later.',

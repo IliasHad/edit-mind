@@ -97,7 +97,7 @@ export function useSearchResults() {
     total: pagination?.total ?? 0,
     page: pagination?.page ?? 1,
     hasMore: pagination?.hasMore ?? false,
-    isLoading: resultsLoading,
+    loading: resultsLoading,
     reload: performSearch,
     addFilter,
     hasQuery,

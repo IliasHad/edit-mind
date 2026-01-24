@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "tsx watch -r tsconfig-paths/register  src/index.ts",
     "build": "tsc --build",
-    "start": "tsx -r tsconfig-paths/register src/index.ts"
+    "start": "tsx -r tsconfig-paths/register src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@bull-board/api": "^6.14.1",
@@ -30,8 +33,13 @@
     "immich": "workspace:*"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.2.0",
     "@types/archiver": "^7.0.0",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.5"
+    "@types/express": "^5.0.5",
+    "@types/supertest": "^6.0.2",
+    "@vitest/coverage-v8": "^4.0.18",
+    "supertest": "^6.3.3",
+    "vitest": "^4.0.18"
   }
 }

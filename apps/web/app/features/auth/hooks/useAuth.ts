@@ -23,7 +23,7 @@ export function useAuth() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await fetch('/auth/logout', { method: 'POST' })
       setSession({ isAuthenticated: false, user: null })
       navigate('/auth/login')
     } catch {

@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input, Textarea } from '@headlessui/react'
 import { Link, useFetcher, useNavigate } from 'react-router'
@@ -12,7 +12,7 @@ import {
   CheckCircleIcon,
   Squares2X2Icon,
   ListBulletIcon,
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/24/outline'
 import { ProjectCreateSchema, type ProjectCreateInput, type ProjectUpdateInput } from '../schemas'
 import { useCurrentProject } from '../hooks/useCurrentProject'
 import { useInfiniteVideos } from '../hooks/useInfiniteVideos'
@@ -34,26 +34,28 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const observerTarget = useRef<HTMLDivElement>(null)
 
-  const {
-    videos: availableVideos,
-    hasMore,
-    loading: videosLoading,
-    loadMore,
-    reset: resetVideos,
-  } = useInfiniteVideos()
+  const { videos: availableVideos, hasMore, loading: videosLoading, loadMore, reset: resetVideos } = useInfiniteVideos()
+  const defaultValues = useMemo(() => {
+    if (isEditing && currentProject) {
+      return {
+        ...currentProject,
+        videoIds: currentProject.videos?.map((v) => v.id),
+      }
+    }
+
+    return { name: '', instructions: '', videoIds: [] }
+  }, [isEditing, currentProject])
 
   const {
-    register,
     handleSubmit,
-    reset,
     watch,
     setValue,
-    formState: { errors, isDirty, isValid },
+    control,
+    reset,
+    formState: { errors, isDirty },
   } = useForm<ProjectCreateInput | ProjectUpdateInput>({
     resolver: zodResolver(ProjectCreateSchema),
-    defaultValues: currentProject
-      ? { ...currentProject, videoIds: currentProject?.videos.map((video) => video.id) }
-      : { name: '', instructions: '', videoIds: [] },
+    defaultValues,
     mode: 'onChange',
   })
 
@@ -62,6 +64,16 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
   useEffect(() => {
     resetVideos(searchQuery)
   }, [searchQuery, resetVideos])
+
+  useEffect(() => {
+    if (!isEditing) return
+    if (!currentProject) return
+
+    reset({
+      ...currentProject,
+      videoIds: currentProject.videos?.map((v) => v.id) ?? [],
+    })
+  }, [isEditing, currentProject, reset])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -84,14 +96,6 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
       }
     }
   }, [hasMore, videosLoading, loadMore])
-
-  useEffect(() => {
-    if (currentProject) {
-      reset({ ...currentProject, videoIds: currentProject.videos.map((v) => v.id) })
-    }
-  }, [currentProject, reset])
-
-
 
   const selectedVideos = useMemo(
     () => availableVideos.filter((v) => selectedVideoIds?.includes(v.id)),
@@ -131,12 +135,11 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
 
   const isSubmitting = fetcher.state === 'submitting'
   const hasError = fetcher.data?.error
-  const canSubmit = isValid && isDirty && !isSubmitting
+  const canSubmit = isDirty && !isSubmitting
 
   return (
     <div className="max-w-7xl mx-auto h-full bg-white dark:bg-black">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
-        {/* Header */}
         <div className="sticky top-0 z-10 px-8 pt-8 pb-6 bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -175,12 +178,16 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
               <label htmlFor="name" className="block text-sm font-semibold text-black dark:text-white mb-3">
                 Project Name <span className="text-red-500">*</span>
               </label>
-              <Input
-                id="name"
-                {...register('name')}
-                placeholder="e.g., Summer Vacation 2024"
-                autoFocus={!isEditing}
-                className={`w-full px-4 py-3.5 text-base rounded-xl
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="name"
+                    placeholder="e.g., Summer Vacation 2024"
+                    autoFocus={!isEditing}
+                    className={`w-full px-4 py-3.5 text-base rounded-xl
                          bg-white dark:bg-black
                          text-black dark:text-white
                          border-2 transition-all duration-200 outline-none
@@ -190,7 +197,10 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                              ? 'border-red-300 dark:border-red-800 focus:border-red-500 dark:focus:border-red-600'
                              : 'border-black/10 dark:border-white/10 focus:border-black/30 dark:focus:border-white/30'
                          }`}
+                  />
+                )}
               />
+
               {errors.name && (
                 <div className="flex items-center gap-2 mt-2">
                   <XMarkIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
@@ -208,12 +218,17 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                   Optional
                 </span>
               </div>
-              <Textarea
-                id="instructions"
-                {...register('instructions')}
-                placeholder="Describe your project context. Example: 'Tech conference recordings featuring keynote speakers and panel discussions about AI and machine learning.'"
-                rows={4}
-                className="w-full px-4 py-3.5 text-base rounded-xl
+              <Controller
+                name="instructions"
+                control={control}
+                render={({ field }) => (
+                  <Textarea
+                    {...field}
+                    id="instructions"
+                    aria-label="instructions"
+                    placeholder="Describe your project context. Example: 'Tech conference recordings featuring keynote speakers and panel discussions about AI and machine learning.'"
+                    rows={4}
+                    className="w-full px-4 py-3.5 text-base rounded-xl
                          bg-white dark:bg-black
                          text-black dark:text-white
                          border-2 border-black/10 dark:border-white/10
@@ -221,6 +236,8 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                          placeholder:text-black/40 dark:placeholder:text-white/40
                          transition-all duration-200
                          outline-none resize-none"
+                  />
+                )}
               />
               <p className="mt-2 text-xs text-black/50 dark:text-white/50">
                 Provide context to help AI-powered features understand your project better
@@ -242,7 +259,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                 </div>
               </div>
 
-              {selectedVideos.length > 0 ? (
+              {selectedVideos && selectedVideos.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {selectedVideos.map((video) => (
                     <div

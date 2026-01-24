@@ -7,10 +7,12 @@ import {
   UsersIcon,
   FolderIcon,
   FilmIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline'
 import { Link } from './Link'
 import { useSession } from '~/features/auth/hooks/useSession'
 import type { JSX } from 'react'
+import { useAuth } from '~/features/auth/hooks/useAuth'
 
 interface SidebarProps {
   isCollapsed?: boolean
@@ -20,6 +22,11 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: SidebarProps) {
   const { session } = useSession()
+  const { handleLogout: logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+  }
 
   return (
     <aside
@@ -87,13 +94,27 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
         {children}
       </nav>
 
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-gray-800 space-y-2">
         <Link
           isCollapsed={isCollapsed}
           icon={<Cog6ToothIcon className="w-5 h-5" />}
           to="/app/settings"
           label="Settings"
         />
+        <button
+          onClick={handleLogout}
+          className={`
+            w-full flex items-center gap-3 px-3 py-2
+            text-gray-700 dark:text-gray-300
+            hover:bg-gray-100 dark:hover:bg-neutral-800
+            rounded-lg transition-colors
+            ${isCollapsed ? 'justify-center' : ''}
+          `}
+          title={isCollapsed ? 'Logout' : undefined}
+        >
+          <ArrowRightOnRectangleIcon className="w-5 h-5 shrink-0" />
+          {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
+        </button>
       </div>
     </aside>
   )
