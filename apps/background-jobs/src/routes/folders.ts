@@ -15,7 +15,7 @@ router.post('/:id/trigger', async (req, res) => {
   try {
     const videosInDb = await JobModel.findMany({
       where: {
-        status: { in: ['pending', 'processing'] },
+        status: { in: ['pending', 'processing', 'done'] },
       },
     })
 
