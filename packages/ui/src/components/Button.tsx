@@ -3,11 +3,12 @@ import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { forwardRef, type ReactNode, type ButtonHTMLAttributes } from 'react'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'destructive' | 'outline' | 'ghost' | 'link'
-  size?: 'sm' | 'default' | 'lg' | 'xl' | 'icon' | 'icon-sm' | 'icon-lg'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline' | 'link' | 'glass'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon-xs' | 'icon-sm' | 'icon-md' | 'icon-lg'
   loading?: boolean
   leftIcon?: ReactNode
   rightIcon?: ReactNode
+  fullWidth?: boolean
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -15,12 +16,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     {
       className,
       variant = 'primary',
-      size = 'default',
+      size = 'md',
       loading = false,
       leftIcon,
       rightIcon,
       children,
       disabled,
+      fullWidth = false,
       type = 'button',
       ...props
     },
@@ -28,117 +30,146 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const isDisabled = disabled || loading
 
-    const baseStyles = clsx(
-      'inline-flex items-center justify-center gap-2 whitespace-nowrap',
-      'transition-all duration-150 ease-out',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-      'focus-visible:ring-offset-white dark:focus-visible:ring-offset-black',
-      'disabled:cursor-not-allowed disabled:opacity-50',
-      'text-base',
-      '[&_svg]:w-4 [&_svg]:h-4 [&_svg]:shrink-0 [&_svg]:transition-transform'
-    )
-
-    const variantStyles = {
-      primary: clsx(
-        'bg-black dark:bg-white',
-        'text-white dark:text-black',
-        'shadow-sm dark:shadow-md',
-        'hover:bg-zinc-800 dark:hover:bg-zinc-100',
-        'hover:shadow-md dark:hover:shadow-lg',
-        'focus-visible:ring-black dark:focus-visible:ring-white',
-        'rounded-xl'
-      ),
-      secondary: clsx(
-        'bg-zinc-100 dark:bg-zinc-800',
-        'text-black dark:text-white',
-        'border border-zinc-200 dark:border-zinc-700',
-        'backdrop-blur-xl backdrop-saturate-150',
-        'hover:bg-zinc-200 dark:hover:bg-zinc-700',
-        'hover:border-zinc-300 dark:hover:border-zinc-600',
-        'focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-400',
-        'shadow-sm',
-        'rounded-xl'
-      ),
-      tertiary: clsx(
-        'bg-linear-to-b from-purple-900 to-purple-950 dark:from-purple-800 dark:to-purple-900',
-        'text-white',
-        'shadow-md dark:shadow-lg',
-        'hover:from-purple-800 hover:to-purple-900 dark:hover:from-purple-700 dark:hover:to-purple-800',
-        'hover:shadow-lg dark:hover:shadow-xl',
-        'focus-visible:ring-purple-600 dark:focus-visible:ring-purple-500',
-        'border border-purple-800 dark:border-purple-700',
-        'rounded-xl'
-      ),
-      destructive: clsx(
-        'bg-red-500 dark:bg-red-500',
-        'text-white dark:text-black',
-        'shadow-md dark:shadow-lg',
-        'hover:from-red-600 hover:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800',
-        'hover:shadow-lg dark:hover:shadow-xl',
-        'focus-visible:ring-red-500 dark:focus-visible:ring-red-600',
-        'rounded-xl'
-      ),
-      outline: clsx(
-        'border-2 border-zinc-300 dark:border-zinc-700',
-        'bg-transparent',
-        'text-black dark:text-white',
-        'hover:bg-zinc-100 dark:hover:bg-zinc-800',
-        'hover:border-zinc-400 dark:hover:border-zinc-600',
-        'focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-400',
-        'rounded-xl'
-      ),
-      ghost: clsx(
-        'bg-transparent',
-        'text-black dark:text-white',
-        'hover:bg-zinc-100 dark:hover:bg-zinc-800',
-        'active:bg-zinc-200 dark:active:bg-zinc-700',
-        'focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-400',
-        'rounded-xl'
-      ),
-      link: clsx(
-        'bg-transparent',
-        'text-black dark:text-white',
-        'underline-offset-4 hover:underline',
-        'focus-visible:ring-zinc-500 dark:focus-visible:ring-zinc-400',
-        'px-0 h-auto',
-        'active:scale-100'
-      ),
-    }
-
-    const sizeStyles = {
-      sm: 'h-8 px-3 text-sm gap-1.5 leading-none',
-      default: 'h-10 px-4 text-base gap-2 leading-none',
-      lg: 'h-11 px-5 text-lg gap-2 leading-none',
-      xl: 'h-12 px-6 text-xl gap-2.5 leading-none',
-      icon: 'h-10 w-10 p-0',
-      'icon-sm': 'h-8 w-8 p-0',
-      'icon-lg': 'h-11 w-11 p-0',
-    }
-
-    const buttonClasses = clsx(baseStyles, variantStyles[variant], sizeStyles[size], className)
-
     return (
-      <button ref={ref} type={type} className={buttonClasses} disabled={isDisabled} {...props}>
-        {loading && (
-          <ArrowPathIcon 
-            className="w-4 h-4 animate-spin" 
-            aria-hidden="true" 
-          />
+      <button
+        ref={ref}
+        type={type}
+        className={clsx(
+          // Base styles
+          'inline-flex items-center justify-center gap-2',
+          'font-medium transition-all duration-200',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          'active:scale-[0.98]',
+          '[&_svg]:shrink-0',
+          
+          // Full width
+          fullWidth && 'w-full',
+          
+          // Variant styles
+          getVariantStyles(variant),
+          
+          // Size styles
+          getSizeStyles(size),
+          
+          // Custom className
+          className
         )}
-        {!loading && leftIcon && (
-          <span className="flex items-center justify-center" aria-hidden="true">
-            {leftIcon}
-          </span>
+        disabled={isDisabled}
+        {...props}
+      >
+        {loading ? (
+          <ArrowPathIcon className="animate-spin" aria-hidden="true" />
+        ) : (
+          leftIcon && <span aria-hidden="true">{leftIcon}</span>
         )}
-        {children && <span className="leading-none">{children}</span>}
-        {!loading && rightIcon && (
-          <span className="flex items-center justify-center" aria-hidden="true">
-            {rightIcon}
-          </span>
-        )}
+        
+        {children && <span>{children}</span>}
+        
+        {!loading && rightIcon && <span aria-hidden="true">{rightIcon}</span>}
       </button>
     )
   }
 )
 
 Button.displayName = 'Button'
+
+// Variant styles helper
+function getVariantStyles(variant: ButtonProps['variant']): string {
+  const variants = {
+    primary: clsx(
+      'bg-white dark:bg-white',
+      'text-black dark:text-black',
+      'rounded-xl',
+      'hover:bg-white/90 dark:hover:bg-white/90',
+      'shadow-sm',
+      'focus-visible:ring-white dark:focus-visible:ring-white',
+      'focus-visible:ring-offset-black dark:focus-visible:ring-offset-transparent'
+    ),
+    
+    secondary: clsx(
+      'bg-black dark:bg-black',
+      'text-white dark:text-white',
+      'rounded-xl',
+      'hover:bg-black/90 dark:hover:bg-black/90',
+      'shadow-sm',
+      'focus-visible:ring-black dark:focus-visible:ring-black',
+      'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
+    ),
+    
+    ghost: clsx(
+      'bg-white/5 dark:bg-white/5',
+      'text-black dark:text-white',
+      'border border-black/10 dark:border-white/10',
+      'rounded-xl',
+      'hover:bg-black/5 dark:hover:bg-white/10',
+      'hover:border-black/20 dark:hover:border-white/20',
+      'focus-visible:ring-black/50 dark:focus-visible:ring-white/50',
+      'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
+    ),
+    
+    glass: clsx(
+      'bg-white/5 dark:bg-white/5',
+      'text-black dark:text-white',
+      'border border-white/10',
+      'rounded-xl',
+      'backdrop-blur-sm',
+      'hover:bg-white/[0.07]',
+      'hover:border-white/20',
+      'focus-visible:ring-white/50',
+      'focus-visible:ring-offset-transparent'
+    ),
+    
+    destructive: clsx(
+      'bg-red-500/10 dark:bg-red-500/10',
+      'text-red-600 dark:text-red-400',
+      'border border-red-500/30',
+      'rounded-xl',
+      'hover:bg-red-500/20',
+      'hover:border-red-500/50',
+      'focus-visible:ring-red-500/50',
+      'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
+    ),
+    
+    outline: clsx(
+      'bg-transparent',
+      'text-black dark:text-white',
+      'border border-black/20 dark:border-white/20',
+      'rounded-xl',
+      'hover:bg-black/5 dark:hover:bg-white/5',
+      'hover:border-black/30 dark:hover:border-white/30',
+      'focus-visible:ring-black/50 dark:focus-visible:ring-white/50',
+      'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
+    ),
+    
+    link: clsx(
+      'bg-transparent',
+      'text-black dark:text-white',
+      'underline-offset-4',
+      'hover:underline',
+      'focus-visible:ring-black/50 dark:focus-visible:ring-white/50',
+      'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent',
+      'px-0 h-auto',
+      'active:scale-100'
+    ),
+  }
+  
+  return variants[variant || 'primary']
+}
+
+// Size styles helper
+function getSizeStyles(size: ButtonProps['size']): string {
+  const sizes = {
+    xs: 'h-7 px-2.5 text-xs gap-1.5 [&_svg]:w-3 [&_svg]:h-3',
+    sm: 'h-8 px-3 text-sm gap-1.5 [&_svg]:w-3.5 [&_svg]:h-3.5',
+    md: 'h-10 px-4 text-sm gap-2 [&_svg]:w-4 [&_svg]:h-4',
+    lg: 'h-11 px-5 text-base gap-2 [&_svg]:w-4 [&_svg]:h-4',
+    xl: 'h-12 px-6 text-base gap-2.5 [&_svg]:w-5 [&_svg]:h-5',
+    'icon-xs': 'h-7 w-7 p-0 [&_svg]:w-3 [&_svg]:h-3',
+    'icon-sm': 'h-8 w-8 p-0 [&_svg]:w-3.5 [&_svg]:h-3.5',
+    'icon-md': 'h-10 w-10 p-0 [&_svg]:w-4 [&_svg]:h-4',
+    'icon-lg': 'h-11 w-11 p-0 [&_svg]:w-5 [&_svg]:h-5',
+  }
+  
+  return sizes[size || 'md']
+}

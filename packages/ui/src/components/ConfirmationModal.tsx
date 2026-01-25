@@ -1,7 +1,7 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircleIcon, XMarkIcon } from '@heroicons/react/24/solid'
-import { useState } from 'react'
-import { Button } from '@ui/components/Button'
+import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from '@heroicons/react/24/solid'
+import { useState, type ReactNode } from 'react'
+import { Button } from './Button'
+import { Modal } from './Modal'
 
 interface ConfirmModalProps {
   isOpen: boolean
@@ -12,30 +12,30 @@ interface ConfirmModalProps {
   resourceName?: string
   confirmText?: string
   cancelText?: string
-  variant?: 'primary' | 'success' | 'warning'
+  variant?: 'primary' | 'success' | 'warning' | 'info'
+  icon: ReactNode
 }
 
-const modalVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 },
-}
-
-const variantStyles = {
+const variantConfig = {
   primary: {
-    iconBg: 'bg-blue-100 dark:bg-blue-950/50',
-    iconColor: 'text-blue-600 dark:text-blue-400',
-    buttonBg: 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
+    iconBg: 'bg-blue-500/10 border-blue-500/20',
+    iconColor: 'text-blue-400',
+    icon: CheckCircleIcon,
   },
   success: {
-    iconBg: 'bg-green-100 dark:bg-green-950/50',
-    iconColor: 'text-green-600 dark:text-green-400',
-    buttonBg: 'bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600',
+    iconBg: 'bg-green-500/10 border-green-500/20',
+    iconColor: 'text-green-400',
+    icon: CheckCircleIcon,
   },
   warning: {
-    iconBg: 'bg-amber-100 dark:bg-amber-950/50',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    buttonBg: 'bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600',
+    iconBg: 'bg-amber-500/10 border-amber-500/20',
+    iconColor: 'text-amber-400',
+    icon: ExclamationCircleIcon,
+  },
+  info: {
+    iconBg: 'bg-white/10 border-white/20',
+    iconColor: 'text-white',
+    icon: InformationCircleIcon,
   },
 }
 
@@ -49,10 +49,12 @@ export function ConfirmationModal({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   variant = 'primary',
+  icon,
 }: ConfirmModalProps) {
   const [isConfirming, setIsConfirming] = useState(false)
 
-  const styles = variantStyles[variant]
+  const config = variantConfig[variant]
+  const Icon = icon || config.icon
 
   const handleConfirm = async () => {
     setIsConfirming(true)
@@ -66,83 +68,54 @@ export function ConfirmationModal({
     }
   }
 
-  const handleBackdropClick = () => {
-    if (!isConfirming) {
-      onClose()
-    }
-  }
-
   return (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <motion.div
-          key="confirm-modal-backdrop"
-          variants={modalVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-          onClick={handleBackdropClick}
-        >
-          <motion.div
-            key="confirm-modal-content"
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="relative w-full max-w-md bg-white dark:bg-black rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      closeOnBackdrop={!isConfirming}
+      showCloseButton={!isConfirming}
+    >
+      <div className="p-6">
+        <div className={`mb-4 flex size-12 items-center justify-center rounded-xl border ${config.iconBg}`}>
+          <Icon className={`size-6 ${config.iconColor}`} />
+        </div>
+
+        <h2 className="text-xl font-semibold text-white mb-2">
+          {title}
+        </h2>
+
+        <p className="text-sm text-white/60 leading-relaxed">
+          {description}
+        </p>
+
+        {resourceName && (
+          <div className="mt-4 rounded-lg bg-white/5 border border-white/10 px-3 py-2.5">
+            <p className="text-sm font-medium text-white/80 truncate font-mono">
+              {resourceName}
+            </p>
+          </div>
+        )}
+
+        <div className="mt-6 flex gap-3">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={isConfirming}
+            fullWidth
           >
-            <Button
-              variant='ghost'
-              onClick={onClose}
-              disabled={isConfirming}
-              aria-label="Close modal"
-            >
-              <XMarkIcon className="size-5" />
-            </Button>
-
-            <div className="p-6">
-              <div className={`mb-4 flex size-12 items-center justify-center rounded-full ${styles.iconBg}`}>
-                <CheckCircleIcon className={`size-6 ${styles.iconColor}`} />
-              </div>
-
-              <h2 className="text-xl font-semibold tracking-tight text-black dark:text-white mb-2">{title}</h2>
-
-              <p className="text-sm text-black/60 dark:text-white/60 leading-relaxed">{description}</p>
-
-              {resourceName && (
-                <div className="mt-4 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-3 py-2">
-                  <p className="text-sm font-medium text-black/70 dark:text-white/70 truncate">{resourceName}</p>
-                </div>
-              )}
-
-              <div className="mt-6 flex gap-3">
-                <Button
-                  variant='secondary'
-                  onClick={onClose}
-                  disabled={isConfirming}
-                >
-                  {cancelText}
-                </Button>
-                <Button
-                  variant='primary'
-                  onClick={handleConfirm}
-                  disabled={isConfirming}
-                >
-                  {isConfirming ? (
-                    <>
-                      <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    confirmText
-                  )}
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            {cancelText}
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleConfirm}
+            disabled={isConfirming}
+            loading={isConfirming}
+            fullWidth
+          >
+            {isConfirming ? 'Processing...' : confirmText}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   )
 }
