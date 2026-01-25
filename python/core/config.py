@@ -93,9 +93,9 @@ class ServerConfig:
     max_concurrent_jobs: int = 2
     max_concurrent_analyses: int = 1
     max_concurrent_transcriptions: int = 1
-    ping_interval: int = 60
-    ping_timeout: int = 120
-    close_timeout: int = 30
+    ping_interval: int = 30    
+    ping_timeout: int = 60      
+    close_timeout: int = 10   
 
     def __post_init__(self) -> None:
         """Validate and auto-calculate configuration."""
