@@ -4,6 +4,7 @@ import { addVideoIndexingJob } from '../services/videoIndexer'
 import { FolderModel, JobModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import { deleteJobsByDataJobId } from '@background-jobs/utils/jobs'
+import { watchFolder } from '@background-jobs/watcher'
 
 const router = express.Router()
 
@@ -15,7 +16,7 @@ router.post('/:id/trigger', async (req, res) => {
   try {
     const videosInDb = await JobModel.findMany({
       where: {
-        status: { in: ['pending', 'processing'] },
+        status: { in: ['pending', 'processing', 'done'] },
       },
     })
 
@@ -51,6 +52,7 @@ router.post('/:id/trigger', async (req, res) => {
     }
 
     await FolderModel.update(folder.id, { status: 'idle' })
+    watchFolder(folder.path)
 
     res.json({
       message: 'Folder added and videos queued for processing',

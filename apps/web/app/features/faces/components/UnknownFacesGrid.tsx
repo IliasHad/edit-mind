@@ -1,10 +1,10 @@
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { ClockIcon, FilmIcon, EyeIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { Pagination } from './Pagination'
-import { useFacesStore } from '../stores'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { UnknownFace } from '@shared/types/unknownFace'
+import { useFaces } from '../hooks/useFaces'
 
 export const UnknownFacesGrid = () => {
   const {
@@ -15,7 +15,7 @@ export const UnknownFacesGrid = () => {
     unknownPagination,
     handleUnknownPageChange,
     loading,
-  } = useFacesStore()
+  } = useFaces()
 
   return (
     <>

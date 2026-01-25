@@ -8,17 +8,27 @@ import { useJobs } from '~/features/jobs/hooks/useJobs'
 import { JobStatusIcon } from '~/features/jobs/components/JobStatusIcon'
 import { JobCard } from '~/features/jobs/components/JobCard'
 import { useEffect } from 'react'
+import { ArrowPathIcon } from '@heroicons/react/24/solid'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Jobs | Edit Mind' }]
 }
 
 export default function JobsPage() {
-  const { jobs, total, jobsStatus, fetchJobs } = useJobs()
+  const { jobs, total, jobsStatus, fetchJobs, loading, retryAllFailedJobs, refreshJobs } = useJobs()
 
   useEffect(() => {
     fetchJobs()
   }, [fetchJobs])
+
+  const handleRetryFailedJobs = async () => {
+    try {
+      await retryAllFailedJobs()
+      await refreshJobs()
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
@@ -42,6 +52,18 @@ export default function JobsPage() {
                 )}
               </div>
             </div>
+            {jobsStatus && jobsStatus['error'] > 0 && (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleRetryFailedJobs}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-black hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/10"
+                >
+                  <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                  {loading ? 'Retrying...' : 'Retry Failed Jobs'}
+                </button>
+              </div>
+            )}
           </div>
 
           {jobs.length > 0 && Object.keys(jobsStatus).length > 0 && (

@@ -57,21 +57,26 @@ async function processVideo(job: Job<VideoProcessingData>) {
       if (USE_EXTERNAL_ML_SERVICE) {
         writeFileSync(transcriptionPath, JSON.stringify(result), 'utf-8')
       }
+      const transcriptionTime = (Date.now() - transcriptionStart) / 1000
+      logger.debug(
+        {
+          jobId,
+          transcriptionTime,
+          bullJobId: job.id,
+        },
+        'Transcription processing complete'
+      )
+
+      await updateJob(job, { transcriptionTime })
     } else {
+      const data = await fs.readFile(transcriptionPath, 'utf-8').then(JSON.parse)
+
+      if (data.processing_time) {
+        await updateJob(job, { transcriptionTime: data.processing_time, progress: 100 })
+      }
+
       logger.debug({ jobId, transcriptionPath }, 'Skipping transcription - using cached file')
     }
-
-    const transcriptionTime = (Date.now() - transcriptionStart) / 1000
-    logger.debug(
-      {
-        jobId,
-        transcriptionTime,
-        bullJobId: job.id,
-      },
-      'Transcription processing complete'
-    )
-
-    await updateJob(job, { transcriptionTime })
 
     await frameAnalysisQueue.add('frame-analysis', job.data)
 

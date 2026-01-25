@@ -86,10 +86,6 @@ class WebSocketServer:
         client_addr = websocket.remote_address
         connection_id = f"{client_addr}_{datetime.now().strftime('%H%M%S%f')}"
 
-        # Start heartbeat
-        heartbeat_task = asyncio.create_task(
-            self._heartbeat(websocket)
-        )
 
         try:
             async for message in websocket:
@@ -102,8 +98,10 @@ class WebSocketServer:
         except ConnectionClosedOK:
             logger.info(f"Client disconnected normally: {connection_id}")
         except ConnectionClosedError as e:
-            logger.warning(
-                f"Client disconnected with error: {connection_id} - {e.code}")
+            if e.code == 1006:
+                logger.info(f"Client disconnected abruptly: {connection_id}")
+            else:
+                logger.warning(f"Client disconnected with error: {connection_id} - {e.code}")
         except ConnectionClosed as e:
             logger.info(f"Client disconnected: {connection_id}")
         except Exception as e:
@@ -116,26 +114,6 @@ class WebSocketServer:
                 pass
             self.message_router.cleanup_guards(websocket)
             await self.connection_manager.unregister(websocket)
-
-    async def _heartbeat(self, websocket: ServerConnection) -> None:
-        """Send periodic heartbeat to keep connection alive."""
-        try:
-            while self.connection_manager.is_connected(websocket):
-                try:
-                    await websocket.send(json.dumps({
-                        "type": MessageType.PING.value,
-                        "ts": datetime.now().isoformat()
-                    }))
-                    await asyncio.sleep(30)
-                except ConnectionClosed:
-                    break
-                except Exception as e:
-                    logger.debug(f"Heartbeat error: {e}")
-                    break
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            logger.debug(f"Heartbeat task error: {e}")
 
     async def start(self) -> None:
         """Start the WebSocket server."""

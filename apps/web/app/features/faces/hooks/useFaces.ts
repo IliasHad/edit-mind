@@ -11,6 +11,10 @@ export function useFaces() {
     setActiveTab,
     fetchData,
     handleKnownPageChange,
+    selectedFaces,
+    handleSelectFace,
+    handleDeleteUnknownFace,
+    handleUnknownPageChange,
   } = useFacesStore()
 
   useEffect(() => {
@@ -25,5 +29,9 @@ export function useFaces() {
     knownPagination,
     setActiveTab,
     handleKnownPageChange,
+    selectedFaces,
+    handleSelectFace,
+    handleDeleteUnknownFace,
+    handleUnknownPageChange,
   }
 }

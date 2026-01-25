@@ -18,6 +18,10 @@ export default function Collections() {
   const { collections, totalDuration, totalVideos } = useCollections()
   const [selectedType, setSelectedType] = useState<string>('all')
 
+  const filteredCollections = selectedType === 'all' 
+    ? collections 
+    : collections.filter(c => c.type === selectedType)
+
   return (
     <DashboardLayout sidebar={<Sidebar />}>
       <main className="w-full px-8 py-16">
@@ -56,9 +60,7 @@ export default function Collections() {
                   <div className="text-sm font-medium tracking-wide text-black/50 dark:text-white/50">Collections</div>
                 </div>
                 <div className="text-center">
-                  <div className="mb-1 text-5xl font-semibold tracking-tight text-black dark:text-white">
-                    {totalVideos}
-                  </div>
+                  <div className="mb-1 text-5xl font-semibold tracking-tight text-black dark:text-white">{totalVideos}</div>
                   <div className="text-sm font-medium tracking-wide text-black/50 dark:text-white/50">Videos</div>
                 </div>
                 <div className="text-center">
@@ -127,7 +129,7 @@ export default function Collections() {
                 className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
               >
                 <AnimatePresence mode="popLayout">
-                  {collections.map((collection, index) => (
+                  {filteredCollections.map((collection, index) => (
                     <motion.div
                       key={collection.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -155,7 +157,9 @@ export default function Collections() {
               <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
                 <FolderIcon className="h-12 w-12 text-black/30 dark:text-white/30" />
               </div>
-              <h3 className="mb-2 text-2xl font-semibold text-black dark:text-white">No collections yet</h3>
+              <h3 className="mb-2 text-2xl font-semibold text-black dark:text-white">
+                No collections yet
+              </h3>
               <p className="max-w-md text-center text-base text-black/60 dark:text-white/60">
                 Upload your first videos to automatically generate intelligent collections organized by AI.
               </p>

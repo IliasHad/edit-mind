@@ -13,6 +13,7 @@ import { VideoHeader } from '~/features/videos/components/VideoHeader'
 import { ProcessingJobDetails } from '~/features/videos/components/ProcessingJobDetails'
 import { ConfirmModal } from '~/features/shared/components/ConfirmationModal'
 import { RelinkVideo } from '~/features/videos/components/RelinkVideo'
+import { PageSkeleton } from '~/features/videos/components/PageSkeleton'
 
 export const meta = () => {
   return [
@@ -28,12 +29,12 @@ export default function Video() {
     currentScenes: scenes,
     isProcessing,
     currentProcessedJob,
-    processingRatio,
     deleteVideoById,
     relinkVideo,
     reindexVideo,
     relinkSuccess,
-    videoExist
+    videoExist,
+    loading,
   } = useCurrentVideo()
 
   const { id } = useParams()
@@ -86,6 +87,7 @@ export default function Video() {
       console.error('Error deleting video ', error)
     }
   }
+
   const handleReindex = async () => {
     try {
       if (id) {
@@ -95,6 +97,7 @@ export default function Video() {
       console.error('Error reindexing video ', error)
     }
   }
+
   const handleRelink = async (newSource: string) => {
     try {
       if (id) {
@@ -104,6 +107,8 @@ export default function Video() {
       console.error('Error relink video ', error)
     }
   }
+
+  if (loading) return <PageSkeleton />
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
@@ -119,6 +124,7 @@ export default function Video() {
             importAt={video.importAt}
             disabled={isProcessing}
             source={video.source}
+            shottedAt={video.shottedAt}
           />
         )}
         {video && (
@@ -184,9 +190,7 @@ export default function Video() {
 
               {activeScene && <ActiveSceneCard scene={activeScene} />}
 
-              {currentProcessedJob && (
-                <ProcessingJobDetails job={currentProcessedJob} processingRatio={processingRatio} />
-              )}
+              {currentProcessedJob && <ProcessingJobDetails job={currentProcessedJob} />}
             </div>
 
             <ScenesSidebar scenes={scenes} activeScene={activeScene} onSceneClick={handleSceneClick} />

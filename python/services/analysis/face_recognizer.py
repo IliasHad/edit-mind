@@ -85,10 +85,10 @@ class FaceRecognizer:
     
     def __init__(
         self,
-        tolerance: float = 0.29,
+        tolerance: float = 0.45,
         model: str = 'VGG-Face',
         min_face_confidence: float = 0.70,
-        unknown_clustering_threshold: float = 0.50,
+        unknown_clustering_threshold: float = 0.45,
         detector_backend: str = "retinaface"
     ):
         self.tolerance = tolerance

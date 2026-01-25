@@ -23,3 +23,15 @@ export async function deleteJobsByDataJobId(targetJobId: string) {
 
   return deletedCount
 }
+
+export async function removeFailedJobs(failedJobsIds: string[]) {
+  for (const queue of videoProcessingQueues) {
+    const jobs = await queue.getJobs()
+
+    for await (const job of jobs) {
+      if (failedJobsIds.includes(job.data.id)) {
+        await job.remove()
+      }
+    }
+  }
+}

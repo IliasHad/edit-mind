@@ -47,10 +47,12 @@ class TranscriptionResult:
     text: str
     segments: List[Segment]
     language: Optional[str]
+    processing_time: float
 
     def to_dict(self) -> Dict:
         return {
             "text": self.text,
             "segments": [seg.to_dict() for seg in self.segments],
-            "language": self.language
+            "language": self.language,
+            "processing_time": self.processing_time
         }
