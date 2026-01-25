@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "cross-env NODE_ENV=development node server.js",
+    "dev": "react-router dev",
     "start": "node server.js",
     "typecheck": "react-router typegen && tsc",
     "test": "playwright test"
