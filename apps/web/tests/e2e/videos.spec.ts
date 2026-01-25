@@ -79,7 +79,6 @@ const mockVideoDetails = {
     folderId: 'folder-123',
     userId: 'user-123',
   },
-  processingRatio: 1.5,
   isProcessing: false,
 }
 

@@ -29,7 +29,6 @@ export default function Video() {
     currentScenes: scenes,
     isProcessing,
     currentProcessedJob,
-    processingRatio,
     deleteVideoById,
     relinkVideo,
     reindexVideo,
@@ -191,9 +190,7 @@ export default function Video() {
 
               {activeScene && <ActiveSceneCard scene={activeScene} />}
 
-              {currentProcessedJob && (
-                <ProcessingJobDetails job={currentProcessedJob} processingRatio={processingRatio} />
-              )}
+              {currentProcessedJob && <ProcessingJobDetails job={currentProcessedJob} />}
             </div>
 
             <ScenesSidebar scenes={scenes} activeScene={activeScene} onSceneClick={handleSceneClick} />

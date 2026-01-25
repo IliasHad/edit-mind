@@ -31,7 +31,6 @@ export const apiClient = {
             isProcessing: boolean
             videoExist: boolean
             processedJob: Job
-            processingRatio: number
         }>(`/api/videos/${id}`),
 
     delete: (id: string) =>

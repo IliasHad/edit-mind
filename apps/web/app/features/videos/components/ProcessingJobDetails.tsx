@@ -4,10 +4,9 @@ import { type FrameAnalysisPluginAnalysis } from '@shared/types/analysis'
 
 interface ProcessingJobDetailsProps {
   job: Job
-  processingRatio?: number
 }
 
-export function ProcessingJobDetails({ job, processingRatio }: ProcessingJobDetailsProps) {
+export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
   const processingTimes = [
     { label: 'Frame Analysis', value: job.frameAnalysisTime },
     { label: 'Scene Creation', value: job.sceneCreationTime },
@@ -29,17 +28,6 @@ export function ProcessingJobDetails({ job, processingRatio }: ProcessingJobDeta
         </div>
 
         <div className="p-8 space-y-12">
-          {processingRatio && (
-            <div className="text-center py-4">
-              <div className="text-3xl font-semibold text-black dark:text-white tracking-tight mb-2">
-                {processingRatio.toFixed(1)}×
-              </div>
-              <div className="text-sm text-black/50 dark:text-white/50">
-                (video duration to total processing time ratio)
-              </div>
-            </div>
-          )}
-
           <div>
             <h4 className="text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider mb-6">
               Processing Times

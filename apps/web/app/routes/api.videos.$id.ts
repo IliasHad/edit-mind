@@ -70,15 +70,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
         },
     })
 
-    const totalProcessingTime =
-        (job?.audioEmbeddingTime || 0) +
-        (job?.frameAnalysisTime || 0) +
-        (job?.sceneCreationTime || 0) +
-        (job?.audioEmbeddingTime || 0) +
-        (job?.textEmbeddingTime || 0) +
-        (job?.visualEmbeddingTime || 0)
-
-    const processingRatio = (parseInt(video.duration.toString() || '0') / totalProcessingTime) * 100
 
     return {
         scenes,
@@ -91,7 +82,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
             ...job,
             fileSize: parseInt((job?.fileSize || '0').toString()),
         },
-        processingRatio,
         isProcessing: processingJobsCount > 0,
     }
 }

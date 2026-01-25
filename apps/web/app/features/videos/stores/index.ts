@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { apiClient } from '../services/api'
-import type { Job } from '@prisma/client';
+import type { Job } from '@prisma/client'
 import type { Scene } from '@shared/types/scene'
 import type { VideoWithCollectionsAndProjects, VideoWithFolderPath } from '../types'
 
@@ -24,15 +24,12 @@ interface VideosState {
 
   currentProcessedJob: Job | null
 
-  processingRatio: number
-
   relinkSuccess: boolean
-
 
   videoExist: boolean
 
   currentPagination: {
-    page: number,
+    page: number
     hasMore: boolean
   } | null
 }
@@ -50,11 +47,9 @@ export const useVideosStore = create<VideosState>()(
         currentProjects: [],
         isProcessing: false,
         currentProcessedJob: null,
-        processingRatio: 0,
         relinkSuccess: false,
         videoExist: false,
         currentPagination: null,
-
 
         fetchVideos: async (pageNum, limit, query) => {
           set({ isLoading: true, error: null })
@@ -62,10 +57,12 @@ export const useVideosStore = create<VideosState>()(
             const { videos, hasMore, page } = await apiClient.list(pageNum, limit, query)
 
             set({
-              videos, isLoading: false, currentPagination: {
+              videos,
+              isLoading: false,
+              currentPagination: {
                 hasMore,
-                page
-              }
+                page,
+              },
             })
           } catch (error) {
             set({
@@ -78,7 +75,7 @@ export const useVideosStore = create<VideosState>()(
         fetchVideoById: async (id: string) => {
           set({ isLoading: true, error: null })
           try {
-            const { video, scenes, isProcessing, processedJob, processingRatio, videoExist } = await apiClient.get(id)
+            const { video, scenes, isProcessing, processedJob, videoExist } = await apiClient.get(id)
 
             set({
               currentVideo: video,
@@ -86,7 +83,6 @@ export const useVideosStore = create<VideosState>()(
               currentScenes: scenes,
               isProcessing,
               currentProcessedJob: processedJob,
-              processingRatio,
               videoExist,
             })
           } catch (error) {
