@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { UserIcon, CubeIcon, PhotoIcon, ArrowPathIcon } from '@heroicons/react/24/solid'
+import { motion } from 'framer-motion'
+import { UserIcon, CubeIcon, PhotoIcon } from '@heroicons/react/24/solid'
 import { format } from 'date-fns'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import type { SceneAndMatch } from '@shared/types/video'
@@ -26,11 +26,6 @@ interface VideoCardProps {
   scenes: SceneAndMatch[]
 }
 
-interface MatchedRange {
-  start: number
-  end: number
-}
-
 const HOVER_ANIMATION_DURATION = 0.2
 
 export function VideoCard({
@@ -50,12 +45,6 @@ export function VideoCard({
   const fileName = source.split('/').pop() || 'Untitled Video'
   const isPortrait = aspectRatio === '9:16'
 
-  const matchedRanges: MatchedRange[] = scenes
-    .filter((scene) => scene.matched)
-    .map((scene) => ({ start: scene.startTime, end: scene.endTime }))
-    .sort((a, b) => a.start - b.start)
-
-  const hasMatchedScenes = matchedRanges.length > 0
   const hasPartialMatches = scenes.some((scene) => !scene.matched)
 
   const handleImageError = useCallback(() => {
@@ -96,36 +85,6 @@ export function VideoCard({
           />
         </>
       )}
-
-      <AnimatePresence>
-        {!imageError && hasMatchedScenes && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="absolute inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col items-center gap-2"
-            >
-              <ArrowPathIcon className="h-8 w-8 animate-spin text-white" />
-              <motion.p
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-xs font-medium text-white"
-              >
-                Loading preview...
-              </motion.p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {hasPartialMatches && !imageError && (
         <div className="absolute bottom-0 left-0 z-20 h-1 w-full overflow-hidden rounded-b-2xl bg-white/20">
