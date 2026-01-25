@@ -1,14 +1,15 @@
-import { Link, redirect, useLoaderData, useNavigate } from 'react-router'
+import { Link, redirect, useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { VideoCard } from '~/features/shared/components/VideoCard'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { getUser } from '~/services/user.sever'
 import type { JsonArray } from '@prisma/client/runtime/library'
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { VideoModel } from '@db/index'
 import { logger } from '@shared/services/logger'
-import { Button } from '@ui/components/Button'
+import type { SortOption, SortOrder } from '~/features/videos/types'
+import { SortButton } from '~/features/videos/components/SortButton'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Dashboard | Edit Mind' }]
@@ -18,6 +19,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const page = parseInt(url.searchParams.get('page') || '1', 10)
   const limit = parseInt(url.searchParams.get('limit') || '20', 10)
+  const sortBy = (url.searchParams.get('sortBy') || 'shottedAt') as SortOption
+  const sortOrder = (url.searchParams.get('sortOrder') || 'desc') as SortOrder
 
   const offset = (page - 1) * limit
 
@@ -30,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         userId: user.id,
       },
       orderBy: {
-        updatedAt: 'desc',
+        [sortBy]: sortOrder,
       },
       take: limit,
       skip: offset,
@@ -42,16 +45,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     })
 
-    return { videos, page, limit, total }
+    return { videos, page, limit, total, sortBy, sortOrder }
   } catch (error) {
     logger.error(error)
-    return { videos: [], page, limit, total: 0 }
+    return { videos: [], page, limit, total: 0, sortBy: 'shottedAt' as SortOption, sortOrder: 'desc' as SortOrder }
   }
 }
 
 export default function Dashboard() {
-  const { videos, total, page, limit } = useLoaderData<typeof loader>()
+  const { videos, total, page, limit, sortBy, sortOrder } = useLoaderData<typeof loader>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const totalPages = Math.ceil(total / limit)
 
@@ -81,21 +85,38 @@ export default function Dashboard() {
                   Start by adding your video folders in settings. We'll automatically scan and index your videos
                   locally.
                 </p>
-                <Link to="/app/settings">
-                  <Button leftIcon={<PlusIcon className="size-4" />}>
-                    Add folders to start
-                  </Button>
+                <Link
+                  to="/app/settings"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-xl 
+                  bg-black text-white dark:bg-white dark:text-black 
+                  hover:opacity-90 active:scale-[0.98] transition-all shadow-sm"
+                >
+                  <PlusIcon className="size-4" />
+                  Add folders to start
                 </Link>
               </div>
             </div>
           ) : (
             <div className="space-y-8 mx-auto">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h3 className="text-2xl font-semibold text-black dark:text-white">My Videos</h3>
                   <p className="text-sm text-black/50 dark:text-white/50 mt-1">
                     {total} {total === 1 ? 'video' : 'videos'} total
                   </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <SortButton
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    options={[
+                      { value: 'shottedAt', label: 'Shot Date' },
+                      { value: 'importAt', label: 'Import Date' },
+                      { value: 'updatedAt', label: 'Last Updated' },
+                      { value: 'duration', label: 'Duration' },
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -121,25 +142,43 @@ export default function Dashboard() {
 
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-4 pt-8">
-                  <Button
+                  <button
                     disabled={page === 1}
-                    onClick={() => navigate(`?page=${page - 1}`)}
-                    variant="outline"
-                    leftIcon={<ChevronLeftIcon className="size-4" />}
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams)
+                      params.set('page', (page - 1).toString())
+                      navigate(`?${params.toString()}`)
+                    }}
+                    className="px-5 py-2.5 text-sm font-medium rounded-xl
+                      bg-white dark:bg-black 
+                      text-black/70 dark:text-white/70
+                      border border-black/10 dark:border-white/10
+                      hover:bg-black/5 dark:hover:bg-white/5
+                      transition-all
+                      disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Previous
-                  </Button>
+                  </button>
                   <span className="text-sm text-black/60 dark:text-white/60 font-medium">
                     Page {page} of {totalPages}
                   </span>
-                  <Button
+                  <button
                     disabled={page >= totalPages}
-                    onClick={() => navigate(`?page=${page + 1}`)}
-                    variant="outline"
-                    rightIcon={<ChevronRightIcon className="size-4" />}
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams)
+                      params.set('page', (page + 1).toString())
+                      navigate(`?${params.toString()}`)
+                    }}
+                    className="px-5 py-2.5 text-sm font-medium rounded-xl
+                      bg-white dark:bg-black 
+                      text-black/70 dark:text-white/70
+                      border border-black/10 dark:border-white/10
+                      hover:bg-black/5 dark:hover:bg-white/5
+                      transition-all
+                      disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Next
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>
