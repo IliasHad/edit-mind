@@ -10,7 +10,7 @@ import { sceneCreationQueue } from '@background-jobs/queue'
 import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
 import { dirname } from 'path'
-import { mkdir } from 'fs/promises'
+import { mkdir, readFile } from 'fs/promises'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = true, analysisPath } = job.data
@@ -55,13 +55,18 @@ async function processVideo(job: Job<VideoProcessingData>) {
       }
 
       logger.debug({ jobId, analysisPath }, 'Frame analysis completed and saved')
+      const analysisDuration = (Date.now() - analysisStart) / 1000
+      logger.debug({ jobId, analysisDuration }, 'Frame analysis done')
+      await updateJob(job, { frameAnalysisTime: analysisDuration })
     } else {
+      const data = await readFile(analysisPath, 'utf-8').then(JSON.parse)
+
+      if (data.processing_time) {
+        await updateJob(job, { frameAnalysisTime: data.processing_time, progress: 100 })
+      }
+
       logger.debug({ jobId, analysisPath }, 'Skipping frame analysis - using cached file')
     }
-
-    const analysisDuration = (Date.now() - analysisStart) / 1000
-    logger.debug({ jobId, analysisDuration }, 'Frame analysis done')
-    await updateJob(job, { frameAnalysisTime: analysisDuration })
 
     await sceneCreationQueue.add('scene-creation', job.data, {
       removeOnComplete: false,
@@ -82,8 +87,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const frameAnalysisWorker = new Worker('frame-analysis', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 6 * 60 * 60 * 1000,   // 6 hours
-  stalledInterval: 2 * 60 * 1000,      
-  maxStalledCount: 3,                  
-  lockRenewTime: 30 * 1000, 
+  lockDuration: 6 * 60 * 60 * 1000, // 6 hours
+  stalledInterval: 2 * 60 * 1000,
+  maxStalledCount: 3,
+  lockRenewTime: 30 * 1000,
 })

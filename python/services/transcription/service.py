@@ -68,6 +68,8 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
     ) -> TranscriptionResult:
         """Transcribe video with progress updates."""
         try:
+            start = time.time()
+
             segments, info = model.transcribe(
                 video_path,
                 beam_size=self.config.beam_size,
@@ -118,11 +120,13 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                         int(percent),
                         self._format_time(processed_duration)
                     )
-
+            end = time.time()
+            processing_time = end - start
             return TranscriptionResult(
                 text=full_text.strip(),
                 segments=result_segments,
-                language=info.language if info else None
+                language=info.language if info else None,
+                processing_time=processing_time
             )
 
         except (RuntimeError, IndexError) as e:

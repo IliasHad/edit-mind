@@ -59,7 +59,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 plugin_metrics=self.plugin_manager.get_metrics(),
                 performance_metrics=self.performance_metrics,
                 memory_stats=self.memory_monitor.get_stats() if self.memory_monitor else {},
-                total_time=time.time() - start_time
+                processing_time=time.time() - start_time
             )
             
             # Rest plugin metrics after each video has been processed

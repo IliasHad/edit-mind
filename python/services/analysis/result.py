@@ -50,7 +50,7 @@ class ResultBuilder:
         plugin_metrics: List[Dict],
         performance_metrics: List,
         memory_stats: Dict,
-        total_time: float
+        processing_time: float
     ) -> VideoAnalysisResult:
         """Build a successful analysis result."""
         return VideoAnalysisResult(
@@ -58,9 +58,10 @@ class ResultBuilder:
             frame_analysis=frame_analyses,
             summary={
                 "total_frames_analyzed": len(frame_analyses),
-                "total_analysis_time_seconds": round(total_time, 2),
+                "total_analysis_time_seconds": round(processing_time, 2),
                 "peak_memory_mb": memory_stats.get('peak_mb', 0),
                 "memory_cleanups": memory_stats.get('cleanup_count', 0),
+                "processing_time": processing_time
             },
             performance_metrics=[asdict(m) for m in performance_metrics],
             plugin_performance=plugin_metrics
