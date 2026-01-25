@@ -46,6 +46,9 @@ export class VideoModel {
   static async count(options: Prisma.VideoCountArgs) {
     return prisma.video.count(options)
   }
+  static async upsert(options: Prisma.VideoUpsertArgs) {
+    return prisma.video.upsert(options)
+  }
   static async findFirst(options: Prisma.VideoFindFirstArgs) {
     return prisma.video.findFirst(options)
   }
