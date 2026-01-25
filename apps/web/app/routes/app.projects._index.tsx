@@ -6,6 +6,7 @@ import { ProjectCard } from '~/features/projects/components/ProjectCard'
 import { useProjects } from '~/features/projects/hooks/useProjects'
 import { ChatBubbleLeftIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { useState } from 'react'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Projects | Edit Mind' }]
@@ -34,12 +35,8 @@ export default function ProjectsIndexPage() {
             <p className="text-zinc-600 dark:text-zinc-400 text-center max-w-md mb-8">
               Start your first project to search and interact with your video library using AI
             </p>
-            <Link
-              to="/app/projects/new"
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-sm hover:shadow-md"
-            >
-              <PlusIcon className="w-4 h-4" />
-              Start new project
+            <Link to="/app/projects/new">
+              <Button leftIcon={<PlusIcon className="w-4 h-4" />}>Start new project</Button>
             </Link>
           </div>
         ) : (
@@ -52,12 +49,10 @@ export default function ProjectsIndexPage() {
                     {projects.length} {projects.length === 1 ? 'project' : 'projects'}
                   </p>
                 </div>
-                <Link
-                  to="/app/projects/new"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-sm hover:shadow"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  New project
+                <Link to="/app/projects/new">
+                  <Button leftIcon={<PlusIcon className="w-4 h-4" />}>
+                    New project
+                  </Button>
                 </Link>
               </div>
 

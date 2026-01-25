@@ -3,6 +3,7 @@ import { $getSelection, $isRangeSelection } from 'lexical'
 import { FaceMentionNode } from '../utils/FaceMentionNode'
 import { useState } from 'react'
 import type { KnownFace } from '@shared/types/face'
+import { Button } from '@ui/components/Button'
 
 class FaceOption extends MenuOption {
   face
@@ -42,7 +43,8 @@ export function FaceMentionsPlugin({ faces }: { faces: KnownFace[] }) {
         anchorRef.current ? (
           <div className="absolute z-100 flex flex-col gap-2 p-0.5  bg-white dark:bg-zinc-900 min-w-24 max-h-80 overflow-y-auto bottom-full slide-in-from-bottom-2 duration-200">
             {options.map((option, i) => (
-              <button
+              <Button
+                variant='ghost'
                 key={option.key}
                 onClick={() => selectOptionAndCleanUp(option)}
                 className={`w-full text-left flex items-center justify-center gap-2 px-3 text-sm rounded ${
@@ -67,7 +69,7 @@ export function FaceMentionsPlugin({ faces }: { faces: KnownFace[] }) {
                     @{option.face.name}
                   </span>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         ) : null

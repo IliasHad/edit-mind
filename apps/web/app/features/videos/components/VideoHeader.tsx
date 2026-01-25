@@ -4,6 +4,7 @@ import { ProjectBadge } from '~/features/projects/components/ProjectBadge'
 import { smartFormatDate } from '@shared/utils/duration'
 import { motion } from 'framer-motion'
 import type { CollectionItemsWithNameAndId, ProjectWithIdAndName } from '../types'
+import { Button } from '@ui/components/Button'
 
 interface VideoHeaderProps {
   fileName: string
@@ -60,72 +61,40 @@ export function VideoHeader({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:pt-1 shrink-0">
-              <button
-                onClick={onReindex}
-                disabled={disabled}
-                className={`
-                  group
-                  inline-flex items-center gap-2
-                  px-4 py-2.5
-                  text-sm font-medium
-                  rounded-xl
-                  border
-                  transition-all duration-200
-                  ${
-                    disabled
-                      ? 'cursor-not-allowed opacity-50 bg-white/5 border-white/10'
-                      : 'border-white/20 hover:border-white/30 hover:bg-white/5 active:scale-[0.98]'
-                  }
-                  text-white
-                `}
-              >
+          <div className="flex items-center gap-2 sm:pt-1">
+            <Button
+              onClick={onReindex}
+              disabled={disabled}
+              variant="primary"
+              leftIcon={
                 <ArrowPathIcon
                   className={`h-4 w-4 transition-transform ${
                     disabled ? 'animate-spin' : 'group-hover:rotate-180 duration-500'
                   }`}
                 />
-                {disabled ? 'Reindexing...' : 'Reindex'}
-              </button>
+              }
+            >
+              {disabled ? 'Reindexing...' : 'Reindex'}
+            </Button>
 
-              <button
-                onClick={onDelete}
-                disabled={disabled}
-                className={`
-                  group
-                  inline-flex items-center gap-2
-                  px-4 py-2.5
-                  text-sm font-medium
-                  rounded-xl
-                  border
-                  transition-all duration-200
-                  ${
-                    disabled
-                      ? 'cursor-not-allowed opacity-50 bg-red-500/5 border-red-500/20'
-                      : 'border-red-500/30 hover:border-red-500/50 hover:bg-red-500/10 active:scale-[0.98]'
-                  }
-                  text-red-400
-                `}
-              >
-                <TrashIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                Delete
-              </button>
-            </div>
+            <Button
+              onClick={onDelete}
+              disabled={disabled}
+              leftIcon={<TrashIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+              variant="destructive"
+            >
+              Delete
+            </Button>
           </div>
         </div>
 
         {collectionItems.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="px-6 py-4 border-t border-white/5"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">Collections</h3>
-              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-white/60">
-                {collectionItems.length}
-              </span>
+          <div className="flex flex-col gap-4 pt-6 border-t border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wider">
+                Collections
+              </h3>
+              <span className="text-xs font-medium text-black/40 dark:text-white/40">{collectionItems.length}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {collectionItems.map((collectionItem) => (
@@ -140,30 +109,26 @@ export function VideoHeader({
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
 
         {projects.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className="px-6 py-4 border-t border-white/5"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">Projects</h3>
-              <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-white/60">
-                {projects.length}
-              </span>
+          <div className="flex flex-col gap-4 pt-6 border-t border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wider">
+                Projects
+              </h3>
+              <span className="text-xs font-medium text-black/40 dark:text-white/40">{projects.length}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {projects.map((project) => (
                 <ProjectBadge key={project.id} project={{ name: project.name, videos: 0, id: project.id }} />
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
-      </div>
+        </div>
+        </div>
     </motion.section>
   )
 }

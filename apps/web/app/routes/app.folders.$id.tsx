@@ -9,6 +9,7 @@ import { JobStatusIcon } from '~/features/jobs/components/JobStatusIcon'
 import { JobCard } from '~/features/jobs/components/JobCard'
 import { useJobs } from '~/features/jobs/hooks/useJobs'
 import { useParams, type MetaFunction } from 'react-router'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Folder Details Page | Edit Mind' }]
@@ -55,15 +56,14 @@ export default function FolderDetailsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={handleRescan}
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-black hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/10"
+                loading={loading}
+                leftIcon={<ArrowPathIcon className="w-4 h-4" />}
               >
-                <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 {loading ? 'Scanning...' : 'Rescan Folder'}
-              </button>
+              </Button>
             </div>
           </div>
 

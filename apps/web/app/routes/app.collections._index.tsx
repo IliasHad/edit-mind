@@ -9,6 +9,7 @@ import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { TYPE_LABELS } from '~/features/collections/constants'
 import { CollectionCard } from '~/features/collections/components/CollectionCard'
 import { useCollections } from '~/features/collections/hooks/useCollections'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Collections | Edit Mind' }]
@@ -99,24 +100,24 @@ export default function Collections() {
                     const count = collections.filter((c) => c.type === type).length
                     if (count === 0) return null
                     return (
-                      <button
-                        key={type}
-                        onClick={() => setSelectedType(type)}
+                      <Button
+                        variant="secondary"
+                        onClick={() => setSelectedType('all')}
                         className={`relative rounded-lg px-5 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 ${
-                          selectedType === type
+                          selectedType === 'all'
                             ? 'text-black dark:text-white'
                             : 'text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70'
                         }`}
                       >
-                        {selectedType === type && (
+                        {selectedType === 'all' && (
                           <motion.div
                             layoutId="activeTab"
                             className="absolute inset-0 rounded-lg bg-white dark:bg-black shadow-sm border border-black/10 dark:border-white/10"
                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                           />
                         )}
-                        <span className="relative">{label}</span>
-                      </button>
+                        <span className="relative">All</span>
+                      </Button>
                     )
                   })}
                 </div>

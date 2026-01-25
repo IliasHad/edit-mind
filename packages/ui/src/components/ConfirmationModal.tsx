@@ -39,7 +39,7 @@ const variantStyles = {
   },
 }
 
-export function ConfirmModal({
+export function ConfirmationModal({
   isOpen,
   onClose,
   onConfirm,

@@ -1,4 +1,5 @@
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
+import { Button } from '@ui/components/Button'
 import { useState, useRef, useEffect } from 'react'
 import { useFacesStore } from '~/features/faces/stores'
 
@@ -242,7 +243,8 @@ export function FacesMention({ input, setInput }: FacesMentionProps) {
               {filteredFaces.map((face) => {
                 const isSelected = faceMentions.some((m) => m.face.name === face.name)
                 return (
-                  <button
+                  <Button
+                    variant='outline'
                     key={face.name}
                     onClick={() => handleSelectFace(face)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5
@@ -268,7 +270,7 @@ export function FacesMention({ input, setInput }: FacesMentionProps) {
                     {isSelected && (
                       <span className="ml-auto text-xs text-purple-600 dark:text-purple-400">Selected</span>
                     )}
-                  </button>
+                  </Button>
                 )
               })}
             </>

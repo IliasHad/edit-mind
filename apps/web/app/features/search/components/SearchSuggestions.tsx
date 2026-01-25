@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import { useSearchSuggestions } from '../hooks/useSearchSuggestions'
+import { Button } from '@ui/components/Button'
 
 interface Suggestion {
   text: string
@@ -46,18 +47,11 @@ export function SuggestionSection({ title, icon: Icon, items, type }: Suggestion
             const isSelected = item && selectedItems.includes(item.text)
 
             return (
-              <button
+              <Button
                 key={`${title}-${index}`}
                 onClick={() => handleClick(item)}
-                className={`w-full px-3 py-2.5 text-left text-sm rounded-lg 
-              transition-all duration-150 active:scale-[0.98] 
-              flex items-center justify-between gap-2
-              focus:outline-none focus:ring-2 focus:ring-inset
-                ${
-                  isSelected
-                    ? 'bg-black dark:bg-white text-white dark:text-black focus:ring-white/20 dark:focus:ring-black/20'
-                    : 'text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 focus:ring-black/10 dark:focus:ring-white/10'
-                }`}
+                variant={isSelected ? 'primary' : 'ghost'}
+                className="w-full px-3 py-2.5 text-left flex items-center justify-between gap-2"
                 aria-pressed={isSelected}
                 role="checkbox"
               >
@@ -72,7 +66,7 @@ export function SuggestionSection({ title, icon: Icon, items, type }: Suggestion
                 >
                   {item.sceneCount || Math.round(item.count)}
                 </span>
-              </button>
+              </Button>
             )
           })}
       </div>

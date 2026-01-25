@@ -20,6 +20,7 @@ import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { humanizeDate } from '@shared/utils/duration'
 import { useCurrentCollection } from '~/features/collections/hooks/useCurrentCollection'
 import { ICON_MAP, TYPE_LABELS } from '~/features/collections/constants'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Collection Details | Edit Mind' }]
@@ -54,16 +55,13 @@ export default function CollectionDetail() {
     return (
       <DashboardLayout sidebar={<Sidebar />}>
         <main className="w-full px-8 py-12">
-          <motion.button
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          <Button
+            variant="tertiary"
             onClick={() => navigate('/app/collections')}
-            className="group mb-8 inline-flex items-center gap-2 text-sm font-medium tracking-wide text-black/50 dark:text-white/50 transition-colors hover:text-black dark:hover:text-white"
+            leftIcon={<ArrowLeftIcon className="h-4 w-4" />}
           >
-            <ArrowLeftIcon className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Collection Not Found
-          </motion.button>
+          </Button>
         </main>
       </DashboardLayout>
     )
@@ -73,16 +71,13 @@ export default function CollectionDetail() {
   return (
     <DashboardLayout sidebar={<Sidebar />}>
       <main className="w-full px-8 py-12">
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+        <Button
+          variant="tertiary"
           onClick={() => navigate('/app/collections')}
-          className="group mb-8 inline-flex items-center gap-2 text-sm font-medium tracking-wide text-black/50 dark:text-white/50 transition-colors hover:text-black dark:hover:text-white"
+          leftIcon={<ArrowLeftIcon className="h-4 w-4" />}
         >
-          <ArrowLeftIcon className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Collections
-        </motion.button>
+        </Button>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -173,12 +168,10 @@ export default function CollectionDetail() {
         
         {currentCollection.type === 'b_roll' && (
           <div className="flex my-4 items-center gap-2 self-end-safe">
-            <Link
-              to={`/app/collections/${currentCollection.id}/scenes`}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-zinc-100 px-4 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
-            >
-              <VideoCameraIcon className="h-4 w-4" />
-              <span>Matched Scenes</span>
+            <Link to={`/app/collections/${currentCollection.id}/scenes`}>
+              <Button variant="secondary" leftIcon={<VideoCameraIcon className="h-4 w-4" />}>
+                Matched Scenes
+              </Button>
             </Link>
           </div>
         )}
@@ -203,40 +196,18 @@ export default function CollectionDetail() {
               </select>
 
               <div className="flex items-center gap-1 rounded-full bg-black/5 dark:bg-white/5 p-1 border border-black/10 dark:border-white/10">
-                <button
+                <Button
                   onClick={() => setViewMode('grid')}
-                  className={`relative rounded-full p-2.5 transition-all duration-300 ${
-                    viewMode === 'grid'
-                      ? 'text-black dark:text-white'
-                      : 'text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70'
-                  }`}
-                >
-                  {viewMode === 'grid' && (
-                    <motion.div
-                      layoutId="viewMode"
-                      className="absolute inset-0 rounded-full bg-white dark:bg-black shadow-sm border border-black/10 dark:border-white/10"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  <Squares2X2Icon className="relative h-4 w-4" />
-                </button>
-                <button
+                  size="icon"
+                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                  leftIcon={<Squares2X2Icon className="relative h-4 w-4" />}
+                />
+                <Button
                   onClick={() => setViewMode('list')}
-                  className={`relative rounded-full p-2.5 transition-all duration-300 ${
-                    viewMode === 'list'
-                      ? 'text-black dark:text-white'
-                      : 'text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70'
-                  }`}
-                >
-                  {viewMode === 'list' && (
-                    <motion.div
-                      layoutId="viewMode"
-                      className="absolute inset-0 rounded-full bg-white dark:bg-black shadow-sm border border-black/10 dark:border-white/10"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  <ListBulletIcon className="relative h-4 w-4" />
-                </button>
+                  size="icon"
+                  variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                  leftIcon={<ListBulletIcon className="relative h-4 w-4" />}
+                />
               </div>
             </div>
           </div>

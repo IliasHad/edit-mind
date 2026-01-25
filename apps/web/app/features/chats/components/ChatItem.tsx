@@ -3,10 +3,11 @@ import { Link, useParams } from 'react-router'
 import { smartFormatDate } from '@shared/utils/duration'
 import type { Chat } from '@prisma/client'
 import { useChats } from '../hooks/useChats'
-import { DeleteModal } from '~/features/shared/components/DeleteModal'
+import { DeleteModal } from '@ui/components/DeleteModal'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useModal } from '~/features/shared/hooks/useModal'
+import { Button } from '@ui/components/Button'
 
 export function ChatItem({ chat }: { chat: Chat }) {
   const { chatId } = useParams()
@@ -67,20 +68,16 @@ export function ChatItem({ chat }: { chat: Chat }) {
               </div>
             </div>
 
-            <button
+            <Button
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
                 setShowMenu(!showMenu)
               }}
-              className={`
-                shrink-0 p-1.5 rounded-lg transition-all
-                ${showMenu ? 'opacity-100 bg-black/5 dark:bg-white/5' : 'hover:bg-black/5 dark:hover:bg-white/5'}
-                ${isActive ? 'text-black/20 dark:text-white/70' : 'text-black/20 dark:text-white/80'}
-              `}
-            >
-              <EllipsisVerticalIcon className="h-4 w-4" />
-            </button>
+              variant="ghost"
+              size="icon-sm"
+              leftIcon={<EllipsisVerticalIcon className="h-4 w-4" />}
+            />
           </div>
         </Link>
 
@@ -94,17 +91,18 @@ export function ChatItem({ chat }: { chat: Chat }) {
               transition={{ duration: 0.1 }}
               className="absolute right-0  top-full mt-1 z-10 rounded-xl bg-white dark:bg-black border border-black/10 dark:border-white/10 shadow-lg overflow-hidden"
             >
-              <button
+              <Button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   setShowMenu(false)
                   openModal()
                 }}
-                className="w-full text-center px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+                variant="destructive"
+                className="w-full text-center"
               >
                 Delete conversation
-              </button>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>

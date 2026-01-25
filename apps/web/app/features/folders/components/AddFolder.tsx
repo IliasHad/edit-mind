@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FolderIcon, PlusIcon, ArrowPathIcon, XMarkIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import type { ServerFolder } from '@shared/types/folder'
+import { Button } from '@ui/components/Button'
 
 interface AddFolderProps {
   isOpen: boolean
@@ -99,12 +100,12 @@ export function AddFolder({ isOpen, onClose, onAdd, loading, error }: AddFolderP
                   Select a folder on your server to be indexed.
                 </p>
               </div>
-              <button
+              <Button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
-              >
-                <XMarkIcon className="size-4 text-black/40 dark:text-white/40" />
-              </button>
+                variant="ghost"
+                size="icon-sm"
+                leftIcon={<XMarkIcon className="size-4 text-black/40 dark:text-white/40" />}
+              />
             </div>
             {error && (
               <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
@@ -118,12 +119,12 @@ export function AddFolder({ isOpen, onClose, onAdd, loading, error }: AddFolderP
             <div className="px-6 py-3 flex items-center gap-2 overflow-x-auto text-sm text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5">
               {getBreadcrumbs().map((crumb, idx) => (
                 <div key={crumb.path} className="flex items-center gap-2 shrink-0">
-                  <button
+                  <Button
                     onClick={() => handleNavigateToFolder(crumb.path)}
-                    className="whitespace-nowrap hover:text-black dark:hover:text-white transition-colors"
+                    variant="ghost"
                   >
                     {crumb.name}
-                  </button>
+                  </Button>
                   {idx < getBreadcrumbs().length - 1 && <ChevronRightIcon className="size-3" />}
                 </div>
               ))}
@@ -158,19 +159,16 @@ export function AddFolder({ isOpen, onClose, onAdd, loading, error }: AddFolderP
                       <span className="text-sm text-black dark:text-white truncate">{folder.name}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <button
+                      <Button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleSelectFolder(folder.path)
                         }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                          selectedPath === folder.path
-                            ? 'bg-black text-white dark:bg-white dark:text-black'
-                            : 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10'
-                        }`}
+                        variant={selectedPath === folder.path ? 'primary' : 'secondary'}
+                        size="sm"
                       >
                         {selectedPath === folder.path ? 'Selected' : 'Select'}
-                      </button>
+                      </Button>
                       <ChevronRightIcon className="size-4 text-black/30 dark:text-white/30" />
                     </div>
                   </motion.div>
@@ -185,29 +183,20 @@ export function AddFolder({ isOpen, onClose, onAdd, loading, error }: AddFolderP
             )}
 
             <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex justify-end gap-3">
-              <button
+              <Button
                 onClick={onClose}
-                className="px-5 py-2 rounded-xl font-medium text-sm text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleAddFolder}
                 disabled={!selectedPath || loading}
-                className="flex items-center gap-2 px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={loading}
+                leftIcon={loading ? <ArrowPathIcon className="size-4" /> : <PlusIcon className="size-4" />}
               >
-                {loading ? (
-                  <>
-                    <ArrowPathIcon className="size-4 animate-spin" />
-                    Adding...
-                  </>
-                ) : (
-                  <>
-                    <PlusIcon className="size-4" />
-                    Add Folder
-                  </>
-                )}
-              </button>
+                Add Folder
+              </Button>
             </div>
           </motion.div>
         </motion.div>

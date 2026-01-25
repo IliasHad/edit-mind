@@ -5,9 +5,10 @@ import { VideoCard } from '~/features/shared/components/VideoCard'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { getUser } from '~/services/user.sever'
 import type { JsonArray } from '@prisma/client/runtime/library'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { VideoModel } from '@db/index'
 import { logger } from '@shared/services/logger'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Dashboard | Edit Mind' }]
@@ -80,14 +81,10 @@ export default function Dashboard() {
                   Start by adding your video folders in settings. We'll automatically scan and index your videos
                   locally.
                 </p>
-                <Link
-                  to="/app/settings"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-xl 
-                  bg-black text-white dark:bg-white dark:text-black 
-                  hover:opacity-90 active:scale-[0.98] transition-all shadow-sm"
-                >
-                  <PlusIcon className="size-4" />
-                  Add folders to start
+                <Link to="/app/settings">
+                  <Button leftIcon={<PlusIcon className="size-4" />}>
+                    Add folders to start
+                  </Button>
                 </Link>
               </div>
             </div>
@@ -124,35 +121,25 @@ export default function Dashboard() {
 
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-4 pt-8">
-                  <button
+                  <Button
                     disabled={page === 1}
                     onClick={() => navigate(`?page=${page - 1}`)}
-                    className="px-5 py-2.5 text-sm font-medium rounded-xl
-                 bg-white dark:bg-black 
-                 text-black/70 dark:text-white/70
-                 border border-black/10 dark:border-white/10
-                 hover:bg-black/5 dark:hover:bg-white/5
-                 transition-all
-                 disabled:opacity-40 disabled:cursor-not-allowed"
+                    variant="outline"
+                    leftIcon={<ChevronLeftIcon className="size-4" />}
                   >
                     Previous
-                  </button>
+                  </Button>
                   <span className="text-sm text-black/60 dark:text-white/60 font-medium">
                     Page {page} of {totalPages}
                   </span>
-                  <button
+                  <Button
                     disabled={page >= totalPages}
                     onClick={() => navigate(`?page=${page + 1}`)}
-                    className="px-5 py-2.5 text-sm font-medium rounded-xl
-                 bg-white dark:bg-black 
-                 text-black/70 dark:text-white/70
-                 border border-black/10 dark:border-white/10
-                 hover:bg-black/5 dark:hover:bg-white/5
-                 transition-all
-                 disabled:opacity-40 disabled:cursor-not-allowed"
+                    variant="outline"
+                    rightIcon={<ChevronRightIcon className="size-4" />}
                   >
                     Next
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

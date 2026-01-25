@@ -16,6 +16,7 @@ import { getImmichConfig, saveImmichIntegration, deleteImmichIntegration } from 
 import { getUser, requireUserId } from '~/services/user.sever'
 import { ImmichActionSchema, ImmichConfigFormSchema } from '@immich/schemas/immich'
 import { backgroundJobsFetch } from '~/services/background.server'
+import { Button } from '@ui/components/Button'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await requireUserId(request)
@@ -244,32 +245,24 @@ export default function ImmichIntegrationPage() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button
+                  <Button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                    loading={isSubmitting}
+                    leftIcon={isSubmitting ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-4 h-4" />}
+                    className="flex-1"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircleIcon className="w-4 h-4" />
-                        {data?.hasIntegration ? 'Update & Restart Import' : 'Connect & Start Import'}
-                      </>
-                    )}
-                  </button>
+                    {data?.hasIntegration ? 'Update & Restart Import' : 'Connect & Start Import'}
+                  </Button>
 
                   {data?.hasIntegration && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setShowApiKeyForm(false)}
-                      className="px-6 py-2.5 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-[0.98]"
+                      variant="outline"
+                      className="flex-1"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   )}
                 </div>
               </Form>
@@ -369,42 +362,32 @@ export default function ImmichIntegrationPage() {
                 <div className="flex flex-wrap justify-center gap-3 mt-8">
                   <Form method="post">
                     <input type="hidden" name="intent" value="refresh-import" />
-                    <button
+                    <Button
                       type="submit"
-                      disabled={isRefreshing}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                      loading={isRefreshing}
+                      leftIcon={<ArrowPathIcon className="w-4 h-4" />}
                     >
-                      {isRefreshing ? (
-                        <>
-                          <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                          Refreshing...
-                        </>
-                      ) : (
-                        <>
-                          <ArrowPathIcon className="w-4 h-4" />
-                          Refresh Face Labels
-                        </>
-                      )}
-                    </button>
+                      Refresh Face Labels
+                    </Button>
                   </Form>
 
-                  <button
+                  <Button
                     onClick={() => setShowApiKeyForm(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-[0.98]"
+                    variant="outline"
+                    leftIcon={<KeyIcon className="w-4 h-4" />}
                   >
-                    <KeyIcon className="w-4 h-4" />
                     Update Settings
-                  </button>
+                  </Button>
 
                   <Form method="post">
                     <input type="hidden" name="intent" value="delete-integration" />
-                    <button
+                    <Button
                       type="submit"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 border border-red-300 dark:border-red-800/30 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-lg font-medium text-sm hover:bg-red-100 dark:hover:bg-red-900/20 transition-all active:scale-[0.98]"
+                      variant="destructive"
+                      leftIcon={<TrashIcon className="w-4 h-4" />}
                     >
-                      <TrashIcon className="w-4 h-4" />
                       Remove Integration
-                    </button>
+                    </Button>
                   </Form>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import type { ChatSuggestion } from '@shared/types/chat'
 import { useChatSuggestions } from '../hooks/useChatSuggestions'
+import { Button } from '@ui/components/Button'
 
 interface WelcomeProps {
   onSuggestionClick: (text: string) => void
@@ -50,9 +51,10 @@ export function Welcome({ onSuggestionClick, suggestions }: WelcomeProps) {
           </>
         ) : (
           suggestions.map((s, i) => (
-            <button
+            <Button
               key={i}
               onClick={() => onSuggestionClick(s.text)}
+              variant="ghost"
               className={`group relative px-6 py-5 text-left rounded-2xl border-l-2 ${s.border} hover:border-opacity-80 cursor-pointer transition-all duration-300`}
             >
               <div className="flex items-center gap-4">
@@ -60,7 +62,7 @@ export function Welcome({ onSuggestionClick, suggestions }: WelcomeProps) {
                 <span className="font-medium text-gray-800 dark:text-gray-200">{s.text}</span>
               </div>
               <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-white/0 to-white/5 dark:from-white/0 dark:to-white/5 opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
-            </button>
+            </Button>
           ))
         )}
       </div>

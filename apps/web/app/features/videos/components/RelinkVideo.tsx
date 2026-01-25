@@ -9,6 +9,7 @@ import {
   ViewfinderCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
+import { Button } from '@ui/components/Button'
 
 interface ServerFolder {
   path: string
@@ -151,23 +152,24 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
                   </p>
                 )}
               </div>
-              <button
+              <Button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
-              >
-                <XCircleIcon className="size-4 text-black/40 dark:text-white/40" />
-              </button>
+                variant="ghost"
+                size="icon-sm"
+                leftIcon={<XCircleIcon className="size-4 text-black/40 dark:text-white/40" />}
+              />
             </div>
 
             <div className="px-6 py-3 flex items-center gap-2 overflow-x-auto text-sm text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5">
               {getBreadcrumbs().map((crumb, idx) => (
                 <div key={crumb.path} className="flex items-center gap-2 shrink-0">
-                  <button
+                  <Button
                     onClick={() => handleNavigateToFolder(crumb.path)}
-                    className="whitespace-nowrap hover:text-black dark:hover:text-white transition-colors"
+                    variant="ghost"
+                    className="whitespace-nowrap hover:text-black dark:hover:text-white"
                   >
                     {crumb.name}
-                  </button>
+                  </Button>
                   {idx < getBreadcrumbs().length - 1 && <ArrowRightIcon className="size-3" />}
                 </div>
               ))}
@@ -189,18 +191,17 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
                     <div className="space-y-1">
                       <h3 className="text-xs font-medium text-black/40 dark:text-white/40 px-3 mb-2">Folders</h3>
                       {folders.map((folder) => (
-                        <motion.button
+                        <Button
                           key={folder.path}
                           layout
                           onClick={() => handleItemClick(folder)}
-                          className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
+                          variant="ghost"
+                          className="w-full flex items-center justify-between p-3"
+                          leftIcon={<FolderIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />}
+                          rightIcon={<ArrowRightIcon className="size-4 text-black/30 dark:text-white/30" />}
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <FolderIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />
-                            <span className="text-sm text-black dark:text-white truncate text-left">{folder.name}</span>
-                          </div>
-                          <ArrowRightIcon className="size-4 text-black/30 dark:text-white/30 group-hover:text-black/60 dark:group-hover:text-white/60 transition-colors shrink-0" />
-                        </motion.button>
+                          <span className="text-sm text-black dark:text-white truncate text-left">{folder.name}</span>
+                        </Button>
                       ))}
                     </div>
                   )}
@@ -209,26 +210,25 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
                     <div className="space-y-1">
                       <h3 className="text-xs font-medium text-black/40 dark:text-white/40 px-3 mb-2">Video Files</h3>
                       {files.map((file) => (
-                        <motion.button
+                        <Button
                           key={file.path}
                           layout
                           onClick={() => handleItemClick(file)}
-                          className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors ${
+                          variant="ghost"
+                          className={`w-full flex items-center justify-between p-3 ${
                             selectedPath === file.path
                               ? 'bg-black/10 dark:bg-white/10 ring-2 ring-black/20 dark:ring-white/20'
-                              : 'hover:bg-black/5 dark:hover:bg-white/5'
+                              : ''
                           }`}
+                          leftIcon={<VideoCameraIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />}
                         >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <VideoCameraIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />
-                            <span className="text-sm text-black dark:text-white truncate text-left">{file.name}</span>
-                          </div>
+                          <span className="text-sm text-black dark:text-white truncate text-left">{file.name}</span>
                           {selectedPath === file.path && (
                             <div className="px-2.5 py-1 bg-black dark:bg-white text-white dark:text-black rounded-md text-xs font-medium shrink-0">
                               Selected
                             </div>
                           )}
-                        </motion.button>
+                        </Button>
                       ))}
                     </div>
                   )}
@@ -244,30 +244,21 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
             )}
 
             <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex justify-end gap-3">
-              <button
+              <Button
                 onClick={onClose}
                 disabled={isRelinking}
-                className="px-5 py-2 rounded-xl font-medium text-sm text-black/70 dark:text-white/70 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+                variant="ghost"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleRelink}
                 disabled={!selectedPath || isRelinking}
-                className="flex items-center gap-2 px-5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={isRelinking}
+                leftIcon={isRelinking ? <ViewfinderCircleIcon className="size-4" /> : <LinkIcon className="size-4" />}
               >
-                {isRelinking ? (
-                  <>
-                    <ViewfinderCircleIcon className="size-4 animate-spin" />
-                    Relinking...
-                  </>
-                ) : (
-                  <>
-                    <LinkIcon className="size-4" />
-                    Relink Video
-                  </>
-                )}
-              </button>
+                Relink Video
+              </Button>
             </div>
           </motion.div>
         </motion.div>

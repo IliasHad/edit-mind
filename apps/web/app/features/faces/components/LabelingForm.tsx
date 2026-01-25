@@ -3,6 +3,7 @@ import { ArrowPathIcon, CheckIcon, UserIcon } from '@heroicons/react/24/solid'
 import { RadioGroup } from '@headlessui/react'
 import { useFacesStore } from '../stores'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '@ui/components/Button'
 
 export const LabelingForm: React.FC = () => {
   const {
@@ -47,12 +48,12 @@ export const LabelingForm: React.FC = () => {
             </motion.p>
           </div>
 
-          <button
+          <Button
             onClick={handleSelectAll}
-            className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors duration-200"
+            variant="ghost"
           >
             {selectedFaces.size === unknownFaces.length ? 'Deselect All' : 'Select All'}
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-8">
@@ -63,39 +64,27 @@ export const LabelingForm: React.FC = () => {
               <div className="relative inline-flex gap-0 p-0 bg-white/5 rounded-2xl w-full overflow-hidden border border-white/10">
                 <RadioGroup.Option value="existing" className="flex-1">
                   {({ checked }) => (
-                    <motion.button
+                    <Button
+                      variant="ghost"
                       className={`relative w-full px-6 py-4 text-sm font-semibold transition-colors duration-300 ${
                         checked ? 'text-black' : 'text-white/60 hover:text-white/80'
                       }`}
                     >
-                      {checked && (
-                        <motion.div
-                          layoutId="activeMethodTab"
-                          className="absolute inset-0 bg-white"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        />
-                      )}
                       <span className="relative z-10 flex items-center justify-center gap-2">Existing Person</span>
-                    </motion.button>
+                    </Button>
                   )}
                 </RadioGroup.Option>
 
                 <RadioGroup.Option value="new" className="flex-1">
                   {({ checked }) => (
-                    <motion.button
+                    <Button
+                      variant="ghost"
                       className={`relative w-full px-6 py-4 text-sm font-semibold transition-colors duration-300 ${
                         checked ? 'text-black' : 'text-white/60 hover:text-white/80'
                       }`}
                     >
-                      {checked && (
-                        <motion.div
-                          layoutId="activeMethodTab"
-                          className="absolute inset-0 bg-white"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        />
-                      )}
                       <span className="relative z-10 flex items-center justify-center gap-2">New Person</span>
-                    </motion.button>
+                    </Button>
                   )}
                 </RadioGroup.Option>
               </div>
@@ -177,31 +166,15 @@ export const LabelingForm: React.FC = () => {
             )}
           </AnimatePresence>
 
-          <motion.button
+          <Button
             onClick={handleLabelFaces}
             disabled={!isFormValid || isLabeling}
-            whileHover={isFormValid && !isLabeling ? { scale: 1.01 } : {}}
-            whileTap={isFormValid && !isLabeling ? { scale: 0.99 } : {}}
-            className={`w-full px-6 py-4 rounded-2xl font-semibold text-base transition-all duration-300 flex items-center justify-center relative overflow-hidden ${
-              isFormValid && !isLabeling
-                ? 'bg-white text-black hover:bg-white/90'
-                : 'bg-white/10 text-white/30 cursor-not-allowed border border-white/5'
-            }`}
+            loading={isLabeling}
+            leftIcon={isLabeling ? <ArrowPathIcon className="w-5 h-5" /> : <CheckIcon className="w-5 h-5" />}
+            className="w-full"
           >
-            <span className="relative z-10 flex items-center gap-3">
-              {isLabeling ? (
-                <>
-                  <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                  Labeling...
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="w-5 h-5" />
-                  Label {selectedFaces.size} Face{selectedFaces.size !== 1 ? 's' : ''}
-                </>
-              )}
-            </span>
-          </motion.button>
+            Label {selectedFaces.size} Face{selectedFaces.size !== 1 ? 's' : ''}
+          </Button>
         </div>
       </div>
     </motion.div>

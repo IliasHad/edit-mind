@@ -13,6 +13,7 @@ import { Link } from './Link'
 import { useSession } from '~/features/auth/hooks/useSession'
 import type { JSX } from 'react'
 import { useAuth } from '~/features/auth/hooks/useAuth'
+import { Button } from '@ui/components/Button'
 
 interface SidebarProps {
   isCollapsed?: boolean
@@ -51,7 +52,8 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
               </>
             )}
           </div>
-          <button
+          <Button
+            variant='ghost'
             onClick={() => setIsCollapsed?.(!isCollapsed)}
             className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md transition-colors"
           >
@@ -60,7 +62,7 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
                 isCollapsed ? 'rotate-180' : ''
               }`}
             />
-          </button>
+          </Button>
         </div>
       </div>
 

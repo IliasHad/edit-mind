@@ -121,14 +121,14 @@ export const SceneCard: React.FC<SceneCardProps> = ({
           </div>
         )}
 
-        <button
+        <Button
           onClick={onPreview}
-          className="absolute top-3 left-3 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm 
-                     rounded-full p-2 shadow-lg hover:scale-110 transition-transform opacity-0 group-hover:opacity-100"
+          className="absolute top-3 left-3 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
+          variant="ghost"
+          size="icon-sm"
+          leftIcon={<PlayIcon className="w-4 h-4" fill="currentColor" />}
           aria-label="Preview video"
-        >
-          <PlayIcon className="w-4 h-4" fill="currentColor" />
-        </button>
+        />
 
         <div className="relative w-full aspect-video min-h-[200px]">
           <img

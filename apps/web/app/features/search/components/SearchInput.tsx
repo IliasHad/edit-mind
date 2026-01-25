@@ -1,6 +1,7 @@
 import { forwardRef, type KeyboardEvent, type ChangeEvent } from 'react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useSearchStore } from '~/features/search/stores'
+import { Button } from '@ui/components/Button'
 
 interface SearchInputProps {
   onSearch?: () => void
@@ -70,17 +71,13 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(({ onS
       />
 
       {hasContent && (
-        <button
+        <Button
           onClick={handleClear}
-          className="p-1.5 rounded-full 
-            bg-black/10 dark:bg-white/10
-            hover:bg-black/15 dark:hover:bg-white/15
-            transition-all duration-200
-            active:scale-95"
+          variant="ghost"
+          size="icon-sm"
+          leftIcon={<XMarkIcon className="size-4 text-black/60 dark:text-white/60" />}
           aria-label="Clear search"
-        >
-          <XMarkIcon className="size-4 text-black/60 dark:text-white/60" />
-        </button>
+        />
       )}
     </div>
   )

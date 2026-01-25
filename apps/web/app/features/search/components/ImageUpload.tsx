@@ -1,6 +1,7 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from 'react'
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useSearchStore } from '~/features/search/stores'
+import { Button } from '@ui/components/Button';
 
 interface ImageUploadProps {
   onUpload?: (file: File) => void
@@ -72,19 +73,14 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
 
           <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-black/20 opacity-1 hover:opacity-100 transition-opacity duration-200" />
 
-          <button
+          <Button
             onClick={handleRemove}
-            className="absolute top-3 right-3 p-2 rounded-full
-            cursor-pointer 
-            bg-black
-            backdrop-blur-sm
-            transition-all duration-200
-            opacity-0 group-hover:opacity-100
-            active:scale-95"
+            className="absolute top-3 right-3 p-2 rounded-full cursor-pointer bg-black backdrop-blur-sm opacity-0 group-hover:opacity-100 active:scale-95"
+            variant="primary"
+            size="icon-sm"
+            leftIcon={<XMarkIcon className="size-4 text-white" />}
             aria-label="Remove image"
-          >
-            <XMarkIcon className="size-4 text-white" />
-          </button>
+          />
           <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <p className="text-xs text-white dark:text-black font-medium backdrop-blur-sm bg-black/40 dark:bg-white/40 px-3 py-2 rounded-lg">
               Searching with this image

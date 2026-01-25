@@ -1,5 +1,7 @@
 import { MagnifyingGlassIcon, PhotoIcon } from '@heroicons/react/24/outline'
-import { useSearchStore } from '~/features/search/stores'
+import { Button } from '@ui/components/Button'
+import { useSearchResults } from '../hooks/useSearchResults'
+import clsx from 'clsx'
 
 const SEARCH_MODES = [
   {
@@ -17,7 +19,7 @@ const SEARCH_MODES = [
 ] as const
 
 export function SearchModeTabs() {
-  const { searchMode, setSearchMode, isLoading, clearSearch } = useSearchStore()
+  const { searchMode, setSearchMode, loading, clearSearch } = useSearchResults()
 
   return (
     <div className="flex items-center gap-2 p-1.5 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10">
@@ -26,28 +28,25 @@ export function SearchModeTabs() {
         const isActive = searchMode === mode.id
 
         return (
-          <button
+          <Button
             key={mode.id}
             onClick={() => {
-              if (!isLoading) {
+              if (!loading) {
                 setSearchMode(mode.id)
                 clearSearch()
               }
             }}
-            disabled={isLoading}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
-            text-sm font-medium transition-all duration-200
-            disabled:opacity-40 disabled:cursor-not-allowed
-            ${
-              isActive
-                ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-                : 'text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
-            }`}
+            disabled={loading}
+            variant={isActive ? 'primary' : 'ghost'}
+            className={clsx(
+              'flex-1 flex items-center justify-center gap-2 px-4 py-2.5',
+              isActive ? 'primary' : 'text-black dark:text-white'
+            )}
+            leftIcon={<Icon className="size-4" />}
             title={mode.description}
           >
-            <Icon className="size-4" />
             <span>{mode.label}</span>
-          </button>
+          </Button>
         )
       })}
     </div>

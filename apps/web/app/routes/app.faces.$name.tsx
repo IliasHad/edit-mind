@@ -4,8 +4,9 @@ import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { useCurrentKnowFace } from '~/features/faces/hooks/useCurrentKnownFace'
 import { useState } from 'react'
 import { KnownFaceCard } from '~/features/faces/components/KnownFaceCard'
-import { PencilIcon } from '@heroicons/react/24/solid'
+import { PencilIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid'
 import { RenameDialog } from '~/features/faces/components/RenameDialog'
+import { Button } from '@ui/components/Button'
 
 export default function PersonFacesPage() {
   const { currentKnownFace } = useCurrentKnowFace()
@@ -29,31 +30,24 @@ export default function PersonFacesPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                to={`/app/search?face=${name}`}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-2xl bg-white/10 text-white hover:bg-white/0.15 transition-all duration-200 border border-white/10 backdrop-blur-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                Search Videos of {name}
+              <Link to={`/app/search?face=${name}`}>
+                <Button
+                  variant="outline"
+                  leftIcon={<MagnifyingGlassIcon className="w-4 h-4" />}
+                >
+                  Search Videos of {name}
+                </Button>
               </Link>
 
-              <button
+              <Button
                 onClick={(e) => {
                   e.preventDefault()
                   setShowRenameDialog(true)
                 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-2xl bg-white text-black hover:bg-white/90 transition-all duration-200 shadow-lg shadow-white/10 hover:shadow-white/20"
+                leftIcon={<PencilIcon className="w-4 h-4" />}
               >
-                <PencilIcon className="w-4 h-4" />
                 Rename
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -66,13 +60,10 @@ export default function PersonFacesPage() {
                 <p className="text-gray-600 dark:text-gray-400 text-base mb-8">
                   We couldn't find any faces for this person. It might be that the face labelling is still in progress.
                 </p>
-                <Link
-                  to="/app/faces"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-lg 
-           bg-black text-white dark:bg-white dark:text-black 
-           hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-sm"
-                >
-                  Back to all faces
+                <Link to="/app/faces">
+                  <Button>
+                    Back to all faces
+                  </Button>
                 </Link>
               </div>
             ) : (

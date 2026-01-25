@@ -8,6 +8,7 @@ import { useCurrentCollectionScenes } from '~/features/collections/hooks/useCurr
 import { ScenePlayerModal } from '~/features/collections/components/ScenePlayerModal'
 import { SceneCard } from '~/features/chats/components/SceneCard'
 import { ArrowDownTrayIcon } from '@heroicons/react/24/solid'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Collection Scenes | Edit Mind' }]
@@ -56,12 +57,12 @@ export default function CollectionScenes() {
                   <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                     {selectedScenes.size} scene{selectedScenes.size > 1 ? 's' : ''} selected
                   </span>
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => setSelectedScenes(new Set())}
-                    className="text-sm font-medium text-zinc-500 hover:text-black dark:hover:text-white"
                   >
                     Clear
-                  </button>
+                  </Button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -111,14 +112,13 @@ export default function CollectionScenes() {
                 {Array.from(selectedScenes).map((sceneId) => (
                   <input key={sceneId} type="hidden" name="sceneIds" value={sceneId} />
                 ))}
-                <button
+                <Button
                   disabled={loading}
                   onClick={handleExport}
-                  className="inline-flex items-center gap-2 rounded-xl bg-black px-5 py-2.5 text-sm font-semibold tracking-wide text-white transition-all hover:bg-zinc-800 active:scale-[0.98] dark:bg-white dark:text-black dark:hover:bg-zinc-100"
+                  leftIcon={<ArrowDownTrayIcon className="w-4 h-4" />}
                 >
-                  <ArrowDownTrayIcon className="w-4 h-4" />
                   Export Scenes
-                </button>
+                </Button>
               </div>
             </motion.div>
           )}

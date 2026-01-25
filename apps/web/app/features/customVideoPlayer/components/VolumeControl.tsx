@@ -1,20 +1,23 @@
-import { SpeakerWaveIcon as Volume2, SpeakerXMarkIcon as VolumeX } from '@heroicons/react/24/outline'
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline'
 import type { VolumeControlProps } from '../types'
+import { Button } from '@ui/components/Button'
 
 export function VolumeControl({ volume, isMuted, onToggleMute, onVolumeChange }: VolumeControlProps) {
   return (
     <div className="flex items-center gap-2 group/volume">
-      <button
+      <Button
+        variant='ghost'
         onClick={onToggleMute}
         className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
         aria-label={isMuted ? 'Unmute' : 'Mute'}
-      >
-        {isMuted || volume === 0 ? (
-          <VolumeX className="w-5 h-5 text-white" strokeWidth={2} />
-        ) : (
-          <Volume2 className="w-5 h-5 text-white" strokeWidth={2} />
-        )}
-      </button>
+        leftIcon={
+          isMuted || volume === 0 ? (
+            <SpeakerXMarkIcon className="w-5 h-5 text-white" strokeWidth={2} />
+          ) : (
+            <SpeakerWaveIcon className="w-5 h-5 text-white" strokeWidth={2} />
+          )
+        }
+      ></Button>
       <input
         type="range"
         min="0"
