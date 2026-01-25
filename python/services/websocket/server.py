@@ -107,11 +107,6 @@ class WebSocketServer:
         except Exception as e:
             logger.exception(f"Unhandled exception for {connection_id}")
         finally:
-            heartbeat_task.cancel()
-            try:
-                await heartbeat_task
-            except asyncio.CancelledError:
-                pass
             self.message_router.cleanup_guards(websocket)
             await self.connection_manager.unregister(websocket)
 
