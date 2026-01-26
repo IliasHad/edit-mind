@@ -217,7 +217,7 @@ test.describe('Settings Page', () => {
 
       // Mock the delete API response
       await page.route('**/api/folders/123', async (route) => {
-        await route.fulfill({ status: 204, json: { success: true } })
+        await route.fulfill({ status: 200, json: { success: true } })
       })
 
       page.on('dialog', (dialog) => dialog.accept())
