@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           const data = `data: ${JSON.stringify(status)}\n\n`
           controller.enqueue(encoder.encode(data))
 
-          if (status.status === 'completed' || status.status === 'error') {
+          if (status.status === 'completed' || status.status === 'failed') {
             controller.close()
             return
           }
