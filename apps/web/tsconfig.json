@@ -14,7 +14,8 @@
       "~/*": ["./app/*"],
       "@ui/*": ["../../packages/ui/src/*"],
       "@immich/*": ["../../packages/immich/src/*"],
-      "@shared/*": ["../../packages/shared/src/*"]
+      "@shared/*": ["../../packages/shared/src/*"],
+      "@db/*": ["../../packages/db/src/*"]
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
