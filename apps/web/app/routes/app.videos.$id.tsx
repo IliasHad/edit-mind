@@ -36,6 +36,7 @@ export default function Video() {
     relinkSuccess,
     videoExist,
     loading,
+    fetchVideoById
   } = useCurrentVideo()
 
   const { id } = useParams()
@@ -93,6 +94,7 @@ export default function Video() {
     try {
       if (id) {
         await reindexVideo(id)
+        await fetchVideoById(id)
       }
     } catch (error) {
       console.error('Error reindexing video ', error)
@@ -137,7 +139,7 @@ export default function Video() {
                 title="Delete video"
                 description="Removing this video will remove all indexed data. This action cannot be undone."
                 resourceName={video.source}
-                confirmText="Delete folder"
+                confirmText="Delete this video"
                 onConfirm={handleDelete}
               />
               <ConfirmationModal
