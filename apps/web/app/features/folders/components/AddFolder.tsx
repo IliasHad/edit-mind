@@ -17,9 +17,11 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
     useMediaBrowser()
 
   useEffect(() => {
-    fetchFolders()
+    if (isOpen) {
+      fetchFolders()
+    }
     return reset()
-  }, [fetchFolders, reset])
+  }, [fetchFolders, reset, isOpen])
 
   const handleSelectFolder = (folderPath: string) => {
     setSelectedPath(folderPath)
@@ -125,6 +127,9 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
           leftIcon={loading ? <ArrowPathIcon className="size-4" /> : <PlusIcon className="size-4" />}
         >
           Add Folder
+        </Button>
+        <Button variant="secondary" onClick={handleAddFolder} disabled={!selectedPath || loading} loading={loading} aria-label='Cancel'>
+          Cancel
         </Button>
       </div>
     </Modal>
