@@ -74,9 +74,6 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
     return result
   }
 
-  const isSubmitDisabled =
-    !isValid || (!hasTestedConnection && !hasIntegration) || (hasTestedConnection && !connectionStatus?.success)
-
   return (
     <div className="p-8">
       <div className="mb-6">
@@ -130,7 +127,7 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
             loading={loading}
             leftIcon={!loading && <CheckCircleIcon />}
             fullWidth
-            disabled={isSubmitDisabled || loading}
+            disabled={!hasTestedConnection || loading}
           >
             {hasIntegration ? 'Update & Restart Import' : 'Connect & Start Import'}
           </Button>
