@@ -1,6 +1,6 @@
-import clsx from 'clsx'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { forwardRef, type ReactNode, type ButtonHTMLAttributes } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline' | 'link' | 'glass'
@@ -34,8 +34,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         type={type}
-        className={clsx(
-          // Base styles
+        className={twMerge(
           'inline-flex items-center justify-center gap-2',
           'font-medium transition-all duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -43,25 +42,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           'active:scale-[0.98]',
           '[&_svg]:shrink-0',
           
-          // Full width
+     
           fullWidth && 'w-full',
           
-          // Variant styles
           getVariantStyles(variant),
           
-          // Size styles
           getSizeStyles(size),
           
-          // Custom className
           className
         )}
         disabled={isDisabled}
         {...props}
       >
         {loading ? (
-          <ArrowPathIcon className="animate-spin" aria-hidden="true" />
+          <ArrowPathIcon className="animate-spin w-4" aria-hidden="true" />
         ) : (
-          leftIcon && <span aria-hidden="true">{leftIcon}</span>
+          leftIcon && <span aria-hidden="true" >{leftIcon}</span>
         )}
         
         {children && <span>{children}</span>}
@@ -74,10 +70,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button'
 
-// Variant styles helper
 function getVariantStyles(variant: ButtonProps['variant']): string {
   const variants = {
-    primary: clsx(
+    primary: twMerge(
       'bg-white dark:bg-white',
       'text-black dark:text-black',
       'rounded-xl',
@@ -87,7 +82,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-offset-black dark:focus-visible:ring-offset-transparent'
     ),
     
-    secondary: clsx(
+    secondary: twMerge(
       'bg-black dark:bg-black',
       'text-white dark:text-white',
       'rounded-xl',
@@ -97,7 +92,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
     
-    ghost: clsx(
+    ghost: twMerge(
       'bg-white/5 dark:bg-white/5',
       'text-black dark:text-white',
       'border border-black/10 dark:border-white/10',
@@ -108,7 +103,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
     
-    glass: clsx(
+    glass: twMerge(
       'bg-white/5 dark:bg-white/5',
       'text-black dark:text-white',
       'border border-white/10',
@@ -120,7 +115,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-offset-transparent'
     ),
     
-    destructive: clsx(
+    destructive: twMerge(
       'bg-red-500/10 dark:bg-red-500/10',
       'text-red-600 dark:text-red-400',
       'border border-red-500/30',
@@ -131,7 +126,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
     
-    outline: clsx(
+    outline: twMerge(
       'bg-transparent',
       'text-black dark:text-white',
       'border border-black/20 dark:border-white/20',
@@ -142,7 +137,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
     
-    link: clsx(
+    link: twMerge(
       'bg-transparent',
       'text-black dark:text-white',
       'underline-offset-4',
@@ -157,7 +152,6 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
   return variants[variant || 'primary']
 }
 
-// Size styles helper
 function getSizeStyles(size: ButtonProps['size']): string {
   const sizes = {
     xs: 'h-7 px-2.5 text-xs gap-1.5 [&_svg]:w-3 [&_svg]:h-3',

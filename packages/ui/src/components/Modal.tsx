@@ -60,9 +60,9 @@ export function Modal({
             {showCloseButton && (
               <div className="absolute top-4 right-4 z-10">
                 <Button
-                  leftIcon={<XMarkIcon />}
+                  rightIcon={<XMarkIcon className='size-4' />}
                   variant="glass"
-                  size="icon-sm"
+                  size="icon-xs"
                   onClick={onClose}
                   aria-label="Close modal"
                 />

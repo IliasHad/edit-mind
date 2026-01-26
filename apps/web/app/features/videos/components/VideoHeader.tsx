@@ -37,35 +37,36 @@ export function VideoHeader({
       transition={{ duration: 0.3 }}
       className="mb-8"
     >
-      <div className="overflow-hidden">
-        <div className="py-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-            <div className="flex-1 space-y-4">
-              <h1 className="text-3xl font-bold text-white tracking-tight">{fileName}</h1>
+      <div className="p-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div className="flex-1 space-y-4">
+            <h1 className="text-3xl font-bold text-white tracking-tight">{fileName}</h1>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                  <FilmIcon className="h-4 w-4 text-white/60" />
-                  <span className="text-sm font-medium text-white/70">{sceneCount} scenes</span>
-                </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                <FilmIcon className="h-4 w-4 text-white/60" />
+                <span className="text-sm font-medium text-white/70">{sceneCount} scenes</span>
+              </div>
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                  <CalendarIcon className="h-4 w-4 text-white/60" />
-                  <span className="text-sm font-medium text-white/70">Imported: {smartFormatDate(importAt)}</span>
-                </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                <CalendarIcon className="h-4 w-4 text-white/60" />
+                <span className="text-sm font-medium text-white/70">Imported {smartFormatDate(importAt)}</span>
+              </div>
 
+              {shottedAt && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                   <VideoCameraIcon className="h-4 w-4 text-white/60" />
-                  <span className="text-sm font-medium text-white/70">Shotted: {smartFormatDate(shottedAt)}</span>
+                  <span className="text-sm font-medium text-white/70">Shot {smartFormatDate(shottedAt)}</span>
                 </div>
-              </div>
+              )}
             </div>
+          </div>
 
-          <div className="flex items-center gap-2 sm:pt-1">
+          <div className="flex items-center gap-2 sm:pt-1 shrink-0">
             <Button
               onClick={onReindex}
               disabled={disabled}
-              variant="primary"
+              variant="glass"
               leftIcon={
                 <ArrowPathIcon
                   className={`h-4 w-4 transition-transform ${
@@ -87,48 +88,57 @@ export function VideoHeader({
             </Button>
           </div>
         </div>
+      </div>
 
-        {collectionItems.length > 0 && (
-          <div className="flex flex-col gap-4 pt-6 border-t border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wider">
-                Collections
-              </h3>
-              <span className="text-xs font-medium text-black/40 dark:text-white/40">{collectionItems.length}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {collectionItems.map((collectionItem) => (
-                <CollectionBadge
-                  key={collectionItem.collection.id}
-                  collection={{
-                    name: collectionItem.collection.name,
-                    id: collectionItem.collection.id,
-                    confidence: collectionItem.confidence,
-                    type: collectionItem.collection.type,
-                  }}
-                />
-              ))}
-            </div>
+      {collectionItems.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="px-6 py-4 border-t border-white/5"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">Collections</h3>
+            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-white/60">
+              {collectionItems.length}
+            </span>
           </div>
-        )}
+          <div className="flex flex-wrap gap-2">
+            {collectionItems.map((collectionItem) => (
+              <CollectionBadge
+                key={collectionItem.collection.id}
+                collection={{
+                  name: collectionItem.collection.name,
+                  id: collectionItem.collection.id,
+                  confidence: collectionItem.confidence,
+                  type: collectionItem.collection.type,
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
+      )}
 
-        {projects.length > 0 && (
-          <div className="flex flex-col gap-4 pt-6 border-t border-black/10 dark:border-white/10">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wider">
-                Projects
-              </h3>
-              <span className="text-xs font-medium text-black/40 dark:text-white/40">{projects.length}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {projects.map((project) => (
-                <ProjectBadge key={project.id} project={{ name: project.name, videos: 0, id: project.id }} />
-              ))}
-            </div>
+      {projects.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="px-6 py-4 border-t border-white/5"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">Projects</h3>
+            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-white/60">
+              {projects.length}
+            </span>
           </div>
-        )}
-        </div>
-        </div>
+          <div className="flex flex-wrap gap-2">
+            {projects.map((project) => (
+              <ProjectBadge key={project.id} project={{ name: project.name, videos: 0, id: project.id }} />
+            ))}
+          </div>
+        </motion.div>
+      )}
     </motion.section>
   )
 }

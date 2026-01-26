@@ -14,6 +14,7 @@ import { useSession } from '~/features/auth/hooks/useSession'
 import type { JSX } from 'react'
 import { useAuth } from '~/features/auth/hooks/useAuth'
 import { Button } from '@ui/components/Button'
+import { ServicesStatus } from './ServicesStatus'
 
 interface SidebarProps {
   isCollapsed?: boolean
@@ -53,12 +54,13 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
             )}
           </div>
           <Button
-            variant='ghost'
+            size='sm'
+            variant="outline"
             onClick={() => setIsCollapsed?.(!isCollapsed)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-md transition-colors"
+            className="border-none"
           >
             <ChevronLeftIcon
-              className={`w-4 h-4 text-gray-700 dark:text-gray-300 transition-transform ${
+              className={`w-auto h-4 text-gray-700 dark:text-gray-300 transition-transform ${
                 isCollapsed ? 'rotate-180' : ''
               }`}
             />
@@ -95,6 +97,10 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
         />
         {children}
       </nav>
+
+      <div className="p-4 border-t border-gray-800">
+        <ServicesStatus isCollapsed={isCollapsed} />
+      </div>
 
       <div className="p-4 border-t border-gray-800 space-y-2">
         <Link

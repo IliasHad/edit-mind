@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState } from 'react'
 import { Link } from 'react-router'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { ICON_MAP, TYPE_LABELS } from '~/features/collections/constants'
-import { PlayIcon } from '@heroicons/react/24/solid';
-import type { CollectionWithItems } from '../types';
+import type { CollectionWithItems } from '../types'
 
 interface CollectionCardProps {
   collection: CollectionWithItems
@@ -26,9 +25,8 @@ export function CollectionCard({ collection }: CollectionCardProps) {
     >
       <motion.div
         initial={false}
-        animate={{ scale: isHovered ? 0.98 : 1 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="relative aspect-video overflow-hidden rounded-2xl bg-black/95 dark:bg-white/5 border border-black/10 dark:border-white/10"
+        className="relative aspect-video overflow-hidden rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/[0.07] transition-all duration-200"
       >
         {!imageError && collection.thumbnailUrl ? (
           <motion.img
@@ -40,33 +38,22 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-black/5 dark:bg-white/5">
-            <Icon className="h-20 w-20 text-black/10 dark:text-white/10" />
+          <div className="flex h-full w-full items-center justify-center bg-white/5">
+            <Icon className="h-20 w-20 text-white/10" />
           </div>
         )}
 
-        <motion.div
-          initial={false}
-          animate={{ opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent"
-        />
-
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 dark:bg-white/90 backdrop-blur-xl shadow-2xl">
-                <PlayIcon className="h-7 w-7 text-black ml-1" fill="black" />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isHovered ? (
+          <motion.div
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            className="absolute inset-0 bg-linear-to-t from-black/80 via-black/60 to-transparent"
+          />
+        ) : (
+          <motion.div
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            className="absolute inset-0 bg-linear-to-b from-black/80 via-black/60 to-transparent"
+          />
+        )}
 
         <div className="pointer-events-none absolute inset-0 p-5">
           <div className="flex h-full flex-col justify-between">
@@ -78,10 +65,10 @@ export function CollectionCard({ collection }: CollectionCardProps) {
                   y: isHovered ? -8 : 0,
                 }}
                 transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-black/40 dark:bg-white/10 px-2.5 py-1 backdrop-blur-xl border border-white/10"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 backdrop-blur-xl border border-white/10"
               >
-                <Icon className="h-3 w-3 text-white/90" />
-                <span className="text-[11px] font-medium tracking-wide text-white/90">
+                <Icon className="h-3.5 w-3.5 text-white/90" />
+                <span className="text-[11px] font-semibold tracking-wide text-white/90 uppercase">
                   {TYPE_LABELS[collection.type]}
                 </span>
               </motion.div>
@@ -93,9 +80,9 @@ export function CollectionCard({ collection }: CollectionCardProps) {
                   y: isHovered ? -8 : 0,
                 }}
                 transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                className="rounded-full flex items-center justify-center bg-black/40 dark:bg-white/10 h-8 w-8 backdrop-blur-xl border border-white/10"
+                className="rounded-lg flex items-center justify-center bg-white/5 px-2.5 py-1.5 backdrop-blur-xl border border-white/10"
               >
-                <span className="text-sm font-medium text-white/90">{collection.itemCount}</span>
+                <span className="text-sm font-semibold text-white/90">{collection.itemCount}</span>
               </motion.div>
             </div>
 
@@ -107,9 +94,13 @@ export function CollectionCard({ collection }: CollectionCardProps) {
               }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             >
-              <h3 className="mb-1.5 text-xl font-semibold tracking-tight text-white">{collection.name}</h3>
+              <h3 className="mb-1.5 text-xl font-semibold tracking-tight text-white drop-shadow-lg">
+                {collection.name}
+              </h3>
               {collection.description && (
-                <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-white/70">{collection.description}</p>
+                <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-white/80 drop-shadow">
+                  {collection.description}
+                </p>
               )}
               <div className="flex items-center gap-3 text-xs font-medium text-white/60">
                 <span>{collection.itemCount} Videos</span>

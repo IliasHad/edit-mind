@@ -26,7 +26,7 @@ export function VolumeControl({ volume, isMuted, onToggleMute, onVolumeChange }:
         value={volume}
         onChange={onVolumeChange}
         aria-label="Volume"
-        className="w-0 group-hover/volume:w-24 transition-all duration-300 h-1 rounded-full appearance-none bg-white/20 outline-none 
+        className="w-0 ml-2 group-hover/volume:w-24 transition-all duration-300 h-1 rounded-full appearance-none bg-white/20 outline-none 
           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
           [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer
           [&::-webkit-slider-thumb]:shadow-lg"

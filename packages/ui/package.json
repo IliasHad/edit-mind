@@ -21,5 +21,11 @@
   "peerDependencies": {
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "@heroicons/react": "^2.2.0",
+    "framer-motion": "^12.23.24",
+    "tailwind-merge": "^3.4.0"
   }
 }

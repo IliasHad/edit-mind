@@ -1,76 +1,43 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { ArrowRightIcon, FolderIcon, VideoCameraIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  ArrowRightIcon,
-  CheckIcon,
-  FolderIcon,
-  LinkIcon,
-  VideoCameraIcon,
-  ViewfinderCircleIcon,
-  XCircleIcon,
-} from '@heroicons/react/24/outline'
 import { Button } from '@ui/components/Button'
-
-interface ServerFolder {
-  path: string
-  name: string
-  isDirectory: boolean
-  children?: ServerFolder[]
-}
+import { Modal } from '@ui/components/Modal'
+import { useMediaBrowser } from '~/features/folders/hooks/useMediaBrowser'
+import { ChevronRightIcon } from '@heroicons/react/24/solid'
 
 interface RelinkVideoProps {
   isOpen: boolean
   oldSource: string
   onClose: () => void
-  onRelink: (oldSource: string, newSource: string) => Promise<void>
-  relinkSuccess: boolean
+  onRelink: (newSource: string) => Promise<void>
+  relinkSuccess?: boolean
 }
 
 export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSuccess }: RelinkVideoProps) {
-  const [availableFolders, setAvailableFolders] = useState<ServerFolder[]>([])
-  const [currentPath, setCurrentPath] = useState('/')
-  const [loadingFolders, setLoadingFolders] = useState(false)
-  const [selectedPath, setSelectedPath] = useState('')
-  const [isRelinking, setIsRelinking] = useState(false)
+  const { currentPath, folders, files, isLoading, error, selectedPath, setSelectedPath, navigateToFolder, reset } =
+    useMediaBrowser()
 
-  const fetchAvailableFolders = useCallback(
-    async (path: string = '/') => {
-      setLoadingFolders(true)
-      try {
-        const response = await fetch(
-          `/api/files?path=${encodeURIComponent(path)}&oldSource=${encodeURIComponent(oldSource)}`
-        )
-        const data = await response.json()
-        setAvailableFolders(data.folders || [])
-        setCurrentPath(path)
-      } catch (error) {
-        console.error(error)
-        setAvailableFolders([])
-      } finally {
-        setLoadingFolders(false)
-      }
-    },
-    [oldSource]
-  )
+  const [isRelinking, setIsRelinking] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedPath('')
-      setCurrentPath('/')
-      fetchAvailableFolders('/')
+      reset()
+      navigateToFolder('/')
     }
-  }, [isOpen, fetchAvailableFolders])
+  }, [isOpen, reset, navigateToFolder])
 
-  const handleNavigateToFolder = (folderPath: string) => {
-    fetchAvailableFolders(folderPath)
-  }
+  useEffect(() => {
+    if (relinkSuccess) {
+      onClose()
+    }
+  }, [relinkSuccess, onClose])
 
-  const handleItemClick = (item: ServerFolder) => {
+  const handleItemClick = (item: { path: string; isDirectory: boolean }) => {
     if (item.isDirectory) {
-      // Navigate into folder
-      handleNavigateToFolder(item.path)
+      navigateToFolder(item.path)
     } else {
-      // Select video file
       setSelectedPath(item.path)
     }
   }
@@ -79,8 +46,7 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
     if (!selectedPath) return
     setIsRelinking(true)
     try {
-      await onRelink(oldSource, selectedPath)
-      onClose()
+      await onRelink(selectedPath)
     } catch (error) {
       console.error('Relink error:', error)
     } finally {
@@ -100,169 +66,148 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
     ]
   }
 
-  // Separate folders and files for better organization
-  const folders = availableFolders.filter((item) => item.isDirectory)
-  const files = availableFolders.filter((item) => !item.isDirectory)
+  const filteredFolders = searchTerm
+    ? folders.filter((f) => f.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : folders
 
-  if (relinkSuccess)
-    return (
-      <AnimatePresence>
-        {relinkSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="p-4 bg-green-500/5 dark:bg-green-500/10 border border-green-500/20 dark:border-green-500/20 rounded-xl flex items-center gap-3"
-          >
-            <CheckIcon className="size-4 text-green-600 dark:text-green-400" />
-            <span className="text-sm text-green-900 dark:text-green-100">Video successfully relinked</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    )
+  const filteredFiles = searchTerm
+    ? files.filter((f) => f.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : files
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/20 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ scale: 0.97, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.97, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-black rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col border border-black/10 dark:border-white/10"
-          >
-            <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-semibold text-black dark:text-white flex items-center gap-2">
-                  <LinkIcon className="size-5" />
-                  Relink Video
-                </h2>
-                <p className="text-sm text-black/60 dark:text-white/60 mt-1">
-                  Select a new video file to replace the missing source
-                </p>
-                {oldSource && (
-                  <p className="text-xs text-black/40 dark:text-white/40 mt-1 font-mono truncate">
-                    Previous: {oldSource}
-                  </p>
-                )}
-              </div>
-              <Button
-                onClick={onClose}
-                variant="ghost"
-                size="icon-sm"
-                leftIcon={<XCircleIcon className="size-4 text-black/40 dark:text-white/40" />}
-              />
-            </div>
-
-            <div className="px-6 py-3 flex items-center gap-2 overflow-x-auto text-sm text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5">
-              {getBreadcrumbs().map((crumb, idx) => (
-                <div key={crumb.path} className="flex items-center gap-2 shrink-0">
-                  <Button
-                    onClick={() => handleNavigateToFolder(crumb.path)}
-                    variant="ghost"
-                    className="whitespace-nowrap hover:text-black dark:hover:text-white"
-                  >
-                    {crumb.name}
-                  </Button>
-                  {idx < getBreadcrumbs().length - 1 && <ArrowRightIcon className="size-3" />}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-6 py-3 min-h-0">
-              {loadingFolders ? (
-                <div className="flex items-center justify-center py-16">
-                  <ViewfinderCircleIcon className="size-6 animate-spin text-black/40 dark:text-white/40" />
-                </div>
-              ) : availableFolders.length === 0 ? (
-                <div className="text-center py-16 text-black/40 dark:text-white/40">
-                  <FolderIcon className="size-10 mx-auto mb-3" />
-                  <p className="text-sm">No files or folders found</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {folders.length > 0 && (
-                    <div className="space-y-1">
-                      <h3 className="text-xs font-medium text-black/40 dark:text-white/40 px-3 mb-2">Folders</h3>
-                      {folders.map((folder) => (
-                        <Button
-                          key={folder.path}
-                          layout
-                          onClick={() => handleItemClick(folder)}
-                          variant="ghost"
-                          className="w-full flex items-center justify-between p-3"
-                          leftIcon={<FolderIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />}
-                          rightIcon={<ArrowRightIcon className="size-4 text-black/30 dark:text-white/30" />}
-                        >
-                          <span className="text-sm text-black dark:text-white truncate text-left">{folder.name}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-
-                  {files.length > 0 && (
-                    <div className="space-y-1">
-                      <h3 className="text-xs font-medium text-black/40 dark:text-white/40 px-3 mb-2">Video Files</h3>
-                      {files.map((file) => (
-                        <Button
-                          key={file.path}
-                          layout
-                          onClick={() => handleItemClick(file)}
-                          variant="ghost"
-                          className={`w-full flex items-center justify-between p-3 ${
-                            selectedPath === file.path
-                              ? 'bg-black/10 dark:bg-white/10 ring-2 ring-black/20 dark:ring-white/20'
-                              : ''
-                          }`}
-                          leftIcon={<VideoCameraIcon className="size-5 text-black/60 dark:text-white/60 shrink-0" />}
-                        >
-                          <span className="text-sm text-black dark:text-white truncate text-left">{file.name}</span>
-                          {selectedPath === file.path && (
-                            <div className="px-2.5 py-1 bg-black dark:bg-white text-white dark:text-black rounded-md text-xs font-medium shrink-0">
-                              Selected
-                            </div>
-                          )}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {selectedPath && (
-              <div className="px-6 py-3 border-t border-black/10 dark:border-white/10">
-                <p className="text-xs text-black/40 dark:text-white/40 mb-1">New source:</p>
-                <p className="text-sm font-mono text-black dark:text-white truncate">{selectedPath}</p>
-              </div>
-            )}
-
-            <div className="px-6 py-4 border-t border-black/10 dark:border-white/10 flex justify-end gap-3">
-              <Button
-                onClick={onClose}
-                disabled={isRelinking}
-                variant="ghost"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleRelink}
-                disabled={!selectedPath || isRelinking}
-                loading={isRelinking}
-                leftIcon={isRelinking ? <ViewfinderCircleIcon className="size-4" /> : <LinkIcon className="size-4" />}
-              >
-                Relink Video
-              </Button>
-            </div>
-          </motion.div>
-        </motion.div>
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="2xl">
+      <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">Relink Video</h2>
+          <p className="text-sm text-white/60 mt-1">Select a new video file to replace the missing source</p>
+          {oldSource && <p className="text-xs text-white/40 mt-2 font-mono truncate">Previous: {oldSource}</p>}
+        </div>
+      </div>
+      {error && (
+        <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="px-6 block py-3text-sm text-red-500 truncate">{error}</div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+      <div className="px-6 my-2 py-3 flex items-center gap-2 overflow-x-auto text-sm text-black/60 dark:text-white/60 border-b border-black/5 dark:border-white/5">
+        {getBreadcrumbs().map((crumb, idx) => (
+          <div key={crumb.path} className="flex items-center gap-2 shrink-0">
+            <Button onClick={() => navigateToFolder(crumb.path)} variant="ghost">
+              {crumb.name}
+            </Button>
+            {idx < getBreadcrumbs().length - 1 && <ChevronRightIcon className="size-3" />}
+          </div>
+        ))}
+      </div>
+
+      <div className="px-6 py-3 border-b border-white/5">
+        <div className="relative">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+          <input
+            type="text"
+            placeholder="Search files and folders..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 max-h-72 overflow-y-auto px-6 py-3 space-y-1 min-h-0">
+        {error && (
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm mb-4">{error}</div>
+        )}
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          </div>
+        ) : filteredFolders.length === 0 && filteredFiles.length === 0 ? (
+          <div className="text-center py-16 text-white/40">
+            <FolderIcon className="w-10 h-10 mx-auto mb-3" />
+            <p className="text-sm">No files or folders found</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <AnimatePresence>
+              {filteredFolders.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-1"
+                >
+                  <h3 className="text-xs font-medium text-white/40 px-3 mb-2">Folders</h3>
+                  {filteredFolders.map((folder) => (
+                    <motion.button
+                      key={folder.path}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      onClick={() => handleItemClick(folder)}
+                      className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <FolderIcon className="w-5 h-5 text-white/60 shrink-0" />
+                        <span className="text-sm text-white truncate text-left">{folder.name}</span>
+                      </div>
+                      <ArrowRightIcon className="w-4 h-4 text-white/30 group-hover:text-white/60 transition-colors shrink-0" />
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+
+              {filteredFiles.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-1"
+                >
+                  <h3 className="text-xs font-medium text-white/40 px-3 mb-2">Video Files</h3>
+                  {filteredFiles.map((file) => (
+                    <motion.button
+                      key={file.path}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      onClick={() => handleItemClick(file)}
+                      className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
+                        selectedPath === file.path ? 'bg-white/10 ring-2 ring-white/20' : 'hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <VideoCameraIcon className="w-5 h-5 text-white/60 shrink-0" />
+                        <span className="text-sm text-white truncate text-left">{file.name}</span>
+                      </div>
+                      {selectedPath === file.path && (
+                        <div className="px-2.5 py-1 bg-white text-black rounded-md text-xs font-medium shrink-0">
+                          Selected
+                        </div>
+                      )}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+
+      {selectedPath && (
+        <div className="px-6 py-3 border-t border-white/10">
+          <p className="text-xs text-white/40 mb-1">New source:</p>
+          <p className="text-sm font-mono text-white truncate">{selectedPath}</p>
+        </div>
+      )}
+
+      <div className="px-6 py-4 border-t border-white/10 flex justify-end gap-3">
+        <Button onClick={onClose} disabled={isRelinking} variant="ghost">
+          Cancel
+        </Button>
+        <Button onClick={handleRelink} disabled={!selectedPath || isRelinking} loading={isRelinking} variant="primary">
+          Relink Video
+        </Button>
+      </div>
+    </Modal>
   )
 }

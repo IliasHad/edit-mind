@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router'
 import type { SortOption, SortOptions, SortOrder } from '../types'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -8,9 +8,10 @@ interface SortOptionProps {
   sortOrder: SortOrder
   sortBy: SortOption
   options: SortOptions[]
+  onSort?: (sortOrder: SortOrder, sortBy: SortOption) => void
 }
 
-export function SortButton({ sortOrder, options, sortBy }: SortOptionProps) {
+export function SortButton({ sortOrder, options, sortBy, onSort }: SortOptionProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
@@ -27,12 +28,18 @@ export function SortButton({ sortOrder, options, sortBy }: SortOptionProps) {
     params.set('page', '1') // Reset to first page when sorting changes
     setSearchParams(params)
     setIsDropdownOpen(false)
+    if (onSort) {
+      onSort('desc', newSortBy)
+    }
   }
 
   const toggleSortOrder = () => {
     const params = new URLSearchParams(searchParams)
     params.set('sortOrder', sortOrder === 'desc' ? 'asc' : 'desc')
     setSearchParams(params)
+    if (onSort) {
+      onSort(params.get('sortOrder') as SortOrder, params.get('sortBy') as SortOption)
+    }
   }
 
   const currentSortOption = options.find((opt) => opt.value === sortBy)

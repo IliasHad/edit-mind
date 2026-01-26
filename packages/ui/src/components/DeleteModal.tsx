@@ -1,4 +1,3 @@
-import { ExclamationTriangleIcon } from '@heroicons/react/24/solid'
 import { useState } from 'react'
 import { Button } from './Button'
 import { Modal } from './Modal'
@@ -6,7 +5,7 @@ import { Modal } from './Modal'
 interface DeleteModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: () => Promise<void>
+  onConfirm: () => Promise<void> | void
   title: string
   description: string
   resourceName: string
@@ -39,60 +38,23 @@ export function DeleteModal({
   }
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose}
-      closeOnBackdrop={!isDeleting}
-      showCloseButton={!isDeleting}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} closeOnBackdrop={!isDeleting} showCloseButton={!isDeleting}>
       <div className="p-6">
-        {/* Warning Icon */}
-        <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-red-500/10 border border-red-500/20">
-          <ExclamationTriangleIcon className="size-6 text-red-400" />
-        </div>
+        <h2 className="text-xl font-semibold text-white mb-2">{title}</h2>
 
-        {/* Title */}
-        <h2 className="text-xl font-semibold text-white mb-2">
-          {title}
-        </h2>
+        <p className="text-sm text-white/60 leading-relaxed">{description}</p>
 
-        {/* Description */}
-        <p className="text-sm text-white/60 leading-relaxed">
-          {description}
-        </p>
+        {resourceName && (
+          <div className="mt-4 rounded-lg bg-white/5 border border-white/10 px-3 py-2.5">
+            <p className="text-sm font-medium text-white/80 truncate font-mono">{resourceName}</p>
+          </div>
+        )}
 
-        {/* Resource Name */}
-        <div className="mt-4 rounded-lg bg-red-500/5 border border-red-500/20 px-3 py-2.5">
-          <p className="text-sm font-medium text-red-400 truncate font-mono">
-            {resourceName}
-          </p>
-        </div>
-
-        {/* Warning Notice */}
-        <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-white/5 border border-white/10">
-          <ExclamationTriangleIcon className="size-4 text-white/60 shrink-0 mt-0.5" />
-          <p className="text-xs text-white/60 leading-relaxed">
-            This action cannot be undone. All associated data will be permanently removed.
-          </p>
-        </div>
-
-        {/* Actions */}
         <div className="mt-6 flex gap-3">
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            disabled={isDeleting}
-            fullWidth
-          >
+          <Button variant="ghost" onClick={onClose} disabled={isDeleting} fullWidth>
             {cancelText}
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleConfirm}
-            disabled={isDeleting}
-            loading={isDeleting}
-            fullWidth
-          >
+          <Button variant="destructive" onClick={handleConfirm} disabled={isDeleting} loading={isDeleting} fullWidth>
             {isDeleting ? 'Deleting...' : confirmText}
           </Button>
         </div>

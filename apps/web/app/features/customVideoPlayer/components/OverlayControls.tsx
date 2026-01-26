@@ -70,7 +70,7 @@ export function OverlayControls({
           >
             {OVERLAY_MODES.map((mode) => (
               <Button
-                variant="outline"
+                variant="glass"
                 key={mode}
                 onClick={() => onChangeMode(mode)}
                 className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
