@@ -103,6 +103,7 @@ services:
       - ../packages/immich:/app/packages/immich
       - ../packages/search:/app/packages/search
       - ../packages/smart-collections:/app/packages/smart-collections
+      - ../packages/ui:/app/packages/ui
     networks:
       - app-network-dev
 
