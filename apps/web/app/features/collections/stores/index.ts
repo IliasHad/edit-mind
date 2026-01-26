@@ -22,8 +22,8 @@ interface CollectionsState {
   totalVideos: number
   totalDuration: number
 
-  sortBy: SortOption
-  sortOrder: SortOrder
+  sortBy: SortOption | null
+  sortOrder: SortOrder | null
 }
 
 export const useCollectionsStore = create<CollectionsState>()(
@@ -37,8 +37,8 @@ export const useCollectionsStore = create<CollectionsState>()(
         error: null,
         totalVideos: 0,
         totalDuration: 0,
-        sortOrder: 'desc',
-        sortBy: 'shottedAt',
+        sortOrder: null,
+        sortBy: null,
 
         fetchCollections: async () => {
           set({ isLoading: true, error: null })

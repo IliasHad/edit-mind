@@ -7,18 +7,20 @@ export function useCurrentCollection() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
 
-  const { currentCollection, isLoading, fetchCollectionById, clearCurrentCollection, sortOrder, sortBy } =
+  const { currentCollection, isLoading, fetchCollectionById, clearCurrentCollection, sortOrder, sortBy, error } =
     useCollectionsStore()
+
+  const sortByParam = searchParams.get('sortBy')
+  const sortOrderParam = searchParams.get('sortOrder')
 
   useEffect(() => {
     if (id) {
-      const sortOption = (searchParams.get('sortBy') as SortOption) || 'shottedAt'
-      const sortOrder = (searchParams.get('sortOrder') as SortOrder) || 'desc'
-
-      fetchCollectionById(id, sortOption, sortOrder)
+      const sortOption = (sortByParam as SortOption) || 'shottedAt'
+      const order = (sortOrderParam as SortOrder) || 'desc'
+      fetchCollectionById(id, sortOption, order)
     }
     return () => clearCurrentCollection()
-  }, [id, fetchCollectionById, clearCurrentCollection, searchParams])
+  }, [id, sortByParam, sortOrderParam, fetchCollectionById, clearCurrentCollection])
 
   return {
     currentCollection,
@@ -27,5 +29,6 @@ export function useCurrentCollection() {
     clearCurrentCollection,
     sortOrder,
     sortBy,
+    error
   }
 }

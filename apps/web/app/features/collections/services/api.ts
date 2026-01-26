@@ -26,7 +26,7 @@ export const apiClient = {
 
   get: (id: string, sortBy: SortOption, sortOrder: SortOrder) =>
     apiClient.request<{ collection: CollectionWithItems }>(
-      `/api/collections/${id}?sortOption=${sortBy}&sortOrder=${sortOrder}`
+      `/api/collections/${id}?sortBy=${sortBy}&sortOrder=${sortOrder}`
     ),
 
   scenes: (id: string) => apiClient.request<{ scenes: Scene[] }>(`/api/collections/${id}/scenes`),
