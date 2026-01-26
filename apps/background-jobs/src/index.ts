@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { createServer } from 'http'
+import { Server } from 'socket.io'
 import { createBullBoard } from '@bull-board/api'
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { ExpressAdapter } from '@bull-board/express'
@@ -53,9 +54,18 @@ import { logger } from '@shared/services/logger'
 import { env } from '@background-jobs/utils/env'
 import { SMART_COLLECTION_CRON_PATTERN } from '@smart-collections/constants/collections'
 import { rateLimiter } from './middleware/rateLimiter'
+import { checkServicesStatus } from './websockets'
+import { pythonService } from '@shared/services/pythonService'
 
 const app = express()
 const server = createServer(app)
+export const io = new Server(server, {
+  cors: {
+    origin: env.WEB_APP_URL,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 
 app.use(cors())
 app.use(express.json())
@@ -131,7 +141,37 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
   if (process.env.NODE_ENV === 'development') {
     logger.warn(`Bull Board UI available at http://localhost:${env.BACKGROUND_JOBS_PORT}`)
   }
+  logger.debug('WebSocket server initialized and ready for connections')
 })
 
-process.on('SIGTERM', shutdownWorkers)
-process.on('SIGINT', shutdownWorkers)
+io.on('connection', async (socket) => {
+  logger.debug("WebSocket client connected")
+
+  if (!pythonService.isServiceRunning()) {
+    await pythonService.start()
+  }
+ 
+  // Send initial status
+  const status = await checkServicesStatus()
+  socket.emit('service-status', status)
+
+  // Handle status check requests
+  socket.on('request-status', async () => {
+    const status = await checkServicesStatus()
+    socket.emit('service-status', status)
+  })
+
+  socket.on('disconnect', () => {
+    logger.debug("WebSocket client disconnected")
+  })
+})
+
+process.on('SIGTERM', async () => {
+  io.close()
+  await shutdownWorkers()
+})
+
+process.on('SIGINT', async () => {
+  io.close()
+  await shutdownWorkers()
+})
