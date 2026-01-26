@@ -19,9 +19,7 @@ export default function Collections() {
   const { collections, totalDuration, totalVideos } = useCollections()
   const [selectedType, setSelectedType] = useState<string>('all')
 
-  const filteredCollections = selectedType === 'all' 
-    ? collections 
-    : collections.filter(c => c.type === selectedType)
+  const filteredCollections = selectedType === 'all' ? collections : collections.filter((c) => c.type === selectedType)
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
@@ -32,7 +30,7 @@ export default function Collections() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-              className="mb-4 text-7xl font-semibold tracking-tight text-black dark:text-white"
+              className="mb-4 text-7xl font-semibold tracking-tight text-white"
             >
               Collections
             </motion.h1>
@@ -40,7 +38,7 @@ export default function Collections() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-              className="mx-auto max-w-2xl text-lg leading-relaxed text-black/60 dark:text-white/60"
+              className="mx-auto max-w-2xl text-lg leading-relaxed text-white/60"
             >
               Intelligent collections powered by AI. Discover your footage organized by style, mood, and content.
             </motion.p>
@@ -55,20 +53,22 @@ export default function Collections() {
                 className="mb-12 flex justify-center gap-16"
               >
                 <div className="text-center">
-                  <div className="mb-1 text-5xl font-semibold tracking-tight text-black dark:text-white">
+                  <div className="mb-1 text-5xl font-semibold tracking-tight text-white">
                     {collections.length}
                   </div>
-                  <div className="text-sm font-medium tracking-wide text-black/50 dark:text-white/50">Collections</div>
+                  <div className="text-sm font-medium tracking-wide text-white/50">Collections</div>
                 </div>
                 <div className="text-center">
-                  <div className="mb-1 text-5xl font-semibold tracking-tight text-black dark:text-white">{totalVideos}</div>
-                  <div className="text-sm font-medium tracking-wide text-black/50 dark:text-white/50">Videos</div>
+                  <div className="mb-1 text-5xl font-semibold tracking-tight text-white">
+                    {totalVideos}
+                  </div>
+                  <div className="text-sm font-medium tracking-wide text-white/50">Videos</div>
                 </div>
                 <div className="text-center">
-                  <div className="mb-1 text-5xl font-semibold tracking-tight text-black dark:text-white">
+                  <div className="mb-1 text-5xl font-semibold tracking-tight text-white">
                     {humanizeSeconds(totalDuration)}
                   </div>
-                  <div className="text-sm font-medium tracking-wide text-black/50 dark:text-white/50">Duration</div>
+                  <div className="text-sm font-medium tracking-wide text-white/50">Duration</div>
                 </div>
               </motion.div>
 
@@ -78,45 +78,47 @@ export default function Collections() {
                 transition={{ duration: 0.6, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
                 className="mb-12 flex justify-center"
               >
-                <div className="inline-flex gap-1 rounded-xl bg-black/5 dark:bg-white/5 p-1 border border-black/10 dark:border-white/10">
-                  <button
+                <div className="inline-flex gap-1 rounded-xl bg-white/5 p-1 border border-white/10 backdrop-blur-sm">
+                  <Button
+                    variant="ghost"
                     onClick={() => setSelectedType('all')}
                     className={`relative rounded-lg px-5 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 ${
                       selectedType === 'all'
-                        ? 'text-black dark:text-white'
-                        : 'text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70'
+                        ? 'text-white'
+                        : 'text-white/50 hover:text-white/70 border-none bg-transparent'
                     }`}
                   >
                     {selectedType === 'all' && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute inset-0 rounded-lg bg-white dark:bg-black shadow-sm border border-black/10 dark:border-white/10"
+                        className="absolute inset-0 rounded-lg bg-white/10 shadow-sm border border-white/20"
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
                     <span className="relative">All</span>
-                  </button>
+                  </Button>
                   {Object.entries(TYPE_LABELS).map(([type, label]) => {
                     const count = collections.filter((c) => c.type === type).length
                     if (count === 0) return null
                     return (
                       <Button
-                        variant="secondary"
-                        onClick={() => setSelectedType('all')}
+                        key={type}
+                        variant="ghost"
+                        onClick={() => setSelectedType(type)}
                         className={`relative rounded-lg px-5 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 ${
-                          selectedType === 'all'
-                            ? 'text-black dark:text-white'
-                            : 'text-black/50 dark:text-white/50 hover:text-black/70 dark:hover:text-white/70'
+                          selectedType === type
+                            ? 'text-white'
+                            : 'text-white/50 hover:text-white/70 border-none bg-transparent'
                         }`}
                       >
-                        {selectedType === 'all' && (
+                        {selectedType === type && (
                           <motion.div
                             layoutId="activeTab"
-                            className="absolute inset-0 rounded-lg bg-white dark:bg-black shadow-sm border border-black/10 dark:border-white/10"
+                            className="absolute inset-0 rounded-lg bg-white/10 shadow-sm border border-white/20"
                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                           />
                         )}
-                        <span className="relative">All</span>
+                        <span className="relative">{label}</span>
                       </Button>
                     )
                   })}
@@ -155,13 +157,11 @@ export default function Collections() {
               transition={{ duration: 0.6, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center py-24"
             >
-              <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
-                <FolderIcon className="h-12 w-12 text-black/30 dark:text-white/30" />
+              <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white/5 border border-white/10">
+                <FolderIcon className="h-12 w-12 text-white/30" />
               </div>
-              <h3 className="mb-2 text-2xl font-semibold text-black dark:text-white">
-                No collections yet
-              </h3>
-              <p className="max-w-md text-center text-base text-black/60 dark:text-white/60">
+              <h3 className="mb-2 text-2xl font-semibold text-white">No collections yet</h3>
+              <p className="max-w-md text-center text-base text-white/60">
                 Upload your first videos to automatically generate intelligent collections organized by AI.
               </p>
             </motion.div>

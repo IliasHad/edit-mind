@@ -21,42 +21,26 @@ import { humanizeDate } from '@shared/utils/duration'
 import { useCurrentCollection } from '~/features/collections/hooks/useCurrentCollection'
 import { ICON_MAP, TYPE_LABELS } from '~/features/collections/constants'
 import { Button } from '@ui/components/Button'
+import { SortButton } from '~/features/videos/components/SortButton'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Collection Details | Edit Mind' }]
 }
 
-type SortOption = 'confidence' | 'date' | 'quality' | 'duration'
 type ViewMode = 'grid' | 'list'
 
 export default function CollectionDetail() {
   const navigate = useNavigate()
-  const { currentCollection, isLoading } = useCurrentCollection()
+  const { currentCollection, sortOrder, sortBy } = useCurrentCollection()
 
-  const [sortBy, setSortBy] = useState<SortOption>('confidence')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-
-  if (isLoading) {
-    return (
-      <DashboardLayout sidebar={<Sidebar />}>
-        <main className="w-full px-8 py-12">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-black/20 dark:border-white/20 border-t-black dark:border-t-white rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-sm text-black/50 dark:text-white/50">Loading collection...</p>
-            </div>
-          </div>
-        </main>
-      </DashboardLayout>
-    )
-  }
 
   if (!currentCollection) {
     return (
       <DashboardLayout sidebar={<Sidebar />}>
         <main className="w-full px-8 py-12">
           <Button
-            variant="tertiary"
+            variant="secondary"
             onClick={() => navigate('/app/collections')}
             leftIcon={<ArrowLeftIcon className="h-4 w-4" />}
           >
@@ -71,14 +55,6 @@ export default function CollectionDetail() {
   return (
     <DashboardLayout sidebar={<Sidebar />}>
       <main className="w-full px-8 py-12">
-        <Button
-          variant="tertiary"
-          onClick={() => navigate('/app/collections')}
-          leftIcon={<ArrowLeftIcon className="h-4 w-4" />}
-        >
-          Collections
-        </Button>
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -165,7 +141,7 @@ export default function CollectionDetail() {
             </div>
           </motion.div>
         </motion.div>
-        
+
         {currentCollection.type === 'b_roll' && (
           <div className="flex my-4 items-center gap-2 self-end-safe">
             <Link to={`/app/collections/${currentCollection.id}/scenes`}>
@@ -184,31 +160,30 @@ export default function CollectionDetail() {
         >
           <div className="mb-8 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="h-11 appearance-none rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-black px-4 pr-10 text-sm font-medium tracking-wide text-black dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10"
-              >
-                <option value="confidence">Confidence</option>
-                <option value="date">Date Added</option>
-                <option value="quality">Quality</option>
-                <option value="duration">Duration</option>
-              </select>
-
-              <div className="flex items-center gap-1 rounded-full bg-black/5 dark:bg-white/5 p-1 border border-black/10 dark:border-white/10">
+              <div className="flex items-center gap-2">
                 <Button
                   onClick={() => setViewMode('grid')}
-                  size="icon"
+                  size="lg"
                   variant={viewMode === 'grid' ? 'primary' : 'ghost'}
                   leftIcon={<Squares2X2Icon className="relative h-4 w-4" />}
                 />
                 <Button
                   onClick={() => setViewMode('list')}
-                  size="icon"
+                  size="lg"
                   variant={viewMode === 'list' ? 'primary' : 'ghost'}
                   leftIcon={<ListBulletIcon className="relative h-4 w-4" />}
                 />
               </div>
+              <SortButton
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                options={[
+                  { value: 'shottedAt', label: 'Shot Date' },
+                  { value: 'importAt', label: 'Import Date' },
+                  { value: 'updatedAt', label: 'Last Updated' },
+                  { value: 'duration', label: 'Duration' },
+                ]}
+              />
             </div>
           </div>
 

@@ -31,6 +31,9 @@ export class CollectionModel {
   static async findMany(options: Prisma.CollectionFindManyArgs) {
     return prisma.collection.findMany(options)
   }
+    static async findUnique(options: Prisma.CollectionFindUniqueArgs) {
+    return prisma.collection.findUnique(options)
+  }
 
   static async findByNameAndUser(name: string, userId: string) {
     return prisma.collection.findFirst({ where: { name, userId } })

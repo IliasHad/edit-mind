@@ -29,6 +29,9 @@ export class CollectionItemModel {
   static async findById(id: string) {
     return prisma.collectionItem.findUnique({ where: { id } })
   }
+  static async findMany(options: Prisma.CollectionItemFindManyArgs) {
+    return prisma.collectionItem.findMany(options)
+  }
 
   static async upsert(options: CollectionItemUpsertInput) {
     return prisma.collectionItem.upsert({
