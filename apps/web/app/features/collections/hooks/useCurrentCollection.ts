@@ -1,23 +1,31 @@
 import { useEffect } from 'react'
 import { useCollectionsStore } from '../stores'
-import { useParams } from 'react-router'
+import { useParams, useSearchParams } from 'react-router'
+import type { SortOption, SortOrder } from '~/features/videos/types'
 
 export function useCurrentCollection() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
 
-  const { currentCollection, isLoading, fetchCollectionById, clearCurrentCollection } = useCollectionsStore()
+  const { currentCollection, isLoading, fetchCollectionById, clearCurrentCollection, sortOrder, sortBy } =
+    useCollectionsStore()
 
   useEffect(() => {
     if (id) {
-      fetchCollectionById(id)
+      const sortOption = (searchParams.get('sortBy') as SortOption) || 'shottedAt'
+      const sortOrder = (searchParams.get('sortOrder') as SortOrder) || 'desc'
+
+      fetchCollectionById(id, sortOption, sortOrder)
     }
     return () => clearCurrentCollection()
-  }, [id, fetchCollectionById, clearCurrentCollection])
+  }, [id, fetchCollectionById, clearCurrentCollection, searchParams])
 
   return {
     currentCollection,
-    isLoading,
+    loading: isLoading,
     fetchCollectionById,
     clearCurrentCollection,
+    sortOrder,
+    sortBy,
   }
 }
