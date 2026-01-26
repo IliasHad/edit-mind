@@ -30,7 +30,8 @@
     "media-utils": "workspace:*",
     "db": "workspace:*",
     "smart-collections": "workspace:*",
-    "immich": "workspace:*"
+    "immich": "workspace:*",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.2.0",

@@ -12,7 +12,9 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./app/*"],
-      "@ui/*": ["../../packages/ui/src/*"]
+      "@ui/*": ["../../packages/ui/src/*"],
+      "@immich/*": ["../../packages/immich/src/*"],
+      "@shared/*": ["../../packages/shared/src/*"]
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
