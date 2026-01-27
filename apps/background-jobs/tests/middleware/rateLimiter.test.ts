@@ -41,8 +41,8 @@ describe('Rate Limiter Middleware', () => {
   })
 
   it('should block requests exceeding the rate limit', async () => {
-    // Make 101 requests (limit is 100)
-    for (let i = 0; i < 100; i++) {
+    // Make 101 requests (limit is 300)
+    for (let i = 0; i < 300; i++) {
       await request(app).get('/test')
     }
 
@@ -59,7 +59,7 @@ describe('Rate Limiter Middleware', () => {
   it('should include rate limit headers', async () => {
     const response = await request(app).get('/test')
 
-    expect(response.headers['ratelimit-limit']).toBe('100')
+    expect(response.headers['ratelimit-limit']).toBe('300')
     expect(response.headers['ratelimit-remaining']).toBeDefined()
     expect(response.headers['ratelimit-reset']).toBeDefined()
   })
@@ -75,12 +75,12 @@ describe('Rate Limiter Middleware', () => {
     vi.useFakeTimers()
 
     // Make requests up to the limit
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 300; i++) {
       await request(app).get('/test')
     }
 
-    // Advance time by 5 minutes (window duration)
-    vi.advanceTimersByTime(5 * 60 * 1000)
+    // Advance time by 2 minutes (window duration)
+    vi.advanceTimersByTime(2 * 60 * 1000)
 
     // Should allow requests again
     const response = await request(app).get('/test')
