@@ -3,6 +3,7 @@ import type { Scene } from '@shared/types/scene'
 import { useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { XMarkIcon } from '@heroicons/react/24/solid'
+import { Button } from '@ui/components/Button'
 
 export const ScenePlayerModal = ({ scene, onClose }: { scene: Scene; onClose: () => void }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -53,12 +54,13 @@ export const ScenePlayerModal = ({ scene, onClose }: { scene: Scene; onClose: ()
           src={`/media/${scene.source}`}
           className="w-full rounded-lg shadow-2xl"
         />
-        <button
+        <Button
           onClick={onClose}
-          className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-black shadow-lg"
-        >
-          <XMarkIcon className="h-5 w-5" />
-        </button>
+          className="absolute -right-3 -top-3"
+          variant="primary"
+          size="icon-sm"
+          leftIcon={<XMarkIcon className="h-5 w-5" />}
+        />
       </motion.div>
     </motion.div>
   )

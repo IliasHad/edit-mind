@@ -12,11 +12,15 @@ export function CollectionBadge({
   return (
     <Link
       to={`/app/collections/${collection.id}`}
-      className="group relative inline-flex items-center gap-2 px-3 py-1.5 bg-transparent border border-gray-900 dark:border-gray-100 rounded-full hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900 transition-all duration-200 cursor-pointer"
+      className="group relative inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer"
     >
-      <Icon className="w-3.5 h-3.5" />
-      <span className="text-sm font-medium">{collection.name}</span>
-      {collection.confidence && <span className="text-xs opacity-60">({Math.ceil(collection.confidence * 100)}%)</span>}
+      <Icon className="w-3.5 h-3.5 text-white/70 group-hover:text-white transition-colors" />
+      <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{collection.name}</span>
+      {collection.confidence && (
+        <span className="text-xs text-white/50 group-hover:text-white/70 transition-colors">
+          ({Math.ceil(collection.confidence * 100)}%)
+        </span>
+      )}
     </Link>
   )
 }

@@ -1,6 +1,6 @@
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useSearchStore, type SearchFilters } from '../stores'
-
+import { Button } from '@ui/components/Button'
 
 export function FilterChips() {
   const { filters, removeFilter } = useSearchStore()
@@ -19,22 +19,14 @@ export function FilterChips() {
   return (
     <div className="flex flex-wrap gap-2 mt-3" role="list" aria-label="Active filters">
       {filterEntries.map(({ type, value }) => (
-        <button
+        <Button
           key={`${type}-${value}`}
           onClick={() => removeFilter(type, value)}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm
-          bg-black dark:bg-white
-          text-white dark:text-black
-          rounded-lg
-          hover:opacity-80
-          transition-all duration-200
-          active:scale-95
-          focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20"
+          rightIcon={<XMarkIcon className="size-3" />}
           aria-label={`Remove ${type} filter: ${value}`}
         >
           <span className="font-medium">{value}</span>
-          <XMarkIcon className="size-3" />
-        </button>
+        </Button>
       ))}
     </div>
   )

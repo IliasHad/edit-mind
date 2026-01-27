@@ -3,8 +3,8 @@ import { logger } from '@shared/services/logger'
 
 
 export const rateLimiter = rateLimit({
-    windowMs: 5 * 60 * 1000, // 5 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    windowMs: 2 * 60 * 1000, // 2 minutes
+    max: 300, // Limit each IP to 300 requests per windowMs
     message: {
         error: 'Too Many Requests',
         message: 'Too many requests from this IP, please try again later.',

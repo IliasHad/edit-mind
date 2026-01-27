@@ -4,6 +4,7 @@ import type { Scene } from '@shared/schemas'
 import { motion } from 'framer-motion'
 import { FilmIcon, ArrowDownTrayIcon } from '@heroicons/react/24/solid'
 import { useCurrentChat } from '../hooks/useCurrentChat'
+import { Button } from '@ui/components/Button'
 
 interface CompilerProps {
   outputScenes: Scene[]
@@ -66,27 +67,27 @@ export const Compiler: React.FC<CompilerProps> = ({ outputScenes, isStitching, i
 
       {selectedScenes.size > 0 && !isStitching && !isExporting && !loading && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2 justify-end">
-          <button
+          <Button
             onClick={handleStitch}
             disabled={isStitching || loading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm text-white bg-black dark:bg-white dark:text-black hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+            loading={isStitching}
+            leftIcon={<FilmIcon className="w-4 h-4" />}
           >
-            <FilmIcon className="w-4 h-4" />
             {isStitching
               ? 'Compiling...'
               : `Compile ${selectedScenes.size} scene${selectedScenes.size !== 1 ? 's' : ''}`}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleExport}
             disabled={isExporting || loading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm text-white bg-black dark:bg-white dark:text-black hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+            loading={isExporting}
+            leftIcon={<ArrowDownTrayIcon className="w-4 h-4" />}
           >
-            <ArrowDownTrayIcon className="w-4 h-4" />
             {isExporting
               ? 'Exporting...'
               : `Export ${selectedScenes.size} scene${selectedScenes.size !== 1 ? 's' : ''}`}
-          </button>
+          </Button>
         </motion.div>
       )}
     </div>

@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router'
 import { FolderIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { smartFormatDate } from '~/features/shared/utils/duration'
 import { getStatusInfo } from '../utils'
 import type { FolderWithJobs } from '../types'
+import { smartFormatDate } from '~/features/shared/utils/duration'
+import { Button } from '@ui/components/Button'
 
 interface FolderCardProps {
   folder: FolderWithJobs
@@ -37,24 +38,24 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, index, isScannin
             <p className="text-xs text-white/40 font-mono truncate">{folder.path}</p>
           </Link>
 
-          <button
+          <Button
+            variant="destructive"
             onClick={(e) => {
               e.preventDefault()
               onDelete(folder)
             }}
             disabled={isScanning}
             aria-label={`Delete folder ${folderName}`}
-            className="p-2 rounded-lg text-xs font-medium transition-all text-red-400 hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            leftIcon={<TrashIcon className="size-4" />}
           >
-            <TrashIcon className="size-4" />
-          </button>
+            Delete
+          </Button>
         </div>
       </div>
 
       <div className="px-5 pb-5 pt-3 border-t border-white/5">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
           <div className={`flex items-center gap-2 font-medium ${statusInfo.color}`}>
-            {statusInfo.icon}
             <span>{statusInfo.text}</span>
           </div>
 

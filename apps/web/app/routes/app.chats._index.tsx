@@ -7,6 +7,7 @@ import { ChatGroup } from '~/features/chats/components/ChatGroup'
 import { useChats } from '~/features/chats/hooks/useChats'
 import { useState } from 'react'
 import { ChatItem } from '~/features/chats/components/ChatItem'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Chats | Edit Mind' }]
@@ -36,12 +37,11 @@ export default function ChatsIndexPage() {
             <p className="text-zinc-600 dark:text-zinc-400 text-center max-w-md mb-8">
               Start your first chat to search and interact with your video library using AI
             </p>
-            <Link
-              to="/app/chats"
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-sm hover:shadow-md"
-            >
-              <PlusIcon className="w-4 h-4" />
-              Start new chat
+            <Link to="/app/chats">
+              <Button>
+                <PlusIcon className="w-4 h-4" />
+                Start new chat
+              </Button>
             </Link>
           </div>
         ) : (
@@ -54,12 +54,11 @@ export default function ChatsIndexPage() {
                     {chats.length} {chats.length === 1 ? 'conversation' : 'conversations'}
                   </p>
                 </div>
-                <Link
-                  to="/app/chats/new"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-all shadow-sm hover:shadow"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  New chat
+                <Link to="/app/chats/new">
+                  <Button>
+                    <PlusIcon className="w-4 h-4" />
+                    New chat
+                  </Button>
                 </Link>
               </div>
 

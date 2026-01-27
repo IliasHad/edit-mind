@@ -8,6 +8,7 @@ import { useSearchParams } from 'react-router'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { useFaces } from '~/features/faces/hooks/useFaces'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Face Training | Edit Mind' }]
@@ -51,15 +52,13 @@ const FaceTraining: React.FC = () => {
 
         <div className="px-8 mb-8">
           <div className="max-w-7xl mx-auto">
-            <div className="inline-flex gap-1 p-1 bg-zinc-900/50 rounded-full backdrop-blur-xl border border-white/10 shadow-2xl">
-              <button
+            <div className="inline-flex bg-zinc-900/50 rounded-full backdrop-blur-xl border border-white/10 shadow-2xl">
+              <Button
                 onClick={() => handleTabChange('known')}
-                className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ease-out transform ${
-                  activeTab === 'known'
-                    ? 'bg-white text-black shadow-lg scale-[1.02] shadow-white/20'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 active:scale-95'
-                }`}
+                variant={activeTab === 'known' ? 'primary' : 'ghost'}
+                size="lg"
                 aria-label="Known faces tab"
+                className="rounded-full rounded-r-none"
               >
                 Known
                 {knownFaces.length > 0 && (
@@ -71,15 +70,13 @@ const FaceTraining: React.FC = () => {
                     {knownFaces.length}
                   </span>
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleTabChange('unknown')}
-                className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ease-out transform ${
-                  activeTab === 'unknown'
-                    ? 'bg-white text-black shadow-lg scale-[1.02] shadow-white/20'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 active:scale-95'
-                }`}
+                variant={activeTab === 'unknown' ? 'primary' : 'ghost'}
+                size="lg"
                 aria-label="Unknown faces tab"
+                className="rounded-full rounded-l-none"
               >
                 Unknown
                 {unknownPagination.total > 0 && (
@@ -91,7 +88,7 @@ const FaceTraining: React.FC = () => {
                     {unknownPagination.total}
                   </span>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

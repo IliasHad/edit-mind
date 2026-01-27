@@ -5,6 +5,7 @@ import {
   ChevronDoubleLeftIcon, 
   ChevronDoubleRightIcon 
 } from '@heroicons/react/24/solid'
+import { Button } from '@ui/components/Button'
 
 interface PaginationProps {
   currentPage: number
@@ -69,23 +70,23 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <button
+        <Button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="First page"
-        >
-          <ChevronDoubleLeftIcon className="w-4 h-4" />
-        </button>
+          variant="ghost"
+          size="icon-sm"
+          leftIcon={<ChevronDoubleLeftIcon className="w-4 h-4" />}
+        />
 
-        <button
+        <Button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="Previous page"
-        >
-          <ChevronLeftIcon className="w-4 h-4" />
-        </button>
+          variant="ghost"
+          size="icon-sm"
+          leftIcon={<ChevronLeftIcon className="w-4 h-4" />}
+        />
 
         <div className="flex items-center gap-1">
           {getPageNumbers().map((page, index) => (
@@ -93,36 +94,35 @@ export const Pagination: React.FC<PaginationProps> = ({
               {page === '...' ? (
                 <span className="px-3 py-2 text-gray-500">...</span>
               ) : (
-                <button
+                <Button
                   onClick={() => onPageChange(page as number)}
-                  className={`min-w-10 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    currentPage === page ? 'bg-white text-black' : 'bg-white/5 hover:bg-white/10 text-white'
-                  }`}
+                  variant={currentPage === page ? 'primary' : 'ghost'}
+                  className="min-w-10 px-3 py-2"
                 >
                   {page}
-                </button>
+                </Button>
               )}
             </React.Fragment>
           ))}
         </div>
 
-        <button
+        <Button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="Next page"
-        >
-          <ChevronRightIcon className="w-4 h-4" />
-        </button>
+          variant="ghost"
+          size="icon-sm"
+          leftIcon={<ChevronRightIcon className="w-4 h-4" />}
+        />
 
-        <button
+        <Button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
           title="Last page"
-        >
-          <ChevronDoubleRightIcon className="w-4 h-4" />
-        </button>
+          variant="ghost"
+          size="icon-sm"
+          leftIcon={<ChevronDoubleRightIcon className="w-4 h-4" />}
+        />
       </div>
     </div>
   )

@@ -1,3 +1,5 @@
+import { Button } from '@ui/components/Button';
+
 interface OnboardingNavigationProps {
   totalSteps: number
   currentStep: number
@@ -18,24 +20,30 @@ export function OnboardingNavigation({
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-center gap-2 mb-8">
           {Array.from({ length: totalSteps }).map((_, index) => (
-            <button key={index} onClick={() => goToStep(index)} className="p-1" aria-label={`Go to step ${index + 1}`}>
+            <Button
+              key={index}
+              onClick={() => goToStep(index)}
+              className="p-1"
+              aria-label={`Go to step ${index + 1}`}
+              variant="ghost"
+              size="icon-sm"
+            >
               <div
                 className={`h-1.5 rounded-full transition-all duration-200 ${
                   index === currentStep ? 'w-7 bg-black dark:bg-white' : 'w-1.5 bg-gray-300 dark:bg-gray-700'
                 }`}
               />
-            </button>
+            </Button>
           ))}
         </div>
 
         <div className="flex justify-center">
-          <button
+          <Button
             onClick={handleNext}
-            className="px-10 py-3 text-[15px] font-medium text-white bg-black dark:bg-white dark:text-black rounded-full hover:opacity-90 transition-opacity"
             aria-label={isLastStep ? 'Get Started' : 'Continue'}
           >
             {isLastStep ? 'Get Started' : 'Continue'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

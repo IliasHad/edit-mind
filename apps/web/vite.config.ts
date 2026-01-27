@@ -13,7 +13,7 @@ export default defineConfig(({ isSsrBuild }) => ({
     alias: {
       '~': path.resolve(__dirname, 'app'),
       '@shared': path.resolve(__dirname, '../../packages/shared/src'),
-      '@ui': path.resolve(__dirname, '../../packages/ui'),
+      '@ui': path.resolve(__dirname, '../../packages/ui/src'),
       '@db': path.resolve(__dirname, '../../packages/db/src'),
       '@vector': path.resolve(__dirname, '../../packages/vector/src'),
       '@ai': path.resolve(__dirname, '../../packages/ai/src'),

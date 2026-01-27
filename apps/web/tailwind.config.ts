@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}", "../../packages/shared/**/*.ts"],
+  content: ["./src/**/*.{js,jsx,ts,tsx}", "../../packages/shared/**/*.ts",  "../../packages/ui/src/**/*.tsx"],
   darkMode: "class",
   safelist: [
   { pattern: /from-(purple|yellow|pink|blue|indigo)-\d{3}/ },

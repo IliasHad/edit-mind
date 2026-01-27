@@ -1,6 +1,7 @@
 import { VideoCameraIcon } from "@heroicons/react/24/solid"
 import { humanizeSeconds } from "~/features/shared/utils/duration"
 import type { VideoWithFolderPath } from "~/features/videos/types"
+import { Button } from '@ui/components/Button'
 
 interface VideoGridCardProps {
     video: VideoWithFolderPath,
@@ -10,9 +11,10 @@ interface VideoGridCardProps {
 
 export function VideoGridCard({ video, isSelected, onToggle }:VideoGridCardProps) {
     return (
-    <button
+    <Button
       type="button"
       onClick={onToggle}
+      variant="ghost" // Assuming ghost is the closest for this wrapping button
       className={`
         relative group rounded-xl overflow-hidden
         border-2 transition-all duration-200 text-left
@@ -79,6 +81,6 @@ export function VideoGridCard({ video, isSelected, onToggle }:VideoGridCardProps
           <p className="text-xs text-black/60 dark:text-white/60 truncate">{video.folder.path}</p>
         )}
       </div>
-    </button>
+    </Button>
   )
 }

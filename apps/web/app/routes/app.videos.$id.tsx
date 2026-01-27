@@ -8,12 +8,13 @@ import { useKeyboardNavigation } from '~/features/videos/hooks/useKeyboardNaviga
 import { useModal } from '~/features/shared/hooks/useModal'
 import { useCurrentVideo } from '~/features/videos/hooks/useCurrentVideo'
 import { CustomVideoPlayer } from '~/features/customVideoPlayer/components'
-import { DeleteModal } from '~/features/shared/components/DeleteModal'
+import { DeleteModal } from '@ui/components/DeleteModal'
 import { VideoHeader } from '~/features/videos/components/VideoHeader'
 import { ProcessingJobDetails } from '~/features/videos/components/ProcessingJobDetails'
-import { ConfirmModal } from '~/features/shared/components/ConfirmationModal'
+import { ConfirmationModal } from '@ui/components/ConfirmationModal'
 import { RelinkVideo } from '~/features/videos/components/RelinkVideo'
 import { PageSkeleton } from '~/features/videos/components/PageSkeleton'
+import { Button } from '@ui/components/Button'
 
 export const meta = () => {
   return [
@@ -35,6 +36,7 @@ export default function Video() {
     relinkSuccess,
     videoExist,
     loading,
+    fetchVideoById
   } = useCurrentVideo()
 
   const { id } = useParams()
@@ -92,6 +94,7 @@ export default function Video() {
     try {
       if (id) {
         await reindexVideo(id)
+        await fetchVideoById(id)
       }
     } catch (error) {
       console.error('Error reindexing video ', error)
@@ -136,16 +139,16 @@ export default function Video() {
                 title="Delete video"
                 description="Removing this video will remove all indexed data. This action cannot be undone."
                 resourceName={video.source}
-                confirmText="Delete folder"
+                confirmText="Delete this video"
                 onConfirm={handleDelete}
               />
-              <ConfirmModal
+              <ConfirmationModal
                 isOpen={reindexModalOpen}
                 onClose={closeReindexModal}
                 title="Reindex video"
-                description="Removing this video will remove all indexed data. This action cannot be undone."
+                description="Reindexing this video will re-run all the video indexing jobs. This action cannot be undone."
                 resourceName={video.source}
-                confirmText="Reindex folder"
+                confirmText="Reindex video"
                 onConfirm={handleReindex}
               />
 
@@ -179,12 +182,7 @@ export default function Video() {
                   <span className="text-sm text-amber-900 dark:text-amber-100">
                     Video file is missing. Please relink.
                   </span>
-                  <button
-                    onClick={() => openRelinkModal()}
-                    className="px-4 py-2 text-sm font-medium bg-black dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90 transition-opacity"
-                  >
-                    Relink
-                  </button>
+                  <Button onClick={() => openRelinkModal()}>Relink</Button>
                 </div>
               )}
 

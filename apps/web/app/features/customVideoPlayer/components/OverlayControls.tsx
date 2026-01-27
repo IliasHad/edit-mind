@@ -3,6 +3,7 @@ import { EyeIcon as Eye, EyeSlashIcon as EyeOff } from '@heroicons/react/24/outl
 import type { OverlayMode } from '../types'
 import { OVERLAY_MODE_COLORS } from '../constants/styles'
 import { useEffect } from 'react'
+import { Button } from '@ui/components/Button'
 
 interface OverlayControlsProps {
   showOverlays: boolean
@@ -68,7 +69,8 @@ export function OverlayControls({
             className="flex flex-col gap-1.5 bg-black/80 backdrop-blur-xl rounded-xl border-2 border-white/20 p-2 shadow-xl"
           >
             {OVERLAY_MODES.map((mode) => (
-              <button
+              <Button
+                variant="glass"
                 key={mode}
                 onClick={() => onChangeMode(mode)}
                 className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${
@@ -76,7 +78,7 @@ export function OverlayControls({
                 }`}
               >
                 {mode}
-              </button>
+              </Button>
             ))}
           </motion.div>
         </AnimatePresence>

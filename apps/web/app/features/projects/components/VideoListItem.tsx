@@ -1,5 +1,6 @@
 import { humanizeSeconds } from "~/features/shared/utils/duration"
 import type { VideoWithFolderPath } from "~/features/videos/types"
+import { Button } from '@ui/components/Button'
 
 interface VideoListItemProps {
     video: VideoWithFolderPath,
@@ -9,9 +10,10 @@ interface VideoListItemProps {
 
 export function VideoListItem({ video, isSelected, onToggle }:VideoListItemProps) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onToggle}
+      variant="ghost" // Assuming ghost is the closest for this wrapping button
       className={`
         w-full p-4 flex items-center gap-4
         border-b border-black/5 dark:border-white/5 last:border-0
@@ -68,6 +70,6 @@ export function VideoListItem({ video, isSelected, onToggle }:VideoListItemProps
           <p className="text-xs text-black/60 dark:text-white/60 truncate">{video.folder.path}</p>
         )}
       </div>
-    </button>
+    </Button>
   )
 }

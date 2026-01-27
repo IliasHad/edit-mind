@@ -1,14 +1,24 @@
-import * as fs from 'fs/promises'
-import * as path from 'path'
+import fs from 'fs/promises'
+import { existsSync } from 'fs'
+
+import path from 'path'
 import fetch from 'node-fetch'
-import { FACES_DIR } from '../constants';
-import { AssetsBucketResponse, Face, ImmichConfig, PeopleResponse, Person, TimeBucket } from '../types/immich'
+import { FACES_DIR, PERMISSIONS } from '../constants'
+import {
+  ApiTestResponse,
+  AssetsBucketResponse,
+  Face,
+  ImmichAsset,
+  ImmichConfig,
+  PeopleResponse,
+  Person,
+  TimeBucket,
+} from '../types/immich'
 import * as Jimp from 'jimp'
 import { logger } from '@shared/services/logger'
 
 const PAGE_SIZE = 100
-
-class ImmichClient {
+export class ImmichClient {
   private config: ImmichConfig
 
   constructor(config: ImmichConfig) {
@@ -20,14 +30,19 @@ class ImmichClient {
   }
 
   private async fetchJson<T>(endpoint: string): Promise<T> {
-    const url = `${this.config.baseUrl}${endpoint}`
-    const response = await fetch(url, { headers: this.headers })
+    try {
+      const url = `${this.config.baseUrl}${endpoint}`
+      const response = await fetch(url, { headers: this.headers })
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} fetching ${endpoint}`)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} fetching ${endpoint}`)
+      }
+
+      return response.json() as Promise<T>
+    } catch (error) {
+      logger.error(error)
+      throw error
     }
-
-    return response.json() as Promise<T>
   }
 
   private async fetchBuffer(endpoint: string): Promise<Buffer> {
@@ -78,12 +93,19 @@ class ImmichClient {
     return this.fetchBuffer(`/api/assets/${assetId}/original`)
   }
 
+  async getAsset(assetId: string): Promise<ImmichAsset> {
+    return this.fetchJson<ImmichAsset>(`/api/assets/${assetId}`)
+  }
+
   async getPersonThumbnail(personId: string): Promise<Buffer> {
     return this.fetchBuffer(`/api/people/${personId}/thumbnail`)
   }
+  async testConnection(): Promise<ApiTestResponse> {
+    return this.fetchJson('/api/api-keys/me')
+  }
 }
 
-export async function getAllImmichFaces(config: ImmichConfig): Promise<{ name: string; image_path: string }[]> {
+export async function processImmichFaces(config: ImmichConfig): Promise<{ name: string; image_path: string }[]> {
   const client = new ImmichClient(config)
   const newFaceFiles: { name: string; image_path: string }[] = []
 
@@ -103,7 +125,7 @@ export async function getAllImmichFaces(config: ImmichConfig): Promise<{ name: s
   }
 }
 
-async function processPerson(client: ImmichClient, person: Person, buckets: TimeBucket[]): Promise<string[]> {
+export async function processPerson(client: ImmichClient, person: Person, buckets: TimeBucket[]): Promise<string[]> {
   const personDir = await createPersonDirectory(person)
 
   const assetIds = await collectAssetIds(client, person.id, buckets)
@@ -114,10 +136,11 @@ async function processPerson(client: ImmichClient, person: Person, buckets: Time
   return newFaceFiles
 }
 
-async function createPersonDirectory(person: Person): Promise<string> {
-  const sanitizedName = sanitizeName(person.name || `person-${person.id}`)
-  const personDir = path.join(FACES_DIR, sanitizedName)
-  await fs.mkdir(personDir, { recursive: true })
+export async function createPersonDirectory(person: Person): Promise<string> {
+  const personDir = path.join(FACES_DIR, person.name)
+  if (!existsSync(personDir)) {
+    await fs.mkdir(personDir, { recursive: true })
+  }
   return personDir
 }
 
@@ -139,8 +162,10 @@ async function processAssets(
 
   for (const assetId of assetIds) {
     try {
-      const assetFaces = await processAssetForPerson(client, person, assetId, personDir)
-      newFaceFiles.push(...assetFaces)
+      const assetFaces = await processAssetForPerson(client, person.name, assetId, personDir)
+      if (assetFaces.length) {
+        newFaceFiles.push(...assetFaces)
+      }
     } catch (error) {
       logger.error(`Failed to process asset ${assetId} for person ${person.id}: ${error}`)
     }
@@ -149,21 +174,26 @@ async function processAssets(
   return newFaceFiles
 }
 
-async function processAssetForPerson(
+export async function processAssetForPerson(
   client: ImmichClient,
-  person: Person,
+  personName: string,
   assetId: string,
   personDir: string
 ): Promise<string[]> {
-  const faces = await client.getFacesByAsset(assetId)
-  const matchedFaces = faces.filter((face) => face.person?.id === person.id)
+  const asset = await client.getAsset(assetId)
+  const matchedFaces = asset.people
+    .find((person) => person.name === personName)
+    ?.faces.filter((face) => face.sourceType !== 'exif')
 
-  if (!matchedFaces.length) return []
+  if (!matchedFaces || !matchedFaces.length) return []
+
+  if (!asset.originalMimeType.includes('image')) {
+    return []
+  }
 
   const imageBuffer = await client.getAssetImage(assetId)
-
   const faceFiles = await Promise.all(
-    matchedFaces.map((face) => extractAndSaveFace(imageBuffer, face, personDir))
+    matchedFaces.map((face) => extractAndSaveFace(imageBuffer, face, personDir, asset.originalFileName))
   )
 
   return faceFiles.filter((file): file is string => file !== null)
@@ -172,20 +202,37 @@ async function processAssetForPerson(
 async function extractAndSaveFace(
   imageBuffer: Buffer,
   face: Face,
-  personDir: string
+  personDir: string,
+  originalFileName: string
 ): Promise<string | null> {
   try {
-    const { boundingBoxX1, boundingBoxY1, boundingBoxX2, boundingBoxY2 } = face
-
     const faceImage = await Jimp.Jimp.read(imageBuffer)
-    const width = boundingBoxX2 - boundingBoxX1
-    const height = boundingBoxY2 - boundingBoxY1
 
-    faceImage.crop({ w: width, h: height, x: boundingBoxX1, y: boundingBoxY1 })
+    const imgWidth = face.imageWidth
+    const imgHeight = face.imageHeight
 
-    const fileName = `${face.id}.jpg`
-    const filePath = path.join(personDir, fileName)
-    await faceImage.write(`${personDir}/${face.id}.jpg`)
+    const x1 = face.boundingBoxX1
+    const y1 = face.boundingBoxY1
+    const x2 = face.boundingBoxX2
+    const y2 = face.boundingBoxY2
+
+    const width = x2 - x1
+    const height = y2 - y1
+
+    if (width <= 0 || height <= 0) {
+      logger.warn(`Invalid bounding box for face ${face.id}`)
+      return null
+    }
+
+    faceImage.crop({
+      x: Math.max(0, x1),
+      y: Math.max(0, y1),
+      w: Math.min(width, imgWidth - x1),
+      h: Math.min(height, imgHeight - y1),
+    })
+
+    const filePath = path.join(personDir, `${face.id}.jpg`)
+    await faceImage.write(`${personDir}/${originalFileName.split('.')[0]}_face.jpg`)
 
     return filePath
   } catch (error) {
@@ -193,7 +240,6 @@ async function extractAndSaveFace(
     return null
   }
 }
-
 
 async function savePersonThumbnail(client: ImmichClient, personId: string, personDir: string) {
   try {
@@ -205,6 +251,20 @@ async function savePersonThumbnail(client: ImmichClient, personId: string, perso
   }
 }
 
-function sanitizeName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9-_]/g, '_');
+export async function testImmichConnection(
+  config: ImmichConfig
+): Promise<{ validConnection: boolean; validPermissions: boolean }> {
+  try {
+    const client = new ImmichClient(config)
+    const response = await client.testConnection()
+    const permissionsMatching = JSON.stringify(response.permissions.sort()) === JSON.stringify(PERMISSIONS.sort())
+
+    if (permissionsMatching) {
+      return { validConnection: true, validPermissions: true }
+    }
+    return { validConnection: true, validPermissions: false }
+  } catch (error) {
+    console.error('Connection test failed:', error)
+    return { validConnection: false, validPermissions: false }
+  }
 }

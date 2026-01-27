@@ -35,4 +35,44 @@ export interface Face {
   boundingBoxY1: number
   boundingBoxX2: number
   boundingBoxY2: number
+  imageHeight: number
+  imageWidth: number
+  sourceType: 'machine-learning' | 'exif' | 'manual'
+}
+
+export interface ApiTestResponse {
+  name: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+  permissions: string[]
+}
+
+export interface ImmichImportStatus {
+  isImporting: boolean
+  progress: number
+  processedFaces: number
+  status: 'idle' | 'importing' | 'completed' | 'failed'
+  error: string | null
+}
+export interface ImmichImportJobProgress {
+  progress: number
+  processedFaces: number
+}
+export interface ImmichIntegration {
+  id: string
+  userId: string
+  apiKey: string
+  baseUrl: string
+  createdAt: Date
+  updatedAt: Date
+}
+export interface ImmichAsset {
+  originalMimeType: string
+  originalFileName: string
+  people: {
+    id: string
+    name: string
+    faces: Face[]
+  }[]
 }

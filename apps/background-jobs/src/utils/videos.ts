@@ -23,9 +23,12 @@ export async function importVideoFromVectorDb(video: Video): Promise<void> {
 
       await generateVideoCover(video.source, thumbnailPath, { quality: '2', scale: '1280:-1', keyframe: 0 })
 
-      const folder = await FolderModel.findByPath(path.dirname(video.source))
+      let folder = await FolderModel.findByPath(path.dirname(video.source))
       if (!folder) {
-        throw new Error('Folder not found')
+        folder = await FolderModel.create({
+          path: path.dirname(video.source),
+          userId: user.id,
+        })
       }
 
       await VideoModel.upsert({

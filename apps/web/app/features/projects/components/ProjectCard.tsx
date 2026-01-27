@@ -3,8 +3,9 @@ import { smartFormatDate } from '@shared/utils/duration'
 import clsx from 'clsx'
 import { Link } from 'react-router'
 import { useModal } from '~/features/shared/hooks/useModal'
-import { DeleteModal } from '~/features/shared/components/DeleteModal'
+import { DeleteModal } from '@ui/components/DeleteModal'
 import { useCurrentProject } from '../hooks/useCurrentProject'
+import { Button } from '@ui/components/Button'
 
 interface ProjectCardProps {
   id: string
@@ -60,25 +61,18 @@ export function ProjectCard({ id, name, _count, createdAt, className }: ProjectC
             </div>
 
             <div className="flex items-center gap-4">
-              <button
+              <Button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   openModal()
                 }}
-                className="
-        inline-flex items-center gap-1.5
-        px-3 py-1.5 rounded-lg
-        text-xs font-medium
-        bg-black text-white
-        dark:bg-red-500 dark:text-white
-        group-hover:opacity-90
-        transition
-      "
+                variant="destructive"
                 aria-label="Delete project"
+                size="sm"
               >
                 <span>Delete</span>
-              </button>
+              </Button>
             </div>
           </div>
 

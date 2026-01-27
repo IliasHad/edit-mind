@@ -18,6 +18,7 @@ import { useCurrentProject } from '../hooks/useCurrentProject'
 import { useInfiniteVideos } from '../hooks/useInfiniteVideos'
 import { VideoListItem } from './VideoListItem'
 import { VideoGridCard } from './VideoGridCard'
+import { Button } from '@ui/components/Button'
 
 interface ProjectDetailsProps {
   isEditing?: boolean
@@ -96,6 +97,12 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
       }
     }
   }, [hasMore, videosLoading, loadMore])
+
+  useEffect(() => {
+    if (currentProject) {
+      reset({ ...currentProject, videoIds: currentProject.videos.map((v) => v.id) })
+    }
+  }, [currentProject, reset])
 
   const selectedVideos = useMemo(
     () => availableVideos.filter((v) => selectedVideoIds?.includes(v.id)),
@@ -275,7 +282,8 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                       <span className="text-sm font-medium text-black dark:text-white max-w-[200px] truncate">
                         {video.name}
                       </span>
-                      <button
+                      <Button
+                        variant='ghost'
                         type="button"
                         onClick={() => removeVideo(video.id)}
                         className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30
@@ -284,7 +292,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                         aria-label={`Remove ${video.name}`}
                       >
                         <XMarkIcon className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -301,30 +309,20 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-black dark:text-white">Video Library</h3>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg transition-all duration-200 ${
-                      viewMode === 'grid'
-                        ? 'bg-black dark:bg-white text-white dark:text-black'
-                        : 'text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/5'
-                    }`}
+                    variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                    leftIcon={<Squares2X2Icon className="w-4 h-4" />}
                     aria-label="Grid view"
-                  >
-                    <Squares2X2Icon className="w-4 h-4" />
-                  </button>
-                  <button
+                  />
+                  <Button
                     type="button"
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg transition-all duration-200 ${
-                      viewMode === 'list'
-                        ? 'bg-black dark:bg-white text-white dark:text-black'
-                        : 'text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/5'
-                    }`}
+                    variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                    leftIcon={<ListBulletIcon className="w-4 h-4" />}
                     aria-label="List view"
-                  >
-                    <ListBulletIcon className="w-4 h-4" />
-                  </button>
+                  />
                 </div>
               </div>
 
@@ -415,17 +413,9 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
 
         <div className="sticky bottom-0 px-8 py-6 bg-white dark:bg-black border-t border-black/10 dark:border-white/10 flex items-center justify-between">
           <Link to="/app/projects">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              className="px-6 py-2.5 text-sm font-medium rounded-full
-                         text-black/70 dark:text-white/70
-                         hover:bg-black/10 dark:hover:bg-white/10
-                         disabled:opacity-40 disabled:cursor-not-allowed
-                         transition-all duration-200"
-            >
+            <Button type="button" disabled={isSubmitting} variant="ghost">
               Cancel
-            </button>
+            </Button>
           </Link>
 
           <div className="flex items-center gap-4">
@@ -435,28 +425,14 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                 <span className="text-xs font-medium text-orange-700 dark:text-orange-300">Unsaved changes</span>
               </div>
             )}
-            <button
+            <Button
               type="submit"
               disabled={!canSubmit}
-              className="px-8 py-3 text-sm font-semibold rounded-full
-                       bg-black dark:bg-white
-                       text-white dark:text-black
-                       hover:bg-black/90 dark:hover:bg-white/90
-                       disabled:opacity-40 disabled:cursor-not-allowed
-                       transition-all duration-200
-                       min-w-40 flex items-center justify-center gap-2
-                       shadow-lg shadow-black/20 dark:shadow-white/10
-                       hover:shadow-xl hover:shadow-black/30 dark:hover:shadow-white/20"
+              loading={isSubmitting}
+              leftIcon={isSubmitting ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : null}
             >
-              {isSubmitting ? (
-                <>
-                  <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                  <span>{isEditing ? 'Saving...' : 'Creating...'}</span>
-                </>
-              ) : (
-                <span>{isEditing ? 'Save Changes' : 'Create Project'}</span>
-              )}
-            </button>
+              {isEditing ? 'Save Changes' : 'Create Project'}
+            </Button>
           </div>
         </div>
       </form>

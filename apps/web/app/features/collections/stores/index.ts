@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { CollectionWithItems } from '../types'
 import { apiClient } from '../services/api'
+import type { SortOption, SortOrder } from '~/features/videos/types'
 
 interface CollectionsState {
   collections: CollectionWithItems[]
@@ -11,7 +12,7 @@ interface CollectionsState {
   isLoading: boolean
   error: string | null
   fetchCollections: () => Promise<void>
-  fetchCollectionById: (id: string) => Promise<void>
+  fetchCollectionById: (id: string, sortBy: SortOption, sortOrder: SortOrder) => Promise<void>
   fetchCollectionScenes: (id: string) => Promise<void>
   clearError: () => void
   clearCurrentCollection: () => void
@@ -20,6 +21,9 @@ interface CollectionsState {
 
   totalVideos: number
   totalDuration: number
+
+  sortBy: SortOption | null
+  sortOrder: SortOrder | null
 }
 
 export const useCollectionsStore = create<CollectionsState>()(
@@ -33,6 +37,8 @@ export const useCollectionsStore = create<CollectionsState>()(
         error: null,
         totalVideos: 0,
         totalDuration: 0,
+        sortOrder: null,
+        sortBy: null,
 
         fetchCollections: async () => {
           set({ isLoading: true, error: null })
@@ -48,12 +54,12 @@ export const useCollectionsStore = create<CollectionsState>()(
           }
         },
 
-        fetchCollectionById: async (id: string) => {
+        fetchCollectionById: async (id: string, sortBy: SortOption, sortOrder: SortOrder) => {
           set({ isLoading: true, error: null })
           try {
-            const { collection } = await apiClient.get(id)
+            const { collection } = await apiClient.get(id, sortBy, sortOrder)
 
-            set({ currentCollection: collection, isLoading: false })
+            set({ currentCollection: collection, isLoading: false, sortBy, sortOrder })
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : 'Unknown error occurred',

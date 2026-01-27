@@ -5,7 +5,9 @@ import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { useFaces } from '../hooks/useFaces'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { z } from 'zod'
+import { Button } from '@ui/components/Button'
 
 export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () => void }) => {
   const { knownFaces } = useFaces()
@@ -90,12 +92,13 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
         className="relative w-full max-w-md bg-black/90 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
+        <Button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
-        >
-          <XMarkIcon className="w-5 h-5" />
-        </button>
+          variant="ghost"
+          size="icon-sm"
+          className="absolute top-6 right-6"
+          leftIcon={<XMarkIcon className="w-5 h-5" />}
+        />
 
         <div className="mb-6">
           <h3 className="text-2xl font-semibold text-white tracking-tight">Rename Person</h3>
@@ -173,30 +176,22 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
         </div>
 
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={onClose}
-            className="flex-1 px-4 py-3.5 rounded-2xl bg-white/5 text-white font-medium hover:bg-white/10 transition-all duration-200 border border-white/10"
+            variant="outline"
+            className="flex-1"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleRename}
             disabled={loading || !validation.isValid}
-            className="flex-1 px-4 py-3.5 rounded-2xl bg-white text-black font-semibold hover:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+            loading={loading}
+            leftIcon={loading ? <ArrowPathIcon className="w-4 h-4" /> : null}
+            className="flex-1"
           >
-            {loading ? (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full"
-                />
-                Renaming...
-              </>
-            ) : (
-              'Rename'
-            )}
-          </button>
+            Rename
+          </Button>
         </div>
       </motion.div>
     </motion.div>

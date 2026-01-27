@@ -23,6 +23,7 @@ export function useSearchResults() {
     clearResults,
     clearAllFilters,
     clearSearch,
+    setSearchMode
   } = useSearchStore()
   const hasQuery = query.trim().length > 0 || Object.keys(filters).length > 0 || !!imagePreview
 
@@ -104,5 +105,7 @@ export function useSearchResults() {
     setShowSuggestions,
     showSuggestions,
     searchMode,
+    setSearchMode,
+    clearSearch
   }
 }

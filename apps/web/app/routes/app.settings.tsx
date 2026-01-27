@@ -12,8 +12,8 @@ import type { Folder } from '@prisma/client'
 import { useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AddFolder } from '~/features/folders/components/AddFolder'
-import { humanizeSeconds } from '~/features/shared/utils/duration'
-import { DeleteModal } from '~/features/shared/components/DeleteModal'
+import { humanizeSeconds } from '~/features/shared/utils/duration';
+import { DeleteModal } from '@ui/components/DeleteModal'
 import { useFolders } from '~/features/folders/hooks/useFolders'
 import { ArrowUpTrayIcon } from '@heroicons/react/24/solid'
 import { useCurrentFolder } from '~/features/folders/hooks/useCurrentFolder'
@@ -21,6 +21,7 @@ import { useModal } from '~/features/shared/hooks/useModal'
 import { FolderCard } from '~/features/folders/components/FolderCard'
 import { StatCard } from '~/features/settings/components/StatsCard'
 import { FeatureCard } from '~/features/settings/components/FeatureCard'
+import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => [{ title: 'Settings | Edit Mind' }]
 
@@ -111,13 +112,9 @@ export default function SettingsPage() {
                 Add folders to automatically scan and index videos.
               </p>
             </div>
-            <button
-              onClick={openAddModal}
-              className="flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition-all"
-            >
-              <PlusIcon className="size-4" />
+            <Button onClick={openAddModal} leftIcon={<PlusIcon className="size-4" />}>
               Add Folder
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-4">

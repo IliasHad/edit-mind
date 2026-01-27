@@ -1,4 +1,5 @@
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/solid'
+import { Button } from '@ui/components/Button'
 import { useEffect } from 'react'
 
 interface FullscreenButtonProps {
@@ -20,12 +21,12 @@ export function FullscreenButton({ onToggleFullscreen }: FullscreenButtonProps) 
   }, [onToggleFullscreen])
 
   return (
-    <button
+    <Button
       onClick={onToggleFullscreen}
+      variant="outline"
       className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
       aria-label="Toggle fullscreen"
-    >
-      <ArrowsPointingOutIcon className="text-white h-5" strokeWidth={2} />
-    </button>
+      leftIcon={<ArrowsPointingOutIcon className="text-white h-5" strokeWidth={2} />}
+    ></Button>
   )
 }

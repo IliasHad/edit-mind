@@ -18,6 +18,7 @@ import { useProjects } from '~/features/projects/hooks/useProjects'
 import { ProjectSelector } from './ProjectSelector'
 import { useCurrentChat } from '../hooks/useCurrentChat'
 import { useFaces } from '~/features/faces/hooks/useFaces'
+import { Button } from '@ui/components/Button'
 
 interface ChatInputProps {
   sendMessage: (prompt: string, selectedProjectId?: string) => void
@@ -135,21 +136,12 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
         >
           {!chat?.isLocked && projects && projects.length > 0 && (
             <div className="relative shrink-0 mb-1" ref={dropdownRef}>
-              <button
+              <Button
                 onClick={() => !loading && !chat?.isLocked && setShowProjectDropdown(!showProjectDropdown)}
                 disabled={loading || chat?.isLocked}
-                className={`
-                  p-2 rounded-xl transition-all duration-150
-                  ${
-                    loading || chat?.isLocked
-                      ? 'text-black/25 dark:text-white/30 cursor-not-allowed'
-                      : 'text-black/60 dark:text-white/60 hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white active:scale-95'
-                  }
-                `}
-                aria-label={selectedProject ? `Project: ${selectedProject.name}` : 'Select project'}
-                title={selectedProject ? selectedProject.name : 'Select a project'}
-              >
-                {selectedProject ? (
+                variant="ghost"
+                size="icon"
+                leftIcon={selectedProject ? (
                   <div className="w-6 h-6 rounded-xl bg-linear-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
                     {selectedProject.name.charAt(0).toUpperCase()}
                   </div>
@@ -158,7 +150,9 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
                     <FolderOpenIcon className="w-3 h-3" />
                   </div>
                 )}
-              </button>
+                aria-label={selectedProject ? `Project: ${selectedProject.name}` : 'Select project'}
+                title={selectedProject ? selectedProject.name : 'Select a project'}
+              />
 
               {showProjectDropdown && (
                 <ProjectSelector
@@ -204,22 +198,15 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
                   {selectedSuggestion && <DefaultValuePlugin value={selectedSuggestion} faces={faces} />}
                 </LexicalComposer>
               </div>
-              <button
+              <Button
                 aria-label="Send message"
                 onClick={handleSend}
                 disabled={!input.trim() || loading || chat?.isLocked}
-                className={`p-2.5 rounded-xl transition-all duration-150 shrink-0 mb-1 ${
-                  input.trim() && !loading && !chat?.isLocked
-                    ? 'bg-black dark:bg-white text-white dark:text-black hover:opacity-90 active:scale-95 shadow-md'
-                    : 'bg-black/5 dark:bg-white/10 text-black/25 dark:text-white/30 cursor-not-allowed'
-                }`}
-              >
-                {loading ? (
-                  <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                ) : (
-                  <PaperAirplaneIcon className="w-5 h-5" />
-                )}
-              </button>
+                loading={loading}
+                leftIcon={loading ? <ArrowPathIcon className="w-5 h-5" /> : <PaperAirplaneIcon className="w-5 h-5" />}
+                size="icon"
+                className="shrink-0 mb-1"
+              />
             </>
           ) : (
             <div className="relative flex min-h-10 justify-center items-center text-center w-full">

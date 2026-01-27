@@ -45,7 +45,7 @@ export function VideoCard({
   const fileName = source.split('/').pop() || 'Untitled Video'
   const isPortrait = aspectRatio === '9:16'
 
-  const hasPartialMatches = scenes.some((scene) => !scene.matched)
+  const hasPartialMatches = scenes.filter((scene) => scene.matched).length > 0
 
   const handleImageError = useCallback(() => {
     setImageError(true)
@@ -87,8 +87,16 @@ export function VideoCard({
       )}
 
       {hasPartialMatches && !imageError && (
-        <div className="absolute bottom-0 left-0 z-20 h-1 w-full overflow-hidden rounded-b-2xl bg-white/20">
+        <div className="absolute bottom-0 left-0 z-20 h-10 w-full">
           <ProgressBar scenes={scenes} duration={duration} />
+        </div>
+      )}
+
+      {!hasPartialMatches && !imageError && (
+        <div className="absolute bottom-0 left-0 z-20 h-10 w-full">
+          <div className="relative flex-1 w-full h-full">
+            <div className="absolute bg-green-500 h-1 bottom-0 right-0 left-0" />
+          </div>
         </div>
       )}
 

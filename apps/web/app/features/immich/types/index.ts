@@ -1,0 +1,1 @@
+export type ImmichConnectionStatus = { success: boolean; message: string }
