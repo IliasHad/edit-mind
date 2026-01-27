@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { ActiveSceneCard } from '~/features/videos/components/ActiveSceneCard'
@@ -36,10 +36,11 @@ export default function Video() {
     relinkSuccess,
     videoExist,
     loading,
-    fetchVideoById
+    fetchVideoById,
   } = useCurrentVideo()
 
   const { id } = useParams()
+  const navigate = useNavigate()
 
   const [searchParams] = useSearchParams()
   const [defaultStartTime, setDefaultStartTime] = useState(0)
@@ -84,6 +85,7 @@ export default function Video() {
     try {
       if (id) {
         await deleteVideoById(id)
+        navigate('/app/home')
       }
     } catch (error) {
       console.error('Error deleting video ', error)
