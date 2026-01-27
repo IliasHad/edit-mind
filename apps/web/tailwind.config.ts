@@ -6,6 +6,7 @@ module.exports = {
   { pattern: /from-(purple|yellow|pink|blue|indigo)-\d{3}/ },
   { pattern: /to-(indigo|red|teal)-\d{3}/ },
   { pattern: /border-(purple|red|blue|indigo|teal)-\d{3}/ },
+  "dark",
   ],
   theme: {
     extend: {

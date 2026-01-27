@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 
 export interface Session {
   isAuthenticated: boolean;
-  user: { email?: string, name?: string } | null;
+  user: { email?: string} | null;
 }
 
 interface SessionContextType {

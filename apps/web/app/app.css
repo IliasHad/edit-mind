@@ -6,6 +6,7 @@ body {
     color-scheme: dark;
   }
 }
+@custom-variant dark (&:where(.dark, .dark *));
 
 @keyframes fadeIn {
   from {
