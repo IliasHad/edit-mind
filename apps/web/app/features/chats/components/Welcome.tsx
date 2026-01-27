@@ -54,8 +54,9 @@ export function Welcome({ onSuggestionClick, suggestions }: WelcomeProps) {
             <Button
               key={i}
               onClick={() => onSuggestionClick(s.text)}
-              variant="ghost"
-              className={`group relative px-6 py-5 text-left rounded-2xl border-l-2 ${s.border} hover:border-opacity-80 cursor-pointer transition-all duration-300`}
+              variant="outline"
+              size='lg'
+              className={`group py-4 px-6 relative rounded-2xl border-l-2 ${s.border} hover:border-opacity-80 cursor-pointer`}
             >
               <div className="flex items-center gap-4">
                 <span className="text-2xl group-hover:scale-110 transition-transform duration-300">{s.icon}</span>

@@ -36,7 +36,9 @@ export default function ProjectsIndexPage() {
               Start your first project to search and interact with your video library using AI
             </p>
             <Link to="/app/projects/new">
-              <Button leftIcon={<PlusIcon className="w-4 h-4" />}>Start new project</Button>
+              <Button leftIcon={<PlusIcon className="w-4 h-4" />} size="sm">
+                Start new project
+              </Button>
             </Link>
           </div>
         ) : (
@@ -50,7 +52,7 @@ export default function ProjectsIndexPage() {
                   </p>
                 </div>
                 <Link to="/app/projects/new">
-                  <Button leftIcon={<PlusIcon className="w-4 h-4" />}>
+                  <Button leftIcon={<PlusIcon className="w-4 h-4" />} size="sm">
                     New project
                   </Button>
                 </Link>

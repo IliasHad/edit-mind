@@ -128,7 +128,7 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
         >
           Add Folder
         </Button>
-        <Button variant="secondary" onClick={handleAddFolder} disabled={!selectedPath || loading} loading={loading} aria-label='Cancel'>
+        <Button variant="secondary" onClick={handleAddFolder} disabled={loading} loading={loading} aria-label='Cancel'>
           Cancel
         </Button>
       </div>

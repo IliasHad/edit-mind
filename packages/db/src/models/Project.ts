@@ -132,6 +132,8 @@ export class ProjectModel {
           videos: {
             select: {
               id: true,
+              name: true,
+              source: true,
             },
           },
           _count: {

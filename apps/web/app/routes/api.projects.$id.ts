@@ -18,6 +18,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
         videos: {
           select: {
             id: true,
+            name: true,
+            source: true
           },
         },
       },

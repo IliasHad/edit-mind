@@ -48,10 +48,7 @@ export const LabelingForm: React.FC = () => {
             </motion.p>
           </div>
 
-          <Button
-            onClick={handleSelectAll}
-            variant="ghost"
-          >
+          <Button onClick={handleSelectAll} variant="ghost">
             {selectedFaces.size === unknownFaces.length ? 'Deselect All' : 'Select All'}
           </Button>
         </div>
@@ -61,11 +58,11 @@ export const LabelingForm: React.FC = () => {
             <label className="text-sm font-semibold text-gray-400 mb-4  hidden tracking-wider">Method</label>
 
             <RadioGroup value={labelMode} onChange={setLabelMode}>
-              <div className="relative inline-flex gap-0 p-0 bg-white/5 rounded-2xl w-full overflow-hidden border border-white/10">
+              <div className="relative inline-flex gap-2 p-0 w-full overflow-hidden">
                 <RadioGroup.Option value="existing" className="flex-1">
                   {({ checked }) => (
                     <Button
-                      variant="ghost"
+                      variant={checked ? 'primary' : 'ghost'}
                       className={`relative w-full px-6 py-4 text-sm font-semibold transition-colors duration-300 ${
                         checked ? 'text-black' : 'text-white/60 hover:text-white/80'
                       }`}
@@ -78,7 +75,7 @@ export const LabelingForm: React.FC = () => {
                 <RadioGroup.Option value="new" className="flex-1">
                   {({ checked }) => (
                     <Button
-                      variant="ghost"
+                      variant={checked ? 'primary' : 'ghost'}
                       className={`relative w-full px-6 py-4 text-sm font-semibold transition-colors duration-300 ${
                         checked ? 'text-black' : 'text-white/60 hover:text-white/80'
                       }`}
@@ -108,7 +105,10 @@ export const LabelingForm: React.FC = () => {
                 <div className="relative">
                   <div className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none">
                     {selectedFaceImage ? (
-                      <img src={`/faces/${selectedFaceImage}`} className="w-10 h-10 object-center object-contain rounded-full" />
+                      <img
+                        src={`/faces/${selectedFaceImage}`}
+                        className="w-10 h-10 object-center object-contain rounded-full"
+                      />
                     ) : (
                       <UserIcon className="w-6 h-6  text-white/40" />
                     )}
