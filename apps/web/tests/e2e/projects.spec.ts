@@ -71,7 +71,7 @@ test.describe('Project Management', () => {
       await nameInput.fill(projectName)
 
       // Instructions textarea
-      const instructionsTextarea = page.getByLabel('instructions')
+      const instructionsTextarea = page.getByLabel('Project Context')
 
       await expect(instructionsTextarea).toBeVisible()
       await instructionsTextarea.fill(projectInstructions)
