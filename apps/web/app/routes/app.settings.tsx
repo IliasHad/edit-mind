@@ -26,7 +26,7 @@ import { Button } from '@ui/components/Button'
 export const meta: MetaFunction = () => [{ title: 'Settings | Edit Mind' }]
 
 export default function SettingsPage() {
-  const { folders, createFolder, totalVideos, totalDuration, error, loading } = useFolders()
+  const { folders, createFolder, totalVideos, totalDuration, error } = useFolders()
   const { deleteFolder, setCurrentFolder, currentFolder } = useCurrentFolder()
 
   const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
@@ -168,7 +168,6 @@ export default function SettingsPage() {
         onClose={closeAddModal}
         onAdd={handleAddFolder}
         error={error}
-        loading={loading}
       />
 
       <DeleteModal

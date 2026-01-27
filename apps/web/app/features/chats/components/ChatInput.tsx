@@ -140,16 +140,18 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
                 onClick={() => !loading && !chat?.isLocked && setShowProjectDropdown(!showProjectDropdown)}
                 disabled={loading || chat?.isLocked}
                 variant="ghost"
-                size="icon"
-                leftIcon={selectedProject ? (
-                  <div className="w-6 h-6 rounded-xl bg-linear-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                    {selectedProject.name.charAt(0).toUpperCase()}
-                  </div>
-                ) : (
-                  <div className="w-6 h-6 rounded-xl flex items-center justify-center border-2 border-dashed border-black/20 dark:border-white/20">
-                    <FolderOpenIcon className="w-3 h-3" />
-                  </div>
-                )}
+                size="icon-md"
+                leftIcon={
+                  selectedProject ? (
+                    <div className="w-6 h-6 rounded-xl bg-linear-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                      {selectedProject.name.charAt(0).toUpperCase()}
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-xl flex items-center justify-center border-2 border-dashed border-black/20 dark:border-white/20">
+                      <FolderOpenIcon className="w-3 h-3" />
+                    </div>
+                  )
+                }
                 aria-label={selectedProject ? `Project: ${selectedProject.name}` : 'Select project'}
                 title={selectedProject ? selectedProject.name : 'Select a project'}
               />
@@ -204,8 +206,8 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
                 disabled={!input.trim() || loading || chat?.isLocked}
                 loading={loading}
                 leftIcon={loading ? <ArrowPathIcon className="w-5 h-5" /> : <PaperAirplaneIcon className="w-5 h-5" />}
-                size="icon"
-                className="shrink-0 mb-1"
+                variant="outline"
+                size="icon-lg"
               />
             </>
           ) : (

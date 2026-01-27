@@ -41,14 +41,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           'disabled:cursor-not-allowed disabled:opacity-50',
           'active:scale-[0.98]',
           '[&_svg]:shrink-0',
-          
-     
+
           fullWidth && 'w-full',
-          
+
           getVariantStyles(variant),
-          
+
           getSizeStyles(size),
-          
+
           className
         )}
         disabled={isDisabled}
@@ -57,11 +56,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           <ArrowPathIcon className="animate-spin w-4" aria-hidden="true" />
         ) : (
-          leftIcon && <span aria-hidden="true" >{leftIcon}</span>
+          leftIcon && <span aria-hidden="true">{leftIcon}</span>
         )}
-        
-        {children && <span>{children}</span>}
-        
+
+        {children && children}
+
         {!loading && rightIcon && <span aria-hidden="true">{rightIcon}</span>}
       </button>
     )
@@ -81,7 +80,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-white dark:focus-visible:ring-white',
       'focus-visible:ring-offset-black dark:focus-visible:ring-offset-transparent'
     ),
-    
+
     secondary: twMerge(
       'bg-black dark:bg-black',
       'text-white dark:text-white',
@@ -91,7 +90,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-black dark:focus-visible:ring-black',
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
-    
+
     ghost: twMerge(
       'bg-white/5 dark:bg-white/5',
       'text-black dark:text-white',
@@ -102,7 +101,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-black/50 dark:focus-visible:ring-white/50',
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
-    
+
     glass: twMerge(
       'bg-white/5 dark:bg-white/5',
       'text-black dark:text-white',
@@ -114,7 +113,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-white/50',
       'focus-visible:ring-offset-transparent'
     ),
-    
+
     destructive: twMerge(
       'bg-red-500/10 dark:bg-red-500/10',
       'text-red-600 dark:text-red-400',
@@ -125,7 +124,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-red-500/50',
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
-    
+
     outline: twMerge(
       'bg-transparent',
       'text-black dark:text-white',
@@ -136,7 +135,7 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'focus-visible:ring-black/50 dark:focus-visible:ring-white/50',
       'focus-visible:ring-offset-white dark:focus-visible:ring-offset-transparent'
     ),
-    
+
     link: twMerge(
       'bg-transparent',
       'text-black dark:text-white',
@@ -148,22 +147,22 @@ function getVariantStyles(variant: ButtonProps['variant']): string {
       'active:scale-100'
     ),
   }
-  
+
   return variants[variant || 'primary']
 }
 
 function getSizeStyles(size: ButtonProps['size']): string {
   const sizes = {
-    xs: 'h-7 px-2.5 text-xs gap-1.5 [&_svg]:w-3 [&_svg]:h-3',
-    sm: 'h-8 px-3 text-sm gap-1.5 [&_svg]:w-3.5 [&_svg]:h-3.5',
-    md: 'h-10 px-4 text-sm gap-2 [&_svg]:w-4 [&_svg]:h-4',
-    lg: 'h-11 px-5 text-base gap-2 [&_svg]:w-4 [&_svg]:h-4',
-    xl: 'h-12 px-6 text-base gap-2.5 [&_svg]:w-5 [&_svg]:h-5',
+    xs: 'p-1.5 text-xs gap-1.5 [&_svg]:w-3 [&_svg]:h-3',
+    sm: 'p-2 text-sm gap-1.5 [&_svg]:w-3.5 [&_svg]:h-3.5',
+    md: 'p-3 text-sm gap-2 [&_svg]:w-4 [&_svg]:h-4',
+    lg: 'p-4 text-base gap-2 [&_svg]:w-4 [&_svg]:h-4',
+    xl: 'p-5 text-base gap-2.5 [&_svg]:w-5 [&_svg]:h-5',
     'icon-xs': 'h-7 w-7 p-0 [&_svg]:w-3 [&_svg]:h-3',
     'icon-sm': 'h-8 w-8 p-0 [&_svg]:w-3.5 [&_svg]:h-3.5',
     'icon-md': 'h-10 w-10 p-0 [&_svg]:w-4 [&_svg]:h-4',
     'icon-lg': 'h-11 w-11 p-0 [&_svg]:w-5 [&_svg]:h-5',
   }
-  
+
   return sizes[size || 'md']
 }
