@@ -1,43 +1,33 @@
-import { humanizeSeconds } from "~/features/shared/utils/duration"
-import type { VideoWithFolderPath } from "~/features/videos/types"
 import { Button } from '@ui/components/Button'
+import { humanizeSeconds } from '~/features/shared/utils/duration'
+import type { VideoWithFolderPath } from '~/features/videos/types'
 
 interface VideoListItemProps {
-    video: VideoWithFolderPath,
-    isSelected: boolean
-    onToggle: () => void
+  video: VideoWithFolderPath
+  isSelected: boolean
+  onToggle: () => void
 }
 
-export function VideoListItem({ video, isSelected, onToggle }:VideoListItemProps) {
+export function VideoListItem({ video, isSelected, onToggle }: VideoListItemProps) {
   return (
     <Button
       type="button"
       onClick={onToggle}
-      variant="ghost" // Assuming ghost is the closest for this wrapping button
-      className={`
-        w-full p-4 flex items-center gap-4
-        border-b border-black/5 dark:border-white/5 last:border-0
-        transition-all duration-200 text-left
-        hover:bg-black/5 dark:hover:bg-white/5
-        ${isSelected ? 'bg-black/5 dark:bg-white/5' : ''}
-      `}
+      role="checkbox"
+      aria-checked={isSelected}
+      variant="ghost"
+      className="group rounded-none flex w-full items-center gap-4 p-4 text-left transition-all duration-200 hover:bg-black/5 active:scale-[0.99] dark:hover:bg-white/5 border-l-4 border-transparent"
     >
       <div
-        className={`
-        w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0
-        transition-all duration-200
-        ${
-          isSelected
-            ? 'bg-black dark:bg-white border-black dark:border-white'
-            : 'border-black/30 dark:border-white/30 hover:scale-110'
-        }
-      `}
+        className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center self-start rounded-md border-2 transition-all ${
+          isSelected ? 'border-black bg-black dark:border-white dark:bg-white' : 'border-black/30 dark:border-white/30'
+        }`}
       >
         {isSelected && (
           <svg
-            className="w-3 h-3 text-white dark:text-black"
-            fill="none"
+            className="h-3 w-3 text-white dark:text-black"
             viewBox="0 0 24 24"
+            fill="none"
             stroke="currentColor"
             strokeWidth={3}
           >
@@ -47,27 +37,25 @@ export function VideoListItem({ video, isSelected, onToggle }:VideoListItemProps
       </div>
 
       {video.thumbnailUrl && (
-        <div className="relative shrink-0 overflow-hidden rounded-lg">
+        <div className="relative w-28 shrink-0 overflow-hidden rounded-lg">
           <img
             src={`/thumbnails/${video.thumbnailUrl}`}
-            alt=""
-            className="w-32 h-18 object-cover"
+            alt={video.name}
+            className="aspect-video w-full object-cover"
             loading="lazy"
           />
           {video.duration && (
-            <span className="absolute bottom-1 right-1 px-1.5 py-0.5 text-xs font-semibold text-white bg-black/80 rounded backdrop-blur-sm">
-              {humanizeSeconds(parseInt(video.duration.toString()))}
+            <span className="absolute bottom-1 right-1 whitespace-nowrap rounded bg-black/80 px-1.5 py-0.5 text-[11px] font-medium text-white">
+              {humanizeSeconds(Number(video.duration))}
             </span>
           )}
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-black dark:text-white truncate mb-1">
-          {video.name}
-        </p>
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+        <p className="truncate text-sm font-semibold leading-tight text-black dark:text-white">{video.name}</p>
         {video.folder.path && (
-          <p className="text-xs text-black/60 dark:text-white/60 truncate">{video.folder.path}</p>
+          <p className="truncate text-xs leading-tight text-black/50 dark:text-white/50">{video.folder.path}</p>
         )}
       </div>
     </Button>

@@ -41,8 +41,8 @@ export function ProjectSelector({ projects, selectedProject, onSelectProject }: 
         <Button
           key={project.id}
           onClick={() => onSelectProject(project)}
-          variant="ghost"
-          className="w-full flex items-center justify-between px-4 py-3 group"
+          variant="outline"
+          className="w-full flex text-left items-center justify-between px-4 py-3 group"
           leftIcon={
             <div className="w-6 h-6 rounded-lg bg-linear-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm shrink-0">
               {project.name.charAt(0).toUpperCase()}

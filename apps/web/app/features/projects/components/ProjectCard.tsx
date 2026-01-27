@@ -6,6 +6,7 @@ import { useModal } from '~/features/shared/hooks/useModal'
 import { DeleteModal } from '@ui/components/DeleteModal'
 import { useCurrentProject } from '../hooks/useCurrentProject'
 import { Button } from '@ui/components/Button'
+import { TrashIcon } from '@heroicons/react/24/solid'
 
 interface ProjectCardProps {
   id: string
@@ -62,16 +63,15 @@ export function ProjectCard({ id, name, _count, createdAt, className }: ProjectC
 
             <div className="flex items-center gap-4">
               <Button
+                variant="destructive"
                 onClick={(e) => {
                   e.preventDefault()
-                  e.stopPropagation()
                   openModal()
                 }}
-                variant="destructive"
                 aria-label="Delete project"
-                size="sm"
+                leftIcon={<TrashIcon className="size-4" />}
               >
-                <span>Delete</span>
+                Delete
               </Button>
             </div>
           </div>

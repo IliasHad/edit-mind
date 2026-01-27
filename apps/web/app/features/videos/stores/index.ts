@@ -56,14 +56,14 @@ export const useVideosStore = create<VideosState>()(
           try {
             const { videos, hasMore, page } = await apiClient.list(pageNum, limit, query)
 
-            set({
-              videos,
+            set((state) => ({
+              videos: pageNum === 0 ? videos : [...state.videos, ...videos],
               isLoading: false,
               currentPagination: {
                 hasMore,
                 page,
               },
-            })
+            }))
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -136,10 +136,10 @@ export const useVideosStore = create<VideosState>()(
         clearCurrentVideo: () => set({ currentVideo: null }),
       }),
       {
-        name: 'collections-storage',
+        name: 'videos-storage',
         partialize: (state) => ({ videos: state.videos }),
       }
     ),
-    { name: 'collections-store' }
+    { name: 'videos-store' }
   )
 )
