@@ -1,4 +1,4 @@
-import type { JSX } from 'react'
+import type { HTMLAttributeAnchorTarget, JSX } from 'react'
 import { NavLink } from 'react-router'
 
 export function Link({
@@ -6,14 +6,17 @@ export function Link({
   icon,
   label,
   to,
+  target,
 }: {
   isCollapsed?: boolean
   icon: JSX.Element
   label: string
   to: string
+  target?: HTMLAttributeAnchorTarget | undefined
 }) {
   return (
     <NavLink
+      target={target}
       to={to}
       className={({ isActive }) =>
         `flex items-center ${isCollapsed && 'justify-center'} gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors

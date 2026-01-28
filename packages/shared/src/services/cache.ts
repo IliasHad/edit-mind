@@ -1,5 +1,5 @@
 import Redis from 'ioredis'
-import { CACHE_TTL, IS_TESTING, REDIS_HOST, REDIS_PORT } from '../constants'
+import { CACHE_TTL, IS_TESTING, REDIS_HOST } from '../constants';
 
 let redisClient: Redis | null = null
 

@@ -43,7 +43,8 @@
     "express": "^5.1.0",
     "morgan": "^1.10.1",
     "react-hot-toast": "^2.6.0",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "semver": "^7.7.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
@@ -67,6 +68,7 @@
     "@types/express": "^5.0.3",
     "@types/express-serve-static-core": "^5.0.7",
     "@types/morgan": "^1.9.10",
-    "@faker-js/faker": "^10.2.0"
+    "@faker-js/faker": "^10.2.0",
+    "@types/semver": "^7.7.1"
   }
 }
