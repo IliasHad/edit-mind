@@ -13,19 +13,45 @@ import {
 import './app.css'
 import { SessionProvider } from './features/auth/providers/SessionProvider'
 import { getUser } from './services/user.sever'
+import { useApp } from './features/shared/hooks/useApp'
+import { useEffect } from 'react'
+import { logger } from '@shared/services/logger'
+import { getLatestReleaseVersion } from './services/github.server'
+import semver from 'semver'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await getUser(request)
+  try {
+    const user = await getUser(request)
+    const appPkg = await import('../package.json')
 
-  const session = {
-    isAuthenticated: !!user,
-    user: {
-      email: user?.email,
-    },
+    const latestVersion = await getLatestReleaseVersion()
+
+    const currentVersion = appPkg.version
+    const isLatest =
+      latestVersion && semver.valid(latestVersion) && semver.valid(currentVersion)
+        ? semver.gte(currentVersion, latestVersion)
+        : true
+
+    return {
+      session: {
+        isAuthenticated: !!user,
+        user: { email: user?.email },
+      },
+      app: {
+        version: currentVersion,
+        latestVersion,
+        isLatest,
+      },
+    }
+  } catch (error) {
+    logger.error(error)
+    return {
+      session: undefined,
+      app: undefined,
+    }
   }
-
-  return { session }
 }
+
 export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
@@ -45,6 +71,15 @@ export const links: LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useLoaderData<typeof loader>()
+  const { setApp } = useApp()
+
+  useEffect(() => {
+    setApp(data.app)
+
+    return () => {
+      setApp(undefined)
+    }
+  }, [setApp, data])
 
   return (
     <html lang="en" className="dark">
@@ -75,10 +110,7 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? '404' : 'Error'
-    details =
-      error.status === 404
-        ? 'The requested page could not be found.'
-        : error.statusText || details
+    details = error.status === 404 ? 'The requested page could not be found.' : error.statusText || details
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message
     stack = error.stack
