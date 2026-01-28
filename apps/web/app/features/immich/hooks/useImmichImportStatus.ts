@@ -10,13 +10,17 @@ export function useImmichImportStatus() {
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data)
       setImportStatus(data)
+
+      if (!data.isImporting || data.status === 'completed' || data.status === 'failed') {
+        eventSource.close()
+      }
     }
 
     eventSource.onerror = () => {
       eventSource.close()
       setImportStatus({
         isImporting: false,
-        status: 'error',
+        status: 'failed',
         error: 'Connection to import status lost',
       })
     }
@@ -24,7 +28,7 @@ export function useImmichImportStatus() {
     return () => {
       eventSource.close()
     }
-  }, [importStatus.isImporting, setImportStatus])
+  }, [setImportStatus]) // Only depend on setImportStatus
 
   return {
     importStatus,

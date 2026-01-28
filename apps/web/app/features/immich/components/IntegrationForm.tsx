@@ -2,7 +2,7 @@ import { CheckCircleIcon, SignalIcon } from '@heroicons/react/24/outline'
 import { Button } from '@ui/components/Button'
 import { FormField } from './FormField'
 import { ConnectionStatus } from './ConnectionStatus'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useImmichForm } from '~/features/immich/hooks/useImmichForm'
@@ -24,15 +24,13 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
     loading,
   } = useImmichForm()
 
-  const [hasTestedConnection, setHasTestedConnection] = useState(false)
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isValid },
     getValues,
     reset,
-    watch,
   } = useForm<ImmichConfig>({
     resolver: zodResolver(ImmichConfigFormSchema),
     mode: 'onChange',
@@ -42,27 +40,16 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
     },
   })
 
-  // Watch form values to reset connection test when they change
-  const watchedValues = watch()
-
   useEffect(() => {
     if (integration?.baseUrl) {
       reset({ baseUrl: integration.baseUrl, apiKey: '' })
     }
   }, [integration, reset])
 
-  // Reset connection test status when form values change
-  useEffect(() => {
-    if (isDirty && hasTestedConnection) {
-      setHasTestedConnection(false)
-    }
-  }, [watchedValues, isDirty, hasTestedConnection])
-
   const onSubmit = async (data: ImmichConfig) => {
     const result = await submitIntegration(data)
     if (result) {
       setShowApiKeyForm(false)
-      setHasTestedConnection(false)
       reset()
     }
   }
@@ -70,7 +57,6 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
   const onTestConnection = async () => {
     const config = getValues()
     const result = await handleTestConnection(config)
-    setHasTestedConnection(true)
     return result
   }
 
@@ -127,7 +113,7 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
             loading={loading}
             leftIcon={!loading && <CheckCircleIcon />}
             fullWidth
-            disabled={!hasTestedConnection || loading}
+            disabled={!connectionStatus?.success || loading}
           >
             {hasIntegration ? 'Update & Restart Import' : 'Connect & Start Import'}
           </Button>
@@ -137,7 +123,6 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
               type="button"
               onClick={() => {
                 setShowApiKeyForm(false)
-                setHasTestedConnection(false)
                 reset()
               }}
               variant="ghost"
@@ -147,7 +132,7 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
           )}
         </div>
 
-        {!hasTestedConnection && !hasIntegration && isValid && (
+        {!connectionStatus?.success && !hasIntegration && isValid && (
           <p className="text-xs text-white/50 text-center">Please test the connection before submitting</p>
         )}
       </form>

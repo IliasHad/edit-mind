@@ -3,7 +3,6 @@ import { encryptApiKey, decryptApiKey } from '@immich/services/encryption'
 import { IntegrationModel } from '@db/index'
 import { ImmichConfigFormSchema } from '@immich/schemas/immich'
 import type { ImmichImportStatus } from '@immich/types/immich'
-import type { User } from '@prisma/client'
 import { backgroundJobsFetch } from './background.server'
 
 export async function saveImmichIntegration(userId: string, apiKey: string, baseUrl: string) {
@@ -13,25 +12,6 @@ export async function saveImmichIntegration(userId: string, apiKey: string, base
     config: { baseUrl, apiKey: encryptedKey },
     userId,
     type: 'Immich',
-  })
-}
-
-export async function updateImmichIntegration(userId: string, apiKey: string, baseUrl: string) {
-  const integration = await IntegrationModel.findFirst({
-    where: {
-      type: 'Immich',
-      userId,
-    },
-  })
-
-  if (!integration) {
-    throw new Error('No integration found to update')
-  }
-
-  const encryptedKey = encryptApiKey(apiKey)
-
-  return await IntegrationModel.update(integration.id, {
-    config: { baseUrl, apiKey: encryptedKey },
   })
 }
 
@@ -94,7 +74,10 @@ export async function deleteImmichIntegration(userId: string) {
   }
 }
 
-export async function getImportStatus(user: User, integrationId: string): Promise<ImmichImportStatus> {
+export async function getImportStatus(
+  user: { id: string; email: string },
+  integrationId: string
+): Promise<ImmichImportStatus> {
   try {
     const data = await backgroundJobsFetch<undefined, ImmichImportStatus>(
       `/internal/immich/${integrationId}/status`,
@@ -108,9 +91,8 @@ export async function getImportStatus(user: User, integrationId: string): Promis
     return {
       isImporting: false,
       progress: 0,
-      totalFaces: 0,
       processedFaces: 0,
-      status: 'error',
+      status: 'failed',
       error: 'Error getting the import status ',
     }
   }
