@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "0.1.4",
+  "version": "0.14.0",
   "private": true,
   "license": "MIT",
   "type": "module",
