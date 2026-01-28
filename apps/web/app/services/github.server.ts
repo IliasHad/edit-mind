@@ -15,7 +15,6 @@ export async function getLatestReleaseVersion() {
     }
 
     latestVersion = parsed.latestVersion
-    logger.debug('GitHub version loaded from Redis')
   } else {
     const apiRes = await fetch('https://api.github.com/repos/iliashad/edit-mind/releases/latest', {
       headers: {

@@ -1,11 +1,6 @@
 import { logger } from '@shared/services/logger'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
-import {
-  saveImmichIntegration,
-  deleteImmichIntegration,
-  updateImmichIntegration,
-  getImmichConfig,
-} from '~/services/immich.server'
+import { saveImmichIntegration, deleteImmichIntegration, getImmichConfig } from '~/services/immich.server';
 import { ImmichConfigFormSchema } from '@immich/schemas/immich'
 import { requireUser, requireUserId } from '~/services/user.sever'
 import { backgroundJobsFetch } from '~/services/background.server'
@@ -62,6 +57,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = ImmichConfigFormSchema.safeParse(body)
 
         if (!result.success) {
+          logger.error(result.error)
           return new Response(
             JSON.stringify({ error: 'Invalid configuration', fieldErrors: result.error.flatten().fieldErrors }),
             {
@@ -70,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
           )
         }
 
-        const integration = await updateImmichIntegration(user.id, result.data.apiKey, result.data.baseUrl)
+        const integration = await saveImmichIntegration(user.id, result.data.apiKey, result.data.baseUrl)
 
         return { integration }
       }
@@ -88,7 +84,7 @@ export async function action({ request }: ActionFunctionArgs) {
         })
     }
   } catch (error) {
-    logger.error('Error handling Immich integration:', error)
+    logger.error({ error }, 'Error handling Immich integration:')
 
     return new Response(JSON.stringify({ error: 'An error occurred. Please try again.' }), {
       status: 500,

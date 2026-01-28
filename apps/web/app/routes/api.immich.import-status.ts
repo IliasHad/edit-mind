@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import { getImmichConfig, getImportStatus } from '~/services/immich.server'
-import { requireUser } from '~/services/user.sever';
+import { requireUser } from '~/services/user.sever'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireUser(request)
@@ -12,17 +12,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
       const sendUpdate = async () => {
         try {
-          const status = await getImportStatus(user, config?.id)
+          if (config && config.id) {
+            const status = await getImportStatus(user, config?.id)
 
-          const data = `data: ${JSON.stringify(status)}\n\n`
-          controller.enqueue(encoder.encode(data))
+            const data = `data: ${JSON.stringify(status)}\n\n`
+            controller.enqueue(encoder.encode(data))
 
-          if (status.status === 'completed' || status.status === 'failed') {
-            controller.close()
-            return
+            if (status.status === 'completed' || status.status === 'failed') {
+              controller.close()
+              return
+            }
+
+            setTimeout(sendUpdate, 1000)
           }
-
-          setTimeout(sendUpdate, 1000)
         } catch (error) {
           console.error('Error sending import status:', error)
           controller.error(error)

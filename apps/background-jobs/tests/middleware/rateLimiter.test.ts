@@ -79,8 +79,8 @@ describe('Rate Limiter Middleware', () => {
       await request(app).get('/test')
     }
 
-    // Advance time by 2 minutes (window duration)
-    vi.advanceTimersByTime(2 * 60 * 1000)
+    // Advance time by 1 minutes (window duration)
+    vi.advanceTimersByTime(1 * 60 * 1000)
 
     // Should allow requests again
     const response = await request(app).get('/test')
