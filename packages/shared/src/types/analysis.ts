@@ -73,7 +73,10 @@ export interface FaceRecognitionSummary {
 
 export interface AnalysisSummary {
   total_frames_analyzed: number
-  confidence: number
+  total_analysis_time_seconds: number
+  processing_time: number,
+  memory_cleanups: number,
+  peak_memory_mb: number
 }
 export interface PluginAnalysisSummary {
   plugin_name: string

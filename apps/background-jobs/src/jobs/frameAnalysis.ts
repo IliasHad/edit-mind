@@ -11,6 +11,7 @@ import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
 import { dirname } from 'path'
 import { mkdir, readFile } from 'fs/promises'
+import type { Analysis } from '@shared/types/analysis'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = true, analysisPath } = job.data
@@ -59,10 +60,10 @@ async function processVideo(job: Job<VideoProcessingData>) {
       logger.debug({ jobId, analysisDuration }, 'Frame analysis done')
       await updateJob(job, { frameAnalysisTime: analysisDuration })
     } else {
-      const data = await readFile(analysisPath, 'utf-8').then(JSON.parse)
+      const data = (await readFile(analysisPath, 'utf-8').then(JSON.parse)) as Analysis
 
-      if (data.processing_time) {
-        await updateJob(job, { frameAnalysisTime: data.processing_time, progress: 100 })
+      if (data.summary && data.summary.processing_time) {
+        await updateJob(job, { frameAnalysisTime: data.summary.processing_time, progress: 100 })
       }
 
       logger.debug({ jobId, analysisPath }, 'Skipping frame analysis - using cached file')
