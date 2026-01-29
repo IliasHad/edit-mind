@@ -112,6 +112,14 @@ services:
     env_file:
       - .env.system
       - .env
+    command: [ "sh", "-c", "python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}" ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
     ports:
       - "${ML_PORT}:${ML_PORT}"
     environment:
