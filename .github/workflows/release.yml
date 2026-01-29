@@ -34,17 +34,39 @@ jobs:
       contents: read
 
     strategy:
+      max-parallel: 1  
       matrix:
         service:
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
+            target: production
+            tag: latest
+
+          - name: background-jobs
+            dockerfile: docker/Dockerfile.background-jobs
+            context: .
+            target: production-gpu
+            tag: latest-gpu
+
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
+            target: production
+            tag: latest
+
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
+            target: production
+            tag: latest
+
+          - name: ml
+            dockerfile: docker/Dockerfile.ml
+            context: .
+            target: production-gpu
+            tag: latest-gpu
+
 
     steps:
       - name: Checkout code
@@ -53,7 +75,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ contains(matrix.service.target, 'gpu') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -67,11 +89,11 @@ jobs:
         with:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
-          target: production
-          platforms: linux/amd64,linux/arm64
+          target: ${{ matrix.service.target }}
+          platforms: ${{ contains(matrix.service.target, 'gpu') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
           push: false
-          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
 
 
   test:
@@ -170,17 +192,39 @@ jobs:
       attestations: write
 
     strategy:
+      max-parallel: 1  
       matrix:
-        service:
+        services:
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
-          - name: web
-            dockerfile: docker/Dockerfile.web
+            target: production
+            tag: latest
+
+          - name: background-jobs
+            dockerfile: docker/Dockerfile.background-jobs
             context: .
+            target: production-gpu
+            tag: latest-gpu
+
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
+            target: production
+            tag: latest
+
+          - name: ml
+            dockerfile: docker/Dockerfile.ml
+            context: .
+            target: production-gpu
+            tag: latest-gpu
+
+          - name: web
+            dockerfile: docker/Dockerfile.web
+            context: .
+            target: production
+            tag: latest
+
 
     steps:
       - name: Set lowercase image prefix
@@ -201,7 +245,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ contains(matrix.service.target, 'gpu') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
 
       - name: Extract metadata
         id: meta
@@ -220,16 +264,16 @@ jobs:
         with:
           context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
-          target: production
-          platforms: linux/amd64,linux/arm64
+          target: ${{ matrix.service.target }}
+          platforms: ${{ contains(matrix.service.target, 'gpu') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
           build-args: |
             NODE_VERSION=${{ env.NODE_VERSION }}
             PNPM_VERSION=${{ env.PNPM_VERSION }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}
+          cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
           sbom: false
 
       - name: Generate artifact attestation

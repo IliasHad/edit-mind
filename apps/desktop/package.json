@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "AI-Powered Video Indexing and Search",
   "main": "./out/main/main.js",
   "license": "MIT",

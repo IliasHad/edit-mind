@@ -17,12 +17,19 @@ const envSchema = z.object({
     .refine((val) => !Number.isNaN(val) && val > 0, {
       message: 'BACKGROUND_JOBS_PORT must be a valid number',
     }),
-  MAX_CONCURRENT_VIDEO_JOBS: z
+  MAX_CONCURRENT_TRANSCRIPTIONS: z
     .string()
-    .default("1")
+    .default('1')
     .transform((val) => Number(val))
     .refine((val) => !Number.isNaN(val) && val > 0, {
-      message: 'MAX_CONCURRENT_VIDEO_JOBS must be a valid number',
+      message: 'MAX_CONCURRENT_TRANSCRIPTIONS must be a valid number',
+    }),
+  MAX_CONCURRENT_ANALYSES: z
+    .string()
+    .default('1')
+    .transform((val) => Number(val))
+    .refine((val) => !Number.isNaN(val) && val > 0, {
+      message: 'MAX_CONCURRENT_ANALYSES must be a valid number',
     }),
 })
 

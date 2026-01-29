@@ -88,7 +88,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
 export const frameAnalysisWorker = new Worker('frame-analysis', processVideo, {
   connection,
-  concurrency: env.MAX_CONCURRENT_VIDEO_JOBS,
+  concurrency: env.MAX_CONCURRENT_ANALYSES,
   lockDuration: 6 * 60 * 60 * 1000, // 6 hours
   stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,

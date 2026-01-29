@@ -1,7 +1,8 @@
 ARG NODE_VERSION=22.20.0
 ARG PNPM_VERSION=10.20.0
+ARG CUDA_VERSION=12.1.0
 
-FROM node:${NODE_VERSION}-bookworm-slim AS base
+FROM node:${NODE_VERSION}-bookworm-slim AS base-cpu
 
 ARG PNPM_VERSION
 
@@ -13,8 +14,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl ffmpeg libcurl4-openssl-dev libssl-dev && \
   rm -rf /var/lib/apt/lists/*
 
+FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu22.04 AS base-gpu
 
-FROM base AS dependencies
+ARG NODE_VERSION
+ARG PNPM_VERSION
+
+# Install Node.js
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  curl \
+  gnupg && \
+  mkdir -p /etc/apt/keyrings && \
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends nodejs && \
+  rm -rf /var/lib/apt/lists/*
+
+ENV PNPM_HOME="/pnpm" 
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  openssl \
+  libcurl4-openssl-dev \
+  libssl-dev \
+  software-properties-common && \
+  add-apt-repository ppa:ubuntuhandbook1/ffmpeg7 -y && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  ffmpeg \
+  libnvidia-encode-535 \
+  libnvidia-decode-535 && \
+  rm -rf /var/lib/apt/lists/*
+
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+
+FROM base-cpu AS dependencies-cpu
 
 WORKDIR /app
 
@@ -33,7 +70,26 @@ COPY packages/prisma/schema.prisma ./packages/prisma/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
   pnpm install --frozen-lockfile
 
-FROM base AS builder
+FROM base-gpu AS dependencies-gpu
+
+WORKDIR /app
+
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc ./
+COPY apps/background-jobs/package.json ./apps/background-jobs/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/db/package.json ./packages/db/
+COPY packages/vector/package.json ./packages/vector/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/immich/package.json ./packages/immich/
+COPY packages/media-utils/package.json ./packages/media-utils/
+COPY packages/search/package.json ./packages/search/
+COPY packages/smart-collections/package.json ./packages/smart-collections/
+COPY packages/prisma/schema.prisma ./packages/prisma/
+
+RUN --mount=type=cache,id=pnpm-gpu,target=/pnpm/store \
+  pnpm install --frozen-lockfile
+
+FROM dependencies-cpu AS builder
 
 WORKDIR /app
 
@@ -70,11 +126,12 @@ RUN pnpm run build
 
 RUN pnpm --filter background-jobs build
 
-FROM base AS production
+
+FROM base-cpu AS production
 
 WORKDIR /app
 
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies-cpu /app/node_modules ./node_modules
 
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
@@ -82,7 +139,6 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma.config.ts ./
 COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/.npmrc ./
-
 
 COPY --from=builder /app/packages/vector ./packages/vector
 COPY --from=builder /app/packages/ai ./packages/ai
@@ -98,15 +154,44 @@ COPY apps/background-jobs ./apps/background-jobs
 
 RUN pnpm --filter prisma generate
 
+EXPOSE ${BACKGROUND_JOBS_PORT}
+
+CMD ["pnpm", "--filter", "background-jobs", "start"]
+
+FROM base-gpu AS production-gpu
+
+WORKDIR /app
+
+COPY --from=dependencies-gpu /app/node_modules ./node_modules
+
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/prisma.config.ts ./
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/.npmrc ./
+
+COPY --from=builder /app/packages/vector ./packages/vector
+COPY --from=builder /app/packages/ai ./packages/ai
+COPY --from=builder /app/packages/immich ./packages/immich
+COPY --from=builder /app/packages/media-utils ./packages/media-utils
+COPY --from=builder /app/packages/search ./packages/search
+COPY --from=builder /app/packages/smart-collections ./packages/smart-collections
+
+COPY --from=builder /app/packages/prisma ./packages/prisma
+COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/db ./packages/db
+COPY apps/background-jobs ./apps/background-jobs
+
+RUN pnpm --filter prisma generate
 
 EXPOSE ${BACKGROUND_JOBS_PORT}
 
 CMD ["pnpm", "--filter", "background-jobs", "start"]
 
-FROM dependencies AS development
+FROM dependencies-cpu AS development
 
-
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies-cpu /app/node_modules ./node_modules
 
 WORKDIR /app
 
@@ -134,13 +219,62 @@ EXPOSE ${BACKGROUND_JOBS_PORT}
 
 CMD ["pnpm", "--filter", "background-jobs", "dev"]
 
-FROM base AS testing
+FROM dependencies-gpu AS development-gpu
+
+COPY --from=dependencies-gpu /app/node_modules ./node_modules
 
 WORKDIR /app
 
+COPY apps/background-jobs ./apps/background-jobs
 
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY packages/prisma ./packages/prisma
+COPY packages/db ./packages/db
+COPY packages/shared ./packages/shared
+COPY packages/vector ./packages/vector
+COPY packages/ai ./packages/ai
+COPY packages/immich ./packages/immich
+COPY packages/media-utils ./packages/media-utils
+COPY packages/search ./packages/search
+COPY packages/smart-collections ./packages/smart-collections
+COPY turbo.json ./
+COPY tsconfig.json ./
 
+RUN pnpm --filter prisma generate
+
+RUN pnpm run build
+
+ENV NODE_ENV=development
+
+EXPOSE ${BACKGROUND_JOBS_PORT}
+
+CMD ["pnpm", "--filter", "background-jobs", "dev"]
+
+FROM base-cpu AS testing
+
+WORKDIR /app
+
+COPY --from=dependencies-cpu /app/node_modules ./node_modules
+
+COPY --from=builder /app/apps/background-jobs/dist ./apps/background-jobs/dist
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/package.json /app/pnpm-workspace.yaml /app/prisma.config.ts /app/tsconfig.json /app/.npmrc ./
+
+ENV NODE_ENV=testing
+
+COPY apps/ ./apps/
+COPY packages/ ./packages/
+COPY turbo.json ./
+
+RUN pnpm --filter prisma generate
+
+CMD ["pnpm", "--filter", "''./packages/**'", "test"]
+
+
+FROM base-gpu AS testing-gpu
+
+WORKDIR /app
+
+COPY --from=dependencies-cpu /app/node_modules ./node_modules
 
 COPY --from=builder /app/apps/background-jobs/dist ./apps/background-jobs/dist
 COPY --from=builder /app/packages ./packages
