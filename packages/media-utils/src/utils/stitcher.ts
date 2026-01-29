@@ -8,22 +8,13 @@ import os from 'os'
 import { cleanupFiles, ensureDirectoryExists } from '@shared/utils/file'
 import { logger } from '@shared/services/logger'
 import { STITCHED_VIDEOS_DIR } from '../constants'
+import { buildEncodingArgs, getScaleFilter, prependGPUArgs } from '@media-utils/lib/ffmpegGpu'
+import { USE_GPU } from '@media-utils/constants'
 
 const DEFAULT_ASPECT_RATIO = '16:9'
 const DEFAULT_FPS = 30
 const DEFAULT_OUTPUT_DIR = 'output-videos'
 const STANDARD_DIMENSION = 1080
-
-const ENCODING_SETTINGS = {
-  videoCodec: 'libx264',
-  preset: 'medium',
-  crf: '23',
-  audioCodec: 'aac',
-  audioBitrate: '128k',
-  audioSampleRate: '48000',
-  audioChannels: '2',
-  pixelFormat: 'yuv420p',
-} as const
 
 const validateScenes = (scenes: ExportedScene[]) => {
   if (scenes.length === 0) {
@@ -84,11 +75,9 @@ const calculateTargetDimensions = (aspectRatio: string, targetResolution?: strin
   let height: number
 
   if (aspectValue >= 1) {
-    // Landscape (e.g., 16:9)
     height = STANDARD_DIMENSION
     width = Math.round(height * aspectValue)
   } else {
-    // Portrait (e.g., 9:16)
     width = STANDARD_DIMENSION
     height = Math.round(width * (denominator / numerator))
   }
@@ -108,7 +97,6 @@ const handleFFmpegProcess = (process: ChildProcess, operationName: string): Prom
     process.stderr?.on('data', (data) => {
       const message = data.toString()
       stderrOutput += message
-      logger.warn(`FFmpeg ${operationName} (warning): ${message}`)
     })
 
     process.on('close', (code) => {
@@ -122,33 +110,19 @@ const handleFFmpegProcess = (process: ChildProcess, operationName: string): Prom
 }
 
 const buildVideoFilter = (dimensions: Dimensions, fps: number): string => {
+  // Use appropriate scale filter based on GPU availability
+  const scaleFilter = getScaleFilter(
+    dimensions.width,
+    dimensions.height,
+    { useGPUScaling: false } // Use CPU scaling for compatibility
+  )
+
   return [
-    `scale=${dimensions.width}:${dimensions.height}:force_original_aspect_ratio=decrease`,
+    `${scaleFilter}:force_original_aspect_ratio=decrease`,
     `pad=${dimensions.width}:${dimensions.height}:(ow-iw)/2:(oh-ih)/2`,
     'setsar=1',
     `fps=${fps}`,
   ].join(',')
-}
-
-const buildEncodingArgs = (): string[] => {
-  return [
-    '-c:v',
-    ENCODING_SETTINGS.videoCodec,
-    '-preset',
-    ENCODING_SETTINGS.preset,
-    '-crf',
-    ENCODING_SETTINGS.crf,
-    '-c:a',
-    ENCODING_SETTINGS.audioCodec,
-    '-b:a',
-    ENCODING_SETTINGS.audioBitrate,
-    '-ar',
-    ENCODING_SETTINGS.audioSampleRate,
-    '-ac',
-    ENCODING_SETTINGS.audioChannels,
-    '-pix_fmt',
-    ENCODING_SETTINGS.pixelFormat,
-  ]
 }
 
 const processClip = async (
@@ -158,27 +132,23 @@ const processClip = async (
   targetFps: number
 ): Promise<void> => {
   const videoFilter = buildVideoFilter(dimensions, targetFps)
-  const encodingArgs = buildEncodingArgs()
+  const encodingArgs = buildEncodingArgs({ encoder: 'h264' })
 
   const argsWithAudio = [
+    ...prependGPUArgs(),
     '-ss',
     scene.startTime.toString(),
     '-to',
     scene.endTime.toString(),
-
     '-i',
     scene.source,
-
     '-vf',
     videoFilter,
-
     '-map',
     '0:v:0',
     '-map',
     '0:a:0?',
-
     ...encodingArgs,
-
     '-y',
     clipPath,
   ]
@@ -186,35 +156,33 @@ const processClip = async (
   let process = await spawnFFmpeg(argsWithAudio)
   let result = await handleFFmpegProcess(process, `clip processing (${scene.source})`)
 
-  if (result.code === 0) return
+  if (result.code === 0) {
+    logger.info(`Processed clip: ${clipPath} (GPU: ${USE_GPU})`)
+    return
+  }
 
   logger.warn(`Initial processing failed for ${scene.source}, retrying with silent audio`)
 
   const argsWithSilentAudio = [
+    ...prependGPUArgs(),
     '-ss',
     scene.startTime.toString(),
     '-to',
     scene.endTime.toString(),
-
     '-i',
     scene.source,
-
     '-f',
     'lavfi',
     '-i',
     'anullsrc=r=48000:cl=stereo',
-
     '-vf',
     videoFilter,
-
     '-map',
     '0:v:0',
     '-map',
     '1:a:0',
     '-shortest',
-
     ...encodingArgs,
-
     '-y',
     clipPath,
   ]
@@ -225,6 +193,8 @@ const processClip = async (
   if (result.code !== 0) {
     throw new Error(`Failed to process clip from ${scene.source}: ${result.stderr || 'Unknown error'}`)
   }
+
+  logger.info(`Processed clip with silent audio: ${clipPath} (GPU: ${USE_GPU})`)
 }
 
 const createFileList = (clipPaths: string[], fileListPath: string): void => {
@@ -233,7 +203,7 @@ const createFileList = (clipPaths: string[], fileListPath: string): void => {
 }
 
 const concatenateClips = async (fileListPath: string, outputPath: string): Promise<void> => {
-  const encodingArgs = buildEncodingArgs()
+  const encodingArgs = buildEncodingArgs({ encoder: 'h264' })
 
   const args = [
     '-f',
@@ -256,6 +226,8 @@ const concatenateClips = async (fileListPath: string, outputPath: string): Promi
   if (result.code !== 0 && (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0)) {
     throw new Error(`Failed to concatenate clips: ${result.stderr || 'Unknown error'}`)
   }
+
+  logger.info(`Concatenated video: ${outputPath} (GPU: ${USE_GPU})`)
 }
 
 export async function stitchVideos(
@@ -277,6 +249,10 @@ export async function stitchVideos(
   const clipPaths: string[] = []
 
   const dimensions = calculateTargetDimensions(aspectRatio, targetResolution)
+
+  logger.info(
+    `Starting video stitching: ${scenes.length} scenes, ${dimensions.width}x${dimensions.height}, GPU: ${USE_GPU}`
+  )
 
   try {
     for (let i = 0; i < validatedScenes.length; i++) {

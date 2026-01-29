@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { ChildProcess } from 'child_process'
 import {
   BATCH_THUMBNAIL_QUALITY,
   DEFAULT_FPS,
@@ -8,10 +7,11 @@ import {
   THUMBNAIL_QUALITY,
   THUMBNAIL_SCALE,
   THUMBNAILS_DIR,
+  USE_GPU,
 } from '../constants'
 import { exiftool } from 'exiftool-vendored'
-import { CameraInfo, GeoLocation, VideoFile, VideoMetadata, FFmpegError } from '../types/video'
-import { spawnFFmpeg, spawnFFprobe } from '../lib/ffmpeg'
+import { CameraInfo, GeoLocation, VideoFile, VideoMetadata } from '../types/video'
+import { handleFFmpegProcess, spawnFFmpeg, spawnFFprobe } from '../lib/ffmpeg'
 import { validateFile } from '@shared/utils/file'
 import { logger } from '@shared/services/logger'
 import { FFprobeMetadata, FFprobeStream } from '../types/ffmpeg'
@@ -28,33 +28,6 @@ const initializeThumbnailsDir = (): void => {
 
 initializeThumbnailsDir()
 
-const handleFFmpegProcess = (process: ChildProcess, operationName: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    let errorOutput = ''
-
-    process.stderr?.on('data', (data) => {
-      errorOutput += data.toString()
-    })
-
-    process.on('close', (code) => {
-      if (code === 0) {
-        resolve()
-      } else {
-        const error: FFmpegError = new Error(
-          `FFmpeg ${operationName} failed with code ${code}: ${errorOutput.trim() || 'Unknown error'}`
-        )
-        error.code = code ?? undefined
-        error.stderr = errorOutput
-        reject(error)
-      }
-    })
-
-    process.on('error', (err) => {
-      reject(new Error(`Failed to spawn FFmpeg for ${operationName}: ${err.message}`))
-    })
-  })
-}
-
 export async function generateThumbnail(
   videoPath: string,
   thumbnailPath: string,
@@ -69,7 +42,7 @@ export async function generateThumbnail(
   const quality = options?.quality ?? THUMBNAIL_QUALITY
   const scale = options?.scale ?? THUMBNAIL_SCALE
 
-  const args = [
+  let args = [
     '-ss',
     timestamp.toString(),
     '-i',
@@ -86,9 +59,28 @@ export async function generateThumbnail(
     'error',
   ]
 
+  if (USE_GPU) {
+    args = [
+      '-hwaccel',
+      'cuda',
+      '-ss',
+      timestamp.toString(),
+      '-i',
+      videoPath,
+      '-vframes',
+      '1',
+      '-vf',
+      `scale=${scale}`,
+      '-q:v',
+      quality,
+      thumbnailPath,
+    ]
+  }
+
   const ffmpegProcess = await spawnFFmpeg(args)
   return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
 }
+
 export async function generateVideoCover(
   videoPath: string,
   thumbnailPath: string,
@@ -104,7 +96,7 @@ export async function generateVideoCover(
   const scale = options?.scale ?? THUMBNAIL_SCALE
   const keyframe = options?.keyframe ?? 0
 
-  const args = [
+  let args = [
     '-skip_frame',
     'nokey',
     '-i',
@@ -120,6 +112,26 @@ export async function generateVideoCover(
     '-loglevel',
     'error',
   ]
+  if (USE_GPU) {
+    args = [
+      '-hwaccel',
+      'cuda',
+      '-skip_frame',
+      'nokey',
+      '-i',
+      videoPath,
+      '-vf',
+      `select='eq(pict_type\\,I)*eq(n\\,${keyframe})',scale=${scale}`,
+      '-vframes',
+      '1',
+      '-q:v',
+      quality,
+      thumbnailPath,
+      '-y',
+      '-loglevel',
+      'error',
+    ]
+  }
 
   const ffmpegProcess = await spawnFFmpeg(args)
   return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
@@ -147,16 +159,22 @@ export async function generateAllThumbnails(
     )
     .join(';')
 
-  const args = [
-    '-i',
-    videoPath,
-    '-filter_complex',
-    filterComplex,
-    '-q:v',
-    BATCH_THUMBNAIL_QUALITY,
-    '-loglevel',
-    'error',
-  ]
+  let args = ['-i', videoPath, '-filter_complex', filterComplex, '-q:v', BATCH_THUMBNAIL_QUALITY, '-loglevel', 'error']
+
+  if (USE_GPU) {
+    args = [
+      '-hwaccel',
+      'cuda',
+      '-i',
+      videoPath,
+      '-filter_complex',
+      filterComplex,
+      '-q:v',
+      BATCH_THUMBNAIL_QUALITY,
+      '-loglevel',
+      'error',
+    ]
+  }
 
   timestamps.forEach((_, idx) => {
     args.push('-map', `[v${idx}]`, '-frames:v', '1', outputPaths[idx])

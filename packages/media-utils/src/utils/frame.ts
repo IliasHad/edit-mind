@@ -5,6 +5,7 @@ import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
 import { spawnFFmpeg } from '../lib/ffmpeg'
 import { logger } from '@shared/services/logger'
+import { prependGPUArgs } from '@media-utils/lib/ffmpegGpu';
 
 interface ExtractFramesOptions {
   framesPerScene?: number
@@ -43,7 +44,17 @@ export const extractSceneFrames = async (
       const timestamp = startTime + interval * i
       const framePath = join(framesDir, `frame_${i}.${format}`)
 
-      const args = ['-ss', timestamp.toFixed(3), '-i', videoPath, '-vframes', '1', '-vf', `scale=${maxWidth}:-1`]
+      const args = [
+        ...prependGPUArgs(),
+        '-ss',
+        timestamp.toFixed(3),
+        '-i',
+        videoPath,
+        '-vframes',
+        '1',
+        '-vf',
+        `scale=${maxWidth}:-1`,
+      ]
 
       if (format === 'jpg') {
         args.push('-q:v', quality.toString())
@@ -79,6 +90,7 @@ export const extractSceneFrames = async (
       throw new Error('No frames were extracted')
     }
 
+    logger.info(`Extracted ${framePaths.length} frames from scene (${startTime}s - ${endTime}s)`)
     return framePaths
   } catch (error) {
     for (const framePath of framePaths) {
@@ -87,7 +99,7 @@ export const extractSceneFrames = async (
           await unlink(framePath)
         }
       } catch (cleanupError) {
-        logger.warn(`Failed to cleanup frame: ${framePath}` + cleanupError)
+        logger.warn({ cleanupError }, `Failed to cleanup frame: ${framePath}`)
       }
     }
     throw error
@@ -107,4 +119,3 @@ export const cleanupFrames = async (framePaths: string[]): Promise<void> => {
 
   await Promise.all(deletePromises)
 }
-

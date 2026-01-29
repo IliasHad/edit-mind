@@ -12,6 +12,7 @@ import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
 import { dirname } from 'path'
 import { mkdir, readFile } from 'fs/promises'
 import type { Analysis } from '@shared/types/analysis'
+import { env } from '@background-jobs/utils/env'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = true, analysisPath } = job.data
@@ -87,7 +88,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
 export const frameAnalysisWorker = new Worker('frame-analysis', processVideo, {
   connection,
-  concurrency: 1,
+  concurrency: env.MAX_CONCURRENT_VIDEO_JOBS,
   lockDuration: 6 * 60 * 60 * 1000, // 6 hours
   stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,
