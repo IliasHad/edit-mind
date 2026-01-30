@@ -24,17 +24,17 @@ async function finalizeVideo(job: Job<VideoProcessingData>) {
     const video = await getByVideoSource(videoPath)
 
     if (video) {
-      await importVideoFromVectorDb(video)
-      const folder = await FolderModel.findByPath(dirname(videoPath))
+      const folder = await importVideoFromVectorDb(video)
 
       if (folder) {
+        await updateJob(job, { folderId: folder.id })
         // We need to count all processing and pending to update the folder status to be indexed in the case of zero jobs count
         const jobsCount = await JobModel.count({
           where: {
             status: {
               in: ['pending', 'processing'],
             },
-            folderId: folder.id
+            folderId: folder.id,
           },
         })
         if (jobsCount === 0) {
