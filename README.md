@@ -171,93 +171,12 @@ If you're using Safari, use [http://127.0.0.1:3745](http://127.0.0.1:3745)
 ### 6. Add Your First Videos
 
 1. Navigate to the web app at `http://localhost:3745`
-2. Login using `admin@example.com` and password is `admin`
+2. Login using `admin@example.com` and the password is `admin`
 3. Navigate to the web app at `http://localhost:3745/app/settings`
 4. Click **"Add Folder"**
 3. Select a folder from your `HOST_MEDIA_PATH` location
-4. Click on the folder and Click on `Rescan`
-4. The background job service will automatically start processing your videos and will be start watching for new video file events 
-
-
-## Packages
-
-This section provides an overview of the various packages within this monorepo. Each package is designed to handle a specific set of responsibilities, promoting modularity and reusability.
-
-### `@packages/ai`
-
-**Purpose**: Handles all interactions with Artificial Intelligence models (both local and cloud-based).
-
-- **Responsibilities**:
-  - Interprets natural language user queries for search and chat.
-  - Classifies user intent (e.g., compilation, analytics, general chat).
-  - Converts queries into a structured JSON format for the search service.
-  - Generates user-facing messages, analytics summaries, and creative video compilation ideas.
-  - Supports multiple AI backends like Google Gemini and local models (via `node-llama-cpp`) or `Ollama`.
-
-### `@packages/vector`
-
-**Purpose**: Manages communication with the vector database (ChromaDB) and handles the creation of embeddings.
-
-- **Responsibilities**:
-  - Provides a client for interacting with ChromaDB collections.
-  - Creates text, visual, and audio embeddings for video scenes using libraries like `@xenova/transformers`.
-  - Stores, retrieves, and searches for scenes based on vector similarity (hybrid search).
-  - Manages separate collections for text, visual, and audio data to support multi-modal search.
-  - Provides utilities for batch embedding scenes text, visual, and audio segments.
-
-### `@packages/media-utils`
-
-**Purpose**: A comprehensive toolkit for all media processing tasks.
-
-- **Responsibilities**:
-  - Extracts video metadata using `ffmpeg`.
-  - Generates thumbnails for videos and scenes.
-  - Extracts individual frames and audio segments from videos for visual embedding.
-  - Stitches video scenes together to create compilations.
-  - Reads camera metadata (e.g., GoPro telemetry) and EXIF data for location and date information.
-
-### `@packages/db`
-
-**Purpose**: Centralizes database client and schema management.
-
-- **Responsibilities**:
-  - Exports the Prisma Client instance for use across the application.
-  - Ensures that all parts of the application use a single, consistent database connection.
-
-### `@packages/prisma`
-
-**Purpose**: Defines the application's database schema and manages migrations.
-
-- **Responsibilities**:
-  - Contains the `schema.prisma` file, which is the single source of truth for database models.
-  - Includes scripts for seeding the database with initial data (`seed.ts`).
-  - Manages database migrations to keep the schema in sync with the models.
-
-### `@packages/search`
-
-**Purpose**: Orchestrates the entire search process, from user query to results.
-
-- **Responsibilities**:
-  - Takes a user query, and then uses the structured result to query the vector database.
-  - Consolidates results and prepares them to use.
-
-### `@packages/shared`
-
-**Purpose**: Contains code, types, and utilities that are shared across multiple packages.
-
-- **Responsibilities**:
-  - Defines shared TypeScript types and Zod schemas.
-  - Provides common services like `logger` and `cache`.
-  - Includes shared utility functions.
-
-### `@packages/smart-collections`
-
-**Purpose**: Manages the creation and maintenance of "smart collections" of videos.
-
-- **Responsibilities**:
-  - Defines criteria for dynamic collections (e.g., "Moments with X," "Conversations and Talks").
-  - Queries the vector database to find media that matches the collection criteria.
-  - Generates and updates these collections automatically.
+4. Navigate to the folder details page and click on `Rescan`
+4. The background job service will automatically start processing your videos and will start watching for new video file events 
 
 ### Special Thanks
 
@@ -301,6 +220,6 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the `LICENSE.md` file for details.
