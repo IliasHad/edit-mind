@@ -28,3 +28,10 @@ export interface FFprobeMetadata {
   streams: FFprobeStream[]
   format: FFprobeFormat
 }
+
+export interface FFmpegGPUOptions {
+  enableHWAccel?: boolean
+  encoder?: 'h264' | 'hevc'
+  preset?: string
+  useGPUScaling?: boolean
+}

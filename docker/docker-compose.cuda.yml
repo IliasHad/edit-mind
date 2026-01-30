@@ -1,0 +1,159 @@
+services:
+  background-jobs:
+    restart: unless-stopped
+    build:
+      target: production-gpu
+      context: ..
+      dockerfile: docker/Dockerfile.background-jobs
+      args:
+        NODE_VERSION: 22.20.0
+        PNPM_VERSION: 10.20.0
+    image: edit-mind-background-jobs:latest-gpu
+    container_name: edit-mind-background-jobs
+    env_file:
+      - .env.system
+      - .env
+    ports:
+      - "${BACKGROUND_JOBS_PORT}:${BACKGROUND_JOBS_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+      ml:
+          condition: service_started
+    networks:
+      - app-network
+    volumes:
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ../.data:/app/data
+  web:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      target: production
+      args:
+        NODE_VERSION: 22.20.0
+        PNPM_VERSION: 10.20.0
+    image: edit-mind-web:${VERSION:-latest}
+    container_name: edit-mind-web
+    env_file:
+      - .env.system
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    volumes:
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ../.data:/app/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3745/auth/login"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+      start_period: 60s
+  chroma:
+    image: chromadb/chroma:1.3.5
+    container_name: edit-mind-chroma
+    restart: unless-stopped
+    env_file:
+      - .env.system
+      - .env
+    environment:
+      IS_PERSISTENT: TRUE
+      CHROMA_CORS_ALLOW_ORIGINS: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
+    ports:
+      - "${CHROMA_PORT}:8000"
+    volumes:
+      - chroma_data:/data
+    networks:
+      - app-network
+
+  redis:
+    restart: unless-stopped
+    image: redis:7
+    container_name: edit-mind-redis
+    env_file:
+      - .env.system
+      - .env
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: edit-mind-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.system
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+  ml:
+    restart: unless-stopped
+    build:
+      target: production-gpu
+      context: ..
+      dockerfile: docker/Dockerfile.ml
+      args:
+        PYTHON_VERSION: 3.11
+    image: edit-mind-ml:latest-gpu
+    container_name: edit-mind-ml
+    env_file:
+      - .env.system
+      - .env
+    ports:
+      - "${ML_PORT}:${ML_PORT}"
+    environment:
+      YOLO_CONFIG_DIR: /ml-models/ultralytics
+      DEEPFACE_HOME: /ml-models/deepface
+      TRANSCRIPTION_MODEL_CACHE: /ml-models/whisper
+      TORCH_HOME: /ml-models/torch  
+      HF_HOME: /ml-models/huggingface 
+    networks:
+      - app-network
+    volumes:
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ml-models:/app/ml-models:rw
+      - ../.data:/app/data
+volumes:
+  redis_data:
+    driver: local
+  ml-models:
+    driver: local
+  chroma_data:
+    driver: local
+  pg_data:
+    driver: local
+    
+networks:
+  app-network:

@@ -5,6 +5,7 @@ import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
 import { spawnFFmpeg } from '../lib/ffmpeg'
 import { logger } from '@shared/services/logger'
+import { prependGPUArgs } from '@media-utils/lib/ffmpegGpu'
 
 interface ExtractAudioOptions {
   format?: 'wav' | 'mp3' | 'flac'
@@ -38,6 +39,7 @@ export const extractSceneAudio = async (
 
   try {
     const args = [
+      ...prependGPUArgs(),
       '-ss',
       startTime.toFixed(3),
       '-t',
@@ -111,23 +113,19 @@ export async function readAudio(audioPath: string, sampling_rate: number = 48000
   }
 
   return new Promise((resolve, reject) => {
-    // Use ffmpeg to:
-    // 1. Decode the audio file
-    // 2. Convert to mono (-ac 1)
-    // 3. Resample to target rate (-ar)
-    // 4. Output as f32le (32-bit float PCM, little-endian)
     const args = [
+      ...prependGPUArgs(),
       '-i',
-      audioPath, // Input file
+      audioPath,
       '-f',
-      'f32le', // Output format: 32-bit float
+      'f32le',
       '-acodec',
-      'pcm_f32le', // Audio codec: PCM 32-bit float little-endian
+      'pcm_f32le',
       '-ac',
-      '1', // Convert to mono
+      '1',
       '-ar',
-      sampling_rate.toString(), // Resample to target rate
-      '-', // Output to stdout
+      sampling_rate.toString(),
+      '-',
     ]
 
     spawnFFmpeg(args)
@@ -145,16 +143,12 @@ export async function readAudio(audioPath: string, sampling_rate: number = 48000
           }
 
           try {
-            // Concatenate all chunks
             const buffer = Buffer.concat(chunks)
-
-            // Convert Buffer to Float32Array
             const audioData = new Float32Array(
               buffer.buffer,
               buffer.byteOffset,
               buffer.length / Float32Array.BYTES_PER_ELEMENT
             )
-
             resolve(audioData)
           } catch (error) {
             reject(error)

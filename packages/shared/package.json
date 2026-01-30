@@ -1,6 +1,6 @@
 {
   "name": "shared",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "AI-Powered Video Indexing and Search",
   "type": "module",
   "main": "dist/index.js",

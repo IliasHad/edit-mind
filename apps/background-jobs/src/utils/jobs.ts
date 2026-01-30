@@ -1,3 +1,4 @@
+import { VideoProcessingData } from '@shared/types/video'
 import { logger } from '@shared/services/logger'
 import { videoProcessingQueues } from '@background-jobs/queue'
 
@@ -29,7 +30,8 @@ export async function removeFailedJobs(failedJobsIds: string[]) {
     const jobs = await queue.getJobs()
 
     for await (const job of jobs) {
-      if (failedJobsIds.includes(job.data.id)) {
+      const data = job.data as VideoProcessingData
+      if (failedJobsIds.includes(data.jobId)) {
         await job.remove()
       }
     }

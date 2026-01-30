@@ -19,6 +19,11 @@ export function watchFolder(folderPath: string) {
     ignored: /^\./,
     persistent: true,
     ignoreInitial: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 2000,
+      pollInterval: 100,
+    },
+    atomic: 100,
   })
 
   watcher.on('add', async (filePath) => {

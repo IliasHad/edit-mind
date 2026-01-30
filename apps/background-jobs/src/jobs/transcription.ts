@@ -10,6 +10,7 @@ import path from 'path'
 import { frameAnalysisQueue } from '@background-jobs/queue'
 import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
+import { env } from '@background-jobs/utils/env'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = false, transcriptionPath } = job.data
@@ -93,7 +94,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
 export const audioTranscriptionWorker = new Worker('transcription', processVideo, {
   connection,
-  concurrency: 1,
+  concurrency: env.MAX_CONCURRENT_TRANSCRIPTIONS,
   lockDuration: 6 * 60 * 60 * 1000, // 6 hours
   stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,
