@@ -4,8 +4,9 @@ import { THUMBNAILS_DIR } from '@shared/constants'
 import { generateVideoCover } from '@media-utils/utils/videos'
 import { Video } from '@shared/types/video'
 import { FolderModel, UserModel, VideoModel, generateId } from '@db/index'
+import { Folder } from '@prisma/client'
 
-export async function importVideoFromVectorDb(video: Video): Promise<void> {
+export async function importVideoFromVectorDb(video: Video): Promise<Folder | undefined> {
   try {
     const user = await UserModel.findFirst()
     if (!user) {
@@ -64,6 +65,7 @@ export async function importVideoFromVectorDb(video: Video): Promise<void> {
           folderId: folder?.id,
         },
       })
+      return folder
     } catch (videoError) {
       logger.error(`Failed to import video ${video.source}: ` + videoError)
     }

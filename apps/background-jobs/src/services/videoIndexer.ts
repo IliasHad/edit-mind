@@ -25,6 +25,7 @@ export async function updateJob(
     audioEmbeddingTime?: number
     visualEmbeddingTime?: number
     frameAnalysisPlugins?: Record<string, string | number>[]
+    folderId?: string
   }>
 ) {
   if (!job.data?.jobId) return
