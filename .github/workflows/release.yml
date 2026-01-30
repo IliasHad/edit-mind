@@ -34,7 +34,6 @@ jobs:
       contents: read
 
     strategy:
-      max-parallel: 1  
       matrix:
         service:
           - name: background-jobs
@@ -60,13 +59,6 @@ jobs:
             context: .
             target: production
             tag: latest
-
-          - name: ml
-            dockerfile: docker/Dockerfile.ml
-            context: .
-            target: production-gpu
-            tag: latest-gpu
-
 
     steps:
       - name: Checkout code
@@ -95,6 +87,39 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
 
+  build-ml-gpu:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref != 'refs/heads/main'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
+
+      - name: Build ML GPU
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.ml
+          target: production-gpu
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
+          cache-to: type=gha,mode=max,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
 
   test:
       name: Playwright Tests
@@ -192,7 +217,6 @@ jobs:
       attestations: write
 
     strategy:
-      max-parallel: 1  
       matrix:
         services:
           - name: background-jobs
@@ -213,18 +237,11 @@ jobs:
             target: production
             tag: latest
 
-          - name: ml
-            dockerfile: docker/Dockerfile.ml
-            context: .
-            target: production-gpu
-            tag: latest-gpu
-
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
             target: production
             tag: latest
-
 
     steps:
       - name: Set lowercase image prefix
@@ -280,5 +297,73 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  release-ml-gpu:
+    name: Release ML GPU Docker Image
+    runs-on: ubuntu-latest
+    needs: release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+      attestations: write
+
+    steps:
+      - name: Set lowercase image prefix
+        run: |
+          echo "IMAGE_PREFIX=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/edit-mind" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-ml
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest-gpu
+
+      - name: Build and push ML GPU Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.ml
+          target: production-gpu
+          platforms: linux/amd64
+          build-args: |
+            NODE_VERSION=${{ env.NODE_VERSION }}
+            PNPM_VERSION=${{ env.PNPM_VERSION }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
+          cache-to: type=gha,mode=max,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
+          sbom: false
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-ml
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
