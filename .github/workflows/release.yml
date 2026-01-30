@@ -218,7 +218,7 @@ jobs:
 
     strategy:
       matrix:
-        include:
+        service:
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
