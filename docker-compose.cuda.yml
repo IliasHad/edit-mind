@@ -32,8 +32,6 @@ services:
             - driver: nvidia
               count: ${GPU_COUNT:-all}
               capabilities: [gpu]
-    profiles:
-      - gpu
   web:
     restart: unless-stopped
     image: ghcr.io/iliashad/edit-mind-web:latest
@@ -147,8 +145,6 @@ services:
             - driver: nvidia
               count: ${GPU_COUNT:-all}
               capabilities: [gpu]
-    profiles:
-      - gpu
 volumes:
   redis_data:
     driver: local
