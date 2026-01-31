@@ -229,7 +229,7 @@ jobs:
   release:
     name: Release Docker Images
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       id-token: write
