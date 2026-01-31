@@ -64,12 +64,24 @@ class WhisperModelManager:
 
                 # Load model
                 logger.info(f"Loading Whisper model: {self.config.model_name}")
-                self._model = WhisperModel(
-                    self.config.model_name,
-                    device=self.config.device,
-                    compute_type=self.config.compute_type,
-                    download_root=self.config.cache_dir
-                )
+                try:
+                    self._model = WhisperModel(
+                        self.config.model_name,
+                        device=self.config.device,
+                        compute_type=self.config.compute_type,
+                        download_root=self.config.cache_dir
+                    )
+                except ValueError as e:
+                    if "int8_float16" in str(e) and self.config.device == "cuda":
+                        logger.warning("int8_float16 not supported, falling back to float16")
+                        self._model = WhisperModel(
+                            self.config.model_name,
+                            device=self.config.device,
+                            compute_type="float16",
+                            download_root=self.config.cache_dir
+                        )
+                    else:
+                        raise
 
                 logger.info("Model loaded successfully")
                 return self._model
