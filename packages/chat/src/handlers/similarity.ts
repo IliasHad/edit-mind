@@ -1,4 +1,4 @@
-import { getSimilarScenes } from '@search/services'
+import { getSimilarScenes } from '@search/services/similarity'
 import { generateCompilationResponse } from '@ai/services/modelRouter'
 import { ChatMessage } from '@prisma/client'
 

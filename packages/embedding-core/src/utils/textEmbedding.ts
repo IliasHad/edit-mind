@@ -1,11 +1,11 @@
-import { embedDocuments } from '@vector/services/db';
 import { Scene } from '@shared/types/scene'
 import { createVectorDbClient } from '@vector/services/client'
 
 import { EMBEDDING_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
 import { sceneToVectorFormat } from '@vector/utils/shared'
-import { getEmbeddings } from '@embedding-core/services'
+import { getEmbeddings } from '@embedding-core/services/extractors'
+import { embedTextDocuments } from '@embedding-core/services/embed';
 
 export const embedScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
   try {
@@ -26,7 +26,7 @@ export const embedScenes = async (scenes: Scene[], videoFullPath: string): Promi
       if (embeddingInputs.length > 0) {
         logger.info(`Embedding ${embeddingInputs.length} new text documents`)
         const embedding = await getEmbeddings(embeddingInputs.map((doc) => doc.text))
-        await embedDocuments(
+        await embedTextDocuments(
           embeddingInputs.map((doc) => ({
             id: doc.id,
             metadata: doc.metadata,

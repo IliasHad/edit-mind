@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'fs'
 import { readAudio } from '@media-utils/utils/audio'
 import { withTimeout } from '@vector/utils/shared'
 import { EMBEDDING_TIMEOUT } from '@shared/constants/embedding'
-import { getFrameExtractor, getAudioExtractor } from '@embedding-core/services'
+import { getFrameExtractor, getAudioExtractor } from '@embedding-core/services/extractors'
 
 export async function embedSceneFrames(frames: string[]): Promise<number[] | null> {
   const { processor, model } = await getFrameExtractor()

@@ -1,4 +1,3 @@
-import { embedVisuals } from '@vector/services/db'
 import { createVectorDbClient } from '@vector/services/client'
 import { VISUAL_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
@@ -6,6 +5,7 @@ import { cleanupFrames, extractSceneFrames } from '@media-utils/utils/frame'
 import { embedSceneFrames } from '../services'
 import { Scene } from '@shared/schemas'
 import { sceneToVectorFormat } from '@vector/utils/shared'
+import { embedVisuals } from '@embedding-media/services/embed'
 
 export const embedVisualScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
   try {

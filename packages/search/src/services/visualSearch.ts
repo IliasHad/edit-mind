@@ -1,4 +1,4 @@
-import { getImageEmbedding } from '@embedding-core/services'
+import { getImageEmbedding } from '@embedding-core/services/extractors'
 import { createVectorDbClient } from '@vector/services/client'
 import { VideoWithScenesAndMatch } from '@shared/types/video'
 import { logger } from '@shared/services/logger'

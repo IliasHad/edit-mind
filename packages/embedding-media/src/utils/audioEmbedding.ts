@@ -1,4 +1,3 @@
-import { embedAudios } from '@vector/services/db'
 import { createVectorDbClient } from '@vector/services/client'
 
 import { AUDIO_BATCH_SIZE } from '@shared/constants/embedding'
@@ -7,6 +6,7 @@ import { cleanupAudio, extractSceneAudio } from '@media-utils/utils/audio'
 import { embedSceneAudio } from '../services'
 import type { Scene } from '@shared/schemas'
 import { sceneToVectorFormat } from '@vector/utils/shared'
+import { embedAudios } from '@embedding-media/services/embed'
 
 export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
   try {

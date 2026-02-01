@@ -3,7 +3,7 @@ import { getCache, setCache, invalidateCache } from '@shared/services/cache'
 import { GroupedSuggestions, Suggestion, VideoSearchParams } from '@shared/types/search'
 import { ShotType } from '@shared/types'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
-import { getAllDocs } from '@vector/services/db'
+import { getScenesStream } from '@vector/services/db'
 
 interface CacheStats {
   isInitialized: boolean
@@ -119,15 +119,6 @@ class SearchSuggestionCache {
 
   private async buildCache(): Promise<void> {
     const startTime = Date.now()
-
-    const allDocs = await getAllDocs()
-    if (!allDocs || allDocs.length === 0) {
-      logger.warn('No documents found for suggestion cache')
-      return
-    }
-
-    logger.debug(`Processing ${allDocs.length} scenes...`)
-
     const faceCounts = new Map<string, number>()
     const objectCounts = new Map<string, number>()
     const emotionCounts = new Map<string, number>()
@@ -136,39 +127,35 @@ class SearchSuggestionCache {
     const locationCounts = new Map<string, number>()
     const transcriptionTerms = new Map<string, number>()
     const textTerms = new Map<string, number>()
+    let totalScenes: number = 0;
 
-    for (let i = 0; i < allDocs.length; i += this.BATCH_SIZE) {
-      const batch = allDocs.slice(i, i + this.BATCH_SIZE)
+    for await (const scene of getScenesStream(this.BATCH_SIZE)) {
+      this.extractArray(scene.faces, faceCounts)
+      this.extractArray(scene.objects, objectCounts)
+      this.extractEmotions(scene.emotions, emotionCounts)
+      totalScenes += 1;
 
-      batch.forEach((metadata) => {
-        if (!metadata) return
+      if (scene.camera) {
+        const camera = scene.camera.toString()
+        cameraCounts.set(camera, (cameraCounts.get(camera) || 0) + 1)
+      }
+      if (scene.location) {
+        const location = scene.location.toString()
+        locationCounts.set(location, (locationCounts.get(location) || 0) + 1)
+      }
 
-        this.extractArray(metadata.faces, faceCounts)
-        this.extractArray(metadata.objects, objectCounts)
-        this.extractEmotions(metadata.emotions, emotionCounts)
+      if (scene.shotType) {
+        const shotType = scene.shotType.toString()
+        shotTypeCounts.set(shotType, (shotTypeCounts.get(shotType) || 0) + 1)
+      }
 
-        if (metadata.camera) {
-          const camera = metadata.camera.toString()
-          cameraCounts.set(camera, (cameraCounts.get(camera) || 0) + 1)
-        }
-        if (metadata.location) {
-          const location = metadata.location.toString()
-          locationCounts.set(location, (locationCounts.get(location) || 0) + 1)
-        }
+      if (scene.transcription) {
+        this.extractWords(scene.transcription.toString(), transcriptionTerms, 3)
+      }
 
-        if (metadata.shotType) {
-          const shotType = metadata.shotType.toString()
-          shotTypeCounts.set(shotType, (shotTypeCounts.get(shotType) || 0) + 1)
-        }
-
-        if (metadata.transcription) {
-          this.extractWords(metadata.transcription.toString(), transcriptionTerms, 3)
-        }
-
-        if (metadata.detectedText) {
-          this.extractWords(metadata.detectedText.toString(), textTerms, 3)
-        }
-      })
+      if (scene.detectedText) {
+        this.extractWords(scene.detectedText.toString(), textTerms, 3)
+      }
     }
 
     // Filter out low-frequency terms to reduce cache size
@@ -220,7 +207,7 @@ class SearchSuggestionCache {
         locationCounts.size +
         filteredTranscriptionTerms.size +
         filteredTextTerms.size,
-      totalScenes: allDocs.length,
+      totalScenes,
       facesCount: faceCounts.size,
       objectsCount: objectCounts.size,
       emotionsCount: emotionCounts.size,
@@ -604,7 +591,9 @@ export async function refreshSuggestionCache(): Promise<void> {
   await suggestionCache.refresh()
 }
 
-export function buildSearchQueryFromSuggestions(suggestions: Record<string, string | null | undefined>): VideoSearchParams {
+export function buildSearchQueryFromSuggestions(
+  suggestions: Record<string, string | null | undefined>
+): VideoSearchParams {
   const searchQuery: VideoSearchParams = VideoSearchParamsSchema.parse({})
 
   const typeMapping: Record<string, keyof VideoSearchParams> = {
