@@ -1,6 +1,6 @@
 import type { User, UserRole, Prisma } from '@prisma/client'
 import prisma from '../db'
-import * as bcrypt from 'bcryptjs'
+import bcrypt from 'bcryptjs'
 import { nanoid } from 'nanoid'
 
 type UserCreateData = Pick<User, 'password' | 'email' | 'role' | 'name'>
