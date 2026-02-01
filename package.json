@@ -44,14 +44,13 @@
       "@ffprobe-installer/darwin-arm64",
       "@prisma/client",
       "@prisma/engines",
-      "electron",
-      "electron-winstaller",
       "esbuild",
       "msgpackr-extract",
       "node-llama-cpp",
       "onnxruntime-node",
       "prisma",
-      "protobufjs"
+      "protobufjs",
+      "sharp"
     ]
   },
   "resolutions": {
