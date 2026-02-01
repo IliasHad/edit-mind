@@ -4,6 +4,7 @@ import type { ChatMessage } from '@prisma/client'
 import { YearStats } from '@shared/types/stats'
 import { YearInReviewData } from '@shared/schemas/yearInReview'
 import { VideoWithScenes } from '@shared/types/video'
+import type { IntentData } from '@shared/types/chat'
 
 export interface AIModel {
   generateActionFromPrompt(
@@ -26,11 +27,7 @@ export interface AIModel {
     chatHistory?: ChatMessage[],
     projectInstructions?: string
   ): Promise<{
-    data: {
-      type?: 'compilation' | 'analytics' | 'general' | 'refinement' | 'similarity'
-      needsVideoData?: boolean
-      keepPrevious?: boolean
-    }
+    data: IntentData
     tokens: number
     error?: string | undefined
   }>
