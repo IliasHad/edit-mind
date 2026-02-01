@@ -1,7 +1,7 @@
 import type { VideoWithScenesAndMatch } from '@shared/types/video'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import type { GroupedSuggestions } from '@search/services/suggestion'
+import type { GroupedSuggestions } from '@shared/types/search'
 
 export interface SearchFilters {
   face?: string[]

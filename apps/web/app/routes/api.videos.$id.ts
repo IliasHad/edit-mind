@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
-import { deleteByVideoSource, getByVideoSource } from '@vector/services/vectorDb'
+import { deleteByVideoSource, getByVideoSource } from '@vector/services/db'
 import { existsSync, statSync } from 'fs'
 import { JobModel, VideoModel } from '@db/index'
 import { logger } from '@shared/services/logger'

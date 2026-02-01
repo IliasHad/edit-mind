@@ -1,5 +1,5 @@
 import { Queue, QueueOptions } from 'bullmq'
-import { connection } from '../src/services/redis'
+import { connection } from '@background-jobs/services/redis'
 
 const createQueue = (name: string, customOptions?: Partial<QueueOptions>): Queue => {
   return new Queue(name, {

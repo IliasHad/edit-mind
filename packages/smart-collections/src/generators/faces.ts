@@ -1,5 +1,5 @@
 import { logger } from '@shared/services/logger'
-import { getAllVideos } from '@vector/services/vectorDb'
+import { getAllVideos } from '@vector/services/db'
 import type { CollectionVideosMap, VideoCollection } from '../types'
 
 export async function generateFacesBasedCollections(): Promise<CollectionVideosMap> {

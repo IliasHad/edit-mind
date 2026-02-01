@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
 import { existsSync, promises as fs } from 'fs'
-import { embedScenes } from '@vector/utils/textEmbedding'
+import { embedScenes } from '@embedding-core/utils/textEmbedding'
 import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'

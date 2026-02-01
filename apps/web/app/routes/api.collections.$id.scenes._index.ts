@@ -1,5 +1,5 @@
 import { logger } from '@shared/services/logger'
-import { getVideoWithScenesBySceneIds } from '@vector/services/vectorDb'
+import { getVideoWithScenesBySceneIds } from '@vector/services/db'
 import { type LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/services/database'
 import { requireUser } from '~/services/user.sever'

@@ -4,8 +4,9 @@ import { VideoWithScenesAndMatch } from '@shared/types/video'
 import { Scene } from '@shared/types/scene'
 import { VideoSearchParams } from '@shared/types/search'
 import { logger } from '@shared/services/logger'
-import { createVectorDbClient, getByVideoSource } from '@vector/services/vectorDb'
-import { getAudioEmbeddingForText, getEmbeddings, getVisualEmbeddingForText } from '@vector/services/embedding'
+import { createVectorDbClient } from '@vector/services/client'
+import { getAudioEmbeddingForText, getEmbeddings, getVisualEmbeddingForText } from '@embedding-core/services'
+import { getByVideoSource } from '@vector/services/db'
 
 export function applyFilters(
   query: VideoSearchParams,

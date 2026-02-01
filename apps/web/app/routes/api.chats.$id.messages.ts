@@ -1,4 +1,4 @@
-import { getVideoWithScenesBySceneIds } from '@vector/services/vectorDb'
+import { getVideoWithScenesBySceneIds } from '@vector/services/db'
 import type { ActionFunction, LoaderFunctionArgs } from 'react-router'
 import { logger } from '@shared/services/logger'
 import { requireUser, requireUserId } from '~/services/user.sever'

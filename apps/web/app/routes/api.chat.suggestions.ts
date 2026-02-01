@@ -1,8 +1,8 @@
-import { generateChatSuggestions } from '@search/services/chat'
+import { generateChatSuggestions } from '@shared/services/chat'
 import type { LoaderFunctionArgs } from 'react-router'
-import { requireUserId } from '~/services/user.sever';
 import { logger } from '@shared/services/logger'
-import { getVideosMetadataSummary } from '@vector/services/vectorDb'
+import { getVideosMetadataSummary } from '@vector/services/db'
+import { requireUserId } from '../services/user.sever'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {

@@ -1,6 +1,6 @@
 import { logger } from '@shared/services/logger'
 import { normalizeLocation } from '@shared/utils/location'
-import { getAllVideos } from '@vector/services/vectorDb'
+import { getAllVideos } from '@vector/services/db'
 import type { CollectionVideosMap, VideoCollection } from '../types'
 
 export async function generateLocationBasedCollections(): Promise<CollectionVideosMap> {

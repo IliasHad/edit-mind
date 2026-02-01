@@ -7,7 +7,7 @@ import { promises as fs } from 'fs'
 import { existsSync } from 'fs'
 import path from 'path'
 import { UNKNOWN_FACES_DIR } from '@shared/constants'
-import { getByVideoSource, updateMetadata } from '@vector/services/vectorDb'
+import { getByVideoSource, updateMetadata } from '@vector/services/db'
 import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
 
