@@ -141,8 +141,6 @@ EXPOSE ${BACKGROUND_JOBS_PORT}
 
 CMD ["pnpm", "--filter", "background-jobs", "start"]
 
-FROM production AS production-gpu
-
 
 FROM dependencies AS development
 
