@@ -15,11 +15,12 @@
     "url": "https://github.com/iliashad/edit-mind"
   },
   "scripts": {
-    "build": "tsc"
+   "build": "tsc -b --force"
   },
   "dependencies": {
     "compute-cosine-similarity": "^1.1.0",
     "shared": "workspace:*",
-    "vector": "workspace:*"
+    "vector": "workspace:*",
+    "embedding-core": "workspace:*"
   }
 }

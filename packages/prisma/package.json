@@ -11,11 +11,13 @@
     "type": "git",
     "url": "https://github.com/iliashad/edit-mind"
   },
+  "dependencies": {
+    "shared": "workspace:*"
+  },
   "scripts": {
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "seed": "npx tsx seed.ts",
     "studio": "prisma studio",
     "format": "prisma format",
     "validate": "prisma validate"

@@ -1,19 +1,17 @@
 ARG NODE_VERSION=22.20.0
 ARG PNPM_VERSION=10.20.0
 
-FROM node:${NODE_VERSION}-bookworm-slim AS base
-
-ARG PNPM_VERSION
+FROM node:${NODE_VERSION}-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
+  libc6-compat \
   openssl \
   ca-certificates \
-  curl \
-  && rm -rf /var/lib/apt/lists/*
+  && corepack enable \
+  && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 FROM base AS dependencies
 
@@ -24,26 +22,30 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/db/package.json ./packages/db/
 COPY packages/ui/package.json ./packages/ui/
-COPY packages/vector/package.json ./packages/vector/
-COPY packages/ai/package.json ./packages/ai/
 COPY packages/immich/package.json ./packages/immich/
-COPY packages/media-utils/package.json ./packages/media-utils/
-COPY packages/search/package.json ./packages/search/
-COPY packages/smart-collections/package.json ./packages/smart-collections/
+COPY packages/vector/package.json ./packages/vector/
+COPY packages/prisma/package.json ./packages/prisma/
 COPY packages/prisma/schema.prisma ./packages/prisma/
+COPY packages/search/package.json ./packages/search/
+COPY packages/embedding-core ./packages/embedding-core/
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-  pnpm install --frozen-lockfile
+  pnpm install --prefer-frozen-lockfile --store=/pnpm/store 
 
 FROM dependencies AS builder
 
 WORKDIR /app
 
-COPY --from=dependencies /app/node_modules ./node_modules
-
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json prisma.config.ts .npmrc ./
-COPY apps ./apps
-COPY packages ./packages
+COPY apps/web ./apps/web
+COPY packages/prisma ./packages/prisma
+COPY packages/immich ./packages/immich
+COPY packages/shared ./packages/shared
+COPY packages/db ./packages/db
+COPY packages/ui ./packages/ui
+COPY packages/vector ./packages/vector
+COPY packages/search ./packages/search
+COPY packages/embedding-core ./packages/embedding-core
 COPY tsconfig.json ./
 COPY .npmrc ./
 COPY prisma.config.ts ./
@@ -51,62 +53,54 @@ COPY turbo.json ./
 
 RUN pnpm --filter prisma generate
 
-RUN pnpm run build 
-
+RUN pnpm run build:web
 RUN pnpm rebuild @tailwindcss/oxide rollup
-
-RUN pnpm --filter web build
 
 FROM base AS production
 
 WORKDIR /app
 
-COPY --from=dependencies /app/node_modules ./node_modules
+ENV NODE_ENV=production
 
-COPY --from=builder /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/prisma.config.ts ./
-COPY --from=builder /app/tsconfig.json ./
-COPY --from=builder /app/.npmrc ./
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/package.json ./package.json
+COPY --from=dependencies /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=dependencies /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=dependencies /app/.npmrc ./.npmrc
 
 COPY --from=builder /app/apps/web/package.json ./apps/web/
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 COPY --from=builder /app/packages/db/package.json ./packages/db/
-COPY --from=builder /app/packages/prisma/package.json ./packages/prisma/
-COPY --from=builder /app/packages/prisma/schema.prisma ./packages/prisma
 COPY --from=builder /app/packages/immich/package.json ./packages/immich/
-COPY --from=builder /app/packages/search/package.json ./packages/search/
 COPY --from=builder /app/packages/vector/package.json ./packages/vector/
-COPY --from=builder /app/packages/media-utils/package.json ./packages/media-utils/
+COPY --from=builder /app/packages/search/package.json ./packages/search/
 
-COPY --from=builder /app/packages/vector ./packages/vector
-COPY --from=builder /app/packages/media-utils ./packages/media-utils
-COPY --from=builder /app/packages/prisma ./packages/prisma
-COPY --from=builder /app/packages/immich ./packages/immich
-COPY --from=builder /app/packages/shared ./packages/shared
-COPY --from=builder /app/packages/db ./packages/db
-COPY --from=builder /app/packages/search ./packages/search
-COPY --from=builder /app/apps/web ./apps/web
+COPY --from=builder /app/packages/prisma/ ./packages/prisma/
+
+COPY --from=builder /app/packages/immich/dist ./packages/immich/dist
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/vector/dist ./packages/vector/dist
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+COPY --from=builder /app/packages/search/dist ./packages/search/dist
+COPY --from=builder /app/packages/embedding-core/dist ./packages/embedding-core/dist
+
+COPY --from=builder /app/apps/web/build ./apps/web/build
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/server.js ./apps/web/server.js
 
 RUN pnpm --filter prisma generate
 
-ENV NODE_ENV=production
 EXPOSE ${PORT}
 
 CMD ["sh", "-c", "\
   pnpm --filter prisma migrate:deploy && \
-  pnpm --filter prisma seed && \
+  pnpm --filter db seed && \
   pnpm --filter web start --host 0.0.0.0 --port ${PORT}  \
   "]
-
-
 
 FROM dependencies AS development
 
 WORKDIR /app
-
-COPY --from=dependencies /app/node_modules ./node_modules
 
 COPY apps/ ./apps/
 COPY packages/ ./packages/
@@ -121,37 +115,6 @@ EXPOSE ${PORT}
 
 CMD ["sh", "-c", "\
   pnpm --filter prisma migrate:deploy && \
-  pnpm --filter prisma seed && \
+  pnpm --filter db seed && \
   pnpm --filter web dev --host 0.0.0.0 --port ${PORT}  \
   "]
-
-FROM base AS testing
-
-
-WORKDIR /app
-
-COPY --from=dependencies /app/node_modules ./node_modules
-
-COPY --from=builder /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/prisma.config.ts ./
-COPY --from=builder /app/tsconfig.json ./
-COPY --from=builder /app/.npmrc ./
-
-COPY --from=builder /app/apps/web/package.json ./apps/web/
-COPY --from=builder /app/packages/shared/package.json ./packages/shared/
-COPY --from=builder /app/packages/db/package.json ./packages/db/
-COPY --from=builder /app/packages/prisma/package.json ./packages/prisma/
-COPY --from=builder /app/packages/prisma/schema.prisma ./packages/prisma
-
-
-COPY --from=builder /app/packages/prisma ./packages/prisma
-COPY --from=builder /app/packages/shared ./packages/shared
-COPY --from=builder /app/packages/db ./packages/db
-COPY --from=builder /app/apps/web ./apps/web
-
-
-ENV NODE_ENV=testing
-
-CMD ["pnpm", "--filter", "''./packages/**'", "test"]

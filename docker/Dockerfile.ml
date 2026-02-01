@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN mkdir -p /ml-models/ultralytics && mkdir -p /ml-models/whisper && \
     chmod -R 777 /ml-models
 
-WORKDIR /app
 
 FROM nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu22.04 AS base-gpu
 ENV DEBIAN_FRONTEND=noninteractive
@@ -33,8 +32,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
     && rm -rf /var/lib/apt/lists/*
     
-WORKDIR /app
-
 
 RUN mkdir -p /ml-models/ultralytics && mkdir -p /ml-models/whisper && \
     chmod -R 777 /ml-models
@@ -133,53 +130,3 @@ ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 EXPOSE ${ML_PORT}
 
 CMD ["sh", "-c", "python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
-
-FROM base-cpu AS testing
-
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && mv /root/.local/bin/uv /usr/local/bin/uv \
-    && mv /root/.local/bin/uvx /usr/local/bin/uvx
-
-COPY python ./python/
-
-RUN --mount=type=cache,id=pip-cpu,target=/pip/store \
-    uv venv /app/.venv && \
-    VIRTUAL_ENV=/app/.venv uv pip install -r python/requirements.txt && \
-    VIRTUAL_ENV=/app/.venv uv pip install -r python/requirements-dev.txt
-
-ENV PATH="/app/.venv/bin:$PATH" \
-    VIRTUAL_ENV="/app/.venv"
-
-WORKDIR /app/python
-RUN if [ -d tests ]; then pytest tests; else echo "No tests yet, skipping pytest"; fi
-
-FROM base-gpu AS testing-gpu
-
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && mv /root/.local/bin/uv /usr/local/bin/uv \
-    && mv /root/.local/bin/uvx /usr/local/bin/uvx
-
-COPY python ./python/
-
-RUN --mount=type=cache,id=pip-gpu,target=/pip/store \
-    uv venv /app/.venv && \
-    VIRTUAL_ENV=/app/.venv uv pip install -r python/requirements-gpu.txt && \
-    VIRTUAL_ENV=/app/.venv uv pip install -r python/requirements-dev.txt
-
-ENV PATH="/app/.venv/bin:$PATH" \
-    VIRTUAL_ENV="/app/.venv" \
-    NVIDIA_VISIBLE_DEVICES=all \
-    NVIDIA_DRIVER_CAPABILITIES=compute,utility
-
-WORKDIR /app/python
-RUN if [ -d tests ]; then pytest tests; else echo "No tests yet, skipping pytest"; fi

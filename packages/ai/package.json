@@ -15,7 +15,7 @@
     "url": "https://github.com/iliashad/edit-mind"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b --force",
     "test": "vitest run",
     "test:ui": "vitest --ui"
   },

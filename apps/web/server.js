@@ -4,7 +4,7 @@ import morgan from 'morgan'
 
 const DEVELOPMENT = process.env.NODE_ENV === 'development'
 const PORT = Number.parseInt(process.env.PORT || '3745', 10)
-const BUILD_PATH = '/app/apps/web/build/server/index.js'
+const BUILD_PATH = './build/server/index.js'
 
 const app = express()
 

@@ -15,7 +15,9 @@
       "@ui/*": ["../../packages/ui/src/*"],
       "@immich/*": ["../../packages/immich/src/*"],
       "@shared/*": ["../../packages/shared/src/*"],
-      "@db/*": ["../../packages/db/src/*"]
+      "@db/*": ["../../packages/db/src/*"],
+      "@vector/*": ["../../packages/vector/src/*"],
+      "@search/*": ["../../packages/search/src/*"],
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

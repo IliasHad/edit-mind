@@ -15,11 +15,12 @@
     "url": "https://github.com/iliashad/edit-mind"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc -b --force"
   },
   "dependencies": {
     "db": "workspace:*",
-    "shared": "workspace:*"
+    "shared": "workspace:*",
+    "jimp": "^1.6.0"
   },
   "devDependencies": {}
 }

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch -r tsconfig-paths/register  src/index.ts",
     "build": "tsc --build",
-    "start": "tsx -r tsconfig-paths/register src/index.ts",
+    "start": "node server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -15,23 +15,25 @@
     "@bull-board/api": "^6.14.1",
     "@bull-board/express": "^6.14.1",
     "@bull-board/ui": "^6.14.1",
+    "ai": "workspace:*",
     "archiver": "^7.0.1",
     "bullmq": "^5.6.0",
+    "chat": "workspace:*",
     "chokidar": "^3.5.3",
     "cors": "^2.8.5",
+    "db": "workspace:*",
+    "embedding-core": "workspace:*",
+    "embedding-media": "workspace:*",
     "express": "^4.21.2",
     "express-rate-limit": "^8.2.1",
+    "immich": "workspace:*",
     "ioredis": "^5.9.2",
-    "zod": "^4.1.12",
+    "media-utils": "workspace:*",
     "search": "workspace:*",
     "shared": "workspace:*",
-    "ai": "workspace:*",
-    "vector": "workspace:*",
-    "media-utils": "workspace:*",
-    "db": "workspace:*",
     "smart-collections": "workspace:*",
-    "immich": "workspace:*",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "vector": "workspace:*"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.2.0",
@@ -39,8 +41,6 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/supertest": "^6.0.2",
-    "@vitest/coverage-v8": "^4.0.18",
-    "supertest": "^6.3.3",
-    "vitest": "^4.0.18"
+    "supertest": "^7.2.2"
   }
 }

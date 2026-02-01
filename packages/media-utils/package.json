@@ -15,7 +15,7 @@
     "url": "https://github.com/iliashad/edit-mind"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc -b --force"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
