@@ -63,3 +63,14 @@ export interface SearchStats {
     hasSemanticSearch: boolean
   }
 }
+
+export interface Suggestion {
+  text: string
+  type: 'face' | 'object' | 'emotion' | 'camera' | 'shotType' | 'location' | 'transcription' | 'text'
+  count: number
+  sceneCount: number
+}
+
+export interface GroupedSuggestions {
+  [key: string]: Suggestion[]
+}

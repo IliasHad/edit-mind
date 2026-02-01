@@ -1,20 +1,9 @@
 import { logger } from '@shared/services/logger'
 import { getCache, setCache, invalidateCache } from '@shared/services/cache'
-import { VideoSearchParams } from '@shared/types/search'
+import { GroupedSuggestions, Suggestion, VideoSearchParams } from '@shared/types/search'
 import { ShotType } from '@shared/types'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
-import { getAllDocs } from '@vector/services/vectorDb'
-
-export interface Suggestion {
-  text: string
-  type: 'face' | 'object' | 'emotion' | 'camera' | 'shotType' | 'location' | 'transcription' | 'text'
-  count: number
-  sceneCount: number // Number of scenes this appears in
-}
-
-export interface GroupedSuggestions {
-  [key: string]: Suggestion[]
-}
+import { getAllDocs } from '@vector/services/db'
 
 interface CacheStats {
   isInitialized: boolean
@@ -615,7 +604,7 @@ export async function refreshSuggestionCache(): Promise<void> {
   await suggestionCache.refresh()
 }
 
-export function buildSearchQueryFromSuggestions(suggestions: Record<string, string | null>): VideoSearchParams {
+export function buildSearchQueryFromSuggestions(suggestions: Record<string, string | null | undefined>): VideoSearchParams {
   const searchQuery: VideoSearchParams = VideoSearchParamsSchema.parse({})
 
   const typeMapping: Record<string, keyof VideoSearchParams> = {
