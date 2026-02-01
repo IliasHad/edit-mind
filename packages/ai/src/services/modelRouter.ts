@@ -16,7 +16,7 @@ import { AIModel } from '@ai/types/ai'
 import type { ChatMessage } from '@prisma/client'
 import { YearStats } from '@shared/types/stats'
 import { VideoWithScenes } from '@shared/types/video'
-import { getVideoAnalytics } from '@shared/utils/analytics'
+import { VideoAnalytics } from '@shared/types/analytics'
 
 let activeModel: AIModel
 
@@ -61,7 +61,7 @@ export const generateGeneralResponse = async (userPrompt: string, chatHistory?: 
 export const classifyIntent = async (prompt: string, chatHistory?: ChatMessage[]) =>
   runWithLogging(() => activeModel.classifyIntent(prompt, chatHistory), prompt)
 
-export const generateAnalyticsResponse = async (userPrompt: string, analytics: Awaited<ReturnType<typeof getVideoAnalytics>>, chatHistory?: ChatMessage[]) =>
+export const generateAnalyticsResponse = async (userPrompt: string, analytics: VideoAnalytics, chatHistory?: ChatMessage[]) =>
   runWithLogging(() => activeModel.generateAnalyticsResponse(userPrompt, analytics, chatHistory), userPrompt)
 
 export const cleanup = async () => {

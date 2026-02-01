@@ -13,11 +13,11 @@ import { VideoSearchParamsSchema } from '@shared/schemas/search'
 import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import type { VideoWithScenes } from '@shared/types/video'
 import type { YearStats } from '@shared/types/stats'
-import { getVideoAnalytics } from '@shared/utils/analytics'
 import { ModelResponse } from '@ai/types/ai'
 import { logger } from '@shared/services/logger'
 import { VideoSearchParams } from '@shared/types/search'
 import { OLLAMA_HOST, OLLAMA_MODEL, OLLAMA_PORT } from '@ai/constants'
+import { VideoAnalytics } from '@shared/types/analytics'
 
 class OllamaLLM {
   private client: Ollama | null = null
@@ -184,7 +184,7 @@ class OllamaLLM {
 
   async generateAnalyticsResponse(
     prompt: string,
-    analytics: Awaited<ReturnType<typeof getVideoAnalytics>>,
+    analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
     projectInstructions?: string
   ): Promise<ModelResponse<string>> {
