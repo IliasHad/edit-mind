@@ -1,9 +1,7 @@
 import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@xenova/transformers'
 import { logger } from '@shared/services/logger'
-import { existsSync, readFileSync } from 'fs'
-import { readAudio } from '@media-utils/utils/audio'
 import { withTimeout } from '@vector/utils/shared'
-import { EMBEDDING_TIMEOUT, MODEL_DIMENSIONS } from '@vector/constants'
+import { EMBEDDING_TIMEOUT, MODEL_DIMENSIONS } from '@shared/constants/embedding'
 
 let visualModelCache: { processor: Processor; model: PreTrainedModel } | null = null
 let textModelCache: { embed: FeatureExtractionPipeline } | null = null
@@ -11,7 +9,7 @@ let audioModelCache: { processor: Processor; model: PreTrainedModel } | null = n
 let textToVisualModelCache: { tokenizer: PreTrainedTokenizer; model: PreTrainedModel } | null = null
 let textToAudioModelCache: { tokenizer: PreTrainedTokenizer; model: PreTrainedModel } | null = null
 
-async function geTextExtractor() {
+export async function geTextExtractor() {
   if (!textModelCache) {
     const { pipeline } = await import('@xenova/transformers')
 
@@ -22,7 +20,7 @@ async function geTextExtractor() {
   return textModelCache
 }
 
-async function getFrameExtractor() {
+export async function getFrameExtractor() {
   if (!visualModelCache) {
     const { AutoProcessor, CLIPVisionModelWithProjection } = await import('@xenova/transformers')
 
@@ -33,7 +31,7 @@ async function getFrameExtractor() {
   return visualModelCache
 }
 
-async function getAudioExtractor() {
+export async function getAudioExtractor() {
   if (!audioModelCache) {
     const { AutoProcessor, ClapAudioModelWithProjection } = await import('@xenova/transformers')
     const processor = await AutoProcessor.from_pretrained('Xenova/clap-htsat-unfused')
@@ -134,68 +132,4 @@ export async function getImageEmbedding(imageBuffer: Buffer): Promise<number[]> 
   const embedding = Array.from(image_embeds.data as Float32Array)
   const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0))
   return embedding.map((val) => val / norm)
-}
-
-export async function embedSceneFrames(frames: string[]): Promise<number[] | null> {
-  const { processor, model } = await getFrameExtractor()
-  const { RawImage } = await import('@xenova/transformers')
-  const frameEmbeddings: number[][] = []
-
-  for (const frame of frames) {
-    try {
-      if (!existsSync(frame)) {
-        throw new Error(`Image file not found: ${frame}`)
-      }
-      const buffer = readFileSync(frame)
-      const image = await RawImage.fromBlob(new Blob([buffer]))
-
-      const image_inputs = await processor(image)
-      const { image_embeds } = await withTimeout<{ image_embeds: { data: Float32Array } }>(
-        model(image_inputs),
-        EMBEDDING_TIMEOUT,
-        `Visual embedding timed out after ${EMBEDDING_TIMEOUT}ms`
-      )
-
-      const vec = Array.from(image_embeds.data)
-      const norm = Math.sqrt(vec.reduce((s, v) => s + v * v, 0))
-      frameEmbeddings.push(vec.map((v) => v / norm))
-    } catch (e) {
-      logger.debug(`Error getting visual embedding for ${frame}: ${e}`)
-    }
-  }
-
-  if (!frameEmbeddings.length) return null
-
-  const meanVec = frameEmbeddings[0].map(
-    (_, i) => frameEmbeddings.reduce((sum, v) => sum + v[i], 0) / frameEmbeddings.length
-  )
-
-  const norm = Math.sqrt(meanVec.reduce((s, v) => s + v * v, 0))
-  return meanVec.map((v) => v / norm)
-}
-
-export async function embedSceneAudio(audioPath: string): Promise<number[]> {
-  const { processor, model } = await getAudioExtractor()
-
-  if (!existsSync(audioPath)) {
-    throw new Error(`Audio file not found: ${audioPath}`)
-  }
-
-  try {
-    const audio = await readAudio(audioPath, 48000)
-    const audio_inputs = await processor(audio)
-
-    const { audio_embeds } = await withTimeout<{ audio_embeds: { data: number[] } }>(
-      model(audio_inputs),
-      EMBEDDING_TIMEOUT,
-      `Audio embedding timed out after ${EMBEDDING_TIMEOUT}ms`
-    )
-
-    const embedding = Array.from(audio_embeds.data)
-    const norm = Math.sqrt(embedding.reduce((s, v) => s + v * v, 0))
-    return embedding.map((v) => v / norm)
-  } catch (error) {
-    logger.error(`Error processing audio file ${audioPath}: ${error}`)
-    throw error
-  }
 }

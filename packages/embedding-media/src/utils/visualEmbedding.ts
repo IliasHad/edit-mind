@@ -1,10 +1,11 @@
-import { createVectorDbClient, embedVisuals } from '../services/vectorDb'
-import { VISUAL_BATCH_SIZE } from '../constants'
+import { embedVisuals } from '@vector/services/db'
+import { createVectorDbClient } from '@vector/services/client'
+import { VISUAL_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
 import { cleanupFrames, extractSceneFrames } from '@media-utils/utils/frame'
-import { embedSceneFrames } from '../services/embedding'
+import { embedSceneFrames } from '../services'
 import { Scene } from '@shared/schemas'
-import { sceneToVectorFormat } from './shared'
+import { sceneToVectorFormat } from '@vector/utils/shared'
 
 export const embedVisualScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
   try {
@@ -58,7 +59,7 @@ export const embedVisualScenes = async (scenes: Scene[], videoFullPath: string):
         }))
       )
 
-      logger.info(`Batch ${i / VISUAL_BATCH_SIZE + 1} complete`)
+      logger.info(`Batch ${i / VISUAL_BATCH_SIZE + 1}/${Math.ceil(scenes.length / VISUAL_BATCH_SIZE)} complete`)
     }
   } catch (err) {
     logger.error(`Error in embedVisualScenes for ${videoFullPath}: ${err}`)
