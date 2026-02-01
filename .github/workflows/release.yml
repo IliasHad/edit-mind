@@ -43,37 +43,37 @@ jobs:
             context: .
             target: production
             tag: latest
-            args:
-              NODE_VERSION: ${{ env.NODE_VERSION }}
-              PNPM_VERSION: ${{ env.PNPM_VERSION }}
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
             target: production
             tag: latest-gpu
-            args:
-              NODE_VERSION: ${{ env.NODE_VERSION }}
-              PNPM_VERSION: ${{ env.PNPM_VERSION }}
-              CUDA_VERSION: ${{ env.CUDA_VERSION }}
-              TARGET_BASE: base-gpu
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
+              CUDA_VERSION=12.1.1
+              TARGET_BASE=base-gpu
 
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
             target: production
             tag: latest
-            args:
-              NODE_VERSION: ${{ env.NODE_VERSION }}
-              PNPM_VERSION: ${{ env.PNPM_VERSION }}
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
             target: production
             tag: latest
-            args:
-              PYTHON_VERSION: ${{ env.PYTHON_VERSION }}
+            args: |
+              PYTHON_VERSION=3.11
 
     steps:
       - name: Checkout code
@@ -244,39 +244,38 @@ jobs:
             context: .
             target: production
             tag: latest
-            args:
-              NODE_VERSION: ${{ env.NODE_VERSION }}
-              PNPM_VERSION: ${{ env.PNPM_VERSION }}
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
             target: production-gpu
             tag: latest-gpu
-            args:
-              NODE_VERSION: ${{ env.NODE_VERSION }}
-              PNPM_VERSION: ${{ env.PNPM_VERSION }}
-              CUDA_VERSION: ${{ env.CUDA_VERSION }}
-              TARGET_BASE: base-gpu
-
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
+              CUDA_VERSION=12.1.1
+              TARGET_BASE=base-gpu
 
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
             target: production
             tag: latest
-            args:
-              PYTHON_VERSION: ${{ env.PYTHON_VERSION }}
-              CUDA_VERSION: ${{ env.CUDA_VERSION }}
+            args: |
+              PYTHON_VERSION=3.11
+              CUDA_VERSION=12.1.1
 
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
             target: production
             tag: latest
-            args:
-              NODE_VERSION: ${{ env.NODE_VERSION }}
-              PNPM_VERSION: ${{ env.PNPM_VERSION }}
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
     steps:
       - name: Set lowercase image prefix
