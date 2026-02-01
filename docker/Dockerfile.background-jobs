@@ -3,13 +3,12 @@ ARG PNPM_VERSION=10.20.0
 ARG CUDA_VERSION=12.1.1
 ARG TARGET_BASE=base-cpu
 
-FROM node:${NODE_VERSION}-alpine AS base-cpu
+FROM node:${NODE_VERSION}-bookworm-slim AS base-cpu
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-RUN apk add --no-cache \
-  libc6-compat \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   ffmpeg \
   curl \
@@ -90,6 +89,8 @@ COPY turbo.json ./
 
 RUN pnpm --filter prisma generate
 
+RUN pnpm rebuild onnxruntime-node
+
 RUN pnpm run build:background-jobs
 
 FROM runtime-base AS production
@@ -98,11 +99,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/package.json ./package.json
-COPY --from=dependencies /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=dependencies /app/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=dependencies /app/.npmrc ./.npmrc
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/.npmrc ./.npmrc
 
 COPY --from=builder /app/apps/background-jobs/package.json ./apps/background-jobs/
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
