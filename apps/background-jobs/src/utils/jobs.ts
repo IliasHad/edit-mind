@@ -26,14 +26,22 @@ export async function deleteJobsByDataJobId(targetJobId: string) {
 }
 
 export async function removeFailedJobs(failedJobsIds: string[]) {
-  for (const queue of videoProcessingQueues) {
-    const jobs = await queue.getJobs()
+  try {
+    for (const queue of videoProcessingQueues) {
+      const jobs = await queue.getJobs()
 
-    for await (const job of jobs) {
-      const data = job.data as VideoProcessingData
-      if (failedJobsIds.includes(data.jobId)) {
-        await job.remove()
+      for await (const job of jobs) {
+        const data = job.data as VideoProcessingData
+        if (failedJobsIds.includes(data.jobId)) {
+          try {
+            await job.remove()
+          } catch (error) {
+            logger.error({ error, jobId: job.id }, 'Failed to remove job from queue')
+          }
+        }
       }
     }
+  } catch (error) {
+    logger.error({ error }, 'Failed to remove failed jobs from queues')
   }
 }
