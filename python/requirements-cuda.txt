@@ -33,5 +33,6 @@ tf-keras
 
 # Object detection
 ultralytics>=8.0.0
+transformers>=4.35.0
 
 --index-url https://pypi.org/simple

@@ -133,7 +133,7 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
             error_msg = str(e).lower()
             if any(x in error_msg for x in ["no audio", "failed to load", "tuple index"]):
                 logger.warning(f"No audio in video: {video_path}")
-                return TranscriptionResult(text='', segments=[], language='N/A')
+                return TranscriptionResult(text='', segments=[], language='N/A', processing_time=0.0)
             raise
 
     def save_result(self, result: TranscriptionResult, output_path: str) -> None:
