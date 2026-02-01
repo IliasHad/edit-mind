@@ -5,26 +5,53 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDirs": ["./src", "../.."],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["../../packages/shared/src/*"],
-      "@ai/*": ["../../packages/ai/src/*"],
-      "@vector/*": ["../../packages/vector/src/*"],
-      "@db/*": ["../../packages/db/src/*"],
-      "@media-utils/*": ["../../packages/media-utils/src/*"],
-      "@search/*": ["../../packages/search/src/*"],
-      "@immich/*": ["../../packages/immich/src/*"],
-      "@smart-collections/*": ["../../packages/smart-collections/src/*"],
-      "@background-jobs/*": ["./src/*"]
-    }
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "tests"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../../packages/db"
+    },
+    {
+      "path": "../../packages/ai"
+    },
+    {
+      "path": "../../packages/embedding-core"
+    },
+    {
+      "path": "../../packages/embedding-media"
+    },
+    {
+      "path": "../../packages/media-utils"
+    },
+    {
+      "path": "../../packages/prisma"
+    },
+    {
+      "path": "../../packages/search"
+    },
+    {
+      "path": "../../packages/shared"
+    },
+    {
+      "path": "../../packages/smart-collections"
+    },
+    {
+      "path": "../../packages/vector"
+    },
+    {
+      "path": "../../packages/immich"
+    },
+    {
+      "path": "../../packages/chat"
+    }
+  ]
 }
