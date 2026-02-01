@@ -14,21 +14,26 @@
   "scripts": {
     "build": "turbo build --filter='./packages/*'",
     "build:watch": "turbo watch build --filter='./packages/*'",
-    "build:background-jobs": "turbo build --filter='./apps/background-jobs'"
+    "build:background-jobs": "turbo build --filter='./apps/background-jobs'",
+    "build:web": "turbo build --filter='./apps/web'"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
-    "prisma": "6.19.0",
-    "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.21.0"
+    "date-fns": "^4.1.0",
+    "ioredis": "^5.9.2",
+    "jiti": "^2.6.1",
+    "tsx": "^4.21.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "@vitest/ui": "^4.0.17",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
+    "prisma": "6.19.0",
     "tsconfig-paths": "^4.2.0",
     "turbo": "^2.7.2",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.18"
   },
   "pnpm": {
     "overrides": {
