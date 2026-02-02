@@ -29,6 +29,10 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
             channels: 1,
           })
 
+          if (!audioPath) {
+            throw new Error("No audio extracted, possibly due to absence of audio stream in source")
+          }
+
           const embedding = await embedSceneAudio(audioPath)
           await cleanupAudio(audioPath)
 

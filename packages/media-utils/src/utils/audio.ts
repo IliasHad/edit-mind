@@ -3,9 +3,10 @@ import { existsSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
-import { spawnFFmpeg } from '../lib/ffmpeg'
+import { spawnFFmpeg, spawnFFprobe } from '../lib/ffmpeg'
 import { logger } from '@shared/services/logger'
 import { prependGPUArgs } from '@media-utils/lib/ffmpegGpu'
+import { validateFile } from '@shared/utils/file'
 
 interface ExtractAudioOptions {
   format?: 'wav' | 'mp3' | 'flac'
@@ -14,12 +15,62 @@ interface ExtractAudioOptions {
   bitrate?: string
 }
 
+export async function hasAudioStream(videoFullPath: string): Promise<boolean> {
+  try {
+    await validateFile(videoFullPath);
+
+    const args = [
+      '-v', 'quiet', 
+      '-select_streams', 'a', 
+      '-show_entries', 'stream=index', 
+      '-print_format', 'json', 
+      videoFullPath
+    ];
+
+    const ffprobeProcess = await spawnFFprobe(args);
+
+    let stdout = '';
+    let stderr = '';
+
+    ffprobeProcess.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    ffprobeProcess.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      ffprobeProcess.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`FFprobe failed with code ${code}: ${stderr || 'Unknown error'}`));
+        }
+      });
+
+      ffprobeProcess.on('error', (err) => {
+        reject(new Error(`Failed to spawn FFprobe: ${err.message}`));
+      });
+    });
+
+    const metadata = JSON.parse(stdout);
+    
+    return !!(metadata.streams && metadata.streams.length > 0);
+
+  } catch (error) {
+    logger.error(`Error checking for audio stream: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // Default to false if we can't read the file, to prevent ffmpeg from crashing on extraction
+    return false;
+  }
+}
+
 export const extractSceneAudio = async (
   videoPath: string,
   startTime: number,
   endTime: number,
   options: ExtractAudioOptions = {}
-): Promise<string> => {
+): Promise<string | undefined> => {
   const { format = 'wav', sampleRate = 44100, channels = 1, bitrate = '192k' } = options
 
   if (!existsSync(videoPath)) {
@@ -29,6 +80,11 @@ export const extractSceneAudio = async (
   const duration = endTime - startTime
   if (duration <= 0) {
     throw new Error('Invalid scene duration: endTime must be greater than startTime')
+  }
+  const hasAudio = await hasAudioStream(videoPath);
+
+  if (!hasAudio) {
+   return undefined;
   }
 
   const sessionId = randomBytes(8).toString('hex')
@@ -48,6 +104,8 @@ export const extractSceneAudio = async (
       videoPath,
       '-vn',
       '-acodec',
+      '-map',
+      '0:a?',
       format === 'wav' ? 'pcm_s16le' : format === 'flac' ? 'flac' : 'libmp3lame',
       '-ar',
       sampleRate.toString(),
