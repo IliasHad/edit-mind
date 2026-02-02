@@ -3,6 +3,7 @@ import type { Scene } from '@shared/schemas'
 import { CheckIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence } from 'framer-motion'
 import { humanizeFileName } from '~/features/shared/utils/fileName'
+import { Button } from '@ui/components/Button'
 
 interface SceneCardProps {
   scene: Scene
