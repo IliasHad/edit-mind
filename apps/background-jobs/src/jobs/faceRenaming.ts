@@ -12,6 +12,8 @@ import { rename } from 'fs/promises'
 import { rebuildFacesCache } from '@shared/utils/faces'
 import { FaceRenamingJobData } from '@shared/types/face'
 import { suggestionCache } from '@search/services/suggestion'
+import { sceneToVectorFormat } from '@vector/utils/shared'
+import { getEmbeddings } from '@embedding-core/services/extractors'
 
 async function processFaceRenamingJob(job: Job<FaceRenamingJobData>) {
   const { oldName, newName } = job.data
@@ -49,7 +51,11 @@ async function processFaceRenamingJob(job: Job<FaceRenamingJobData>) {
         )
       }
 
-      await updateMetadata(scene)
+      // Update vector DB entries
+      const vector = await sceneToVectorFormat(scene)
+      const embedding = await getEmbeddings([vector.text])
+      
+      await updateMetadata(vector, embedding)
       updatedScene.add(scene.id)
 
       processedVideos.add(scene.source)

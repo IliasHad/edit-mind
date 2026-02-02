@@ -1,7 +1,11 @@
 import { logger } from '@shared/services/logger'
 import { withTimeout } from '@vector/utils/shared'
-import { EMBEDDING_TIMEOUT, MODEL_DIMENSIONS } from '@shared/constants/embedding'
+import { EMBEDDING_TIMEOUT, MODEL_DIMENSIONS,  MODEL_CACHE_DIR, VISUAL_EMBEDDING_MODEL, AUDIO_EMBEDDING_MODEL, TEXT_EMBEDDING_MODEL } from '@shared/constants/embedding'
 import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@xenova/transformers'
+import { env } from '@xenova/transformers';
+
+// Set the cache directory for Xenova Transformers models
+env.cacheDir = MODEL_CACHE_DIR;
 
 let textModelCache: { embed: FeatureExtractionPipeline } | null = null
 
@@ -14,8 +18,8 @@ export async function getFrameExtractor() {
   if (!visualModelCache) {
     const { AutoProcessor, CLIPVisionModelWithProjection } = await import('@xenova/transformers')
 
-    const processor = await AutoProcessor.from_pretrained('Xenova/clip-vit-base-patch32')
-    const model = await CLIPVisionModelWithProjection.from_pretrained('Xenova/clip-vit-base-patch32')
+    const processor = await AutoProcessor.from_pretrained(VISUAL_EMBEDDING_MODEL)
+    const model = await CLIPVisionModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL)
     visualModelCache = { processor, model }
   }
   return visualModelCache
@@ -24,8 +28,8 @@ export async function getFrameExtractor() {
 export async function getAudioExtractor() {
   if (!audioModelCache) {
     const { AutoProcessor, ClapAudioModelWithProjection } = await import('@xenova/transformers')
-    const processor = await AutoProcessor.from_pretrained('Xenova/clap-htsat-unfused')
-    const model = await ClapAudioModelWithProjection.from_pretrained('Xenova/clap-htsat-unfused')
+    const processor = await AutoProcessor.from_pretrained(AUDIO_EMBEDDING_MODEL)
+    const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL)
 
     audioModelCache = { processor, model }
   }
@@ -36,8 +40,8 @@ async function getTextToVisualExtractor() {
   if (!textToVisualModelCache) {
     const { AutoTokenizer, CLIPTextModelWithProjection } = await import('@xenova/transformers')
 
-    const tokenizer = await AutoTokenizer.from_pretrained('Xenova/clip-vit-base-patch32')
-    const model = await CLIPTextModelWithProjection.from_pretrained('Xenova/clip-vit-base-patch32')
+    const tokenizer = await AutoTokenizer.from_pretrained(VISUAL_EMBEDDING_MODEL)
+    const model = await CLIPTextModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL)
     textToVisualModelCache = { tokenizer, model }
   }
   return textToVisualModelCache
@@ -47,8 +51,8 @@ async function getTextToAudioExtractor() {
   if (!textToAudioModelCache) {
     const { AutoTokenizer, ClapTextModelWithProjection } = await import('@xenova/transformers')
 
-    const tokenizer = await AutoTokenizer.from_pretrained('Xenova/clap-htsat-unfused')
-    const model = await ClapTextModelWithProjection.from_pretrained('Xenova/clap-htsat-unfused')
+    const tokenizer = await AutoTokenizer.from_pretrained(AUDIO_EMBEDDING_MODEL)
+    const model = await ClapTextModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL)
     textToAudioModelCache = { tokenizer, model }
   }
   return textToAudioModelCache
@@ -91,7 +95,7 @@ export async function getTextExtractor() {
   if (!textModelCache) {
     const { pipeline } = await import('@xenova/transformers')
 
-    const embed = await pipeline('feature-extraction', 'Xenova/all-mpnet-base-v2')
+    const embed = await pipeline('feature-extraction', TEXT_EMBEDDING_MODEL)
 
     textModelCache = { embed }
   }

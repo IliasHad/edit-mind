@@ -12,6 +12,8 @@ import { importVideoFromVectorDb } from '../utils/videos'
 import { rebuildFacesCache } from '@shared/utils/faces'
 import { suggestionCache } from '@search/services/suggestion'
 import { JobModel } from '@db/index'
+import { sceneToVectorFormat } from '@vector/utils/shared'
+import { getEmbeddings } from '@embedding-core/services/extractors'
 
 async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
   const { faces, name } = job.data
@@ -58,7 +60,11 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
               )
             }
 
-            await updateMetadata(scene)
+            // Update vector DB entries
+            const vector = await sceneToVectorFormat(scene)
+            const embedding = await getEmbeddings([vector.text])
+
+            await updateMetadata(vector, embedding)
             updatedScene.set(faceData.face_id, scene.id)
           }
 
