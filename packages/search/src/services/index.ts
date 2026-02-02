@@ -27,9 +27,6 @@ export async function searchScenes(
 
     const { where: whereClause, whereDocument } = applyFilters(query, projectVideoSources)
 
-    logger.debug(whereClause)
-    logger.debug(whereDocument)
-
     if (Object.keys(whereClause).length === 0 && !whereDocument && !query.semanticQuery) {
       return []
     }

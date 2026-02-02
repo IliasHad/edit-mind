@@ -2,7 +2,7 @@ import { VideoMetadataSummary } from '@shared/types/search'
 import { Metadata } from 'chromadb'
 import { VideoWithScenes } from '@shared/types/video'
 import { Scene } from '@shared/types/scene'
-import { metadataToScene, sceneToVectorFormat } from '../utils/shared'
+import { metadataToScene } from '../utils/shared'
 import { getCache, setCache } from '@shared/services/cache'
 import { logger } from '@shared/services/logger'
 import { YearStats } from '@shared/types/stats'
@@ -29,7 +29,14 @@ export async function getByVideoSource(videoSource: string): Promise<VideoWithSc
   }
 }
 
-export async function updateMetadata(scene: Scene, embeddings?: number[][]): Promise<void> {
+export async function updateMetadata(
+  vector: {
+    metadata: Metadata
+    text: string
+    id: string
+  },
+  embeddings: number[][]
+): Promise<void> {
   try {
     const { collection, visual_collection, audio_collection } = await createVectorDbClient()
 
@@ -37,10 +44,8 @@ export async function updateMetadata(scene: Scene, embeddings?: number[][]): Pro
       throw new Error('Collection not initialized')
     }
 
-    const vector = await sceneToVectorFormat(scene)
-
     const existing = await collection.get({
-      ids: [scene.id],
+      ids: [vector.id],
       include: ['metadatas', 'documents', 'embeddings'],
     })
 
@@ -49,23 +54,25 @@ export async function updateMetadata(scene: Scene, embeddings?: number[][]): Pro
     }
 
     if (existing.ids && existing.ids.length > 0) {
+      // Update the main collection with new embeddings and metadata
       await collection.update({
-        ids: [scene.id],
+        ids: [vector.id],
         metadatas: [vector.metadata],
         documents: [vector.text],
         embeddings: embeddings,
       })
     }
 
+    // Update visual and audio collection metadata only
     if (visual_collection) {
       const visualExists = await visual_collection.get({
-        ids: [scene.id],
+        ids: [vector.id],
         include: ['metadatas', 'documents'],
       })
 
       if (visualExists.ids && visualExists.ids.length > 0) {
         await visual_collection.update({
-          ids: [scene.id],
+          ids: [vector.id],
           metadatas: [vector.metadata],
         })
       }
@@ -73,13 +80,13 @@ export async function updateMetadata(scene: Scene, embeddings?: number[][]): Pro
 
     if (audio_collection) {
       const audioExists = await audio_collection.get({
-        ids: [scene.id],
+        ids: [vector.id],
         include: ['metadatas', 'documents'],
       })
 
       if (audioExists.ids && audioExists.ids.length > 0) {
         await audio_collection.update({
-          ids: [scene.id],
+          ids: [vector.id],
           metadatas: [vector.metadata],
         })
       }
@@ -342,13 +349,10 @@ export async function getScenesByYear(year: number): Promise<{
         if (source) {
           scenes.push(scene)
         }
-
-         
       }
     }
 
     const videosList = convertScenesToVideos(scenes)
-
 
     const stats: YearStats = {
       totalVideos: videosList.length,
@@ -629,9 +633,7 @@ export async function getScenesCount(): Promise<number> {
   }
 }
 
-export async function* getScenesStream(
-  batchSize: number = 100
-): AsyncGenerator<Scene> {
+export async function* getScenesStream(batchSize: number = 100): AsyncGenerator<Scene> {
   try {
     const { collection } = await createVectorDbClient()
 

@@ -1,3 +1,4 @@
+import { getEmbeddings } from '@embedding-core/services/extractors'
 import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
 import { logger } from '@shared/services/logger'
@@ -10,6 +11,7 @@ import { UNKNOWN_FACES_DIR } from '@shared/constants'
 import { getByVideoSource, updateMetadata } from '@vector/services/db'
 import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
+import { sceneToVectorFormat } from '@vector/utils/shared'
 
 async function processFaceDeletionJob(job: Job<FaceDeletionJobData>) {
   logger.debug({ jobId: job.id }, 'Starting Face Deletion job')
@@ -49,7 +51,11 @@ async function processFaceDeletionJob(job: Job<FaceDeletionJobData>) {
             scene.emotions = scene.emotions.filter((e) => e.name !== face_id)
           }
 
-          await updateMetadata(scene)
+          // Update vector DB entries
+          const vector = await sceneToVectorFormat(scene)
+          const embedding = await getEmbeddings([vector.text])
+
+          await updateMetadata(vector, embedding)
           updatedSceneIds.add(scene.id)
         }
       }
