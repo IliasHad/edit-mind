@@ -2,7 +2,7 @@
 
 Edit Mind lets you index your videos **(including transcription, frame analysis, and multi-model embedding)**, and you can search your videos (or specific video scenes) using natural language.
 
-> **Development Status:** Edit Mind is currently in **active development** and **work in progress* and **not yet production-ready**.
+> **Development Status:** Edit Mind is currently in **active development** and **work in progress** and **not yet production-ready**.
 > Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
 
 
