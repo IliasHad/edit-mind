@@ -131,7 +131,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile.ml
-          target: production-gpu
+          target: production
           platforms: linux/amd64
           build-args: |
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
@@ -251,7 +251,7 @@ jobs:
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
-            target: production-gpu
+            target: production
             tag: latest-gpu
             args: |
               NODE_VERSION=22.20.0
@@ -381,7 +381,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile.ml
-          target: production-gpu
+          target: production
           platforms: linux/amd64
           build-args: |
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
