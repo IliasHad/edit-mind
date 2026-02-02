@@ -27,6 +27,7 @@ export default defineConfig({
       '@search': path.resolve(__dirname, '../../packages/search/src'),
       '@immich': path.resolve(__dirname, '../../packages/immich/src'),
       '@smart-collections': path.resolve(__dirname, '../../packages/smart-collections/src'),
+      '@embedding-core': path.resolve(__dirname, '../../packages/embedding-core/src'),
     },
   },
 })

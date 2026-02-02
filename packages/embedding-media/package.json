@@ -1,0 +1,27 @@
+{
+  "name": "embedding-media",
+  "version": "0.14.1",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": {
+    "name": "ilias",
+    "url": "https://github.com/iliashad"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iliashad/edit-mind"
+  },
+  "scripts": {
+    "build": "tsc -b --force",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "shared": "workspace:*",
+    "media-utils": "workspace:*",
+    "vector": "workspace:*",
+    "embedding-core": "workspace:*"
+  }
+}

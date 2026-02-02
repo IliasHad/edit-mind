@@ -3,7 +3,6 @@ import 'dotenv/config'
 
 export const STITCHED_VIDEOS_DIR = process.env.STITCHED_VIDEOS_DIR
 
-export const SUPPORTED_VIDEO_EXTENSIONS = /\.(mp4|mov|avi|mkv)$/i
 export const DEFAULT_FPS = 30
 export const THUMBNAIL_SCALE = '320:-1'
 export const THUMBNAIL_QUALITY = '4'

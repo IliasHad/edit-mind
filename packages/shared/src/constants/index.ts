@@ -8,6 +8,8 @@ export const UNKNOWN_FACES_DIR = process.env.UNKNOWN_FACES_DIR || '.unknown_face
 
 export const CACHE_FILE = '.locations.json'
 
+export const SUPPORTED_VIDEO_EXTENSIONS = /\.(mp4|mov|avi|mkv)$/i
+
 // Redis Cache
 export const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 export const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000 // 30 days

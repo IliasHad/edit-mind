@@ -10,7 +10,13 @@
       "@search/*": ["./packages/search/src/*"],
       "@smart-collections/*": ["./packages/smart-collections/src/*"],
       "@immich/*": ["./packages/immich/src/*"],
-      "@ui/*": ["./packages/ui/src/*"]
+      "@ui/*": ["./packages/ui/src/*"],
+      "@embedding-core/*": ["./packages/embedding-core/src/*"],
+      "@embedding-media/*": ["./packages/embedding-media/src/*"],
+      "@prisma/*": ["./packages/prisma/src/*"],
+      "@chat/*": ["./packages/chat/src/*"],
+      "@background-jobs/*": ["./apps/background-jobs/src/*"],
+      "@web/*": ["./apps/web/src/*"]
     }
   },
   "exclude": ["node_modules", "**/dist", "**/node_modules"]

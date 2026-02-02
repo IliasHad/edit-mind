@@ -4,7 +4,7 @@ import { promises as fs } from 'fs'
 import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
-import { embedVisualScenes } from '@vector/utils/visualEmbedding'
+import { embedVisualScenes } from '@embedding-media/utils/visualEmbedding'
 import { updateJob } from '../services/videoIndexer'
 
 async function processVideo(job: Job<VideoProcessingData>) {

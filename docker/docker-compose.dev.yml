@@ -40,6 +40,9 @@ services:
       - ../packages/immich:/app/packages/immich
       - ../packages/search:/app/packages/search
       - ../packages/smart-collections:/app/packages/smart-collections
+      - ../packages/embedding-core:/app/packages/embedding-core
+      - ../packages/embedding-media:/app/packages/embedding-media
+      - ../packages/chat:/app/packages/chat
 
   ml:
     build:
@@ -97,13 +100,12 @@ services:
       - ../packages/shared:/app/packages/shared
       - ../packages/prisma:/app/packages/prisma
       - ../packages/db:/app/packages/db
-      - ../packages/ai:/app/packages/ai
       - ../packages/vector:/app/packages/vector
-      - ../packages/media-utils:/app/packages/media-utils
       - ../packages/immich:/app/packages/immich
       - ../packages/search:/app/packages/search
-      - ../packages/smart-collections:/app/packages/smart-collections
       - ../packages/ui:/app/packages/ui
+      - ../packages/embedding-core:/app/packages/embedding-core
+      - ../packages/chat:/app/packages/chat
     networks:
       - app-network-dev
 

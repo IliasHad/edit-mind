@@ -12,13 +12,13 @@ import {
 import type { VideoSearchParams } from '@shared/types/search'
 import { logger } from '@shared/services/logger'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
-import { getVideoAnalytics } from '@shared/utils/analytics'
 import type { ChatMessage } from '@prisma/client'
 import { ModelResponse } from '@ai/types/ai'
 import { YearStats } from '@shared/types/stats'
 import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import { VideoWithScenes } from '@shared/types/video'
 import { formatHistory } from '@ai/utils'
+import { VideoAnalytics } from '@shared/types/analytics'
 
 class LocalLLM {
   private llama: Llama | null = null
@@ -358,7 +358,7 @@ class LocalLLM {
         data: JSON.parse(raw.replace(/```json|```/g, '').trim()),
         tokens,
         error: undefined,
-      }
+      };
     } catch {
       throw new Error('Failed to parse intent from local model')
     }
@@ -366,7 +366,7 @@ class LocalLLM {
 
   async generateAnalyticsResponse(
     prompt: string,
-    analytics: Awaited<ReturnType<typeof getVideoAnalytics>>,
+    analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
     projectInstructions?: string
   ): Promise<ModelResponse<string>> {

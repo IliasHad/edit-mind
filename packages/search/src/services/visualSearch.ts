@@ -1,8 +1,9 @@
-import { getImageEmbedding } from '@vector/services/embedding'
-import { createVectorDbClient, getByVideoSource } from '@vector/services/vectorDb'
+import { getImageEmbedding } from '@embedding-core/services/extractors'
+import { createVectorDbClient } from '@vector/services/client'
 import { VideoWithScenesAndMatch } from '@shared/types/video'
 import { logger } from '@shared/services/logger'
 import { metadataToScene } from '@vector/utils/shared'
+import { getByVideoSource } from '@vector/services/db'
 
 async function searchScenesByImage(
   visualEmbedding: number[],

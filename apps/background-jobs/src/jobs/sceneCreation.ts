@@ -8,7 +8,7 @@ import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 import { frameAnalysisQueue, transcriptionQueue } from '@background-jobs/queue'
 import { Analysis } from '@shared/types/analysis'
-import { deleteByVideoSource } from '@vector/services/vectorDb'
+import { deleteByVideoSource } from '@vector/services/db'
 import { VideoModel } from '@db/index'
 
 async function processVideo(job: Job<VideoProcessingData>) {

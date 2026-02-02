@@ -1,68 +1,61 @@
 import { logger } from '@shared/services/logger'
-import { getAllVideos } from '@vector/services/vectorDb'
+import { getScenesStream } from '@vector/services/db'
 import type { CollectionVideosMap, VideoCollection } from '../types'
 
 export async function generateFacesBasedCollections(): Promise<CollectionVideosMap> {
-    logger.info('Generating dynamic faces-based collections...')
+  logger.info('Generating dynamic faces-based collections...')
 
-    const allVideos = await getAllVideos()
-    const facesGroups = new Map<string, Map<string, Set<string>>>()
+  const facesGroups = new Map<string, Map<string, Set<string>>>()
 
-    // Group scenes by face and source
-    for (const video of allVideos) {
-        for (const face of video.faces) {
-            if (!isValidFace(face)) continue
+  // Group scenes by face and source
+  for await (const scene of getScenesStream()) {
+    for (const face of scene.faces) {
+      if (!isValidFace(face)) continue
 
-            if (!facesGroups.has(face)) {
-                facesGroups.set(face, new Map())
-            }
+      if (!facesGroups.has(face)) {
+        facesGroups.set(face, new Map())
+      }
 
-            const sourceMap = facesGroups.get(face)!
-            if (!video.scenes) continue
+      const sourceMap = facesGroups.get(face)!
 
-            for (const scene of video.scenes) {
-                if (!sourceMap.has(scene.source)) {
-                    sourceMap.set(scene.source, new Set())
-                }
-                sourceMap.get(scene.source)!.add(scene.id)
-            }
-        }
+      if (!sourceMap.has(scene.source)) {
+        sourceMap.set(scene.source, new Set())
+        sourceMap.get(scene.source)!.add(scene.id)
+      }
     }
+  }
 
-    // Convert to collection format
-    const facesCollections: CollectionVideosMap = new Map()
+  // Convert to collection format
+  const facesCollections: CollectionVideosMap = new Map()
 
-    for (const [faceName, sourceMap] of facesGroups) {
-        const videoMap = createVideoMap(sourceMap, 'person')
+  for (const [faceName, sourceMap] of facesGroups) {
+    const videoMap = createVideoMap(sourceMap, 'person')
 
-        if (videoMap.size > 0) {
-            facesCollections.set(faceName, videoMap)
-        }
+    if (videoMap.size > 0) {
+      facesCollections.set(faceName, videoMap)
     }
+  }
 
-    logger.info(`Generated ${facesCollections.size} faces-based collections`)
-    return facesCollections
+  logger.info(`Generated ${facesCollections.size} faces-based collections`)
+  return facesCollections
 }
 
 function isValidFace(face: string): boolean {
-    return Boolean(face) && !face.toLowerCase().includes('unknown')
+  return Boolean(face) && !face.toLowerCase().includes('unknown')
 }
 
-function createVideoMap(
-    sourceMap: Map<string, Set<string>>,
-    matchType: string
-): Map<string, VideoCollection> {
-    const videoMap = new Map<string, VideoCollection>()
+function createVideoMap(sourceMap: Map<string, Set<string>>, matchType: string): Map<string, VideoCollection> {
+  const videoMap = new Map<string, VideoCollection>()
 
-    for (const [source, sceneIds] of sourceMap) {
-        videoMap.set(source, {
-            scenes: Array.from(sceneIds).map((sceneId) => ({
-                sceneId,
-                confidence: 1,
-            })),
-            match_type: matchType,
-        })
-    }
+  for (const [source, sceneIds] of sourceMap) {
+    videoMap.set(source, {
+      scenes: Array.from(sceneIds).map((sceneId) => ({
+        sceneId,
+        confidence: 1,
+      })),
+      match_type: matchType,
+    })
+  }
 
-    return videoMap
+  return videoMap
 }

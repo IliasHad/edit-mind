@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import type { GroupedSuggestions } from '@search/services/suggestion'
+import type { GroupedSuggestions } from '@shared/types/search'
 import { SUGGESTION_CONFIG } from '../constants'
 import { SuggestionSection } from './SearchSuggestions'
 

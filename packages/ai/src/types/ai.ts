@@ -1,9 +1,10 @@
-import { getVideoAnalytics } from '@shared/utils/analytics'
 import type { VideoSearchParams } from '@shared/types/search'
 import type { ChatMessage } from '@prisma/client'
 import { YearStats } from '@shared/types/stats'
 import { YearInReviewData } from '@shared/schemas/yearInReview'
 import { VideoWithScenes } from '@shared/types/video'
+import type { IntentData } from '@shared/types/chat'
+import { VideoAnalytics } from '@shared/types/analytics'
 
 export interface AIModel {
   generateActionFromPrompt(
@@ -26,17 +27,13 @@ export interface AIModel {
     chatHistory?: ChatMessage[],
     projectInstructions?: string
   ): Promise<{
-    data: {
-      type?: 'compilation' | 'analytics' | 'general' | 'refinement' | 'similarity'
-      needsVideoData?: boolean
-      keepPrevious?: boolean
-    }
+    data: IntentData
     tokens: number
     error?: string | undefined
   }>
   generateAnalyticsResponse(
     userPrompt: string,
-    analytics: Awaited<ReturnType<typeof getVideoAnalytics>>,
+    analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
     projectInstructions?: string
   ): Promise<{ data: string; tokens: number; error?: string | undefined }>

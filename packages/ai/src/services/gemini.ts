@@ -18,13 +18,13 @@ import {
 import type { ChatMessage } from '@prisma/client'
 import type { VideoSearchParams } from '@shared/types/search'
 import { logger } from '@shared/services/logger'
-import { getVideoAnalytics } from '@shared/utils/analytics'
 import { YearStats } from '@shared/types/stats'
 import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import { VideoWithScenes } from '@shared/types/video'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
 import { ModelResponse } from '@ai/types/ai'
 import { formatHistory } from '@ai/utils'
+import { VideoAnalytics } from '@shared/types/analytics'
 
 const CONTEXT_WINDOW_LIMIT = 2_000_000
 
@@ -227,7 +227,7 @@ export const GeminiModel = {
   },
   async generateAnalyticsResponse(
     userPrompt: string,
-    analytics: Awaited<ReturnType<typeof getVideoAnalytics>>,
+    analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
     projectInstructions?: string
   ): Promise<ModelResponse<string>> {

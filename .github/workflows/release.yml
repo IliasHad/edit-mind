@@ -25,6 +25,8 @@ env:
   REGISTRY: ghcr.io
   NODE_VERSION: 22.20.0
   PNPM_VERSION: 10.20.0
+  PYTHON_VERSION: 3.11
+  CUDA_VERSION: 12.1.1
 
 jobs:
   build:
@@ -41,24 +43,37 @@ jobs:
             context: .
             target: production
             tag: latest
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
-            target: production-gpu
+            target: production
             tag: latest-gpu
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
+              CUDA_VERSION=12.1.1
+              TARGET_BASE=base-gpu
 
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
             target: production
             tag: latest
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
             target: production
             tag: latest
+            args: |
+              PYTHON_VERSION=3.11
 
     steps:
       - name: Checkout code
@@ -83,6 +98,7 @@ jobs:
           file: ${{ matrix.service.dockerfile }}
           target: ${{ matrix.service.target }}
           platforms: ${{ contains(matrix.service.target, 'gpu') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          build-args: ${{ matrix.service.args }}
           push: false
           cache-from: type=gha,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
@@ -117,6 +133,10 @@ jobs:
           file: docker/Dockerfile.ml
           target: production-gpu
           platforms: linux/amd64
+          build-args: |
+            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            CUDA_VERSION=${{ env.CUDA_VERSION }}
+            TARGET_BASE=base-gpu
           push: false
           cache-from: type=gha,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
           cache-to: type=gha,mode=max,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
@@ -224,24 +244,38 @@ jobs:
             context: .
             target: production
             tag: latest
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
           - name: background-jobs
             dockerfile: docker/Dockerfile.background-jobs
             context: .
             target: production-gpu
             tag: latest-gpu
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
+              CUDA_VERSION=12.1.1
+              TARGET_BASE=base-gpu
 
           - name: ml
             dockerfile: docker/Dockerfile.ml
             context: .
             target: production
             tag: latest
+            args: |
+              PYTHON_VERSION=3.11
+              CUDA_VERSION=12.1.1
 
           - name: web
             dockerfile: docker/Dockerfile.web
             context: .
             target: production
             tag: latest
+            args: |
+              NODE_VERSION=22.20.0
+              PNPM_VERSION=10.20.0
 
     steps:
       - name: Set lowercase image prefix
@@ -283,9 +317,7 @@ jobs:
           file: ${{ matrix.service.dockerfile }}
           target: ${{ matrix.service.target }}
           platforms: ${{ contains(matrix.service.target, 'gpu') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
-          build-args: |
-            NODE_VERSION=${{ env.NODE_VERSION }}
-            PNPM_VERSION=${{ env.PNPM_VERSION }}
+          build-args: ${{ matrix.service.args }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -304,7 +336,7 @@ jobs:
     name: Release ML GPU Docker Image
     runs-on: ubuntu-latest
     needs: release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       id-token: write
@@ -352,8 +384,9 @@ jobs:
           target: production-gpu
           platforms: linux/amd64
           build-args: |
-            NODE_VERSION=${{ env.NODE_VERSION }}
-            PNPM_VERSION=${{ env.PNPM_VERSION }}
+            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            CUDA_VERSION=${{ env.CUDA_VERSION }}
+            TARGET_BASE=base-gpu
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

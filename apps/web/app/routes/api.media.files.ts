@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from 'react-router'
 import pathModule from 'path'
 import fs from 'fs/promises'
 import { MEDIA_BASE_PATH } from '@shared/constants'
-import { SUPPORTED_VIDEO_EXTENSIONS } from '@media-utils/constants'
+import { SUPPORTED_VIDEO_EXTENSIONS } from '@shared/constants'
 import { logger } from '@shared/services/logger'
 import { createPathValidator } from '@shared/services/pathValidator'
 

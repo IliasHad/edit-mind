@@ -1,10 +1,12 @@
-import { createVectorDbClient, embedAudios } from '../services/vectorDb'
-import { AUDIO_BATCH_SIZE } from '../constants'
+import { createVectorDbClient } from '@vector/services/client'
+
+import { AUDIO_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
 import { cleanupAudio, extractSceneAudio } from '@media-utils/utils/audio'
-import { embedSceneAudio } from '../services/embedding'
+import { embedSceneAudio } from '../services'
 import type { Scene } from '@shared/schemas'
-import { sceneToVectorFormat } from '../utils/shared'
+import { sceneToVectorFormat } from '@vector/utils/shared'
+import { embedAudios } from '@embedding-media/services/embed'
 
 export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
   try {
@@ -62,7 +64,7 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
         }))
       )
       logger.info(
-        `Batch ${i / AUDIO_BATCH_SIZE + 1} complete: ` + `${validAudioEmbeddings.length} audio embeddings stored`
+        `Batch ${i / AUDIO_BATCH_SIZE + 1}/${Math.ceil(scenes.length / AUDIO_BATCH_SIZE)} complete: ` + `${validAudioEmbeddings.length} audio embeddings stored`
       )
     }
   } catch (err) {

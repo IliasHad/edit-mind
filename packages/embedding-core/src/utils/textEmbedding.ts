@@ -1,9 +1,11 @@
 import { Scene } from '@shared/types/scene'
-import { createVectorDbClient, embedDocuments } from '../services/vectorDb'
+import { createVectorDbClient } from '@vector/services/client'
 
-import { EMBEDDING_BATCH_SIZE } from '../constants'
+import { EMBEDDING_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
-import { sceneToVectorFormat } from './shared'
+import { sceneToVectorFormat } from '@vector/utils/shared'
+import { getEmbeddings } from '@embedding-core/services/extractors'
+import { embedTextDocuments } from '@embedding-core/services/embed';
 
 export const embedScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
   try {
@@ -23,16 +25,18 @@ export const embedScenes = async (scenes: Scene[], videoFullPath: string): Promi
 
       if (embeddingInputs.length > 0) {
         logger.info(`Embedding ${embeddingInputs.length} new text documents`)
-        await embedDocuments(
+        const embedding = await getEmbeddings(embeddingInputs.map((doc) => doc.text))
+        await embedTextDocuments(
           embeddingInputs.map((doc) => ({
             id: doc.id,
             metadata: doc.metadata,
             text: doc.text,
-          }))
+          })),
+          embedding
         )
       }
 
-      logger.info(`Batch ${i / EMBEDDING_BATCH_SIZE + 1} complete: ` + `${embeddingInputs.length} text`)
+      logger.info(`Batch ${i / EMBEDDING_BATCH_SIZE + 1}/${Math.ceil(scenes.length / EMBEDDING_BATCH_SIZE)} complete: ` + `${embeddingInputs.length} text`)
     }
   } catch (err) {
     logger.error(`Error in embedScenes for ${videoFullPath}: ${err}`)
