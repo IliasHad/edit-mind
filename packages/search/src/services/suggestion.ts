@@ -1,7 +1,7 @@
 import { logger } from '@shared/services/logger'
 import { getCache, setCache, invalidateCache } from '@shared/services/cache'
-import { GroupedSuggestions, Suggestion, VideoSearchParams } from '@shared/types/search'
-import { ShotType } from '@shared/types'
+import type { GroupedSuggestions, Suggestion, VideoSearchParams } from '@shared/types/search'
+import type { ShotType } from '@shared/types'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
 import { getScenesStream } from '@vector/services/db'
 

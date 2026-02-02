@@ -3,7 +3,7 @@ import type { Video } from "@prisma/client";
 import { Button } from "@ui/components/Button";
 import { memo } from "react";
 
-export const SelectedVideoChip = memo(({ video, onRemove }: { video: Video; onRemove: (id: string) => void }) => (
+export const SelectedVideoChip = memo(({ video, onRemove }: { video: Partial<Video>; onRemove: (id: string) => void }) => (
   <div
     className="inline-flex items-center gap-2.5 pl-3 pr-2 py-2
                bg-white dark:bg-black
@@ -19,7 +19,7 @@ export const SelectedVideoChip = memo(({ video, onRemove }: { video: Video; onRe
     <Button
       variant='ghost'
       type="button"
-      onClick={() => onRemove(video.id)}
+      onClick={() => onRemove(video.id!)}
       className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30
                  text-black/40 hover:text-red-600 dark:text-white/40 dark:hover:text-red-400
                  transition-all duration-200"

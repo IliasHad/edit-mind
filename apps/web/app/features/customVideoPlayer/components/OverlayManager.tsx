@@ -33,7 +33,7 @@ export function OverlayManager({
               bbox={face.bbox}
               label={
                 `${face.name}` +
-                (face.emotion?.label ? ` - ${face.emotion.label} (${face.emotion.confidence.toFixed(1)}%)` : '')
+                (face.emotion?.label ? ` - ${face.emotion.label} (${face.emotion.confidence?.toFixed(1)}%)` : '')
               }
               type="face"
               confidence={face.confidence}

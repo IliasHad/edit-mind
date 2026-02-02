@@ -17,10 +17,10 @@ export const faceSchema = z.object({
   name: z.string(),
   bbox: boundingBoxSchema.optional(),
   confidence: z.number().optional(),
-  emotion: {
+  emotion: z.object({
     label: z.string().optional(),
     confidence: z.number().optional(),
-  },
+  }),
 })
 
 export const objectDataSchema = z.object({

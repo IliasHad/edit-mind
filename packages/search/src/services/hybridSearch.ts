@@ -1,4 +1,4 @@
-import { VideoWithScenesAndMatch } from '@shared/types/video'
+import type { VideoWithScenesAndMatch } from '@shared/types/video'
 
 interface HybridSearchResult extends VideoWithScenesAndMatch {
   score: number

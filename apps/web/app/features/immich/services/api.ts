@@ -1,4 +1,4 @@
-import type { ImmichConfig, ImmichIntegration } from '../types'
+import type { ImmichIntegration, ImmichConfig } from "@immich/types/immich"
 
 export const immichApiClient = {
   async request<T>(url: string, options?: RequestInit): Promise<T> {

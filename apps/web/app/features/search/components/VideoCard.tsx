@@ -19,7 +19,7 @@ interface VideoCardProps {
   thumbnailUrl?: string
   duration: number
   createdAt: number
-  aspectRatio: '16:9' | '9:16'
+  aspectRatio: string
   metadata?: VideoMetadata
   initialStartTime?: number
   forceMetadataLoad?: boolean
@@ -33,7 +33,7 @@ export function VideoCard({
   thumbnailUrl,
   duration,
   createdAt,
-  aspectRatio = '16:9',
+  aspectRatio,
   metadata,
   initialStartTime = 0,
   scenes,

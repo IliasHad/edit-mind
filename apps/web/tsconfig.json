@@ -18,6 +18,7 @@
       "@db/*": ["../../packages/db/src/*"],
       "@vector/*": ["../../packages/vector/src/*"],
       "@search/*": ["../../packages/search/src/*"],
+      "@embedding-core/*": ["../../packages/embedding-core/src/*"]
     },
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -26,6 +27,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true
   }
 }

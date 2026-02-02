@@ -1,7 +1,7 @@
-import { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/schemas'
 import { logger } from '@shared/services/logger'
-import { DetectedTextData, FaceData, ObjectData, TranscriptionWord } from '@shared/types/scene'
-import { Metadata } from 'chromadb'
+import type { DetectedTextData, FaceData, ObjectData, TranscriptionWord } from '@shared/types/scene'
+import type { Metadata } from 'chromadb'
 import { getAspectRatioDescription } from './aspectRatio'
 
 const generateVectorDocumentText = async (scene: Scene) => {

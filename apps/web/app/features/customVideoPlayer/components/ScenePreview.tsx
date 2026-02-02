@@ -30,7 +30,7 @@ export function ScenePreview({ scene, hoverX, formatTime }: ScenePreviewProps) {
           <p className="text-xs text-white font-medium line-clamp-2 mb-2">{scene.description}</p>
           <div className="flex items-center justify-between text-[10px] text-gray-400">
             <span>{formatTime(scene.startTime)}</span>
-            <span className="px-2 py-0.5 rounded bg-white/10">{scene.shot_type}</span>
+            <span className="px-2 py-0.5 rounded bg-white/10">{scene.shotType}</span>
           </div>
         </div>
       </div>

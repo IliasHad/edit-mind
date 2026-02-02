@@ -11,7 +11,7 @@ import {
   TagIcon,
   PuzzlePieceIcon,
 } from '@heroicons/react/24/solid'
-import { CollectionType } from '@prisma/client'
+import type { CollectionType } from '@prisma/client'
 
 type IconType = ComponentType<SVGProps<SVGSVGElement>>
 
@@ -21,12 +21,12 @@ export const ICON_MAP: Record<CollectionType, IconType> = {
   emotional_tone: HeartIcon,
   aspect_ratio: VideoCameraIcon,
   time_of_day: ClockIcon,
-  use_case: PuzzlePieceIcon,      
+  use_case: PuzzlePieceIcon,
   people: UserIcon,
   location: MapPinIcon,
-  custom: TagIcon,               
+  custom: TagIcon,
   geographic_location: MapPinIcon,
-  person: UserIcon,             
+  person: UserIcon,
   b_roll: VideoCameraIcon,
   audio: MusicalNoteIcon,
 }
@@ -38,12 +38,12 @@ export const TYPE_LABELS: Record<CollectionType, string> = {
   emotional_tone: 'Emotional Tone',
   aspect_ratio: 'Aspect Ratio',
   time_of_day: 'Time of Day',
-  use_case: 'Use Case',          
+  use_case: 'Use Case',
   people: 'People',
   location: 'Location',
-  custom: 'Custom',              
+  custom: 'Custom',
   geographic_location: 'Geographic Location',
-  person: 'Person',              
+  person: 'Person',
   b_roll: 'B-Roll',
   audio: 'Audio',
 }

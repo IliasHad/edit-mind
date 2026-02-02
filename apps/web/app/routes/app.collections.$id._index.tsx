@@ -215,16 +215,18 @@ export default function CollectionDetail() {
                 </Button>
               </div>
 
-              <SortButton
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                options={[
-                  { value: 'shottedAt', label: 'Shot Date' },
-                  { value: 'importAt', label: 'Import Date' },
-                  { value: 'updatedAt', label: 'Last Updated' },
-                  { value: 'duration', label: 'Duration' },
-                ]}
-              />
+              {sortBy && sortOrder &&
+                <SortButton
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  options={[
+                    { value: 'shottedAt', label: 'Shot Date' },
+                    { value: 'importAt', label: 'Import Date' },
+                    { value: 'updatedAt', label: 'Last Updated' },
+                    { value: 'duration', label: 'Duration' },
+                  ]}
+                />
+              }
             </div>
           </div>
 
@@ -270,13 +272,12 @@ export default function CollectionDetail() {
                     >
                       <div className="absolute left-3 top-3 z-10">
                         <div
-                          className={`rounded-lg px-2.5 py-1 text-xs font-semibold backdrop-blur-xl border ${
-                            item.confidence >= 0.9
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                              : item.confidence >= 0.8
-                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                                : 'bg-white/10 text-white border-white/20'
-                          }`}
+                          className={`rounded-lg px-2.5 py-1 text-xs font-semibold backdrop-blur-xl border ${item.confidence >= 0.9
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                            : item.confidence >= 0.8
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              : 'bg-white/10 text-white border-white/20'
+                            }`}
                         >
                           {(item.confidence * 100).toFixed(0)}%
                         </div>
@@ -342,13 +343,12 @@ export default function CollectionDetail() {
 
                       <div className="flex shrink-0 items-center gap-3">
                         <div
-                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold border ${
-                            item.confidence >= 0.9
-                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                              : item.confidence >= 0.8
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                                : 'bg-white/5 border-white/10 text-white/70'
-                          }`}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold border ${item.confidence >= 0.9
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                            : item.confidence >= 0.8
+                              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                              : 'bg-white/5 border-white/10 text-white/70'
+                            }`}
                         >
                           {(item.confidence * 100).toFixed(0)}% match
                         </div>

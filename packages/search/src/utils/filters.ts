@@ -1,5 +1,5 @@
-import { VideoSearchParams } from '@shared/types/search';
-import { Where, WhereDocument } from 'chromadb';
+import type { VideoSearchParams } from '@shared/types/search';
+import type { Where, WhereDocument } from 'chromadb';
 export function applyFilters(
   query: VideoSearchParams,
   projectsVideSources?: string[]

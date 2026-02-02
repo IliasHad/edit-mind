@@ -1,5 +1,5 @@
 import z from 'zod'
-import { Scene } from './scene'
+import type { Scene } from './scene'
 import { videoSchema } from '../schemas'
 
 export type Video = z.infer<typeof videoSchema>

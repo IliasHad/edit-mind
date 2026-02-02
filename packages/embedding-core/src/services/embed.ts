@@ -1,6 +1,6 @@
 import { logger } from '@shared/services/logger'
 import { createVectorDbClient } from '@vector/services/client'
-import { EmbeddingInput } from '@vector/types/vector'
+import type { EmbeddingInput } from '@vector/types/vector'
 import { sanitizeMetadata } from '@vector/utils/shared'
 
 export async function embedTextDocuments(documents: EmbeddingInput[], embeddings: number[][]): Promise<void> {

@@ -2,17 +2,7 @@ import type { VideoWithScenesAndMatch } from '@shared/types/video'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { GroupedSuggestions } from '@shared/types/search'
-
-export interface SearchFilters {
-  face?: string[]
-  object?: string[]
-  emotion?: string[]
-  camera?: string[]
-  shotType?: string[]
-  transcription?: string
-  text?: string
-  location?: string[]
-}
+import type { SearchFilters } from '../types'
 
 interface PaginationInfo {
   total: number
@@ -248,21 +238,25 @@ export const useSearchStore = create<SearchState>()(
         removeFilter: (type, value) =>
           set((state) => {
             const currentValues = state.filters[type]
+            const newFilters = { ...state.filters }
 
             if (Array.isArray(currentValues)) {
               const filtered = currentValues.filter((v) => v !== value)
-              const newFilters = { ...state.filters }
 
               if (filtered.length === 0) {
                 delete newFilters[type]
               } else {
-                newFilters[type] = filtered
+                if (Array.isArray(currentValues)) {
+                  if (currentValues.includes(value)) return state
+                  newFilters[type] = [...currentValues, value] as string[] & string
+                } else {
+                  newFilters[type] = value as string[] & string
+                }
               }
 
               return { filters: newFilters }
             }
 
-            const newFilters = { ...state.filters }
             delete newFilters[type]
             return { filters: newFilters }
           }),

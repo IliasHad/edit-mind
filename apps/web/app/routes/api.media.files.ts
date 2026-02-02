@@ -60,16 +60,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
         })
     )
 
-    files = files.filter((f): f is NonNullable<typeof f> => f !== null)
+    files = files.filter(Boolean)
 
     if (search) {
-      files = files.filter((f) => f.name.toLowerCase().includes(search))
+      files = files.filter((f) => f?.name.toLowerCase().includes(search))
     }
 
     if (sort === 'recent') {
-      files.sort((a, b) => (b.mtime || 0) - (a.mtime || 0))
+      files.sort((a, b) => (b?.mtime || 0) - (a?.mtime || 0))
     } else if (sort === 'older') {
-      files.sort((a, b) => (a.mtime || 0) - (b.mtime || 0))
+      files.sort((a, b) => (a?.mtime || 0) - (b?.mtime || 0))
     }
 
     return { files }

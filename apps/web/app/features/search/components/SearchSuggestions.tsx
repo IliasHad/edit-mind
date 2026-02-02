@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import { useSearchSuggestions } from '../hooks/useSearchSuggestions'
 import { Button } from '@ui/components/Button'
+import type { SearchFiltersType } from '../types'
 
 interface Suggestion {
   text: string
@@ -12,7 +13,7 @@ interface SuggestionSectionProps {
   title: string
   icon: ComponentType<{ className?: string }>
   items: Suggestion[]
-  type: string
+  type: SearchFiltersType
 }
 
 export function SuggestionSection({ title, icon: Icon, items, type }: SuggestionSectionProps) {
@@ -58,11 +59,10 @@ export function SuggestionSection({ title, icon: Icon, items, type }: Suggestion
                 <span className="truncate">{item.text}</span>
 
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                    isSelected
-                      ? 'bg-white/20 dark:bg-black/20'
-                      : 'bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50'
-                  }`}
+                  className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${isSelected
+                    ? 'bg-white/20 dark:bg-black/20'
+                    : 'bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50'
+                    }`}
                 >
                   {item.sceneCount || Math.round(item.count)}
                 </span>

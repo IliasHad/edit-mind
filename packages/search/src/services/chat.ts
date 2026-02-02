@@ -1,5 +1,5 @@
-import { ChatSuggestion } from '@shared/types/chat'
-import { VideoMetadataSummary } from '@shared/types/search'
+import type { ChatSuggestion } from '@shared/types/chat'
+import type { VideoMetadataSummary } from '@shared/types/search'
 
 const isValidLocation = (locationName: string): boolean => {
   const invalidLocations = ['unknown', 'unidentified', 'not specified', 'n/a', '°n', '°r']
