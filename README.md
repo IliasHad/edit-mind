@@ -223,7 +223,10 @@ docker-compose -f docker-compose.dev.yml up --build
 *Watch the Edit Mind presentation at Twelve Labs (starts at 21:12)*
 
 ---
+<!--START_SECTION:buy-me-a-coffee-->
+<!--END_SECTION:buy-me-a-coffe-->
 
+---
 ## License
 
 This project is licensed under the MIT License - see the `LICENSE.md` file for details.
