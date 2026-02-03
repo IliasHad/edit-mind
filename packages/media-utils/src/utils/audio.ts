@@ -104,8 +104,6 @@ export const extractSceneAudio = async (
       videoPath,
       '-vn',
       '-acodec',
-      '-map',
-      '0:a?',
       format === 'wav' ? 'pcm_s16le' : format === 'flac' ? 'flac' : 'libmp3lame',
       '-ar',
       sampleRate.toString(),
