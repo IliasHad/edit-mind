@@ -15,6 +15,10 @@ Edit Mind lets you index your videos **(including transcription, frame analysis,
 ---
 Note: (Edit Mind name is coming from Video Editor Mind, so this will be editor's second brain in the future)
 
+## Sponsors of this project 
+
+[![brycedev](https://img.shields.io/badge/Sponosor-brycedev-blue?logo=github)](https://github.com/brycedev)
+
 ## Showcase Video
 
 [![Edit Mind Demo](https://img.youtube.com/vi/YrVaJ33qmtg/maxresdefault.jpg)](https://www.youtube.com/watch?v=YrVaJ33qmtg)  
