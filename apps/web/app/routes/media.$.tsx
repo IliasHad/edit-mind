@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from 'react-router'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '@shared/services/logger'
-import { requireUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.server'
 import { createPathValidator } from '@shared/services/pathValidator'
 import { MEDIA_BASE_PATH } from '@shared/constants'
 

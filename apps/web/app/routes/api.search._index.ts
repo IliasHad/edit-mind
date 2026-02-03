@@ -1,8 +1,9 @@
 import type { LoaderFunctionArgs } from 'react-router'
-import { getUser } from '~/services/user.sever'
+import { getUser } from '~/services/user.server'
 import { searchScenes } from '@search/services'
 import { logger } from '@shared/services/logger'
 import { buildSearchQueryFromSuggestions } from '@search/services/suggestion'
+import { SearchTextSchema } from '~/features/search/schemas'
 
 export async function action({ request }: LoaderFunctionArgs) {
   const user = await getUser(request)
@@ -13,31 +14,18 @@ export async function action({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
   const page = parseInt(url.searchParams.get('page') || '1', 10)
   const limit = parseInt(url.searchParams.get('limit') || '40', 10)
-  const formData = await request.formData()
-  const face = formData.get('face')?.toString() || ''
-  const object = formData.get('object')?.toString() || ''
-  const emotion = formData.get('emotion')?.toString() || ''
-  const shotType = formData.get('shotType')?.toString() || ''
-  const camera = formData.get('camera')?.toString() || ''
-  const transcription = formData.get('transcription')?.toString() || ''
-  const text = formData.get('text')?.toString() || ''
-  const query = formData.get('query')?.toString() || ''
-  const location = formData.get('location')?.toString() || ''
 
   try {
-    const searchParams = buildSearchQueryFromSuggestions({
-      face,
-      object,
-      emotion,
-      shotType,
-      camera,
-      transcription,
-      text,
-      semanticQuery: query,
-      location,
-    })
+    const formData = await request.formData()
+    const { data, success } = SearchTextSchema.safeParse(Object.fromEntries(formData))
 
-    const videos = await searchScenes(searchParams, undefined)
+    if (!success) {
+      return new Response(JSON.stringify({ error: 'Search input invalid' }), { status: 400 })
+    }
+
+    const searchParams = buildSearchQueryFromSuggestions(data)
+    
+    const videos = await searchScenes(searchParams)
     const offset = (page - 1) * limit
     const paginatedVideos = videos.slice(offset, offset + limit)
 
@@ -46,7 +34,7 @@ export async function action({ request }: LoaderFunctionArgs) {
       total: videos.length,
       page,
       limit,
-      query,
+      query: data.query,
     }
   } catch (error) {
     logger.error(error)

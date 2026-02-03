@@ -569,7 +569,7 @@ export async function getVideosMetadataSummary(): Promise<VideoMetadataSummary> 
     const getTop = (obj: Record<string, number>) =>
       Object.entries(obj)
         .sort((a, b) => b[1] - a[1])
-        .map(([name]) => ({ name, count: 1 }))
+        .map(([name, count]) => ({ name, count }))
 
     const totalVideos = await getUniqueVideoSources()
     const result = {

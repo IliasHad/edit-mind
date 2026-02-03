@@ -6,6 +6,7 @@ import { fileStorage } from '~/services/image.server'
 import { buildSearchQueryFromSuggestions } from '@search/services/suggestion'
 import { searchScenes } from '@search/services'
 import { combineResults } from '@search/services/hybridSearch'
+import { SearchTextSchema } from '~/features/search/schemas'
 
 export async function action({ request }: ActionFunctionArgs) {
   async function uploadHandler(fileUpload: FileUpload) {
@@ -57,27 +58,13 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const arrayBuffer = await image.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
-    const face = formData.get('face')?.toString() || ''
-    const object = formData.get('object')?.toString() || ''
-    const emotion = formData.get('emotion')?.toString() || ''
-    const shotType = formData.get('shotType')?.toString() || ''
-    const camera = formData.get('camera')?.toString() || ''
-    const transcription = formData.get('transcription')?.toString() || ''
-    const text = formData.get('text')?.toString() || ''
-    const query = formData.get('query')?.toString() || ''
-    const locations = formData.get('location')?.toString() || ''
+    const { data, success } = SearchTextSchema.safeParse(Object.fromEntries(formData))
 
-    const searchParams = buildSearchQueryFromSuggestions({
-      face,
-      object,
-      emotion,
-      shotType,
-      camera,
-      transcription,
-      text,
-      semanticQuery: query,
-      locations,
-    })
+    if (!success) {
+      return new Response(JSON.stringify({ error: 'Search input invalid' }), { status: 400 })
+    }
+
+    const searchParams = buildSearchQueryFromSuggestions(data)
 
     const [imageResults, textResults] = await Promise.all([
       searchByImage(buffer, undefined).catch((error) => {
@@ -93,7 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const combinedResults = combineResults(imageResults, textResults, {
       imageWeight: 0.7,
       textWeight: 0.3,
-      hasQuery: !!query,
+      hasQuery: !!data.query,
     })
     const paginatedVideos = combinedResults.slice(offset, offset + limit)
 
@@ -102,6 +89,7 @@ export async function action({ request }: ActionFunctionArgs) {
       total: combinedResults.length,
       page,
       limit,
+      query: data.query,
     }
   } catch (error) {
     logger.error('Error in image search: ' + error)

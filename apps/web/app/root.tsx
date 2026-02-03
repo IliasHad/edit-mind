@@ -12,7 +12,7 @@ import {
 } from 'react-router'
 import './app.css'
 import { SessionProvider } from './features/auth/providers/SessionProvider'
-import { getUser } from './services/user.sever'
+import { getUser } from './services/user.server'
 import { useApp } from './features/shared/hooks/useApp'
 import { useEffect } from 'react'
 import { logger } from '@shared/services/logger'

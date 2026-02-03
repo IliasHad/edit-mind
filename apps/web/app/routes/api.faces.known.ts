@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         total: faces.length,
         page,
         limit,
-        faces: faces.slice(offset, limit),
+        faces: faces.slice(offset, offset + limit),
         totalPages,
         hasMore,
       }

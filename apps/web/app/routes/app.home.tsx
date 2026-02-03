@@ -1,15 +1,16 @@
-import { Link, redirect, useLoaderData, useNavigate, useSearchParams } from 'react-router'
+import { Link, redirect, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { VideoCard } from '~/features/shared/components/VideoCard'
 import { Sidebar } from '~/features/shared/components/Sidebar'
-import { getUser } from '~/services/user.sever'
+import { getUser } from '~/services/user.server'
 import type { JsonArray } from '@prisma/client/runtime/library'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { VideoModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import type { SortOption, SortOrder } from '~/features/videos/types'
 import { SortButton } from '~/features/videos/components/SortButton'
+import { Pagination } from '~/features/shared/components/Pagination'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Dashboard | Edit Mind' }]
@@ -54,8 +55,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Dashboard() {
   const { videos, total, page, limit, sortBy, sortOrder } = useLoaderData<typeof loader>()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
 
   const totalPages = Math.ceil(total / limit)
 
@@ -140,47 +139,7 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-4 pt-8">
-                  <button
-                    disabled={page === 1}
-                    onClick={() => {
-                      const params = new URLSearchParams(searchParams)
-                      params.set('page', (page - 1).toString())
-                      navigate(`?${params.toString()}`)
-                    }}
-                    className="px-5 py-2.5 text-sm font-medium rounded-xl
-                      bg-white dark:bg-black 
-                      text-black/70 dark:text-white/70
-                      border border-black/10 dark:border-white/10
-                      hover:bg-black/5 dark:hover:bg-white/5
-                      transition-all
-                      disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-sm text-black/60 dark:text-white/60 font-medium">
-                    Page {page} of {totalPages}
-                  </span>
-                  <button
-                    disabled={page >= totalPages}
-                    onClick={() => {
-                      const params = new URLSearchParams(searchParams)
-                      params.set('page', (page + 1).toString())
-                      navigate(`?${params.toString()}`)
-                    }}
-                    className="px-5 py-2.5 text-sm font-medium rounded-xl
-                      bg-white dark:bg-black 
-                      text-black/70 dark:text-white/70
-                      border border-black/10 dark:border-white/10
-                      hover:bg-black/5 dark:hover:bg-white/5
-                      transition-all
-                      disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
+              {totalPages > 1 && <Pagination total={totalPages} page={page} />}
             </div>
           )}
         </section>

@@ -1,14 +1,17 @@
 import { logger } from '@shared/services/logger'
 import type { LoaderFunctionArgs } from 'react-router'
 import { prisma } from '~/services/database'
-import { requireUser } from '~/services/user.sever'
+import { requireUserId } from '~/services/user.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
-    await requireUser(request)
+    const userId = await requireUserId(request)
 
     const uniqueVideos = new Map<string, number>()
     const collections = await prisma.collection.findMany({
+      where: {
+        userId,
+      },
       orderBy: {
         name: 'asc',
       },

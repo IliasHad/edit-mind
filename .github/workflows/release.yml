@@ -146,7 +146,7 @@ jobs:
       needs: build
       runs-on: ubuntu-latest
       if: github.ref != 'refs/heads/main'
-      timeout-minutes: 35
+      timeout-minutes: 50
 
       steps:
         - name: Checkout

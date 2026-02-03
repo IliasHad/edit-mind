@@ -41,7 +41,7 @@ export function SuggestionSection({ title, icon: Icon, items, type }: Suggestion
         <span className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wider">{title}</span>
       </div>
 
-      <div className="space-y-0.5" role="list">
+      <div className="space-y-2.5 mt-2" role="list">
         {items
           .filter((item) => item)
           .map((item, index) => {

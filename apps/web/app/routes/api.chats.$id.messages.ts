@@ -1,7 +1,7 @@
 import { getVideoWithScenesBySceneIds } from '@vector/services/db'
 import type { ActionFunction, LoaderFunctionArgs } from 'react-router'
 import { logger } from '@shared/services/logger'
-import { requireUser, requireUserId } from '~/services/user.sever'
+import { requireUser, requireUserId } from '~/services/user.server'
 import { ChatMessageModel, ChatModel } from '@db/index'
 import { backgroundJobsFetch } from '~/services/background.server'
 import { ChatMessageCreateSchema } from '~/features/chats/schemas'
@@ -15,10 +15,12 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 
     const chat = await ChatModel.findFirst({
       where: {
-        userId: userId,
+        userId,
         id,
       },
     })
+
+    if (!chat) return new Response(JSON.stringify({ error: 'Chat not found' }), { status: 404 })
 
     const messages = await ChatMessageModel.findMany({
       where: {
@@ -73,17 +75,13 @@ export const action: ActionFunction = async ({ request, params }) => {
   try {
     const { success, data } = ChatMessageCreateSchema.safeParse(payload)
 
-    if (!success) {
-      return new Response(JSON.stringify({ error: 'Error validating your chat message input' }), {
-        status: 500,
-      })
-    }
+    if (!success) return new Response(JSON.stringify({ error: 'Invalid chat message input' }), { status: 400 })
 
     const user = await requireUser(request)
 
     const { prompt } = data
 
-    const chat = await ChatModel.findById(id)
+    const chat = await ChatModel.findFirst({ where: { id, userId: user.id } })
 
     if (!chat) {
       return new Response(JSON.stringify({ error: 'Chat not found' }), {

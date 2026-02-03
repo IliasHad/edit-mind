@@ -50,9 +50,11 @@ export function applyFilters(
   }
 
   if (query.emotions?.length > 0) {
-    conditions.push({
-      emotions: { $in: query.emotions },
-    })
+    for (const emotion of query.emotions) {
+      documentConditions.push({
+        $contains: emotion,
+      })
+    }
   }
 
   // Transcription search

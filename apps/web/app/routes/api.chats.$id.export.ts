@@ -3,7 +3,7 @@ import { logger } from '@shared/services/logger'
 import type { ActionFunction } from 'react-router'
 import { ChatMessageExportSchema } from '~/features/chats/schemas'
 import { backgroundJobsFetch } from '~/services/background.server'
-import { requireUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.server'
 
 export const action: ActionFunction = async ({ request, params }) => {
   try {

@@ -3,7 +3,7 @@ import { prisma } from '~/services/database'
 import { createReadStream, statSync } from 'fs'
 import { logger } from '@shared/services/logger'
 import path from 'path'
-import { requireUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { id } = params

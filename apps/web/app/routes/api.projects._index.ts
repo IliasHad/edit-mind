@@ -2,7 +2,7 @@ import { ProjectModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { ProjectCreateSchema } from '~/features/projects/schemas'
-import { requireUserId } from '~/services/user.sever'
+import { requireUserId } from '~/services/user.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {

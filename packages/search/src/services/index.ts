@@ -34,8 +34,8 @@ export async function searchScenes(
 
     if (query.semanticQuery) {
       const queryEmbeddings = await getEmbeddings([query.semanticQuery])
-      const visualEmbedding = await getAudioEmbeddingForText(query.semanticQuery)
-      const audioEmbedding = await getVisualEmbeddingForText(query.semanticQuery)
+      const visualEmbedding = await getVisualEmbeddingForText(query.semanticQuery)
+      const audioEmbedding = await getAudioEmbeddingForText(query.semanticQuery)
 
       if (visualEmbedding && visual_collection) {
         const vectorQuery = await visual_collection.query({

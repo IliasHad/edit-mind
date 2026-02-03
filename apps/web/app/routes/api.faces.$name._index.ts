@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs } from 'react-router'
-import { getUser } from '~/services/user.sever'
+import { getUser } from '~/services/user.server'
 import { logger } from '@shared/services/logger'
 import { FaceRenameSchema, FaceDeleteSchema } from '~/features/faces/schemas'
 import { backgroundJobsFetch } from '~/services/background.server'

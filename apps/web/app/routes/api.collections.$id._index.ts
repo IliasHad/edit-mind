@@ -3,6 +3,7 @@ import { logger } from '@shared/services/logger'
 import { type LoaderFunctionArgs } from 'react-router'
 import type { CollectionItemWithVideo } from '~/features/collections/types'
 import type { SortOption, SortOrder } from '~/features/videos/types'
+import { requireUserId } from '~/services/user.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   try {
@@ -10,9 +11,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const url = new URL(request.url)
     const sortBy = (url.searchParams.get('sortBy') || 'shottedAt') as SortOption
     const sortOrder = (url.searchParams.get('sortOrder') || 'desc') as SortOrder
+    const userId = await requireUserId(request)
 
     const collection = await CollectionModel.findUnique({
-      where: { id },
+      where: { id, userId },
     })
 
     if (!collection) {

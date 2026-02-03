@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
-import { requireUser, requireUserId } from '~/services/user.sever'
+import { requireUser, requireUserId } from '~/services/user.server'
 import { logger } from '@shared/services/logger'
 import { ChatMessageModel, ChatModel } from '@db/index'
 import { backgroundJobsFetch } from '~/services/background.server'

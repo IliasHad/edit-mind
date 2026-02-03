@@ -1,5 +1,5 @@
 import { logger } from '@shared/services/logger'
-import { requireUser, requireUserId } from '~/services/user.sever'
+import { requireUser, requireUserId } from '~/services/user.server'
 import { FolderModel, VideoModel } from '@db/index'
 import type { ActionFunctionArgs } from 'react-router'
 import { FolderCreateSchema } from '~/features/folders/schemas/folder'

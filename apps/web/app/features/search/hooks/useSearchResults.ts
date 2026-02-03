@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router'
 import { useSearchStore } from '~/features/search/stores'
 
 export function useSearchResults() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const lastSearchRef = useRef<string>('')
 
   const {
     query,
@@ -40,7 +41,19 @@ export function useSearchResults() {
       return
     }
 
+    const searchSignature = JSON.stringify({
+      query: query.trim(),
+      filters,
+      imageSearch,
+      searchMode,
+    })
+
+    if (lastSearchRef.current === searchSignature) {
+      return
+    }
+
     const timeout = setTimeout(() => {
+      lastSearchRef.current = searchSignature
       performSearch()
     }, 300)
 
@@ -72,9 +85,7 @@ export function useSearchResults() {
       clearAllFilters()
       clearSearch()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
   useEffect(() => {
     const params = new URLSearchParams()
 
@@ -90,8 +101,13 @@ export function useSearchResults() {
       }
     })
 
-    setSearchParams(params, { replace: true })
-  }, [query, filters, setSearchParams])
+    const currentParams = searchParams.toString()
+    const newParams = params.toString()
+
+    if (currentParams !== newParams) {
+      setSearchParams(params, { replace: true })
+    }
+  }, [query, filters, searchParams, setSearchParams])
 
   return {
     results,

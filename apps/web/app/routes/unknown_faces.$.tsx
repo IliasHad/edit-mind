@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { UNKNOWN_FACES_DIR } from '@shared/constants'
 import { logger } from '@shared/services/logger'
-import { requireUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const filePath = params['*'] || ''

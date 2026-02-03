@@ -231,8 +231,8 @@ async function extractAndSaveFace(
       h: Math.min(height, imgHeight - y1),
     })
 
-    const filePath = path.join(personDir, `${face.id}.jpg`)
-    await faceImage.write(`${personDir}/${originalFileName.split('.')[0]}_face.jpg`)
+    const filePath = path.join(personDir, `${originalFileName.split('.')[0]}_face.jpg`) as `${string}.${string}`
+    await faceImage.write(filePath)
 
     return filePath
   } catch (error) {

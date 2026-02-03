@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router'
-import { getUser } from '~/services/user.sever'
+import { getUser } from '~/services/user.server'
 import { getGroupedSearchSuggestions } from '@search/services/suggestion';
 import { logger } from '@shared/services/logger'
 

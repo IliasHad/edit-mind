@@ -334,6 +334,9 @@ export const MockFolderModel = {
     return this.data.delete(id)
   },
 
+  async findUnique({ where }: { where: { id: string } }): Promise<User | null> {
+    return this.data.get(where.id) || null
+  },
   clear(): void {
     this.data.clear()
   },
