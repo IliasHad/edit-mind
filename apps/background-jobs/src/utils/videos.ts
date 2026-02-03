@@ -28,7 +28,10 @@ export async function importVideoFromVectorDb(video: Video): Promise<Folder | un
       if (!folder) {
         folder = await FolderModel.create({
           path: path.dirname(video.source),
+          watcherEnabled: true,
           userId: user.id,
+          excludePatterns: ['*.part', '*.temp'],
+          includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
         })
       }
 

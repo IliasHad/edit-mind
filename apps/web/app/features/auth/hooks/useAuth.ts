@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useFetcher } from 'react-router'
 import { useSession } from './useSession'
-import type { LoginFormValues, RegisterFormValues } from '~/types/auth'
+import type { LoginFormValues } from '~/types/auth'
 
 export function useAuth() {
   const navigate = useNavigate()
@@ -10,7 +10,7 @@ export function useAuth() {
   const { setSession } = useSession()
   const fetcher = useFetcher<{ error: string }>()
 
-  const handleAuth = async (values: LoginFormValues | RegisterFormValues, endpoint: string) => {
+  const handleAuth = async (values: LoginFormValues, endpoint: string) => {
     setError(null)
 
     const formData = new FormData()

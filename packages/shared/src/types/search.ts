@@ -1,5 +1,5 @@
 import z from 'zod'
-import { AspectRatio } from '.'
+import type { AspectRatio } from '.'
 import { searchSuggestionSchema, VideoMetadataSummarySchema, VideoSearchParamsSchema } from '../schemas/search'
 
 export type VideoSearchParams = z.infer<typeof VideoSearchParamsSchema>

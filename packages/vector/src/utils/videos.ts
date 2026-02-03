@@ -1,5 +1,5 @@
-import { Scene } from "@shared/schemas";
-import { VideoWithScenes } from "@shared/types/video";
+import type { Scene } from "@shared/types/scene"
+import type { VideoWithScenes } from "@shared/types/video";
 
 export function convertScenesToVideos(scenes: Scene[]): VideoWithScenes[] {
   const videoMap = new Map<string, VideoWithScenes>();

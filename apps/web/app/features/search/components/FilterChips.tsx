@@ -1,6 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useSearchStore, type SearchFilters } from '../stores'
+import { useSearchStore } from '../stores'
 import { Button } from '@ui/components/Button'
+import type { SearchFilters } from '../types'
 
 export function FilterChips() {
   const { filters, removeFilter } = useSearchStore()

@@ -47,9 +47,8 @@ export function FaceMentionsPlugin({ faces }: { faces: KnownFace[] }) {
                 variant='ghost'
                 key={option.key}
                 onClick={() => selectOptionAndCleanUp(option)}
-                className={`w-full text-left flex items-center justify-center gap-2 px-3 text-sm rounded ${
-                  i === selectedIndex ? 'bg-blue-100 dark:bg-blue-900' : ''
-                }`}
+                className={`w-full text-left flex items-center justify-center gap-2 px-3 text-sm rounded ${i === selectedIndex ? 'bg-blue-100 dark:bg-blue-900' : ''
+                  }`}
               >
                 {option.face.images.length > 0 ? (
                   <div className="relative w-10 h-10 flex rounded-full shrink-0 bg-linear-to-br from-purple-500 to-indigo-500 p-0.5 shadow-md">

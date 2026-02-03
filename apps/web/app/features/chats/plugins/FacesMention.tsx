@@ -249,15 +249,14 @@ export function FacesMention({ input, setInput }: FacesMentionProps) {
                     onClick={() => handleSelectFace(face)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5
                                text-sm transition-colors duration-150
-                               ${
-                                 isSelected
-                                   ? 'bg-purple-50 dark:bg-purple-900/20 opacity-60'
-                                   : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800'
-                               }`}
+                               ${isSelected
+                        ? 'bg-purple-50 dark:bg-purple-900/20 opacity-60'
+                        : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                      }`}
                   >
-                    {face.image ? (
+                    {face.images.length > 0 ? (
                       <img
-                        src={`/faces/${face.image}`}
+                        src={`/faces/${face.images[0]}`}
                         alt={face.name}
                         className="w-10 h-10 rounded-full object-cover border-2 border-zinc-200 dark:border-zinc-700"
                       />

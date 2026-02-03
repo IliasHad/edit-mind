@@ -4,7 +4,7 @@ import { existsSync } from 'fs'
 import path from 'path'
 import fetch from 'node-fetch'
 import { FACES_DIR, PERMISSIONS } from '../constants'
-import {
+import type {
   ApiTestResponse,
   AssetsBucketResponse,
   Face,

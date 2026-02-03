@@ -2,6 +2,7 @@ import { forwardRef } from 'react'
 import type { GroupedSuggestions } from '@shared/types/search'
 import { SUGGESTION_CONFIG } from '../constants'
 import { SuggestionSection } from './SearchSuggestions'
+import type { SearchFiltersType } from '../types'
 
 interface SuggestionsDropdownProps {
   suggestions: GroupedSuggestions
@@ -31,9 +32,11 @@ export const SuggestionsDropdown = forwardRef<HTMLDivElement, SuggestionsDropdow
         role="listbox"
       >
         <div className="max-h-[70vh] overflow-y-auto p-2">
-          {Object.entries(suggestions).map(([type, items]) => {
-            const config = SUGGESTION_CONFIG[type as keyof typeof SUGGESTION_CONFIG]
-            
+          {Object.entries(suggestions).map(([key, items]) => {
+            const config = SUGGESTION_CONFIG[key as SearchFiltersType]
+            const type = key as SearchFiltersType
+
+
             if (!config || items.length === 0) {
               return null
             }

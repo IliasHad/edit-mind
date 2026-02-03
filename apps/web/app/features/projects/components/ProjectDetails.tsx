@@ -219,11 +219,10 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                     id="name"
                     placeholder="e.g., Summer Vacation 2024"
                     autoFocus={!isEditing}
-                    className={`w-full rounded-xl border-2 bg-white px-4 py-3.5 text-base text-black outline-none transition-all duration-200 placeholder:text-black/40 dark:bg-black dark:text-white dark:placeholder:text-white/40 ${
-                      errors.name
-                        ? 'border-red-300 focus:border-red-500 dark:border-red-800 dark:focus:border-red-600'
-                        : 'border-black/10 focus:border-black/30 dark:border-white/10 dark:focus:border-white/30'
-                    }`}
+                    className={`w-full rounded-xl border-2 bg-white px-4 py-3.5 text-base text-black outline-none transition-all duration-200 placeholder:text-black/40 dark:bg-black dark:text-white dark:placeholder:text-white/40 ${errors.name
+                      ? 'border-red-300 focus:border-red-500 dark:border-red-800 dark:focus:border-red-600'
+                      : 'border-black/10 focus:border-black/30 dark:border-white/10 dark:focus:border-white/30'
+                      }`}
                   />
                 )}
               />
@@ -277,9 +276,11 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
 
               {selectedVideos.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {selectedVideos.map((video) => (
-                    <SelectedVideoChip key={video.id} video={video} onRemove={removeVideo} />
-                  ))}
+                  {selectedVideos
+                    .filter(video => video !== undefined)
+                    .map((video) => (
+                      <SelectedVideoChip key={video.id} video={video} onRemove={removeVideo} />
+                    ))}
                 </div>
               ) : (
                 <div className="py-8 text-center">

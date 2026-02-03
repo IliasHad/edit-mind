@@ -1,5 +1,5 @@
 import { AUDIO_EMBEDDING_MODEL, TEXT_EMBEDDING_MODEL, VISUAL_EMBEDDING_MODEL } from '@shared/constants/embedding'
-import { ChromaClient, Collection } from 'chromadb'
+import { ChromaClient, type Collection } from 'chromadb'
 import { CHROMA_HOST, CHROMA_PORT, COLLECTION_NAME } from '@vector/constants'
 import { logger } from '@shared/services/logger'
 import { DefaultEmbeddingFunction } from '@chroma-core/default-embed';

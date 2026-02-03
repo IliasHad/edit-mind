@@ -134,7 +134,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ scene, isSelected, o
           onClick={onClose}
           className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 dark:bg-white/50 hover:bg-black/70 dark:hover:bg-white/70 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm"
           variant="ghost"
-          size="icon"
+          size="icon-md"
           leftIcon={<XMarkIcon className="w-5 h-5 text-white dark:text-black" />}
         />
 

@@ -1,4 +1,4 @@
-import { Scene } from "@shared/schemas"
+import type { Scene } from "@shared/types/scene"
 import { logger } from "@shared/services/logger"
 import { createVectorDbClient } from "@vector/services/client"
 import { metadataToScene } from "@vector/utils/shared"

@@ -1,6 +1,7 @@
 import { CollectionModel, CollectionItemModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import { type LoaderFunctionArgs } from 'react-router'
+import type { CollectionItemWithVideo } from '~/features/collections/types'
 import type { SortOption, SortOrder } from '~/features/videos/types'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -24,7 +25,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       },
     }
 
-    const items = await CollectionItemModel.findMany({
+    const items = (await CollectionItemModel.findMany({
       where: {
         collectionId: id,
       },
@@ -32,7 +33,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       include: {
         video: true,
       },
-    })
+    })) as CollectionItemWithVideo[]
 
     return {
       collection: {

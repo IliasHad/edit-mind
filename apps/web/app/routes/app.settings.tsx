@@ -12,7 +12,7 @@ import type { Folder } from '@prisma/client'
 import { useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AddFolder } from '~/features/folders/components/AddFolder'
-import { humanizeSeconds } from '~/features/shared/utils/duration';
+import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { DeleteModal } from '@ui/components/DeleteModal'
 import { useFolders } from '~/features/folders/hooks/useFolders'
 import { ArrowUpTrayIcon } from '@heroicons/react/24/solid'
@@ -22,12 +22,13 @@ import { FolderCard } from '~/features/folders/components/FolderCard'
 import { StatCard } from '~/features/settings/components/StatsCard'
 import { FeatureCard } from '~/features/settings/components/FeatureCard'
 import { Button } from '@ui/components/Button'
+import { FolderCreateSchema } from '~/features/folders/schemas/folder';
 
 export const meta: MetaFunction = () => [{ title: 'Settings | Edit Mind' }]
 
 export default function SettingsPage() {
   const { folders, createFolder, totalVideos, totalDuration, error } = useFolders()
-  const { deleteFolder, setCurrentFolder, currentFolder } = useCurrentFolder()
+  const { deleteFolder, setCurrentFolder, currentFolder, loading } = useCurrentFolder()
 
   const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
   const { isOpen: isAddModalOpen, openModal: openAddModal, closeModal: closeAddModal } = useModal()
@@ -63,7 +64,11 @@ export default function SettingsPage() {
 
   const handleAddFolder = async (path: string): Promise<boolean> => {
     try {
-      const folder = await createFolder({ path })
+      const { success, data } = FolderCreateSchema.safeParse(path)
+      if (!success) {
+        throw new Error('Invalid folder form data')
+      }
+      const folder = await createFolder(data)
       if (folder) {
         closeAddModal()
       }
@@ -136,15 +141,15 @@ export default function SettingsPage() {
                 </motion.div>
               ) : (
                 <motion.div key="folders-list" className="space-y-4">
-                  {folders.map((folder) => (
-                    <FolderCard folder={folder} onDelete={handleOpenDeleteModal} />
+                  {folders.map((folder, index) => (
+                    <FolderCard folder={folder} onDelete={handleOpenDeleteModal} isScanning={loading} index={index} />
                   ))}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </motion.section>
-        
+
         <div className="my-4">
           <FeatureCard
             icon={<ArrowTopRightOnSquareIcon className="size-5 text-white/70" />}
@@ -163,12 +168,7 @@ export default function SettingsPage() {
         </motion.p>
       </motion.main>
 
-      <AddFolder
-        isOpen={isAddModalOpen}
-        onClose={closeAddModal}
-        onAdd={handleAddFolder}
-        error={error}
-      />
+      <AddFolder isOpen={isAddModalOpen} onClose={closeAddModal} onAdd={handleAddFolder} error={error} />
 
       <DeleteModal
         isOpen={isDeleteModalOpen}

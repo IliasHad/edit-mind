@@ -8,13 +8,13 @@ interface ProgressBarProps {
 
 interface BucketData {
   matched: boolean
-  thumbnailUrl: string | null
+  thumbnailUrl?: string
 }
 
 function bucketScenes(scenes: SceneAndMatch[], duration: number, buckets = 200): BucketData[] {
   const result: BucketData[] = Array.from({ length: buckets }, () => ({
     matched: false,
-    thumbnailUrl: null,
+    thumbnailUrl: undefined,
   }))
 
   for (const scene of scenes) {

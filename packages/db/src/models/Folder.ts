@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid'
 
 type FolderUpdateData = Partial<Omit<Folder, 'id' | 'userId'>>
 
-type FolderCreateInput = Pick<Folder, 'userId' | 'path'>
+type FolderCreateInput = Pick<Folder, 'userId' | 'path' | 'watcherEnabled' | 'excludePatterns' | 'includePatterns'>
 
 export class FolderModel {
   static async create(data: FolderCreateInput) {

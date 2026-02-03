@@ -1,9 +1,13 @@
-import type { ReactNode } from 'react'
+import type { Dispatch, ReactElement, ReactNode, SetStateAction } from 'react'
 import { useState, cloneElement, isValidElement } from 'react'
 
+interface SidebarProps {
+  isCollapsed: boolean
+  setIsCollapsed: Dispatch<SetStateAction<boolean>>
+}
 interface DashboardLayoutProps {
   children: ReactNode
-  sidebar?: ReactNode
+  sidebar?: ReactElement<SidebarProps>
 }
 
 export function DashboardLayout({ children, sidebar }: DashboardLayoutProps) {

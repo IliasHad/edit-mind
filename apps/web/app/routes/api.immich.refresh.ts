@@ -17,6 +17,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const config = await getImmichConfig(user.id)
 
+    if (!config) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Connection failed. Please check your Immich integration.',
+        }),
+        {
+          status: 500,
+        }
+      )
+    }
     const { validConnection, validPermissions } = await testImmichConnection(config)
 
     if (validConnection && validPermissions && config) {
@@ -53,7 +64,7 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
   } catch (error) {
-    logger.error('Error testing Immich connection:', error)
+    logger.error({ error }, 'Error testing Immich connection')
 
     return new Response(JSON.stringify({ error: 'Connection test failed', success: false }), {
       status: 400,
