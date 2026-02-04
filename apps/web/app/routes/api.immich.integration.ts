@@ -2,7 +2,7 @@ import { logger } from '@shared/services/logger'
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { saveImmichIntegration, deleteImmichIntegration, getImmichConfig } from '~/services/immich.server';
 import { ImmichConfigFormSchema } from '@immich/schemas/immich'
-import { requireUser, requireUserId } from '~/services/user.sever'
+import { requireUser, requireUserId } from '~/services/user.server'
 import { backgroundJobsFetch } from '~/services/background.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {

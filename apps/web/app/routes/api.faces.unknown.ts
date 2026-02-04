@@ -4,7 +4,7 @@ import type { UnknownFace } from '@shared/types/unknownFace'
 import { getAllUnknownFaces } from '@shared/utils/faces'
 import type { LoaderFunctionArgs } from 'react-router'
 import { backgroundJobsFetch } from '~/services/background.server'
-import { requireUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -65,7 +65,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       total: filteredFaces.length,
       page,
       limit,
-      faces: filteredFaces.slice(offset, limit),
+      faces: filteredFaces.slice(offset, offset + limit),
       totalPages,
       hasMore,
     }

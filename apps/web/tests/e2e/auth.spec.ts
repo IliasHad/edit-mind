@@ -262,7 +262,7 @@ test.describe('Logout and Session Management', () => {
 
     // Get session cookie before logout
     const cookies = await page.context().cookies()
-    const sessionCookieBefore = cookies.find((cookie) => cookie.name === '__session')
+    const sessionCookieBefore = cookies.find((cookie) => cookie.name.includes('__session'))
 
     expect(sessionCookieBefore).toBeTruthy()
     expect(sessionCookieBefore?.value).toBeTruthy()

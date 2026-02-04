@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
-import { requireUserId } from '~/services/user.sever'
+import { requireUserId } from '~/services/user.server'
 import { logger } from '@shared/services/logger'
 import { ChatModel } from '@db/index'
 
@@ -8,7 +8,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
   try {
     if (request.method === 'DELETE' && id) {
-      await ChatModel.delete(id)
+      const userId = await requireUserId(request)
+      await ChatModel.deleteMany({ where: { id, userId } })
       return new Response(JSON.stringify({ message: 'Chat Message deleted.' }), {
         status: 200,
       })

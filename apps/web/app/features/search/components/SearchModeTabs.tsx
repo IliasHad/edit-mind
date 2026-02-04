@@ -22,7 +22,7 @@ export function SearchModeTabs() {
   const { searchMode, setSearchMode, loading, clearSearch } = useSearchResults()
 
   return (
-    <div className="flex items-center gap-2 p-1.5 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/10">
+    <div className="flex items-center gap-2 p-1.5">
       {SEARCH_MODES.map((mode) => {
         const Icon = mode.icon
         const isActive = searchMode === mode.id

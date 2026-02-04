@@ -2,7 +2,7 @@ import { logger } from '@shared/services/logger'
 import type { ActionFunctionArgs } from 'react-router'
 import { testImmichConnection } from '@immich/services/immich'
 import { backgroundJobsFetch } from '~/services/background.server'
-import { requireUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.server'
 import { getImmichConfig } from '~/services/immich.server'
 
 export async function action({ request }: ActionFunctionArgs) {

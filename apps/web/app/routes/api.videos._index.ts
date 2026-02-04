@@ -1,7 +1,7 @@
 import { VideoModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import type { LoaderFunctionArgs } from 'react-router'
-import { requireUserId } from '~/services/user.sever'
+import { requireUserId } from '~/services/user.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {

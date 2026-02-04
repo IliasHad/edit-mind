@@ -78,7 +78,7 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
             className="absolute top-3 right-3 p-2 rounded-full cursor-pointer bg-black backdrop-blur-sm opacity-0 group-hover:opacity-100 active:scale-95"
             variant="primary"
             size="icon-sm"
-            leftIcon={<XMarkIcon className="size-4 text-white" />}
+            leftIcon={<XMarkIcon className="size-4 text-black" />}
             aria-label="Remove image"
           />
           <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -113,11 +113,10 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
         className={`relative w-full max-h-72 aspect-video rounded-2xl border-2 border-dashed
         flex flex-col items-center justify-center gap-3
         transition-all duration-200
-        ${
-          isDragging
+        ${isDragging
             ? 'border-black dark:border-white bg-black/10 dark:bg-white/10'
             : 'border-black/20 dark:border-white/20 bg-black/5 dark:bg-white/5 hover:border-black/40 dark:hover:border-white/40 hover:bg-black/[0.07] dark:hover:bg-white/[0.07]'
-        }`}
+          }`}
       >
         <div className="p-4 rounded-2xl bg-black/5 dark:bg-white/5">
           <PhotoIcon className="size-8 text-black/40 dark:text-white/40" />

@@ -9,7 +9,9 @@ const generateVectorDocumentText = async (scene: Scene) => {
   const objects = scene.objects?.join(', ') || ''
   const emotionsText =
     scene.emotions
-      ?.map((face) => (face.emotion ? `${face.name} is ${face.emotion} with ${Math.ceil(face.confidence)}% confidence` : ''))
+      ?.map((face) =>
+        face.emotion ? `${face.name} is ${face.emotion} with ${Math.ceil(face.confidence)}% confidence` : ''
+      )
       .filter(Boolean)
       .join(', ') || ''
   const detectedText = Array.isArray(scene.detectedText) ? scene.detectedText.join(', ') : scene.detectedText || ''
@@ -18,12 +20,7 @@ const generateVectorDocumentText = async (scene: Scene) => {
 
   // Shot type description
   if (scene.shotType) {
-    const shotTypeDescriptions: Record<string, string> = {
-      'close-up': 'a close-up shot',
-      'medium-shot': 'a medium-shot scene',
-      'long-shot': 'a wide-angle scene',
-    }
-    textParts.push(`This is ${shotTypeDescriptions[scene.shotType] || 'a ' + scene.shotType}`)
+    textParts.push(`This is ${scene.shotType} shot`)
   } else {
     textParts.push('This is a video scene')
   }
@@ -207,27 +204,16 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
 
   let emotions: Array<{ name: string; emotion: string; confidence: number }> = []
   try {
-    const emotionsStr = metadata.emotions as string
+    const emotionsStr = metadata.emotions?.toString()
+
     if (emotionsStr) {
-      // Check if it's in "name:emotion,name:emotion" format
-      if (emotionsStr.includes(':') && !emotionsStr.includes('{')) {
-        emotions = emotionsStr
-          .split(',')
-          .map((s) => s.trim())
-          .map((part) => {
-            const [name, emotion] = part.split(':').map((s) => s.trim())
-            return { name: name || 'unknown', emotion: emotion || 'neutral', confidence: 1 }
-          })
-      } else {
-        // Otherwise, try parsing as JSON
-        const parsed = JSON.parse(emotionsStr)
-        if (Array.isArray(parsed)) {
-          emotions = parsed.map((e) => ({
-            name: e.name || 'unknown',
-            emotion: e.emotion || 'neutral',
-            confidence: parseFloat(e.emotion) || 0,
-          }))
-        }
+      const parsed = JSON.parse(emotionsStr)
+      if (Array.isArray(parsed)) {
+        emotions = parsed.map((e) => ({
+          name: e.name || 'unknown',
+          emotion: e.emotion || 'neutral',
+          confidence: parseFloat(e.confidence) || 0,
+        }))
       }
     }
   } catch {
@@ -235,47 +221,50 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
   }
 
   const faces = metadata.faces
-    ? (metadata.faces as string)
-      .split(',')
-      .map((f) => f.trim())
-      .filter(Boolean)
+    ? metadata.faces
+        .toString()
+        .split(',')
+        .map((f) => f.trim())
+        .filter(Boolean)
     : []
   const objects = metadata.objects
-    ? (metadata.objects as string)
-      .split(',')
-      .map((o) => o.trim())
-      .filter(Boolean)
+    ? metadata.objects
+        .toString()
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean)
     : []
   const detectedText = metadata.detectedText
-    ? (metadata.detectedText as string)
-      .split(',')
-      .map((o) => o.trim())
-      .filter(Boolean)
+    ? metadata.detectedText
+        .toString()
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean)
     : []
   let facesData: FaceData[] = []
   try {
-    facesData = metadata.facesData ? JSON.parse(metadata.facesData as string) : []
+    facesData = metadata.facesData ? JSON.parse(metadata.facesData.toString()) : []
   } catch (e) {
     logger.warn('Failed to parse facesData: ' + e)
   }
 
   let objectsData: ObjectData[] = []
   try {
-    objectsData = metadata.objectsData ? JSON.parse(metadata.objectsData as string) : []
+    objectsData = metadata.objectsData ? JSON.parse(metadata.objectsData.toString()) : []
   } catch (e) {
     logger.warn('Failed to parse objectsData: ' + e)
   }
 
   let detectedTextData: DetectedTextData[] = []
   try {
-    detectedTextData = metadata.detectedTextData ? JSON.parse(metadata.detectedTextData as string) : []
+    detectedTextData = metadata.detectedTextData ? JSON.parse(metadata.detectedTextData.toString()) : []
   } catch (e) {
     logger.warn('Failed to parse detectedTextData: ' + e)
   }
 
   let transcriptionWords: TranscriptionWord[] = []
   try {
-    transcriptionWords = metadata.transcriptionWords ? JSON.parse(metadata.transcriptionWords as string) : []
+    transcriptionWords = metadata.transcriptionWords ? JSON.parse(metadata.transcriptionWords.toString()) : []
   } catch (e) {
     logger.warn('Failed to parse transcriptionWords: ' + e)
   }
@@ -312,12 +301,9 @@ export function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b)
 }
 
-
 export const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, errorMsg: string): Promise<T> => {
   return Promise.race([
     promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error(errorMsg)), timeoutMs)
-    )
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(errorMsg)), timeoutMs)),
   ])
 }

@@ -44,4 +44,7 @@ export class ChatModel {
   static async delete(id: string) {
     return prisma.chat.delete({ where: { id } })
   }
+  static async deleteMany(options: Prisma.ChatDeleteManyArgs) {
+    return prisma.chat.deleteMany(options)
+  }
 }

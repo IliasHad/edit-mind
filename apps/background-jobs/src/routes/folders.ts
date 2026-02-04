@@ -14,18 +14,26 @@ router.post('/:id/trigger', async (req, res) => {
   if (!id) return res.status(400).json({ error: 'folder Id required' })
 
   try {
+    const userId = req.userId
+
     const videosInDb = await JobModel.findMany({
       where: {
         status: { in: ['pending', 'processing', 'done'] },
+        userId,
       },
     })
 
-    const folder = await FolderModel.findById(id)
+    const folder = await FolderModel.findUnique({
+      where: {
+        id,
+        userId,
+      },
+    })
 
     if (!folder) {
       return res.status(404).json({ error: 'Folder not found' })
     }
-    
+
     await FolderModel.update(folder.id, { status: 'scanning' })
     const videos = await findVideoFiles(folder.path, folder.includePatterns, folder.excludePatterns)
 

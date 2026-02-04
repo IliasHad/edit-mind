@@ -4,10 +4,6 @@ import { logger } from '@shared/services/logger'
 import { env } from '../utils/env'
 import { UserModel } from '@db/models/User'
 
-export interface AuthenticatedRequest extends Request {
-  userId: string
-}
-
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const jwt = createJWTService(env.SESSION_SECRET)
@@ -43,7 +39,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       return
     }
 
-    ;(req as AuthenticatedRequest).userId = decoded.userId
+    ;req.userId = decoded.userId
 
     next()
   } catch (error) {

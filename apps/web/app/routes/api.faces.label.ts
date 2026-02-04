@@ -6,7 +6,7 @@ import path from 'path'
 import type { ActionFunctionArgs } from 'react-router'
 import { FaceLabelSchema } from '~/features/faces/schemas'
 import { backgroundJobsFetch } from '~/services/background.server'
-import { requireUser } from '~/services/user.sever';
+import { requireUser } from '~/services/user.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {

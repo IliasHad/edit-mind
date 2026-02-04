@@ -102,8 +102,8 @@ class ServerConfig:
         if not self.socket_path and not (self.host and self.port):
             raise ValueError(
                 "Either socket_path or (host and port) must be provided")
-        self.max_concurrent_analyses = os.getenv(
-            'MAX_CONCURRENT_ANALYSES', 1)
-        self.max_concurrent_transcriptions = os.getenv(
-                'MAX_CONCURRENT_TRANSCRIPTIONS', 1)
+        self.max_concurrent_analyses = int(os.getenv(
+            'MAX_CONCURRENT_ANALYSES', "1"))
+        self.max_concurrent_transcriptions = int(os.getenv(
+                'MAX_CONCURRENT_TRANSCRIPTIONS', 1))
                 

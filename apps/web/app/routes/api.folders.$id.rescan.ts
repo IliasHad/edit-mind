@@ -2,7 +2,7 @@ import { FolderModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import { type ActionFunctionArgs } from 'react-router'
 import { backgroundJobsFetch } from '~/services/background.server'
-import { requireUser } from '~/services/user.sever'
+import { requireUser } from '~/services/user.server'
 
 export async function action({ params, request }: ActionFunctionArgs) {
   try {
@@ -10,7 +10,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
     if (id) {
       const user = await requireUser(request)
-      const folder = await FolderModel.findById(id)
+      const folder = await FolderModel.findUnique({
+        where: {
+          id,
+          userId: user.id,
+        },
+      })
+
+      if (!folder) return new Response(JSON.stringify({ error: 'Folder not found' }), { status: 404 })
 
       await backgroundJobsFetch(`/internal/folders/${folder?.id}/trigger`, undefined, user, 'POST')
       return {

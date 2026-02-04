@@ -1,26 +1,30 @@
+import { CollectionItemModel, CollectionModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import { getVideoWithScenesBySceneIds } from '@vector/services/db'
 import { type LoaderFunctionArgs } from 'react-router'
-import { prisma } from '~/services/database'
-import { requireUser } from '~/services/user.sever'
+import type { CollectionItemWithVideo } from '~/features/collections/types'
+import { requireUserId } from '~/services/user.server'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   try {
     const { id } = params
-    await requireUser(request)
+    const userId = await requireUserId(request)
 
-    const collection = await prisma.collection.findFirst({
-      where: { id },
-      include: {
-        items: true,
-      },
+    const collection = await CollectionModel.findUnique({
+      where: { id, userId },
     })
 
     if (!collection) {
       throw new Response('Collection not found', { status: 404 })
     }
 
-    const sceneIds = collection.items.flatMap((item) => item.sceneIds)
+    const items = await CollectionItemModel.findMany({
+      where: {
+        collectionId: id,
+      },
+    })
+
+    const sceneIds = items.flatMap((item) => item.sceneIds)
     const scenes = await getVideoWithScenesBySceneIds(sceneIds)
 
     return { scenes }
