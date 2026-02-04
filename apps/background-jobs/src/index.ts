@@ -56,6 +56,7 @@ import { SMART_COLLECTION_CRON_PATTERN } from '@smart-collections/constants/coll
 import { rateLimiter } from './middleware/rateLimiter'
 import { checkServicesStatus } from './websockets'
 import { pythonService } from '@shared/services/pythonService'
+import { suggestionCache } from '@search/services/suggestion'
 
 const app = express()
 const server = createServer(app)
@@ -120,6 +121,7 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 server.listen(env.BACKGROUND_JOBS_PORT, async () => {
   await prisma.$connect()
   await initializeWatchers()
+  await suggestionCache.refresh()
 
   const collectionJobId = 'generate-smart-collections-cron'
 
