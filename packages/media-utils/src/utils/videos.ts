@@ -19,6 +19,7 @@ import { Scene } from '@shared/schemas'
 import * as Jimp from 'jimp'
 import { readFile } from 'fs/promises'
 import micromatch from 'micromatch'
+import { checkForLivePhoto } from './livePhoto'
 
 const initializeThumbnailsDir = (): void => {
   if (!fs.existsSync(THUMBNAILS_DIR)) {
@@ -215,7 +216,11 @@ export async function findVideoFiles(
           micromatch.isMatch(fileName.toLocaleLowerCase(), includePattern) &&
           !micromatch.isMatch(fileName.toLocaleLowerCase(), excludePattern)
         ) {
-          results.push([{ path: fullPath, mtime: stats.mtime, size: stats.size }])
+          const checkIfLivePhoto = await checkForLivePhoto(fullPath)
+          if (!checkIfLivePhoto) {
+            // Note: don't include live photo as video from iPhone videos
+            results.push([{ path: fullPath, mtime: stats.mtime, size: stats.size }])
+          }
         }
       } catch (error) {
         logger.warn(
