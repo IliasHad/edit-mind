@@ -22,7 +22,7 @@ import { FolderCard } from '~/features/folders/components/FolderCard'
 import { StatCard } from '~/features/settings/components/StatsCard'
 import { FeatureCard } from '~/features/settings/components/FeatureCard'
 import { Button } from '@ui/components/Button'
-import { FolderCreateSchema } from '~/features/folders/schemas/folder';
+import { FolderCreateSchema } from '~/features/folders/schemas/folder'
 
 export const meta: MetaFunction = () => [{ title: 'Settings | Edit Mind' }]
 
@@ -64,7 +64,7 @@ export default function SettingsPage() {
 
   const handleAddFolder = async (path: string): Promise<boolean> => {
     try {
-      const { success, data } = FolderCreateSchema.safeParse(path)
+      const { success, data } = FolderCreateSchema.safeParse({ path })
       if (!success) {
         throw new Error('Invalid folder form data')
       }

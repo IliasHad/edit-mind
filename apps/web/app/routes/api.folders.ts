@@ -40,9 +40,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const payload = await request.json()
 
   try {
-    const { success, data } = FolderCreateSchema.safeParse(payload)
+    const { success, data, error } = FolderCreateSchema.safeParse(payload)
 
     if (!success) {
+      logger.error(error)
       return new Response(JSON.stringify({ error: 'Error validating your folder input' }), {
         status: 500,
       })
