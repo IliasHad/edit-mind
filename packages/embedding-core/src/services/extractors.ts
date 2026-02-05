@@ -1,11 +1,22 @@
 import { logger } from '@shared/services/logger'
 import { withTimeout } from '@vector/utils/shared'
-import { EMBEDDING_TIMEOUT, MODEL_DIMENSIONS,  MODEL_CACHE_DIR, VISUAL_EMBEDDING_MODEL, AUDIO_EMBEDDING_MODEL, TEXT_EMBEDDING_MODEL } from '@shared/constants/embedding'
+import {
+  EMBEDDING_TIMEOUT,
+  MODEL_DIMENSIONS,
+  MODEL_CACHE_DIR,
+  VISUAL_EMBEDDING_MODEL,
+  AUDIO_EMBEDDING_MODEL,
+  TEXT_EMBEDDING_MODEL,
+} from '@shared/constants/embedding'
 import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@xenova/transformers'
-import { env } from '@xenova/transformers';
+import { env } from '@xenova/transformers'
+import { existsSync, mkdirSync } from 'node:fs'
 
 // Set the cache directory for Xenova Transformers models
-env.cacheDir = MODEL_CACHE_DIR;
+env.cacheDir = MODEL_CACHE_DIR
+if (!existsSync(MODEL_CACHE_DIR)) {
+  mkdirSync(MODEL_CACHE_DIR, { recursive: true })
+}
 
 let textModelCache: { embed: FeatureExtractionPipeline } | null = null
 
