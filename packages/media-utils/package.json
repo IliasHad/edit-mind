@@ -18,8 +18,6 @@
     "build": "tsc -b --force"
   },
   "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@ffprobe-installer/ffprobe": "^2.1.2",
     "@types/micromatch": "^4.0.10",
     "exiftool-vendored": "^31.1.0",
     "gopro-telemetry": "^1.2.11",

@@ -15,3 +15,6 @@ export const THUMBNAILS_DIR = process.env.THUMBNAILS_PATH || '.thumbnails'
 export const EXPORTS_DIR = process.env.EXPORTS_DIR || '/app/data/.exports'
 
 export const USE_GPU = isGPUAvailable() && checkFFmpegGPUSupport()
+
+export const FFMPEG_PATH = '/usr/bin/ffmpeg'
+export const FFPROBE_PATH = '/usr/bin/ffprobe'
