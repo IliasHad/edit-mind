@@ -22,10 +22,10 @@ python-multipart>=0.0.6
 python-dotenv>=1.2.1
 
 # ML/AI frameworks
---extra-index-url https://download.pytorch.org/whl/cu121
-torch==2.2.2+cu121
-torchvision==0.17.2+cu121
-torchaudio==2.2.2+cu121
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.9.1+cu128
+torchvision==0.24.1+cu128
+torchaudio==2.9.1+cu128
 
 # Face recognition 
 deepface>=0.0.96

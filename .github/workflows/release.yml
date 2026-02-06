@@ -26,7 +26,7 @@ env:
   NODE_VERSION: 22.20.0
   PNPM_VERSION: 10.20.0
   PYTHON_VERSION: 3.11
-  CUDA_VERSION: 12.1.1
+  CUDA_VERSION: 12.8.0
 
 jobs:
   build:
@@ -55,7 +55,7 @@ jobs:
             args: |
               NODE_VERSION=22.20.0
               PNPM_VERSION=10.20.0
-              CUDA_VERSION=12.1.1
+              CUDA_VERSION=12.8.0
               TARGET_BASE=base-gpu
 
           - name: web
@@ -256,7 +256,7 @@ jobs:
             args: |
               NODE_VERSION=22.20.0
               PNPM_VERSION=10.20.0
-              CUDA_VERSION=12.1.1
+              CUDA_VERSION=12.8.0
               TARGET_BASE=base-gpu
 
           - name: ml
@@ -266,7 +266,7 @@ jobs:
             tag: latest
             args: |
               PYTHON_VERSION=3.11
-              CUDA_VERSION=12.1.1
+              CUDA_VERSION=12.8.0
 
           - name: web
             dockerfile: docker/Dockerfile.web
