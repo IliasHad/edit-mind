@@ -43,15 +43,20 @@ export const extractSceneFrames = async (
     for (let i = 1; i <= framesPerScene; i++) {
       const timestamp = startTime + interval * i
       const framePath = join(framesDir, `frame_${i}.${format}`)
-
+      
       const args = [
+        '-hide_banner',
+        '-loglevel',
+        'error',
         ...prependGPUArgs(),
-        '-ss',
-        timestamp.toFixed(3),
         '-i',
         videoPath,
-        '-vframes',
+        '-ss',
+        timestamp.toFixed(3),
+        '-frames:v',
         '1',
+        '-vsync',
+        '0',
         '-vf',
         `scale=${maxWidth}:-1`,
       ]
