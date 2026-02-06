@@ -96,13 +96,15 @@ export const extractSceneAudio = async (
   try {
     const args = [
       ...prependGPUArgs(),
+      '-i',
+      videoPath,
       '-ss',
       startTime.toFixed(3),
       '-t',
       duration.toFixed(3),
-      '-i',
-      videoPath,
       '-vn',
+      '-map',
+      '0:a:0',
       '-acodec',
       format === 'wav' ? 'pcm_s16le' : format === 'flac' ? 'flac' : 'libmp3lame',
       '-ar',
