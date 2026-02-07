@@ -1,8 +1,8 @@
-### Edit Mind:  Local Video Indexer & AI Search
+### Edit Mind: Local Video Knowledge Base
 
 Edit Mind lets you index your videos **(including transcription, frame analysis, and multi-model embedding)**, and you can search your videos (or specific video scenes) using natural language.
 
-> **Development Status:** Edit Mind is currently in **active development** and **work in progress** and **not yet production-ready**.
+> **Development Status:** Edit Mind is currently in **active development** and **not yet production-ready**.
 > Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
 
 
@@ -13,7 +13,7 @@ Edit Mind lets you index your videos **(including transcription, frame analysis,
 
 
 ---
-Note: (Edit Mind name is coming from Video Editor Mind, so this will be editor's second brain in the future)
+Note: (Edit Mind name is coming from Video Editor Mind, so this will be the editor's second brain and companion in the future)
 
 ## Sponsors of this project 
 
