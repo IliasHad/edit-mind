@@ -172,7 +172,6 @@ export async function readAudio(audioPath: string, sampling_rate: number = 48000
 
   return new Promise((resolve, reject) => {
     const args = [
-      ...prependGPUArgs(),
       '-i',
       audioPath,
       '-f',

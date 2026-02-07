@@ -7,7 +7,6 @@ import {
   THUMBNAIL_QUALITY,
   THUMBNAIL_SCALE,
   THUMBNAILS_DIR,
-  USE_GPU,
 } from '../constants'
 import { exiftool } from 'exiftool-vendored'
 import { CameraInfo, GeoLocation, VideoFile, VideoMetadata } from '../types/video'
@@ -60,23 +59,6 @@ export async function generateThumbnail(
     'error',
   ]
 
-  if (USE_GPU) {
-    args = [
-      '-hwaccel',
-      'cuda',
-      '-ss',
-      timestamp.toString(),
-      '-i',
-      videoPath,
-      '-vframes',
-      '1',
-      '-vf',
-      `scale=${scale}`,
-      '-q:v',
-      quality,
-      thumbnailPath,
-    ]
-  }
 
   const ffmpegProcess = await spawnFFmpeg(args)
   return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
@@ -113,26 +95,6 @@ export async function generateVideoCover(
     '-loglevel',
     'error',
   ]
-  if (USE_GPU) {
-    args = [
-      '-hwaccel',
-      'cuda',
-      '-skip_frame',
-      'nokey',
-      '-i',
-      videoPath,
-      '-vf',
-      `select='eq(pict_type\\,I)*eq(n\\,${keyframe})',scale=${scale}`,
-      '-vframes',
-      '1',
-      '-q:v',
-      quality,
-      thumbnailPath,
-      '-y',
-      '-loglevel',
-      'error',
-    ]
-  }
 
   const ffmpegProcess = await spawnFFmpeg(args)
   return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
@@ -162,20 +124,6 @@ export async function generateAllThumbnails(
 
   let args = ['-i', videoPath, '-filter_complex', filterComplex, '-q:v', BATCH_THUMBNAIL_QUALITY, '-loglevel', 'error']
 
-  if (USE_GPU) {
-    args = [
-      '-hwaccel',
-      'cuda',
-      '-i',
-      videoPath,
-      '-filter_complex',
-      filterComplex,
-      '-q:v',
-      BATCH_THUMBNAIL_QUALITY,
-      '-loglevel',
-      'error',
-    ]
-  }
 
   timestamps.forEach((_, idx) => {
     args.push('-map', `[v${idx}]`, '-frames:v', '1', outputPaths[idx])
