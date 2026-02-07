@@ -8,7 +8,7 @@ import os from 'os'
 import { cleanupFiles, ensureDirectoryExists } from '@shared/utils/file'
 import { logger } from '@shared/services/logger'
 import { STITCHED_VIDEOS_DIR } from '../constants'
-import { buildEncodingArgs, getScaleFilter, prependGPUArgs } from '@media-utils/lib/ffmpegGpu'
+import { buildEncodingArgs, getScaleFilter } from '@media-utils/lib/ffmpegGpu'
 import { USE_GPU } from '@media-utils/constants'
 
 const DEFAULT_ASPECT_RATIO = '16:9'
@@ -114,7 +114,7 @@ const buildVideoFilter = (dimensions: Dimensions, fps: number): string => {
   const scaleFilter = getScaleFilter(
     dimensions.width,
     dimensions.height,
-    { useGPUScaling: false } // Use CPU scaling for compatibility
+    { useGPUScaling: USE_GPU } // Use CPU scaling for compatibility
   )
 
   return [
@@ -135,7 +135,6 @@ const processClip = async (
   const encodingArgs = buildEncodingArgs({ encoder: 'h264' })
 
   const argsWithAudio = [
-    ...prependGPUArgs(),
     '-ss',
     scene.startTime.toString(),
     '-to',
@@ -164,7 +163,6 @@ const processClip = async (
   logger.warn(`Initial processing failed for ${scene.source}, retrying with silent audio`)
 
   const argsWithSilentAudio = [
-    ...prependGPUArgs(),
     '-ss',
     scene.startTime.toString(),
     '-to',

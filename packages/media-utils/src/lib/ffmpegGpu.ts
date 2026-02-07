@@ -43,7 +43,13 @@ export function getScaleFilter(width: number, height: number, options: FFmpegGPU
 export function buildEncodingArgs(options: FFmpegGPUOptions = {}): string[] {
   const encoder = getGPUEncoder(options)
 
-  const args = ['-c:v', encoder.codec, ...encoder.extraArgs, '-c:a', 'aac', '-b:a', '128k', '-pix_fmt', 'yuv420p']
+  const args = [
+    '-c:v', encoder.codec, 
+    ...encoder.extraArgs,  
+    '-c:a', 'aac',
+    '-b:a', '128k',
+    '-pix_fmt', 'yuv420p'
+  ]
 
   if (USE_GPU) {
     logger.debug(`Using GPU encoder: ${encoder.codec}`)
@@ -52,8 +58,4 @@ export function buildEncodingArgs(options: FFmpegGPUOptions = {}): string[] {
   }
 
   return args
-}
-
-export function prependGPUArgs(enableHWAccel: boolean = true): string[] {
-  return getGPUDecodeArgs({ enableHWAccel })
 }

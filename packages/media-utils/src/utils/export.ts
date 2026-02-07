@@ -4,7 +4,7 @@ import path from 'path'
 import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import { logger } from '@shared/services/logger'
-import { buildEncodingArgs, prependGPUArgs } from '@media-utils/lib/ffmpegGpu'
+import { buildEncodingArgs } from '@media-utils/lib/ffmpegGpu'
 import { USE_GPU } from '@media-utils/constants'
 
 export const trimVideoScenes = async (scenes: Scene[], tempExportDir: string): Promise<string[]> => {
@@ -25,14 +25,13 @@ export const trimVideoScenes = async (scenes: Scene[], tempExportDir: string): P
     const encodingArgs = buildEncodingArgs({ encoder: 'h264' })
 
     const ffmpegArgs = [
-      ...prependGPUArgs(),
       '-ss',
       scene.startTime.toString(),
       '-i',
       scene.source,
       '-to',
       scene.endTime.toString(),
-      ...encodingArgs,
+      ...encodingArgs, 
       '-y',
       clipPath,
     ]
