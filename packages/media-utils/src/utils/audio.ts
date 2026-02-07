@@ -5,7 +5,6 @@ import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
 import { spawnFFmpeg, spawnFFprobe } from '../lib/ffmpeg'
 import { logger } from '@shared/services/logger'
-import { prependGPUArgs } from '@media-utils/lib/ffmpegGpu'
 import { validateFile } from '@shared/utils/file'
 
 interface ExtractAudioOptions {
@@ -95,7 +94,6 @@ export const extractSceneAudio = async (
 
   try {
     const args = [
-      ...prependGPUArgs(),
       '-i',
       videoPath,
       '-ss',

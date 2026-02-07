@@ -104,7 +104,7 @@ curl -L https://raw.githubusercontent.com/IliasHad/edit-mind/refs/heads/main/.en
 curl -L https://raw.githubusercontent.com/IliasHad/edit-mind/refs/heads/main/docker-compose.yml -o docker-compose.yml
  ```
 
-If you have NVIDIA GPU, use `docker-compose.gpu.yml` file instead
+If you have NVIDIA GPU, use `docker-compose.cuda.yml` file instead
 
 ```bash
 curl -L https://raw.githubusercontent.com/IliasHad/edit-mind/refs/heads/main/docker-compose.cuda.yml -o docker-compose.yml

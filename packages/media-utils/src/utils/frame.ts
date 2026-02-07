@@ -5,7 +5,6 @@ import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
 import { spawnFFmpeg } from '../lib/ffmpeg'
 import { logger } from '@shared/services/logger'
-import { prependGPUArgs } from '@media-utils/lib/ffmpegGpu';
 
 interface ExtractFramesOptions {
   framesPerScene?: number
@@ -48,7 +47,6 @@ export const extractSceneFrames = async (
         '-hide_banner',
         '-loglevel',
         'error',
-        ...prependGPUArgs(),
         '-i',
         videoPath,
         '-ss',
