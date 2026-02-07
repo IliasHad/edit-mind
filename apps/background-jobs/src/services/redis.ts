@@ -8,11 +8,7 @@ export const connection: RedisOptions = {
   maxRetriesPerRequest: null,
 
   retryStrategy: (times: number) => {
-    if (times > 50) {
-      logger.error('Redis max retries reached')
-      return null // Stop retrying
-    }
-    const delay = Math.min(times * 1000, 20000)
+    const delay = Math.min(Math.pow(2, times) * 100, 30000)
     logger.warn(`Redis retry attempt ${times}, retrying in ${delay}ms`)
     return delay
   },
