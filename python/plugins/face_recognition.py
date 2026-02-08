@@ -29,8 +29,10 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         self.current_video_path: str = ""
         self.current_job_id: str = ""
 
-    def setup(self, video_path: str, job_id: str) -> None:
+    def load_models(self) -> None:
         self.face_recognizer = FaceRecognizer()
+
+    def setup(self, video_path: str, job_id: str) -> None:
         self.current_video_path = video_path
         self.current_job_id = job_id
         self.face_recognizer.reset_unknown_registry()
@@ -383,3 +385,14 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         self.face_recognizer.reset_unknown_registry()
         self.saved_unknown_faces  = {}
         self.all_faces = []
+        
+    def cleanup_models(self) -> None:
+        try:
+            if self.face_recognizer:
+                self.face_recognizer.reset_unknown_registry()
+
+                del self.face_recognizer
+                self.face_recognizer = None
+
+        except Exception as e:
+            logger.error(f"Failed to cleanup FaceRecognitionPlugin models: {e}")

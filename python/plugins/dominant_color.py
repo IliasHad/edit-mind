@@ -53,6 +53,9 @@ class DominantColorPlugin(AnalyzerPlugin):
         self.frame_colors: List[Dict[str,
                                      Union[int, List[ColorInfo], float]]] = []
 
+    def load_models(self) -> None:
+        return None
+    
     def setup(self, video_path, job_id) -> None:
         """Initialize the plugin for a new video."""
         self.frame_colors = []
@@ -342,4 +345,7 @@ class DominantColorPlugin(AnalyzerPlugin):
         
     def cleanup(self) -> None:
         """Clean up any data from previous processing job."""
+        return None
+    
+    def cleanup_models(self) -> None:
         return None

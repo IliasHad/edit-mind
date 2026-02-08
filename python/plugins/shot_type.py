@@ -17,6 +17,9 @@ class ShotTypePlugin(AnalyzerPlugin):
     def setup(self, video_path: str, job_id: str) -> None:
         self.ratio_window.clear()
 
+    def load_models(self) -> None:
+        return None
+
     def analyze_frame(
         self,
         frame: np.ndarray,
@@ -71,4 +74,7 @@ class ShotTypePlugin(AnalyzerPlugin):
 
     def cleanup(self) -> None:
         """Clean up any data from previous processing job."""
+        return None
+    
+    def cleanup_models(self) -> None:
         return None

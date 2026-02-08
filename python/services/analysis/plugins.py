@@ -33,6 +33,7 @@ class PluginManager:
         self.frame_counters: Dict[str, int] = {}
 
         self._load_plugins()
+        self._load_plugins_models()
 
     def _load_plugins(self) -> None:
         """Load all available plugins."""
@@ -80,6 +81,15 @@ class PluginManager:
                 logger.error(
                     f"Failed to setup {plugin.__class__.__name__}: {e}")
 
+    def _load_plugins_models(self) -> None:
+        """Initialize all plugins models"""
+        for plugin in self.plugins:
+            try:
+                plugin.load_models()
+            except Exception as e:
+                logger.error(
+                    f"Failed to load {plugin.__class__.__name__} models: {e}")
+                
     def process_frame(
         self,
         frame: np.ndarray,
@@ -161,6 +171,7 @@ class PluginManager:
         for plugin in self.plugins:
             try:
                 plugin.cleanup()
+                plugin.cleanup_models()
                 logger.info(f"Cleaned up plugin: {plugin.__class__.__name__}")
             except Exception as e:
                 logger.error(

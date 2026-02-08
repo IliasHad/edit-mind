@@ -45,10 +45,17 @@ class AnalyzerPlugin(ABC):
         """
         self.config = config
 
+    @classmethod
+    def load_models(cls) -> None:
+        """
+        Load heavy, shared models (called once per process).
+        """
+        pass
+    
     @abstractmethod
     def setup(self, video_path: str, job_id: str) -> None:
         """
-        Perform one-time initialization (load models, resources, etc).
+        Perform one-time initialization per job.
         Called once before frame processing begins.
         """
         pass
@@ -94,5 +101,12 @@ class AnalyzerPlugin(ABC):
         """
         Clean up any data from previous processing job.
         Called after processing is complete.
+        """
+        pass
+    
+    @classmethod
+    def cleanup_models(cls) -> None:
+        """
+        Clean heavy, shared models (called once per process).
         """
         pass
