@@ -71,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
         logger.error('Image search failed: ' + error)
         return []
       }),
-      searchScenes(searchParams, undefined).catch((error) => {
+      searchScenes({ ...searchParams, semanticQuery: data.query ?? null }, undefined).catch((error) => {
         logger.error('Text search failed: ' + error)
         return []
       }),

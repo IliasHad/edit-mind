@@ -24,8 +24,8 @@ export async function action({ request }: LoaderFunctionArgs) {
     }
 
     const searchParams = buildSearchQueryFromSuggestions(data)
-    
-    const videos = await searchScenes(searchParams)
+
+    const videos = await searchScenes({ ...searchParams, semanticQuery: data.query ?? null })
     const offset = (page - 1) * limit
     const paginatedVideos = videos.slice(offset, offset + limit)
 

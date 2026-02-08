@@ -29,7 +29,7 @@ class SearchSuggestionCache {
   private readonly MIN_PREFIX_LENGTH = 2
   private readonly REDIS_KEY_TTL = 7 * 24 * 60 * 60 // 7 days
   private readonly BATCH_SIZE = 100 // Process scenes in batches
-  private readonly MIN_OCCURRENCE_THRESHOLD = 5 // Minimum scenes for a term to be indexed
+  private readonly MIN_OCCURRENCE_THRESHOLD = 2 // Minimum scenes for a term to be indexed
   private readonly MAX_SUGGESTIONS_PER_PREFIX = 30 // Reduced from 50
 
   private readonly STOP_WORDS = new Set([
