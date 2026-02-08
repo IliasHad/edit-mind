@@ -2,7 +2,7 @@ import { createVectorDbClient } from '@vector/services/client'
 
 import { AUDIO_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
-import { cleanupAudio, extractSceneAudio } from '@media-utils/utils/audio'
+import { cleanupAudio, extractSceneAudio, hasAudioStream } from '@media-utils/utils/audio'
 import { embedSceneAudio } from '../services'
 import type { Scene } from '@shared/schemas'
 import { sceneToVectorFormat } from '@vector/utils/shared'
@@ -16,6 +16,13 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
       throw new Error('Audio Collection not initialized')
     }
 
+    const hasAudio = await hasAudioStream(videoFullPath)
+
+    if (!hasAudio) {
+      logger.warn(`Skipped audio embedding for "${videoFullPath}" because no audio track was found.`)
+      return
+    }
+
     for (let i = 0; i < scenes.length; i += AUDIO_BATCH_SIZE) {
       const batch = scenes.slice(i, i + AUDIO_BATCH_SIZE)
 
@@ -23,14 +30,20 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
 
       const audioEmbeddingsPromise = batch.map(async (scene) => {
         try {
+          const startTime = Date.now()
+
           const audioPath = await extractSceneAudio(scene.source, scene.startTime, scene.endTime, {
             format: 'wav',
             sampleRate: 48000,
             channels: 1,
           })
 
+          const endTime = Date.now()
+
+          logger.info(`Audio extracted in ${(endTime - startTime) / 1000}s`)
+
           if (!audioPath) {
-            throw new Error("No audio extracted, possibly due to absence of audio stream in source")
+            throw new Error('No audio extracted, possibly due to absence of audio stream in source')
           }
 
           const embedding = await embedSceneAudio(audioPath)
@@ -68,7 +81,8 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
         }))
       )
       logger.info(
-        `Batch ${i / AUDIO_BATCH_SIZE + 1}/${Math.ceil(scenes.length / AUDIO_BATCH_SIZE)} complete: ` + `${validAudioEmbeddings.length} audio embeddings stored`
+        `Batch ${i / AUDIO_BATCH_SIZE + 1}/${Math.ceil(scenes.length / AUDIO_BATCH_SIZE)} complete: ` +
+          `${validAudioEmbeddings.length} audio embeddings stored`
       )
     }
   } catch (err) {

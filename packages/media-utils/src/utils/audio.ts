@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto'
 import { spawnFFmpeg, spawnFFprobe } from '../lib/ffmpeg'
 import { logger } from '@shared/services/logger'
 import { validateFile } from '@shared/utils/file'
+import { getGPUDecodeArgs } from '@media-utils/lib/ffmpegGpu'
 
 interface ExtractAudioOptions {
   format?: 'wav' | 'mp3' | 'flac'
@@ -16,54 +17,56 @@ interface ExtractAudioOptions {
 
 export async function hasAudioStream(videoFullPath: string): Promise<boolean> {
   try {
-    await validateFile(videoFullPath);
+    await validateFile(videoFullPath)
 
     const args = [
-      '-v', 'quiet', 
-      '-select_streams', 'a', 
-      '-show_entries', 'stream=index', 
-      '-print_format', 'json', 
-      videoFullPath
-    ];
+      '-v',
+      'quiet',
+      '-select_streams',
+      'a',
+      '-show_entries',
+      'stream=index',
+      '-print_format',
+      'json',
+      videoFullPath,
+    ]
 
-    const ffprobeProcess = await spawnFFprobe(args);
+    const ffprobeProcess = await spawnFFprobe(args)
 
-    let stdout = '';
-    let stderr = '';
+    let stdout = ''
+    let stderr = ''
 
     ffprobeProcess.stdout?.on('data', (data) => {
-      stdout += data.toString();
-    });
+      stdout += data.toString()
+    })
 
     ffprobeProcess.stderr?.on('data', (data) => {
-      stderr += data.toString();
-    });
+      stderr += data.toString()
+    })
 
     await new Promise<void>((resolve, reject) => {
       ffprobeProcess.on('close', (code) => {
         if (code === 0) {
-          resolve();
+          resolve()
         } else {
-          reject(new Error(`FFprobe failed with code ${code}: ${stderr || 'Unknown error'}`));
+          reject(new Error(`FFprobe failed with code ${code}: ${stderr || 'Unknown error'}`))
         }
-      });
+      })
 
       ffprobeProcess.on('error', (err) => {
-        reject(new Error(`Failed to spawn FFprobe: ${err.message}`));
-      });
-    });
+        reject(new Error(`Failed to spawn FFprobe: ${err.message}`))
+      })
+    })
 
-    const metadata = JSON.parse(stdout);
-    
-    return !!(metadata.streams && metadata.streams.length > 0);
+    const metadata = JSON.parse(stdout)
 
+    return !!(metadata.streams && metadata.streams.length > 0)
   } catch (error) {
-    logger.error(`Error checking for audio stream: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    logger.error(`Error checking for audio stream: ${error instanceof Error ? error.message : 'Unknown error'}`)
     // Default to false if we can't read the file, to prevent ffmpeg from crashing on extraction
-    return false;
+    return false
   }
 }
-
 export const extractSceneAudio = async (
   videoPath: string,
   startTime: number,
@@ -80,11 +83,6 @@ export const extractSceneAudio = async (
   if (duration <= 0) {
     throw new Error('Invalid scene duration: endTime must be greater than startTime')
   }
-  const hasAudio = await hasAudioStream(videoPath);
-
-  if (!hasAudio) {
-   return undefined;
-  }
 
   const sessionId = randomBytes(8).toString('hex')
   const audioDir = join(tmpdir(), 'edit-mind-audio', sessionId)
@@ -94,6 +92,10 @@ export const extractSceneAudio = async (
 
   try {
     const args = [
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      ...getGPUDecodeArgs(),
       '-i',
       videoPath,
       '-ss',
