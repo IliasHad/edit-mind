@@ -58,8 +58,8 @@ class PythonService {
   }
 
   private async _doStart(): Promise<string> {
-    const maxRetries = 30
-    const retryDelay = 2000
+    const maxRetries = 50
+    const retryDelay = 5000
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -172,7 +172,7 @@ class PythonService {
     return this.isRunning
   }
 
-  private connectToWebSocket(): Promise<void> {
+  public connectToWebSocket(): Promise<void> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         if (this.client) {

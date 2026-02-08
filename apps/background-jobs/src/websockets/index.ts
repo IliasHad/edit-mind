@@ -5,6 +5,9 @@ import { io } from '..'
 export const checkServicesStatus = async () => {
   try {
     const mlServiceStatus = pythonService.isServiceRunning()
+    if (!mlServiceStatus) {
+      await pythonService.connectToWebSocket()
+    }
 
     return {
       backgroundJobsService: true,
