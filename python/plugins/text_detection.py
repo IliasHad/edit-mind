@@ -34,7 +34,7 @@ class TextDetectionPlugin(AnalyzerPlugin):
             logger.error(f"Failed to initialize EasyOCR reader: {e}")
             self.reader = None
             
-    def setup(self) -> None:
+    def setup(self, video_path: str, job_id: str) -> None:
         return None
     
     def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
