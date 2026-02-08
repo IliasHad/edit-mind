@@ -11,6 +11,7 @@ from services.analysis.service import AnalysisService
 from services.transcription.service import TranscriptionService
 from services.logger import get_logger
 import os
+from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 
 logger = get_logger(__name__)
 
@@ -265,17 +266,24 @@ class MessageHandlers:
                 "frames_analyzed": processed,
                 "total_frames": total
             })
-            await self.connection_manager.send_message(
-                websocket,
-                MessageType.ANALYSIS_PROGRESS,
-                {
-                    "progress": progress,
-                    "elapsed": elapsed,
-                    "frames_analyzed": processed,
-                    "total_frames": total
-                },
-                job_id=job_id
-            )
+            try:
+                await self.connection_manager.send_message(
+                    websocket,
+                    MessageType.ANALYSIS_PROGRESS,
+                    {
+                        "progress": progress,
+                        "elapsed": elapsed,
+                        "frames_analyzed": processed,
+                        "total_frames": total
+                    },
+                    job_id=job_id
+                )
+            except ConnectionClosedOK:
+                logger.debug(f"Client disconnected normally; skipping progress update for {job_id}")
+            except ConnectionClosedError:
+                logger.debug(f"Client disconnected abruptly; skipping progress update for {job_id}")
+            except Exception as e:
+                logger.warning(f"Failed to send progress update: {e}")
         return callback
 
     def _create_transcription_progress_callback(
@@ -291,14 +299,21 @@ class MessageHandlers:
                 "elapsed": elapsed,
                 "video_path": video_path
             })
-            await self.connection_manager.send_message(
-                websocket,
-                MessageType.TRANSCRIPTION_PROGRESS,
-                {
-                    "progress": progress,
-                    "elapsed": elapsed,
-                    "video_path": video_path
-                },
-                job_id=job_id
-            )
+            try:
+                await self.connection_manager.send_message(
+                    websocket,
+                    MessageType.TRANSCRIPTION_PROGRESS,
+                    {
+                        "progress": progress,
+                        "elapsed": elapsed,
+                        "video_path": video_path
+                    },
+                    job_id=job_id
+                )
+            except ConnectionClosedOK:
+                logger.debug(f"Client disconnected normally; skipping progress update for {job_id}")
+            except ConnectionClosedError:
+                logger.debug(f"Client disconnected abruptly; skipping progress update for {job_id}")
+            except Exception as e:
+                logger.warning(f"Failed to send progress update: {e}")
         return callback
