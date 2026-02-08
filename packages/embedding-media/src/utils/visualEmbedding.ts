@@ -14,19 +14,23 @@ export const embedVisualScenes = async (scenes: Scene[], videoFullPath: string):
       throw new Error('Visual Collection not initialized')
     }
 
-
     for (let i = 0; i < scenes.length; i += VISUAL_BATCH_SIZE) {
       const batch = scenes.slice(i, i + VISUAL_BATCH_SIZE)
       logger.info(`Processing batch ${i / VISUAL_BATCH_SIZE + 1}, scenes ${i} to ${i + batch.length - 1}`)
 
       const visualEmbeddingsPromise = batch.map(async (scene) => {
         try {
+          const startTime = Date.now()
           const keyframes = await extractSceneFrames(scene.source, scene.startTime, scene.endTime, {
             framesPerScene: 5,
             format: 'jpg',
             quality: 2,
             maxWidth: 640,
           })
+
+          const endTime = Date.now()
+
+          logger.info(`Frames extracted in ${(endTime - startTime) / 1000}s`)
 
           const { metadata, id } = await sceneToVectorFormat(scene)
 

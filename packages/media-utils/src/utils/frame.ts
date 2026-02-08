@@ -1,10 +1,11 @@
-import { mkdir, unlink } from 'fs/promises'
+import { mkdir, unlink, readdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { randomBytes } from 'crypto'
 import { spawnFFmpeg } from '../lib/ffmpeg'
 import { logger } from '@shared/services/logger'
+import { getGPUDecodeArgs } from '@media-utils/lib/ffmpegGpu'
 
 interface ExtractFramesOptions {
   framesPerScene?: number
@@ -19,7 +20,7 @@ export const extractSceneFrames = async (
   endTime: number,
   options: ExtractFramesOptions = {}
 ): Promise<string[]> => {
-  const { framesPerScene = 3, format = 'jpg', quality = 2, maxWidth = 1280 } = options
+  const { framesPerScene = 3, format = 'jpg', quality = 2, maxWidth } = options
 
   if (!existsSync(videoPath)) {
     throw new Error(`Video file not found: ${videoPath}`)
@@ -34,60 +35,53 @@ export const extractSceneFrames = async (
   const framesDir = join(tmpdir(), 'edit-mind-frames', sessionId)
   await mkdir(framesDir, { recursive: true })
 
-  const framePaths: string[] = []
+  // Calculate fps to extract exactly framesPerScene frames in the duration
+  const fps = framesPerScene / duration
+
+  // Build FFmpeg arguments
+  const outputPattern = join(framesDir, `frame_%04d.${format}`)
+  const args: string[] = [
+    '-hide_banner',
+    '-loglevel',
+    'error',
+    ...getGPUDecodeArgs(),
+    '-ss',
+    startTime.toFixed(3),
+    '-to',
+    endTime.toFixed(3),
+    '-i',
+    videoPath,
+    '-vf',
+    maxWidth ? `fps=${fps},${format === 'jpg' ? `scale=${maxWidth}:-1` : `scale=${maxWidth}:-1`}` : `fps=${fps}`,
+  ]
+
+  if (format === 'jpg') {
+    args.push('-q:v', quality.toString())
+  }
+
+  args.push(outputPattern)
 
   try {
-    const interval = duration / (framesPerScene + 1)
-
-    for (let i = 1; i <= framesPerScene; i++) {
-      const timestamp = startTime + interval * i
-      const framePath = join(framesDir, `frame_${i}.${format}`)
-      
-      const args = [
-        '-hide_banner',
-        '-loglevel',
-        'error',
-        '-i',
-        videoPath,
-        '-ss',
-        timestamp.toFixed(3),
-        '-frames:v',
-        '1',
-        '-vsync',
-        '0',
-        '-vf',
-        `scale=${maxWidth}:-1`,
-      ]
-
-      if (format === 'jpg') {
-        args.push('-q:v', quality.toString())
-      }
-
-      args.push(framePath)
-
-      await new Promise<void>((resolve, reject) => {
-        spawnFFmpeg(args)
-          .then((ffmpeg) => {
-            let stderr = ''
-
-            ffmpeg.stderr?.on('data', (data) => {
-              stderr += data.toString()
-            })
-
-            ffmpeg.on('close', (code) => {
-              if (code === 0 && existsSync(framePath)) {
-                framePaths.push(framePath)
-                resolve()
-              } else {
-                reject(new Error(`FFmpeg failed with code ${code}: ${stderr}`))
-              }
-            })
-
-            ffmpeg.on('error', reject)
+    await new Promise<void>((resolve, reject) => {
+      spawnFFmpeg(args)
+        .then((ffmpeg) => {
+          let stderr = ''
+          ffmpeg.stderr?.on('data', (data) => (stderr += data.toString()))
+          ffmpeg.on('close', (code) => {
+            if (code === 0) resolve()
+            else reject(new Error(`FFmpeg failed with code ${code}: ${stderr}`))
           })
-          .catch(reject)
-      })
-    }
+          ffmpeg.on('error', reject)
+        })
+        .catch(reject)
+    })
+
+    // Read generated frame paths
+    const files = await readdir(framesDir)
+    const framePaths = files
+      .filter((f) => f.endsWith(`.${format}`))
+      .map((f) => join(framesDir, f))
+      .sort()
 
     if (framePaths.length === 0) {
       throw new Error('No frames were extracted')
@@ -96,14 +90,14 @@ export const extractSceneFrames = async (
     logger.info(`Extracted ${framePaths.length} frames from scene (${startTime}s - ${endTime}s)`)
     return framePaths
   } catch (error) {
-    for (const framePath of framePaths) {
-      try {
-        if (existsSync(framePath)) {
-          await unlink(framePath)
-        }
-      } catch (cleanupError) {
-        logger.warn({ cleanupError }, `Failed to cleanup frame: ${framePath}`)
+    // Cleanup partial frames
+    try {
+      const files = await readdir(framesDir)
+      for (const f of files) {
+        await unlink(join(framesDir, f))
       }
+    } catch (cleanupError) {
+      logger.warn({ cleanupError }, `Failed to cleanup frames`)
     }
     throw error
   }
