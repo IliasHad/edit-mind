@@ -23,14 +23,20 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
 
       const audioEmbeddingsPromise = batch.map(async (scene) => {
         try {
+          const startTime = Date.now()
+
           const audioPath = await extractSceneAudio(scene.source, scene.startTime, scene.endTime, {
             format: 'wav',
             sampleRate: 48000,
             channels: 1,
           })
 
+          const endTime = Date.now()
+
+          logger.info(`Audio extracted in ${(endTime - startTime) / 1000}s`)
+
           if (!audioPath) {
-            throw new Error("No audio extracted, possibly due to absence of audio stream in source")
+            throw new Error('No audio extracted, possibly due to absence of audio stream in source')
           }
 
           const embedding = await embedSceneAudio(audioPath)
@@ -68,7 +74,8 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
         }))
       )
       logger.info(
-        `Batch ${i / AUDIO_BATCH_SIZE + 1}/${Math.ceil(scenes.length / AUDIO_BATCH_SIZE)} complete: ` + `${validAudioEmbeddings.length} audio embeddings stored`
+        `Batch ${i / AUDIO_BATCH_SIZE + 1}/${Math.ceil(scenes.length / AUDIO_BATCH_SIZE)} complete: ` +
+          `${validAudioEmbeddings.length} audio embeddings stored`
       )
     }
   } catch (err) {
