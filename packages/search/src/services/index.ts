@@ -1,5 +1,4 @@
 import { metadataToScene } from '@vector/utils/shared'
-import type { Metadata } from 'chromadb'
 import type { VideoWithScenesAndMatch } from '@shared/types/video'
 import type { Scene } from '@shared/types/scene'
 import type { VideoSearchParams } from '@shared/types/search'
@@ -10,6 +9,7 @@ import { getEmbeddings, getAudioEmbeddingForText, getVisualEmbeddingForText } fr
 import { getByVideoSource } from '@vector/services/db'
 import { applyFilters } from '@search/utils/filters'
 import { convertScenesToVideos } from '@vector/utils/videos'
+import { collectScenesFromQuery } from '@search/utils/query'
 
 export async function searchScenes(
   query: VideoSearchParams,
@@ -30,13 +30,15 @@ export async function searchScenes(
       return []
     }
 
-    let finalScenes: { metadatas: (Metadata | null)[]; ids: string[]; documents: (string | null)[] } | null = null
+    const finalScenes: Scene[] = []
+    const scenesIds = new Set<string>()
 
     if (query.semanticQuery) {
       const queryEmbeddings = await getEmbeddings([query.semanticQuery])
       const visualEmbedding = await getVisualEmbeddingForText(query.semanticQuery)
       const audioEmbedding = await getAudioEmbeddingForText(query.semanticQuery)
 
+      // Visual Collection Search
       if (visualEmbedding && visual_collection) {
         const vectorQuery = await visual_collection.query({
           queryEmbeddings: [visualEmbedding],
@@ -46,14 +48,10 @@ export async function searchScenes(
           include: ['metadatas', 'documents'],
         })
 
-        if (vectorQuery.metadatas.length > 0) {
-          finalScenes = {
-            metadatas: vectorQuery.metadatas[0],
-            ids: vectorQuery.ids[0],
-            documents: vectorQuery.documents[0],
-          }
-        }
+        collectScenesFromQuery(vectorQuery, scenesIds, finalScenes)
       }
+
+      // Audio Collection Search
       if (audioEmbedding && audio_collection) {
         const vectorQuery = await audio_collection.query({
           queryEmbeddings: [audioEmbedding],
@@ -63,14 +61,10 @@ export async function searchScenes(
           include: ['metadatas', 'documents'],
         })
 
-        if (vectorQuery.metadatas.length > 0) {
-          finalScenes = {
-            metadatas: vectorQuery.metadatas[0],
-            ids: vectorQuery.ids[0],
-            documents: vectorQuery.documents[0],
-          }
-        }
+        collectScenesFromQuery(vectorQuery, scenesIds, finalScenes)
       }
+
+      // Text Collection Search
       const vectorQuery = await collection.query({
         queryEmbeddings,
         nResults,
@@ -79,21 +73,36 @@ export async function searchScenes(
         include: ['metadatas', 'documents'],
       })
 
-      if (vectorQuery.metadatas.length > 0) {
-        finalScenes = {
-          metadatas: vectorQuery.metadatas[0],
-          ids: vectorQuery.ids[0],
-          documents: vectorQuery.documents[0],
+      collectScenesFromQuery(vectorQuery, scenesIds, finalScenes)
+
+
+      // Fallback to Metadata filtering (Use semantic query to search document text)
+      const semanticWhereDocument = query.semanticQuery ? { $contains: query.semanticQuery } : undefined
+      
+      const combinedWhereDocument = whereDocument && semanticWhereDocument ? { $and: [whereDocument, semanticWhereDocument] } : semanticWhereDocument || whereDocument
+     
+      const result = await collection.get({
+        where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+        whereDocument: combinedWhereDocument,
+        include: ['metadatas', 'documents'],
+        limit: nResults,
+      })
+
+      if (result.metadatas.length > 0) {
+        for (let index = 0; index < result.metadatas.length; index++) {
+          const metadata = result.metadatas[index]
+          const id = result.ids[index]
+          const text = result.documents[index]
+
+          if (!metadata || !id || !text) {
+            continue
+          }
+          const scene = metadataToScene(metadata, id, text)
+          if (!scenesIds.has(scene.id)) {
+            finalScenes.push(scene)
+          }
+          scenesIds.add(scene.id)
         }
-      } else {
-        // Fallback to Metadata filtering
-        const result = await collection?.get({
-          where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
-          whereDocument: whereDocument,
-          include: ['metadatas', 'documents'],
-          limit: nResults,
-        })
-        finalScenes = { metadatas: result.metadatas, ids: result.ids, documents: result.documents }
       }
     } else {
       const result = await collection?.get({
@@ -102,16 +111,28 @@ export async function searchScenes(
         include: ['metadatas', 'documents'],
         limit: nResults,
       })
-      finalScenes = { metadatas: result.metadatas, ids: result.ids, documents: result.documents }
+      for (let index = 0; index < result.metadatas.length; index++) {
+        const metadata = result.metadatas[index]
+        const id = result.ids[index]
+        const text = result.documents[index]
+
+        if (!metadata || !id || !text) {
+          continue
+        }
+        const scene = metadataToScene(metadata, id, text)
+
+        if (!scenesIds.has(scene.id)) {
+          finalScenes.push(scene)
+        }
+        scenesIds.add(scene.id)
+      }
     }
 
-    if (!finalScenes) {
+    if (finalScenes.length === 0) {
       return []
     }
 
-    const scenes = finalScenes.metadatas.map((m, i) => metadataToScene(m, finalScenes.ids[i], finalScenes.documents[i]))
-
-    const videos = convertScenesToVideos(scenes) as VideoWithScenesAndMatch[]
+    const videos = convertScenesToVideos(finalScenes) as VideoWithScenesAndMatch[]
 
     const videosList: VideoWithScenesAndMatch[] = []
     for (const video of videos) {
