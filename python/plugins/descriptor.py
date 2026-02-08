@@ -21,7 +21,7 @@ class DescriptorPlugin(AnalyzerPlugin):
         self.descriptions = []
         self.device = config.get("device", "cpu")
 
-    def setup(self, video_path, job_id) -> None:
+    def load_models(self) -> None:
         """Load BLIP captioning model."""
         # Set up cache directory for Hugging Face models
         cache_dir = os.environ.get('HF_HOME', '/ml-models/huggingface')
@@ -32,12 +32,13 @@ class DescriptorPlugin(AnalyzerPlugin):
         self.processor = BlipProcessor.from_pretrained(
             "Salesforce/blip-image-captioning-base",
             use_fast=True,
-            cache_dir=cache_dir
+            cache_dir=cache_dir,
+            tie_word_embeddings=False 
         )
         self.model = BlipForConditionalGeneration.from_pretrained(
             "Salesforce/blip-image-captioning-base",
             cache_dir=cache_dir,
-            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32
+            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
         )
         
         # Move model to appropriate device
@@ -45,6 +46,10 @@ class DescriptorPlugin(AnalyzerPlugin):
         self.model.eval()
         
         logger.info(f"BLIP model loaded successfully on device: {self.device}")
+        return None
+    
+    def setup(self, video_path, job_id) -> None:
+        return None
 
     def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
         """Caption each frame to understand its environment."""
@@ -79,3 +84,18 @@ class DescriptorPlugin(AnalyzerPlugin):
         """Clean up any data from previous processing job."""
         self.descriptions = []
         
+    def cleanup_models(self) -> None:
+        try:
+            if self.model is not None:
+                del self.model
+                self.model = None
+
+            if self.processor is not None:
+                del self.processor
+                self.processor = None
+
+            if self.device == "cuda":
+                torch.cuda.empty_cache()
+
+        except Exception as e:
+            logger.error(f"Failed to cleanup BLIP model: {e}")

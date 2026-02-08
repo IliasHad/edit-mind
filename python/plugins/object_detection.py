@@ -26,7 +26,7 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
         # If you're running this script over Apple computer with M Chips
         self.batch_size: int = 8 if self.config.get("device") == "mps" else 1
 
-    def setup(self, video_path, job_id) -> None:
+    def load_models(self) -> None:
         """Initialize the YOLO model."""
         yolo_cache_dir = os.environ.get('YOLO_CONFIG_DIR', '/ml-models/ultralytics')
         os.makedirs(yolo_cache_dir, exist_ok=True)
@@ -39,6 +39,9 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
         self.yolo_model.to(self.config.get("device"))
         self.yolo_model.fuse()
 
+    
+    def setup(self, video_path, job_id) -> None:
+        return None
 
     def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
         detections_results = self._run_object_detection([frame])
@@ -110,3 +113,7 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
     def cleanup(self) -> None:
         """Clean up any data from previous processing job."""
         return None
+    
+    def cleanup_models(self) -> None:
+        if self.device == "cuda":
+                torch.cuda.empty_cache()

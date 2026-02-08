@@ -1,16 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-import {
-  BATCH_THUMBNAIL_QUALITY,
-  DEFAULT_FPS,
-  MAX_DEPTH,
-  THUMBNAIL_QUALITY,
-  THUMBNAIL_SCALE,
-  THUMBNAILS_DIR,
-} from '../constants'
+import { DEFAULT_FPS, MAX_DEPTH, THUMBNAILS_DIR } from '../constants';
 import { exiftool } from 'exiftool-vendored'
 import { CameraInfo, GeoLocation, VideoFile, VideoMetadata } from '../types/video'
-import { handleFFmpegProcess, spawnFFmpeg, spawnFFprobe } from '../lib/ffmpeg'
+import { spawnFFprobe } from '../lib/ffmpeg';
 import { validateFile } from '@shared/utils/file'
 import { logger } from '@shared/services/logger'
 import { FFprobeMetadata, FFprobeStream } from '../types/ffmpeg'
@@ -20,120 +13,6 @@ import { readFile } from 'fs/promises'
 import micromatch from 'micromatch'
 import { checkForLivePhoto } from './livePhoto'
 
-const initializeThumbnailsDir = (): void => {
-  if (!fs.existsSync(THUMBNAILS_DIR)) {
-    fs.mkdirSync(THUMBNAILS_DIR, { recursive: true })
-  }
-}
-
-initializeThumbnailsDir()
-
-export async function generateThumbnail(
-  videoPath: string,
-  thumbnailPath: string,
-  timestamp: number,
-  options?: {
-    quality?: string
-    scale?: string
-  }
-): Promise<void> {
-  await validateFile(videoPath)
-
-  const quality = options?.quality ?? THUMBNAIL_QUALITY
-  const scale = options?.scale ?? THUMBNAIL_SCALE
-
-  let args = [
-    '-ss',
-    timestamp.toString(),
-    '-i',
-    videoPath,
-    '-vframes',
-    '1',
-    '-vf',
-    `scale=${scale}`,
-    '-q:v',
-    quality,
-    thumbnailPath,
-    '-y',
-    '-loglevel',
-    'error',
-  ]
-
-
-  const ffmpegProcess = await spawnFFmpeg(args)
-  return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
-}
-
-export async function generateVideoCover(
-  videoPath: string,
-  thumbnailPath: string,
-  options?: {
-    keyframe?: number
-    quality?: string
-    scale?: string
-  }
-): Promise<void> {
-  await validateFile(videoPath)
-
-  const quality = options?.quality ?? THUMBNAIL_QUALITY
-  const scale = options?.scale ?? THUMBNAIL_SCALE
-  const keyframe = options?.keyframe ?? 0
-
-  let args = [
-    '-skip_frame',
-    'nokey',
-    '-i',
-    videoPath,
-    '-vf',
-    `select='eq(pict_type\\,I)*eq(n\\,${keyframe})',scale=${scale}`,
-    '-vframes',
-    '1',
-    '-q:v',
-    quality,
-    thumbnailPath,
-    '-y',
-    '-loglevel',
-    'error',
-  ]
-
-  const ffmpegProcess = await spawnFFmpeg(args)
-  return handleFFmpegProcess(ffmpegProcess, 'thumbnail generation')
-}
-
-export async function generateAllThumbnails(
-  videoPath: string,
-  timestamps: number[],
-  outputPaths: string[]
-): Promise<void> {
-  if (timestamps.length === 0) {
-    return
-  }
-
-  if (timestamps.length !== outputPaths.length) {
-    throw new Error(`Timestamps and output paths length mismatch: ${timestamps.length} vs ${outputPaths.length}`)
-  }
-
-  await validateFile(videoPath)
-
-  const filterComplex = timestamps
-    .map(
-      (ts, idx) =>
-        `[0:v]select='between(t,${ts},${ts + 0.1})',setpts=PTS-STARTPTS,scale=${THUMBNAIL_SCALE}:flags=fast_bilinear[v${idx}]`
-    )
-    .join(';')
-
-  let args = ['-i', videoPath, '-filter_complex', filterComplex, '-q:v', BATCH_THUMBNAIL_QUALITY, '-loglevel', 'error']
-
-
-  timestamps.forEach((_, idx) => {
-    args.push('-map', `[v${idx}]`, '-frames:v', '1', outputPaths[idx])
-  })
-
-  args.push('-y')
-
-  const ffmpegProcess = await spawnFFmpeg(args)
-  return handleFFmpegProcess(ffmpegProcess, 'batch thumbnail generation')
-}
 
 export async function findVideoFiles(
   dirPath: string,

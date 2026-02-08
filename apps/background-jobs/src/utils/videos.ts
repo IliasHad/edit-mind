@@ -1,7 +1,7 @@
 import path from 'path'
 import { logger } from '@shared/services/logger'
 import { THUMBNAILS_DIR } from '@shared/constants'
-import { generateVideoCover } from '@media-utils/utils/videos'
+import { generateVideoCover } from '@media-utils/utils/thumbnails'
 import { Video } from '@shared/types/video'
 import { FolderModel, UserModel, VideoModel, generateId } from '@db/index'
 import { Folder } from '@prisma/client'

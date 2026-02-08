@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 from core.config import AnalysisConfig
 import easyocr
+import torch
 
 from services.logger import get_logger
 
@@ -20,7 +21,7 @@ class TextDetectionPlugin(AnalyzerPlugin):
         self.min_confidence: float = 0.3
         self.use_gpu = self.config.get("device") != 'cpu'
 
-    def setup(self, video_path, job_id) -> None:
+    def load_models(self) -> None:
         """Initialize the EasyOCR reader."""
         try:
             self.reader = easyocr.Reader(
@@ -32,7 +33,10 @@ class TextDetectionPlugin(AnalyzerPlugin):
         except Exception as e:
             logger.error(f"Failed to initialize EasyOCR reader: {e}")
             self.reader = None
-
+            
+    def setup(self) -> None:
+        return None
+    
     def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
         """Detect text in a single frame with optimizations."""
         if self.reader is None:
@@ -121,3 +125,7 @@ class TextDetectionPlugin(AnalyzerPlugin):
     def cleanup(self) -> None:
         """Clean up any data from previous processing job."""
         return None
+    
+    def cleanup_models(self) -> None:
+        if self.device == "cuda":
+                torch.cuda.empty_cache()
