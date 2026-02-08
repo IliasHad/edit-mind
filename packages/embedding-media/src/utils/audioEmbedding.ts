@@ -2,7 +2,7 @@ import { createVectorDbClient } from '@vector/services/client'
 
 import { AUDIO_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
-import { cleanupAudio, extractSceneAudio } from '@media-utils/utils/audio'
+import { cleanupAudio, extractSceneAudio, hasAudioStream } from '@media-utils/utils/audio'
 import { embedSceneAudio } from '../services'
 import type { Scene } from '@shared/schemas'
 import { sceneToVectorFormat } from '@vector/utils/shared'
@@ -14,6 +14,13 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
 
     if (!audio_collection) {
       throw new Error('Audio Collection not initialized')
+    }
+
+    const hasAudio = await hasAudioStream(videoFullPath)
+
+    if (!hasAudio) {
+      logger.warn(`Skipped audio embedding for "${videoFullPath}" because no audio track was found.`)
+      return
     }
 
     for (let i = 0; i < scenes.length; i += AUDIO_BATCH_SIZE) {
