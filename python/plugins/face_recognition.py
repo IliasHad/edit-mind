@@ -35,7 +35,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
     def setup(self, video_path: str, job_id: str) -> None:
         self.current_video_path = video_path
         self.current_job_id = job_id
-        self.face_recognizer.reset_unknown_registry()
+        if self.face_recognizer:
+            self.face_recognizer.reset_unknown_registry()
 
         self.unknown_faces_dir = Path(
             os.getenv("UNKNOWN_FACES_DIR", '.unknown_faces'))
@@ -51,6 +52,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
     ) -> FrameAnalysis:
         if not self.face_recognizer:
             logger.warning("Face recognizer not initialized")
+            self.face_recognizer = FaceRecognizer()
             frame_analysis['faces'] = []
             return frame_analysis
 
@@ -382,7 +384,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         }
     def cleanup(self) -> None:
         """Clean up any data from previous processing job."""
-        self.face_recognizer.reset_unknown_registry()
+        if self.face_recognizer:
+            self.face_recognizer.reset_unknown_registry()
         self.saved_unknown_faces  = {}
         self.all_faces = []
         

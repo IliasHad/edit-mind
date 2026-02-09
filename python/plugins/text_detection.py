@@ -127,5 +127,6 @@ class TextDetectionPlugin(AnalyzerPlugin):
         return None
     
     def cleanup_models(self) -> None:
-        if self.device == "cuda":
-                torch.cuda.empty_cache()
+        device = self.config.get("device", "cpu")
+        if device == "cuda":
+            torch.cuda.empty_cache()
