@@ -76,6 +76,7 @@ class PluginManager:
         """Initialize all plugins."""
         for plugin in self.plugins:
             try:
+                plugin.load_models()
                 plugin.setup(video_path, job_id)
             except Exception as e:
                 logger.error(
