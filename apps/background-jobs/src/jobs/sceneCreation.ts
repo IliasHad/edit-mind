@@ -108,9 +108,10 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const sceneCreationWorker = new Worker('scene-creation', processVideo, {
   connection,
   concurrency: 3,
-  lockDuration: 10 * 60 * 1000,
-  stalledInterval: 30 * 1000,
+  lockDuration: 30 * 60 * 1000,
+  stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,
+  lockRenewTime: 30 * 1000,
 })
 
 const flowProducer = new FlowProducer({ connection })
