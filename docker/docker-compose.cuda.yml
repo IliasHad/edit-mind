@@ -2,7 +2,7 @@ services:
   background-jobs:
     restart: unless-stopped
     build:
-      target: production-gpu
+      target: production
       context: ..
       dockerfile: docker/Dockerfile.background-jobs
       args:

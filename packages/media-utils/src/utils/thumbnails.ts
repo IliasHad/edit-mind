@@ -104,7 +104,6 @@ export async function generateBatchThumbnails(
   const startTime = Date.now()
   const quality = options?.quality ?? THUMBNAIL_QUALITY
   const scale = options?.scale ?? THUMBNAIL_SCALE
-  const useGPU = options?.useGPU ?? true
 
   // Sort by timestamp
   const sortedRequests = [...requests].sort((a, b) => a.startTime - b.startTime)
@@ -127,7 +126,7 @@ export async function generateBatchThumbnails(
     const selectExpr = sortedRequests.map((req) => `between(t,${req.startTime},${req.endTime})`).join('+')
 
     const args: string[] = [
-      ...(useGPU ? getGPUDecodeArgs() : []),
+      ...getGPUDecodeArgs(),
       '-i',
       videoPath,
       '-vf',

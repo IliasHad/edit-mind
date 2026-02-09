@@ -7,5 +7,4 @@ export interface ThumbnailRequest {
 export interface BatchThumbnailOptions {
   quality?: string
   scale?: string
-  useGPU?: boolean
 }
