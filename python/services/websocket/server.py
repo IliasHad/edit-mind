@@ -156,5 +156,6 @@ class WebSocketServer:
     def cleanup(self) -> None:
         """Cleanup server resources."""
         logger.info("Cleaning up server resources...")
+        self.analysis_service.plugin_manager.cleanup_plugins_models()
         self.analysis_service.cleanup()
         self.transcription_service.cleanup()
