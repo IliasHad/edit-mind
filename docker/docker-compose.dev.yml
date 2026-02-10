@@ -43,7 +43,7 @@ services:
       - ../packages/embedding-core:/app/packages/embedding-core
       - ../packages/embedding-media:/app/packages/embedding-media
       - ../packages/chat:/app/packages/chat
-
+      - ml-models:/app/ml-models:rw
   ml:
     build:
       target: development

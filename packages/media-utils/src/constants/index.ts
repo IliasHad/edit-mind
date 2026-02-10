@@ -1,4 +1,5 @@
-import { checkFFmpegGPUSupport, isGPUAvailable } from '@media-utils/lib/gpu'
+import { USE_GPU } from '@shared/constants/gpu'
+import { checkFFmpegGPUSupport } from '@media-utils/lib/gpu'
 import 'dotenv/config'
 
 export const STITCHED_VIDEOS_DIR = process.env.STITCHED_VIDEOS_DIR
@@ -14,7 +15,7 @@ export const THUMBNAILS_DIR = process.env.THUMBNAILS_PATH || '.thumbnails'
 
 export const EXPORTS_DIR = process.env.EXPORTS_DIR || '/app/data/.exports'
 
-export const USE_GPU = isGPUAvailable() && checkFFmpegGPUSupport()
+export const USE_FFMPEG_GPU = USE_GPU && checkFFmpegGPUSupport()
 
 export const FFMPEG_PATH = '/usr/bin/ffmpeg'
 export const FFPROBE_PATH = '/usr/bin/ffprobe'

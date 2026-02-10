@@ -3,6 +3,9 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Union
 from collections import defaultdict
 import time
+from services.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -87,6 +90,7 @@ class PluginMetricsCollector:
     def record_execution(self, plugin_name: str, duration_ms: float) -> None:
         """Record a plugin execution time."""
         self._timings[plugin_name].append(duration_ms)
+        logger.info("Plugin %s executed in %.3f ms", plugin_name, duration_ms)
     
     def record_error(self, plugin_name: str) -> None:
         """Record a plugin error."""

@@ -5,7 +5,7 @@ import { existsSync } from 'fs'
 import { mkdir } from 'fs/promises'
 import { logger } from '@shared/services/logger'
 import { buildEncodingArgs } from '@media-utils/lib/ffmpegGpu'
-import { USE_GPU } from '@media-utils/constants'
+import { USE_FFMPEG_GPU } from '@media-utils/constants'
 
 export const trimVideoScenes = async (scenes: Scene[], tempExportDir: string): Promise<string[]> => {
   const clipPaths: string[] = []
@@ -14,7 +14,7 @@ export const trimVideoScenes = async (scenes: Scene[], tempExportDir: string): P
     await mkdir(tempExportDir, { recursive: true })
   }
 
-  logger.info(`Trimming ${scenes.length} video scenes (GPU: ${USE_GPU})`)
+  logger.info(`Trimming ${scenes.length} video scenes (GPU: ${USE_FFMPEG_GPU})`)
 
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i]

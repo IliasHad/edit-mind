@@ -4,10 +4,10 @@ import { readAudio } from '@media-utils/utils/audio'
 import { withTimeout } from '@vector/utils/shared'
 import { EMBEDDING_TIMEOUT } from '@shared/constants/embedding'
 import { getFrameExtractor, getAudioExtractor } from '@embedding-core/services/extractors'
+import { RawImage } from '@huggingface/transformers'
 
 export async function embedSceneFrames(frames: string[]): Promise<number[] | null> {
   const { processor, model } = await getFrameExtractor()
-  const { RawImage } = await import('@xenova/transformers')
   const frameEmbeddings: number[][] = []
 
   for (const frame of frames) {

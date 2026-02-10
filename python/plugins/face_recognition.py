@@ -52,7 +52,6 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
     ) -> FrameAnalysis:
         if not self.face_recognizer:
             logger.warning("Face recognizer not initialized")
-            self.face_recognizer = FaceRecognizer()
             frame_analysis['faces'] = []
             return frame_analysis
 

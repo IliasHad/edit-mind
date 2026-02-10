@@ -8,15 +8,26 @@ import {
   AUDIO_EMBEDDING_MODEL,
   TEXT_EMBEDDING_MODEL,
 } from '@shared/constants/embedding'
-import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@xenova/transformers'
-import { env } from '@xenova/transformers'
-import { existsSync, mkdirSync } from 'node:fs'
+import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@huggingface/transformers'
+import { AutoProcessor, AutoTokenizer, ClapAudioModelWithProjection, ClapTextModelWithProjection, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, env, pipeline, RawImage } from '@huggingface/transformers'
+import { accessSync, existsSync, mkdirSync, constants } from 'node:fs'
+import { USE_GPU } from '@shared/constants/gpu'
 
 // Set the cache directory for Xenova Transformers models
-env.cacheDir = MODEL_CACHE_DIR
-if (!existsSync(MODEL_CACHE_DIR)) {
-  mkdirSync(MODEL_CACHE_DIR, { recursive: true })
+try {
+  if (!existsSync(MODEL_CACHE_DIR)) {
+    logger.info(`Directory does not exist, creating: ${MODEL_CACHE_DIR}`)
+    mkdirSync(MODEL_CACHE_DIR, { recursive: true })
+  }
+  // Test write permissions
+  accessSync(MODEL_CACHE_DIR, constants.W_OK)
+
+} catch (error) {
+  logger.error({ error, }, ' Failed to setup cache directory',)
+  throw error
 }
+
+env.cacheDir = MODEL_CACHE_DIR
 
 let textModelCache: { embed: FeatureExtractionPipeline } | null = null
 
@@ -27,10 +38,12 @@ let textToAudioModelCache: { tokenizer: PreTrainedTokenizer; model: PreTrainedMo
 
 export async function getFrameExtractor() {
   if (!visualModelCache) {
-    const { AutoProcessor, CLIPVisionModelWithProjection } = await import('@xenova/transformers')
 
     const processor = await AutoProcessor.from_pretrained(VISUAL_EMBEDDING_MODEL)
-    const model = await CLIPVisionModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL)
+    const model = await CLIPVisionModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
+      device: USE_GPU ? "cuda" : "auto",
+      dtype: "fp16"
+    })
     visualModelCache = { processor, model }
   }
   return visualModelCache
@@ -38,9 +51,10 @@ export async function getFrameExtractor() {
 
 export async function getAudioExtractor() {
   if (!audioModelCache) {
-    const { AutoProcessor, ClapAudioModelWithProjection } = await import('@xenova/transformers')
     const processor = await AutoProcessor.from_pretrained(AUDIO_EMBEDDING_MODEL)
-    const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL)
+    const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
+      device: USE_GPU ? "cuda" : "auto"
+    })
 
     audioModelCache = { processor, model }
   }
@@ -49,10 +63,12 @@ export async function getAudioExtractor() {
 
 async function getTextToVisualExtractor() {
   if (!textToVisualModelCache) {
-    const { AutoTokenizer, CLIPTextModelWithProjection } = await import('@xenova/transformers')
 
     const tokenizer = await AutoTokenizer.from_pretrained(VISUAL_EMBEDDING_MODEL)
-    const model = await CLIPTextModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL)
+    const model = await CLIPTextModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
+      device: USE_GPU ? "cuda" : "auto",
+      dtype: "fp16"
+    })
     textToVisualModelCache = { tokenizer, model }
   }
   return textToVisualModelCache
@@ -60,10 +76,11 @@ async function getTextToVisualExtractor() {
 
 async function getTextToAudioExtractor() {
   if (!textToAudioModelCache) {
-    const { AutoTokenizer, ClapTextModelWithProjection } = await import('@xenova/transformers')
 
     const tokenizer = await AutoTokenizer.from_pretrained(AUDIO_EMBEDDING_MODEL)
-    const model = await ClapTextModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL)
+    const model = await ClapTextModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
+      device: USE_GPU ? "cuda" : "auto",
+    })
     textToAudioModelCache = { tokenizer, model }
   }
   return textToAudioModelCache
@@ -91,7 +108,6 @@ export async function getAudioEmbeddingForText(text: string): Promise<number[]> 
 
 export async function getImageEmbedding(imageBuffer: Buffer): Promise<number[]> {
   const { processor, model } = await getFrameExtractor()
-  const { RawImage } = await import('@xenova/transformers')
 
   const image = await RawImage.fromBlob(new Blob([new Uint8Array(imageBuffer)]))
   const inputs = await processor(image)
@@ -104,9 +120,11 @@ export async function getImageEmbedding(imageBuffer: Buffer): Promise<number[]> 
 
 export async function getTextExtractor() {
   if (!textModelCache) {
-    const { pipeline } = await import('@xenova/transformers')
 
-    const embed = await pipeline('feature-extraction', TEXT_EMBEDDING_MODEL)
+    const embed = await pipeline('feature-extraction', TEXT_EMBEDDING_MODEL, {
+      device: USE_GPU ? "cuda" : "auto",
+      dtype: "fp16"
+    })
 
     textModelCache = { embed }
   }

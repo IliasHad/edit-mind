@@ -18,27 +18,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 
-FROM nvidia/cuda:${CUDA_VERSION}-base-ubuntu22.04 AS base-gpu
+FROM nvidia/cuda:${CUDA_VERSION}-cudnn-runtime-ubuntu22.04 AS base-gpu
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  curl \
-  libgomp1 \
-  ca-certificates \
-  && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-  && apt-get install -y nodejs \
-  && corepack enable \
-  && corepack prepare pnpm@${PNPM_VERSION} --activate \
-  && apt-get install -y --no-install-recommends \
-  openssl \
-  ffmpeg \
-  libcurl4-openssl-dev \
-  libssl-dev \
-  && rm -rf /var/lib/apt/lists/* \
-  && rm -rf /var/cache/apt/* \
-  && rm -rf /tmp/*
+    curl \
+    git \
+    ca-certificates \
+    build-essential \
+    cmake \
+    make \
+    g++ \
+    ffmpeg \
+    libgomp1 \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libcudnn8 \
+    libcublas-12-0 \
+    libcusolver-12-0 \
+    libcurand-12-0 \
+    libnvinfer8 \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && corepack enable \
+    && corepack prepare pnpm@${PNPM_VERSION} --activate \
+    && rm -rf /var/lib/apt/lists/*
 
 FROM ${TARGET_BASE} AS runtime-base
 

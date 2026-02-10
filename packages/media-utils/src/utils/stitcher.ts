@@ -9,7 +9,7 @@ import { cleanupFiles, ensureDirectoryExists } from '@shared/utils/file'
 import { logger } from '@shared/services/logger'
 import { STITCHED_VIDEOS_DIR } from '../constants'
 import { buildEncodingArgs, getScaleFilter } from '@media-utils/lib/ffmpegGpu'
-import { USE_GPU } from '@media-utils/constants'
+import { USE_FFMPEG_GPU } from '@media-utils/constants'
 
 const DEFAULT_ASPECT_RATIO = '16:9'
 const DEFAULT_FPS = 30
@@ -114,7 +114,7 @@ const buildVideoFilter = (dimensions: Dimensions, fps: number): string => {
   const scaleFilter = getScaleFilter(
     dimensions.width,
     dimensions.height,
-    { useGPUScaling: USE_GPU } // Use CPU scaling for compatibility
+    { useGPUScaling: USE_FFMPEG_GPU } // Use CPU scaling for compatibility
   )
 
   return [
@@ -156,7 +156,7 @@ const processClip = async (
   let result = await handleFFmpegProcess(process, `clip processing (${scene.source})`)
 
   if (result.code === 0) {
-    logger.info(`Processed clip: ${clipPath} (GPU: ${USE_GPU})`)
+    logger.info(`Processed clip: ${clipPath} (GPU: ${USE_FFMPEG_GPU})`)
     return
   }
 
@@ -192,7 +192,7 @@ const processClip = async (
     throw new Error(`Failed to process clip from ${scene.source}: ${result.stderr || 'Unknown error'}`)
   }
 
-  logger.info(`Processed clip with silent audio: ${clipPath} (GPU: ${USE_GPU})`)
+  logger.info(`Processed clip with silent audio: ${clipPath} (GPU: ${USE_FFMPEG_GPU})`)
 }
 
 const createFileList = (clipPaths: string[], fileListPath: string): void => {
@@ -225,7 +225,7 @@ const concatenateClips = async (fileListPath: string, outputPath: string): Promi
     throw new Error(`Failed to concatenate clips: ${result.stderr || 'Unknown error'}`)
   }
 
-  logger.info(`Concatenated video: ${outputPath} (GPU: ${USE_GPU})`)
+  logger.info(`Concatenated video: ${outputPath} (GPU: ${USE_FFMPEG_GPU})`)
 }
 
 export async function stitchVideos(
@@ -249,7 +249,7 @@ export async function stitchVideos(
   const dimensions = calculateTargetDimensions(aspectRatio, targetResolution)
 
   logger.info(
-    `Starting video stitching: ${scenes.length} scenes, ${dimensions.width}x${dimensions.height}, GPU: ${USE_GPU}`
+    `Starting video stitching: ${scenes.length} scenes, ${dimensions.width}x${dimensions.height}, GPU: ${USE_FFMPEG_GPU}`
   )
 
   try {

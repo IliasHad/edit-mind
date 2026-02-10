@@ -76,7 +76,6 @@ class PluginManager:
         """Initialize all plugins."""
         for plugin in self.plugins:
             try:
-                plugin.load_models()
                 plugin.setup(video_path, job_id)
             except Exception as e:
                 logger.error(
@@ -172,8 +171,16 @@ class PluginManager:
         for plugin in self.plugins:
             try:
                 plugin.cleanup()
-                plugin.cleanup_models()
                 logger.info(f"Cleaned up plugin: {plugin.__class__.__name__}")
             except Exception as e:
                 logger.error(
                     f"Failed to cleanup {plugin.__class__.__name__}: {e}")
+                
+    def cleanup_plugins_models(self) -> None:
+        """Initialize all plugins models"""
+        for plugin in self.plugins:
+            try:
+                plugin.cleanup_models()
+            except Exception as e:
+                logger.error(
+                    f"Failed to load {plugin.__class__.__name__} models: {e}")
