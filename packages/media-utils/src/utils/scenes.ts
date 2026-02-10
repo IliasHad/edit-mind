@@ -1,56 +1,18 @@
-import path from 'path'
-import { Analysis, DetectedObject, Face, FrameAnalysis } from '@shared/types/analysis'
+import { Analysis, DetectedObject, Face } from '@shared/types/analysis';
 import { Scene } from '@shared/types/scene'
 import { Transcription } from '@shared/types/transcription'
 import { createHash } from 'crypto'
-import { THUMBNAILS_DIR } from '@shared/constants'
 import { getCameraNameAndDate, getLocationFromVideo, getVideoMetadata } from '@media-utils/utils/videos'
 import { formatLocation, getLocationName } from '@shared/utils/location'
 import { extractGPS, getGoProDeviceName, getGoProVideoMetadata } from '@media-utils/lib/gopro'
 import { GoProMetadataWithStreams } from '@media-utils/types/gopro'
 import { logger } from '@shared/services/logger'
 import { gcd } from './shared'
-import { generateBatchThumbnails } from './thumbnails'
-import { ThumbnailRequest } from '@media-utils/types/thumbnail'
 
 const generateSceneId = (videoPath: string, startTime: number, endTime: number) => {
   const hash = createHash('sha256').update(`${videoPath}_${startTime}_${endTime}`).digest('hex')
 
   return hash
-}
-
-const generateThumbnailFilePath = (videoPath: string, startTime: number, endTime: number) => {
-  const hash = generateSceneId(videoPath, startTime, endTime)
-
-  const thumbnailFile = `${hash}.jpg`
-  const thumbnailPath = path.join(THUMBNAILS_DIR, thumbnailFile)
-  return thumbnailPath
-}
-
-const splitFramesIntoChunks = (frames: FrameAnalysis[], chunkDuration: number) => {
-  const chunks: FrameAnalysis[][] = []
-  let currentChunk: FrameAnalysis[] = []
-
-  for (const frame of frames) {
-    const frameStart = frame.start_time_ms / 1000
-    if (currentChunk.length === 0) {
-      currentChunk.push(frame)
-    } else {
-      const firstFrameStart = currentChunk[0].start_time_ms / 1000
-      if (frameStart - firstFrameStart < chunkDuration) {
-        currentChunk.push(frame)
-      } else {
-        chunks.push(currentChunk)
-        currentChunk = [frame]
-      }
-    }
-  }
-
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk)
-  }
-
-  return chunks
 }
 
 export const generateSceneDescription = (objects: DetectedObject[], faces: Face[]): string => {
@@ -162,42 +124,10 @@ export const createScenes = async (
 
   const locationName = await getLocationName(location)
 
-  // If the video duration is less than 3 minutes, use batch thumbnail generation
-  const CHUNK_DURATION = 3 * 60 // 3 minutes
-  const thumbnailStart = Date.now()
-
-  let frameChunks: FrameAnalysis[][] = []
-
-  if (duration <= CHUNK_DURATION) {
-    frameChunks = [analysis.frame_analysis] // small videos: one chunk
-  } else {
-    frameChunks = splitFramesIntoChunks(analysis.frame_analysis, CHUNK_DURATION)
-  }
-
-  // Generate thumbnails per chunk
-  for (let i = 0; i < frameChunks.length; i++) {
-    const chunk = frameChunks[i]
-    const requests: ThumbnailRequest[] = chunk.map((frame) => {
-      const startTime = frame.start_time_ms / 1000
-      const endTime = frame.end_time_ms / 1000
-      const thumbnailPath = generateThumbnailFilePath(videoPath, startTime, endTime)
-
-      return { startTime, outputPath: thumbnailPath, endTime }
-    })
-
-    await generateBatchThumbnails(videoPath, requests)
-
-  }
-
-  const thumbnailEnd = Date.now()
-  logger.info(
-    `Thumbnail generation completed in : ${(thumbnailEnd - thumbnailStart) / 1000}s`
-  )
 
   for (const frame of analysis.frame_analysis) {
     const startTime = frame.start_time_ms / 1000
     const endTime = frame.end_time_ms / 1000
-    const thumbnailPath = generateThumbnailFilePath(videoPath, startTime, endTime)
     const id = generateSceneId(videoPath, startTime, endTime)
     const currentScene: Scene = {
       id,
@@ -216,7 +146,7 @@ export const createScenes = async (
       source: videoPath,
       camera,
       createdAt: new Date(createdAt).getTime(),
-      thumbnailUrl: thumbnailPath,
+      thumbnailUrl: frame.thumbnail_path,
       dominantColorHex: frame.dominant_color?.hex || '',
       dominantColorName: frame.dominant_color?.name || '',
       detectedText: frame.detected_text?.map((item) => item.text) || [],

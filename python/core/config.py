@@ -20,7 +20,12 @@ class AnalysisConfig:
         'ShotTypePlugin': 1,
         "DescriptorPlugin": 1
     })
-
+    thumbnail_dir: str = field(
+        default_factory=lambda: os.getenv(
+            "THUMBNAILS_PATH",
+            "/app/data/.thumbnails/"
+        )
+    )
     def __post_init__(self) -> None:
         """Post-initialization adjustments."""
         self._adjust_for_memory()

@@ -46,6 +46,7 @@ class FrameAnalysis(TypedDict, total=False):
     frame_idx: int
     scale_factor: float
     job_id: str
+    thumbnail_path: str
 
 
 # Service States

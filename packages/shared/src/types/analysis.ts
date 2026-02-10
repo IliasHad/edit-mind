@@ -39,6 +39,7 @@ export interface FrameAnalysis {
     is_muted: boolean
   }
   description: string
+  thumbnail_path:string
 }
 
 export interface DetectedText {
