@@ -8,7 +8,7 @@ services:
       args:
         NODE_VERSION: 22.20.0
         PNPM_VERSION: 10.20.0
-        CUDA_VERSION: 12.1.1
+        CUDA_VERSION: 12.8.0
         TARGET_BASE: base-gpu
     image: edit-mind-background-jobs:latest-gpu
     container_name: edit-mind-background-jobs
@@ -128,7 +128,7 @@ services:
       dockerfile: docker/Dockerfile.ml
       args:
         PYTHON_VERSION: 3.11
-        CUDA_VERSION: 12.1.1
+        CUDA_VERSION: 12.8.0
         TARGET_BASE: base-gpu
     image: edit-mind-ml:latest-gpu
     container_name: edit-mind-ml

@@ -139,9 +139,9 @@ export const createScenes = async (
     metadata?.displayAspectRatio ||
     (metadata?.width && metadata?.height
       ? (() => {
-          const divisor = gcd(metadata.width, metadata.height)
-          return `${metadata.width / divisor}:${metadata.height / divisor}`
-        })()
+        const divisor = gcd(metadata.width, metadata.height)
+        return `${metadata.width / divisor}:${metadata.height / divisor}`
+      })()
       : 'Unknown')
 
   let initialCamera = camera
@@ -162,8 +162,8 @@ export const createScenes = async (
 
   const locationName = await getLocationName(location)
 
-  // If the video duration is less than 5 minutes, use batch thumbnail generation
-  const CHUNK_DURATION = 5 * 60 // 5 minutes
+  // If the video duration is less than 3 minutes, use batch thumbnail generation
+  const CHUNK_DURATION = 3 * 60 // 3 minutes
 
   let frameChunks: FrameAnalysis[][] = []
 
@@ -174,7 +174,8 @@ export const createScenes = async (
   }
 
   // Generate thumbnails per chunk
-  for (const chunk of frameChunks) {
+  for (let i = 0; i < frameChunks.length; i++) {
+    const chunk = frameChunks[i]
     const requests: ThumbnailRequest[] = chunk.map((frame) => {
       const startTime = frame.start_time_ms / 1000
       const endTime = frame.end_time_ms / 1000
@@ -183,8 +184,15 @@ export const createScenes = async (
       return { startTime, outputPath: thumbnailPath, endTime }
     })
 
+    const chunkStart = Date.now()
     await generateBatchThumbnails(videoPath, requests)
+    const chunkEnd = Date.now()
+    logger.info(
+      `[Thumbnail Generation Completed] Video: ${videoPath} | Chunk ${i + 1}/${frameChunks.length
+      } | Duration: ${(chunkEnd - chunkStart) / 1000}s`
+    )
   }
+
 
   for (const frame of analysis.frame_analysis) {
     const startTime = frame.start_time_ms / 1000

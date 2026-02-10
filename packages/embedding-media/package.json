@@ -19,9 +19,9 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "shared": "workspace:*",
+    "embedding-core": "workspace:*",
     "media-utils": "workspace:*",
-    "vector": "workspace:*",
-    "embedding-core": "workspace:*"
+    "shared": "workspace:*",
+    "vector": "workspace:*"
   }
 }
