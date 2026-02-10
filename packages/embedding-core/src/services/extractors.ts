@@ -79,7 +79,7 @@ async function getTextToAudioExtractor() {
 
     const tokenizer = await AutoTokenizer.from_pretrained(AUDIO_EMBEDDING_MODEL)
     const model = await ClapTextModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "auto",
+      device: USE_GPU ? "cuda" : "cpu",
     })
     textToAudioModelCache = { tokenizer, model }
   }
