@@ -118,7 +118,7 @@ HOST_MEDIA_PATH="/Users/yourusername/Videos"
 
 # 2. CHOOSE AI MODEL (Pick one option)
 # Option A: Use Ollama (more private, requires model download)
-USE_OLLAMA_MODEL="TRUE"
+USE_OLLAMA_MODEL="true"
 OLLAMA_HOST="http://host.docker.internal"
 OLLAMA_PORT="11434"
 OLLAMA_MODEL="qwen2.5:7b-instruct"
