@@ -53,8 +53,7 @@ export async function getAudioExtractor() {
   if (!audioModelCache) {
     const processor = await AutoProcessor.from_pretrained(AUDIO_EMBEDDING_MODEL)
     const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "auto",
-      dtype: "fp16"
+      device: USE_GPU ? "cuda" : "auto"
     })
 
     audioModelCache = { processor, model }
@@ -81,7 +80,6 @@ async function getTextToAudioExtractor() {
     const tokenizer = await AutoTokenizer.from_pretrained(AUDIO_EMBEDDING_MODEL)
     const model = await ClapTextModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
       device: USE_GPU ? "cuda" : "auto",
-      dtype: "fp16"
     })
     textToAudioModelCache = { tokenizer, model }
   }
