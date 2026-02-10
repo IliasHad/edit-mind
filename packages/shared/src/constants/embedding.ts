@@ -3,7 +3,7 @@ export const VISUAL_BATCH_SIZE = 10
 export const AUDIO_BATCH_SIZE = 10
 
 export const MODEL_CACHE_DIR = process.env.XENOVA_MODEL_CACHE_DIR || '/ml-models/embedding';
-export const AUDIO_EMBEDDING_MODEL = 'Xenova/clap-htsat-unfused';
+export const AUDIO_EMBEDDING_MODEL = 'laion/clap-htsat-unfused';
 export const VISUAL_EMBEDDING_MODEL = 'Xenova/clip-vit-base-patch32';
 export const TEXT_EMBEDDING_MODEL = 'Xenova/all-mpnet-base-v2';
 
