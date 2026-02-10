@@ -252,16 +252,6 @@ jobs:
               NODE_VERSION=22.20.0
               PNPM_VERSION=10.20.0
 
-          - name: background-jobs
-            dockerfile: docker/Dockerfile.background-jobs
-            context: .
-            target: production
-            tag: latest-gpu
-            args: |
-              NODE_VERSION=22.20.0
-              PNPM_VERSION=10.20.0
-              CUDA_VERSION=12.8.0
-              TARGET_BASE=base-gpu
 
           - name: ml
             dockerfile: docker/Dockerfile.ml
