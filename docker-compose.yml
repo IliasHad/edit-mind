@@ -22,6 +22,7 @@ services:
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
       - .data:/app/data
+      - ml-models:/app/ml-models:rw
   web:
     restart: unless-stopped
     image: ghcr.io/iliashad/edit-mind-web:latest

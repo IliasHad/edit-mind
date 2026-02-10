@@ -10,14 +10,24 @@ import {
 } from '@shared/constants/embedding'
 import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@huggingface/transformers'
 import { AutoProcessor, AutoTokenizer, ClapAudioModelWithProjection, ClapTextModelWithProjection, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, env, pipeline, RawImage } from '@huggingface/transformers'
-import { existsSync, mkdirSync } from 'node:fs'
+import { accessSync, existsSync, mkdirSync, constants } from 'node:fs'
 import { USE_GPU } from '@shared/constants/gpu'
 
 // Set the cache directory for Xenova Transformers models
-env.cacheDir = MODEL_CACHE_DIR
-if (!existsSync(MODEL_CACHE_DIR)) {
-  mkdirSync(MODEL_CACHE_DIR, { recursive: true })
+try {
+  if (!existsSync(MODEL_CACHE_DIR)) {
+    logger.info(`Directory does not exist, creating: ${MODEL_CACHE_DIR}`)
+    mkdirSync(MODEL_CACHE_DIR, { recursive: true })
+  }
+  // Test write permissions
+  accessSync(MODEL_CACHE_DIR, constants.W_OK)
+
+} catch (error) {
+  logger.error({ error, }, ' Failed to setup cache directory',)
+  throw error
 }
+
+env.cacheDir = MODEL_CACHE_DIR
 
 let textModelCache: { embed: FeatureExtractionPipeline } | null = null
 

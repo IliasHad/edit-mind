@@ -22,6 +22,7 @@ services:
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
       - .data:/app/data
+      - ml-models:/app/ml-models:rw
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
