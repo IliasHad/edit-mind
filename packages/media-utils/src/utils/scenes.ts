@@ -164,6 +164,7 @@ export const createScenes = async (
 
   // If the video duration is less than 3 minutes, use batch thumbnail generation
   const CHUNK_DURATION = 3 * 60 // 3 minutes
+  const thumbnailStart = Date.now()
 
   let frameChunks: FrameAnalysis[][] = []
 
@@ -184,15 +185,14 @@ export const createScenes = async (
       return { startTime, outputPath: thumbnailPath, endTime }
     })
 
-    const chunkStart = Date.now()
     await generateBatchThumbnails(videoPath, requests)
-    const chunkEnd = Date.now()
-    logger.info(
-      `[Thumbnail Generation Completed] Video: ${videoPath} | Chunk ${i + 1}/${frameChunks.length
-      } | Duration: ${(chunkEnd - chunkStart) / 1000}s`
-    )
+
   }
 
+  const thumbnailEnd = Date.now()
+  logger.info(
+    `Thumbnail generation completed in : ${(thumbnailEnd - thumbnailStart) / 1000}s`
+  )
 
   for (const frame of analysis.frame_analysis) {
     const startTime = frame.start_time_ms / 1000
