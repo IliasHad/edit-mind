@@ -10,8 +10,12 @@ from services.base_service import BaseProcessingService
 from services.analysis.processor import FrameProcessor
 from services.analysis.plugins import PluginManager
 from services.analysis.result import VideoAnalysisResult, ResultBuilder
-from monitoring.metrics import PluginMetricsCollector, PerformanceMetrics, StageTimer
+from monitoring.metrics import PerformanceMetrics, StageTimer
 from services.logger import get_logger
+import os
+import numpy as np
+import cv2
+import hashlib
 
 logger = get_logger(__name__)
 
@@ -152,16 +156,20 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
     def _process_batch(self, batch: List, video_path: str) -> List[FrameAnalysis]:
         """Process a batch of frames through plugins."""
         results: List[FrameAnalysis] = []
+        video_hash = hashlib.md5(video_path.encode('utf-8')).hexdigest()
 
         for frame_data in batch:
             # Initialize frame analysis
+            frame_idx = frame_data['frame_idx']
+            thumbnail_path = os.path.join(self.config.thumbnail_dir, f"${video_hash}_{frame_idx}.png")
             analysis: FrameAnalysis = {
                 'start_time_ms': frame_data['timestamp_ms'],
                 'end_time_ms': frame_data['end_timestamp_ms'],
                 'duration_ms': frame_data['end_timestamp_ms'] - frame_data['timestamp_ms'],
                 'frame_idx': frame_data['frame_idx'],
                 'scale_factor': frame_data['scale_factor'],
-                'job_id': frame_data['job_id']
+                'job_id': frame_data['job_id'],
+                'thumbnail_path': thumbnail_path
             }
 
             # Run plugins
@@ -171,6 +179,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 frame_data['frame_idx'],
                 video_path
             )
+            self.save_frame(thumbnail_path, frame_data['frame'])
 
             results.append(analysis)
 
@@ -254,3 +263,25 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         except Exception as e:
             logger.error(f"Failed to save results: {e}")
             raise AnalysisError(f"Failed to save results: {e}")
+        
+    def save_frame(self, thumbnail_path: str, frame: np.ndarray) -> None:
+        """Save frame resized as scene thumbnail """
+        try:
+            os.makedirs(self.config.thumbnail_dir, exist_ok=True)
+
+            h, w = frame.shape[:2]
+            target_width = 320
+            scale = target_width / w
+            target_height = int(h * scale)
+
+            resized_frame = cv2.resize(
+                frame,
+                (target_width, target_height),
+                interpolation=cv2.INTER_AREA
+            )
+
+            cv2.imwrite(thumbnail_path, resized_frame)
+
+        except Exception as e:
+            logger.error(f"Failed to save frame: {e}")
+            raise AnalysisError(f"Failed to save frame: {e}")
