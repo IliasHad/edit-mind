@@ -30,6 +30,7 @@ export class JobModel {
       data: {
         ...data,
         frameAnalysisPlugins: data.frameAnalysisPlugins ?? undefined,
+        frameAnalysisStages: data.frameAnalysisStages ?? undefined
       },
     })
     return job

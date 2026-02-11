@@ -1,4 +1,4 @@
-import { Analysis, DetectedObject, Face } from '@shared/types/analysis';
+import { Analysis, DetectedObject, Face, PerformanceMetric } from '@shared/types/analysis';
 import { Scene } from '@shared/types/scene'
 import { Transcription } from '@shared/types/transcription'
 import { createHash } from 'crypto'

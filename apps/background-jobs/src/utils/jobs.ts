@@ -1,6 +1,7 @@
 import { VideoProcessingData } from '@shared/types/video'
 import { logger } from '@shared/services/logger'
 import { videoProcessingQueues } from '@background-jobs/queue'
+import { Queue } from 'bullmq'
 
 const JOB_STATUSES = ['waiting', 'delayed', 'active', 'failed'] as const
 
@@ -25,6 +26,21 @@ export async function deleteJobsByDataJobId(targetJobId: string) {
   return deletedCount
 }
 
+export async function safeRemoveJob(queue: Queue, jobId: string) {
+  const job = await queue.getJob(jobId)
+  if (!job) return false
+
+  try {
+    await job.remove()
+    logger.info(`Removed job ${job.id} from queue "${queue.name}"`)
+    return true
+  } catch (error) {
+    logger.error({ error, jobId: job.id }, 'Failed to remove job from queue')
+    return false
+  }
+}
+
+
 export async function removeFailedJobs(failedJobsIds: string[]) {
   try {
     for (const queue of videoProcessingQueues) {
@@ -32,12 +48,8 @@ export async function removeFailedJobs(failedJobsIds: string[]) {
 
       for await (const job of jobs) {
         const data = job.data as VideoProcessingData
-        if (failedJobsIds.includes(data.jobId)) {
-          try {
-            await job.remove()
-          } catch (error) {
-            logger.error({ error, jobId: job.id }, 'Failed to remove job from queue')
-          }
+        if (failedJobsIds.includes(data.jobId) && job.id) {
+          await safeRemoveJob(queue, job.id)
         }
       }
     }

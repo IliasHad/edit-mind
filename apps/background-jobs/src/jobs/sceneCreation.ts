@@ -68,6 +68,11 @@ async function processVideo(job: Job<VideoProcessingData>) {
           duration: plugin.total_duration_seconds,
           frameProcessed: plugin.frames_processed,
         })),
+        frameAnalysisStages: analysisData.stage_metrics.map(metric => ({
+          name: metric.stage_name,
+          duration: metric.total_duration_seconds,
+          frameProcessed: metric.frames_processed,
+        }))
       })
     }
     await updateJob(job, { stage: JobStage.creating_scenes, overallProgress: 70 })

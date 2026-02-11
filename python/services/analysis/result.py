@@ -15,6 +15,7 @@ class VideoAnalysisResult:
     summary: Dict[str, Any]
     performance_metrics: Optional[List[Dict]] = None
     plugin_performance: Optional[List[Dict]] = None
+    stage_metrics: Optional[List[Dict]] = None
     error: Optional[str] = None
     
     def to_dict(self) -> Dict:
@@ -50,7 +51,8 @@ class ResultBuilder:
         plugin_metrics: List[Dict],
         performance_metrics: List,
         memory_stats: Dict,
-        processing_time: float
+        processing_time: float,
+        stage_metrics: List[Dict],
     ) -> VideoAnalysisResult:
         """Build a successful analysis result."""
         return VideoAnalysisResult(
@@ -64,7 +66,8 @@ class ResultBuilder:
                 "processing_time": processing_time
             },
             performance_metrics=[asdict(m) for m in performance_metrics],
-            plugin_performance=plugin_metrics
+            plugin_performance=plugin_metrics,
+            stage_metrics=stage_metrics
         )
     
     @staticmethod

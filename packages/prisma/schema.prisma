@@ -115,6 +115,7 @@ model Job {
   visualEmbeddingTime Int?
 
   frameAnalysisPlugins Json?
+  frameAnalysisStages Json?
 }
 
 enum Sender {

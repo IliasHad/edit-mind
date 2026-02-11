@@ -25,6 +25,7 @@ export async function updateJob(
     audioEmbeddingTime?: number
     visualEmbeddingTime?: number
     frameAnalysisPlugins?: Record<string, string | number>[]
+    frameAnalysisStages?: Record<string, string | number>[]
     folderId?: string
   }>
 ) {
@@ -51,6 +52,9 @@ export async function updateJob(
     if (data.visualEmbeddingTime) updateData.visualEmbeddingTime = data.visualEmbeddingTime
     if (data.frameAnalysisPlugins) {
       updateData.frameAnalysisPlugins = data.frameAnalysisPlugins
+    }
+    if (data.frameAnalysisStages) {
+      updateData.frameAnalysisStages = data.frameAnalysisStages
     }
 
     if (Object.keys(updateData).length === 1) return

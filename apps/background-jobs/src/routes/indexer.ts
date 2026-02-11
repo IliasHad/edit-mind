@@ -72,13 +72,6 @@ router.post('/retry', async (req, res) => {
     })
     await removeFailedJobs(failedJobs.map((job) => job.id))
 
-    await JobModel.deleteMany({
-      where: {
-        status: 'error',
-        userId,
-      },
-    })
-
     for (const job of failedJobs) {
       const newJob = await JobModel.create({
         videoPath: job.videoPath,
@@ -88,10 +81,16 @@ router.post('/retry', async (req, res) => {
       })
       await addVideoIndexingJob({
         jobId: newJob.id,
-        videoPath: job.videoPath,
+        videoPath: job.videoPath
       })
     }
 
+    await JobModel.deleteMany({
+      where: {
+        status: 'error',
+        userId,
+      },
+    })
     res.json({
       message: 'All video indexing failed jobs has been triggered',
     })
