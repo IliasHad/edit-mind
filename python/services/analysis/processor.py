@@ -6,6 +6,7 @@ import numpy as np
 from core.config import AnalysisConfig
 from core.errors import AnalysisError
 from services.logger import get_logger
+import time
 
 logger = get_logger(__name__)
 
@@ -15,7 +16,15 @@ class FrameProcessor:
 
     def __init__(self, config: AnalysisConfig):
         self.config = config
-
+        self.metrics = {
+            "video_open_time": 0.0,
+            "metadata_read_time": 0.0,
+            "frame_decode_time": 0.0,
+            "preprocess_time": 0.0,
+            "total_extraction_time": 0.0,
+            "frames_extracted": 0
+        }
+    
     def extract_frames_streaming(
         self,
         video_path: str,
@@ -26,7 +35,11 @@ class FrameProcessor:
 
         Yields frame data dictionaries with processed frames.
         """
+        start_total = time.time()
+        
+        start_open = time.time()
         cap = cv2.VideoCapture(video_path)
+        self.metrics["video_open_time"] += time.time() - start_open
 
         try:
             if not cap.isOpened():
@@ -37,8 +50,11 @@ class FrameProcessor:
             if fps is None or fps <= 0:
                 logger.warning("Invalid FPS, defaulting to 30")
                 fps = 30.0
-
+                
+            start_meta = time.time()
             total_video_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            self.metrics["metadata_read_time"] += time.time() - start_meta
+            
             if total_video_frames <= 0:
                 raise AnalysisError("Cannot determine frame count")
 
@@ -72,15 +88,19 @@ class FrameProcessor:
             # Extract frames at intervals
             for frame_idx in range(0, total_video_frames, sample_interval):
                 cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                start_decode = time.time()
                 ret, frame = cap.read()
+                self.metrics["frame_decode_time"] += time.time() - start_decode
 
                 if not ret:
                     logger.warning(f"Failed to read frame at {frame_idx}")
                     break
 
                 # Preprocess frame
+                start_pre = time.time()
                 processed_frame, scale_factor, original_size = self._preprocess_frame(
                     frame)
+                self.metrics["preprocess_time"] += time.time() - start_pre
 
                 # Calculate timestamps
                 timestamp_ms = round((frame_idx / fps) * 1000)
@@ -89,7 +109,6 @@ class FrameProcessor:
                 end_timestamp_ms = round((next_frame_idx / fps) * 1000)
 
                 frame_count += 1
-
                 yield {
                     'frame': processed_frame,
                     'timestamp_ms': timestamp_ms,
@@ -109,7 +128,9 @@ class FrameProcessor:
                 del frame
 
             logger.info(f"Extraction complete: {frame_count} frames extracted")
-
+            self.metrics["frames_extracted"] = frame_count
+            self.metrics["total_extraction_time"] = time.time() - start_total
+            logger.info(f"Total extraction time: {self.metrics['total_extraction_time']:.2f}s")
         except Exception as e:
             logger.error(f"Frame extraction error: {e}")
             raise AnalysisError(f"Frame extraction failed: {e}")
@@ -147,3 +168,7 @@ class FrameProcessor:
             return resized, scale_factor, (original_w, original_h)
 
         return frame.copy(), 1.0, (original_w, original_h)
+    
+    def get_metrics(self) -> Dict[str, float]:
+        """Return extraction performance metrics."""
+        return self.metrics.copy()

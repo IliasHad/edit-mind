@@ -81,7 +81,7 @@ router.post('/retry', async (req, res) => {
       })
       await addVideoIndexingJob({
         jobId: newJob.id,
-        videoPath: job.videoPath,
+        videoPath: job.videoPath
       })
     }
 

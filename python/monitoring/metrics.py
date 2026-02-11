@@ -140,3 +140,63 @@ class StageTimer:
     def __exit__(self, *args) -> None:
         self.end_time = time.time()
         self.duration = self.end_time - self.start_time
+        
+@dataclass
+class StageMetrics:
+    """Stage-specific performance metrics."""
+    stage_name: str
+    total_duration_seconds: float = 0.0
+    frames_processed: int = 0
+    avg_time_per_frame_ms: float = 0.0
+    min_time_ms: float = float('inf')
+    max_time_ms: float = 0.0
+    timeout_count: int = 0
+    error_count: int = 0
+    
+    def to_dict(self) -> Dict[str, Union[str, int, float]]:
+        """Convert to dictionary."""
+        return asdict(self)
+
+
+class StageMetricsCollector:
+    """Collects and aggregates stage metrics."""
+    
+    def __init__(self):
+        self._timings: Dict[str, List[float]] = defaultdict(list)
+        self._errors: Dict[str, int] = defaultdict(int)
+        self._timeouts: Dict[str, int] = defaultdict(int)
+    
+    def record_execution(self, stage_name: str, duration_s: float) -> None:
+        """Record a stage execution time."""
+        self._timings[stage_name].append(duration_s)
+    
+    def record_error(self, stage_name: str) -> None:
+        """Record a stage error."""
+        self._errors[stage_name] += 1
+    
+    def record_timeout(self, stage_name: str) -> None:
+        """Record a stage timeout."""
+        self._timeouts[stage_name] += 1
+    
+    def get_metrics(self) -> List[PluginMetrics]:
+        """Get aggregated metrics for all stages."""
+        metrics = []
+        
+        for stage_name, timings in self._timings.items():
+            if not timings:
+                continue
+            
+            metrics.append(StageMetrics(
+                stage_name=stage_name,
+                total_duration_seconds=sum(timings),
+                frames_processed=len(timings),
+                avg_time_per_frame_ms=sum(timings) / len(timings),
+                min_time_ms=min(timings),
+                max_time_ms=max(timings),
+                timeout_count=self._timeouts.get(stage_name, 0),
+                error_count=self._errors.get(stage_name, 0)
+            ))
+        
+        # Sort by total duration (highest first)
+        metrics.sort(key=lambda x: x.total_duration_seconds, reverse=True)
+        return metrics

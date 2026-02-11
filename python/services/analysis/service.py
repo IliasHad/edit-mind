@@ -10,7 +10,7 @@ from services.base_service import BaseProcessingService
 from services.analysis.processor import FrameProcessor
 from services.analysis.plugins import PluginManager
 from services.analysis.result import VideoAnalysisResult, ResultBuilder
-from monitoring.metrics import PerformanceMetrics, StageTimer
+from monitoring.metrics import PerformanceMetrics, StageTimer, StageMetricsCollector
 from services.logger import get_logger
 import os
 import numpy as np
@@ -34,7 +34,15 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         self.frame_processor = FrameProcessor(self.config)
         self.plugin_manager = PluginManager(self.config)
         self.performance_metrics: List[PerformanceMetrics] = []
+        self.metrics_collector = StageMetricsCollector()
 
+        extraction_metrics = self.frame_processor.get_metrics()
+
+        self.metrics_collector.record_execution(
+            "frame_extraction",
+            extraction_metrics["total_extraction_time"]
+        )
+    
     def _process_sync(
         self,
         request: AnalysisRequest,
@@ -49,13 +57,14 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 self.plugin_manager.setup_plugins(
                     request.video_path, request.job_id)
             self._record_stage_metric(timer)
+            self.metrics_collector.record_execution("plugin_setup", time.time() - start_time)
 
             # Analyze frames
             frame_analyses = self._analyze_frames(
                 request,
                 progress_callback
             )
-
+            self.metrics_collector.record_execution("frame_analysis", time.time() - start_time)
             # Build result
             result = ResultBuilder.build_success_result(
                 video_path=request.video_path,
@@ -63,11 +72,13 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 plugin_metrics=self.plugin_manager.get_metrics(),
                 performance_metrics=self.performance_metrics,
                 memory_stats=self.memory_monitor.get_stats() if self.memory_monitor else {},
-                processing_time=time.time() - start_time
+                processing_time=time.time() - start_time,
+                stage_metrics=self.metrics_collector.get_metrics()
             )
             
             # Rest plugin metrics after each video has been processed
             self.plugin_manager.reset_metrics()
+            self.metrics_collector = StageMetricsCollector()
 
             return result
 
@@ -91,7 +102,8 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         # Track progress
         total_frames_estimate = None
         frames_processed = 0
-
+        thumbnail_total_time = 0
+        
         with StageTimer("frame_analysis") as timer:
             frame_generator = self.frame_processor.extract_frames_streaming(
                 request.video_path,
@@ -179,7 +191,9 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 frame_data['frame_idx'],
                 video_path
             )
+            start_thumb = time.time()
             self.save_frame(thumbnail_path, frame_data['frame'])
+            self.metrics_collector.record_execution("thumbnail_extraction", time.time() - start_thumb)
 
             results.append(analysis)
 
@@ -254,7 +268,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         try:
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
-
+            
             import json
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(result.to_dict(), f, indent=2, ensure_ascii=False)

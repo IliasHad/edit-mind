@@ -98,8 +98,29 @@ export interface Analysis {
   frame_analysis: FrameAnalysis[]
   summary: AnalysisSummary
   plugin_performance: PluginAnalysisSummary[]
+  performance_metrics: PerformanceMetric[]
+  stage_metrics: StageAnalysisSummary[]
 }
 
+export interface PerformanceMetric {
+  stage: string;
+  duration_seconds: number;
+  frames_processed: number;
+  fps: number;
+  memory_mb: number;
+  peak_memory_mb: number;
+}
+
+export interface StageAnalysisSummary {
+  stage_name: string
+  total_duration_seconds: number
+  frames_processed: number
+  avg_time_per_frame_ms: number
+  min_time_ms: number
+  max_time_ms: number
+  timeout_count: number
+  error_count: number
+}
 export interface AnalysisProgress {
   plugin: string
   progress: number
@@ -114,6 +135,11 @@ export interface FrameAnalysisPluginAnalysis {
   name: string
   duration: number
   frameProcessed: number
+}
+export interface FrameAnalysisStageAnalysis {
+  name: string
+  duration: number
+  framesProcessed: number
 }
 
 interface Appearance {

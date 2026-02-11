@@ -1,6 +1,6 @@
 import type { Job } from '@prisma/client'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
-import { type FrameAnalysisPluginAnalysis } from '@shared/types/analysis'
+import { type FrameAnalysisPluginAnalysis, type FrameAnalysisStageAnalysis } from '@shared/types/analysis'
 
 interface ProcessingJobDetailsProps {
   job: Job
@@ -16,10 +16,15 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
     { label: 'Visual Embedding', value: job.visualEmbeddingTime },
   ]
 
-  if (job && job.frameAnalysisPlugins) {
-    const frameAnalysisPlugins = JSON.parse(
-      JSON.stringify(job.frameAnalysisPlugins ?? [])
-    ) as FrameAnalysisPluginAnalysis[]
+  if (job) {
+    const frameAnalysisPlugins = job.frameAnalysisPlugins
+      ? (JSON.parse(JSON.stringify(job.frameAnalysisPlugins)) as FrameAnalysisPluginAnalysis[])
+      : []
+
+    const frameAnalysisStages = job.frameAnalysisStages
+      ? (JSON.parse(JSON.stringify(job.frameAnalysisStages || "[]")) as FrameAnalysisStageAnalysis[])
+      : []
+
 
     return (
       <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black overflow-hidden">
@@ -43,8 +48,7 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
               ))}
             </div>
           </div>
-
-          {frameAnalysisPlugins && (
+          {frameAnalysisPlugins.length > 0 && (
             <div>
               <h4 className="text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider mb-6">
                 Video Frame Analysis Plugins
@@ -67,6 +71,33 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
                       </div>
                       <div className="text-base font-semibold text-black dark:text-white tabular-nums">
                         {humanizeSeconds(plugin.duration)}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+          {frameAnalysisStages.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider mb-6">
+                Video Frame Analysis Stages
+              </h4>
+              <div className="space-y-1">
+                {frameAnalysisStages
+                  .filter((stage) => stage.duration > 0)
+                  .sort((a, b) => b.duration - a.duration)
+                  .map((stage) => (
+                    <div
+                      key={stage.name}
+                      className="flex items-center justify-between py-4 border-b border-black/5 dark:border-white/5 last:border-0"
+                    >
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-black dark:text-white mb-1">
+                          {stage.name.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </div>
+                      </div>
+                      <div className="text-base font-semibold text-black dark:text-white tabular-nums">
+                        {stage.duration <= 0.1 ? "≈1s" : humanizeSeconds(stage.duration)}
                       </div>
                     </div>
                   ))}
