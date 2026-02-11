@@ -2,6 +2,8 @@
 from typing import Iterator, Tuple, Dict, Union
 import cv2
 import numpy as np
+import av
+import time
 
 from core.config import AnalysisConfig
 from core.errors import AnalysisError
@@ -24,7 +26,36 @@ class FrameProcessor:
             "total_extraction_time": 0.0,
             "frames_extracted": 0
         }
-    
+
+    def _open_container(self, video_path: str):
+        """Try CUDA first, fallback to CPU."""
+        start_open = time.time()
+        
+        if self.config.device == "cuda":
+            try:
+                container = av.open(
+                    video_path,
+                    options={
+                        "hwaccel": "cuda",
+                        "hwaccel_output_format": "cuda"
+                    }
+                )
+                self.metrics["video_open_time"] += time.time() - start_open
+                logger.info("Using CUDA hardware acceleration (NVDEC)")
+                return container
+
+            except Exception:
+                logger.warning("CUDA not available, falling back to CPU decoding")
+                container = av.open(video_path)
+                self.metrics["video_open_time"] += time.time() - start_open
+                return container
+        else:
+            container = av.open(
+                video_path
+            )
+            self.metrics["video_open_time"] += time.time() - start_open
+            return container
+            
     def extract_frames_streaming(
         self,
         video_path: str,
@@ -36,25 +67,17 @@ class FrameProcessor:
         Yields frame data dictionaries with processed frames.
         """
         start_total = time.time()
-        
-        start_open = time.time()
-        cap = cv2.VideoCapture(video_path)
-        self.metrics["video_open_time"] += time.time() - start_open
 
         try:
-            if not cap.isOpened():
-                raise AnalysisError(f"Cannot open video: {video_path}")
+            container = self._open_container(video_path)
 
-            # Get video properties
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            if fps is None or fps <= 0:
-                logger.warning("Invalid FPS, defaulting to 30")
-                fps = 30.0
-                
-            start_meta = time.time()
-            total_video_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            self.metrics["metadata_read_time"] += time.time() - start_meta
-            
+            stream = container.streams.video[0]
+            stream.thread_type = "AUTO" 
+
+
+            fps = float(stream.average_rate) if stream.average_rate else 30.0
+            total_video_frames = stream.frames
+
             if total_video_frames <= 0:
                 raise AnalysisError("Cannot determine frame count")
 
@@ -71,44 +94,53 @@ class FrameProcessor:
                 sample_interval = max(
                     1, int(fps * self.config.sample_interval_seconds))
 
-            # TODO: make the sample internal short for very short videos to process more video frames
 
             # Calculate actual number of frames that will be sampled
             total_sampled_frames = (
                 total_video_frames + sample_interval - 1) // sample_interval
+            
+            actual_seconds = sample_interval / fps
 
             logger.info(
                 f"Video info: {total_video_frames} total frames, "
-                f"sampling every {sample_interval} frames ({fps * self.config.sample_interval_seconds:.1f}s), "
+                f"sampling every {sample_interval} frames (~{actual_seconds:.2f}s), "
                 f"will process ~{total_sampled_frames} frames"
             )
+            
 
-            frame_count = 0
+            frame_idx = 0
+            sampled_frame_number = 0
+            next_sample_time = 0.0  # seconds
+            sample_interval_sec = sample_interval / fps
 
-            # Extract frames at intervals
-            for frame_idx in range(0, total_video_frames, sample_interval):
-                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+           # Extract frames at intervals
+            for frame in container.decode(stream):
                 start_decode = time.time()
-                ret, frame = cap.read()
-                self.metrics["frame_decode_time"] += time.time() - start_decode
+                timestamp_sec = float(frame.pts * frame.time_base)
+                
+                # Use small tolerance to handle floating-point comparison
+                if timestamp_sec < next_sample_time - 0.001:  # 1ms tolerance
+                    frame_idx += 1
+                    continue 
+                
+                img = frame.to_ndarray(format="bgr24")
+                
+                self.metrics["frame_decode_time"] += (
+                    time.time() - start_decode
+                )
 
-                if not ret:
-                    logger.warning(f"Failed to read frame at {frame_idx}")
-                    break
-
-                # Preprocess frame
                 start_pre = time.time()
-                processed_frame, scale_factor, original_size = self._preprocess_frame(
-                    frame)
-                self.metrics["preprocess_time"] += time.time() - start_pre
-
+                processed_frame, scale_factor, original_size = \
+                    self._preprocess_frame(img)
+                self.metrics["preprocess_time"] += (
+                    time.time() - start_pre
+                )
                 # Calculate timestamps
-                timestamp_ms = round((frame_idx / fps) * 1000)
-                next_frame_idx = min(
-                    frame_idx + sample_interval, total_video_frames)
-                end_timestamp_ms = round((next_frame_idx / fps) * 1000)
+                timestamp_ms = round(timestamp_sec * 1000) 
+                end_timestamp_ms = round((timestamp_sec + sample_interval_sec) * 1000)
 
-                frame_count += 1
+                sampled_frame_number += 1
+
                 yield {
                     'frame': processed_frame,
                     'timestamp_ms': timestamp_ms,
@@ -121,22 +153,22 @@ class FrameProcessor:
                     'total_video_frames': total_video_frames,
                     'fps': fps,
                     'sample_interval': sample_interval,
-                    'sampled_frame_number': frame_count
+                    'sampled_frame_number': sampled_frame_number
                 }
+                
+                next_sample_time += sample_interval_sec 
+                frame_idx += 1
 
-                # Cleanup
-                del frame
+            # Cleanup
+            container.close()
 
-            logger.info(f"Extraction complete: {frame_count} frames extracted")
-            self.metrics["frames_extracted"] = frame_count
+            logger.info(f"Extraction complete: {sampled_frame_number} frames extracted")
+            self.metrics["frames_extracted"] = sampled_frame_number
             self.metrics["total_extraction_time"] = time.time() - start_total
             logger.info(f"Total extraction time: {self.metrics['total_extraction_time']:.2f}s")
         except Exception as e:
             logger.error(f"Frame extraction error: {e}")
             raise AnalysisError(f"Frame extraction failed: {e}")
-        finally:
-            if cap is not None:
-                cap.release()
 
     def _preprocess_frame(
         self,
@@ -161,14 +193,13 @@ class FrameProcessor:
             resized = cv2.resize(
                 frame,
                 (target_w, target_h),
-                interpolation=cv2.INTER_LINEAR
+                interpolation=cv2.INTER_AREA
             )
 
             scale_factor = original_h / target_h
             return resized, scale_factor, (original_w, original_h)
 
-        return frame.copy(), 1.0, (original_w, original_h)
-    
+        return frame, 1.0, (original_w, original_h)
     def get_metrics(self) -> Dict[str, float]:
         """Return extraction performance metrics."""
         return self.metrics.copy()
