@@ -161,7 +161,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         for frame_data in batch:
             # Initialize frame analysis
             frame_idx = frame_data['frame_idx']
-            thumbnail_path = os.path.join(self.config.thumbnail_dir, f"${video_hash}_{frame_idx}.png")
+            thumbnail_path = os.path.join(self.config.thumbnail_dir, f"${video_hash}_{frame_idx}.jpeg")
             analysis: FrameAnalysis = {
                 'start_time_ms': frame_data['timestamp_ms'],
                 'end_time_ms': frame_data['end_timestamp_ms'],
@@ -280,7 +280,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 interpolation=cv2.INTER_AREA
             )
 
-            cv2.imwrite(thumbnail_path, resized_frame)
+            cv2.imwrite(thumbnail_path, resized_frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
 
         except Exception as e:
             logger.error(f"Failed to save frame: {e}")
