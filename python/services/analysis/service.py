@@ -35,13 +35,6 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         self.plugin_manager = PluginManager(self.config)
         self.performance_metrics: List[PerformanceMetrics] = []
         self.metrics_collector = StageMetricsCollector()
-
-        extraction_metrics = self.frame_processor.get_metrics()
-
-        self.metrics_collector.record_execution(
-            "frame_extraction",
-            extraction_metrics["total_extraction_time"]
-        )
     
     def _process_sync(
         self,
@@ -102,14 +95,18 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         # Track progress
         total_frames_estimate = None
         frames_processed = 0
-        thumbnail_total_time = 0
         
         with StageTimer("frame_analysis") as timer:
             frame_generator = self.frame_processor.extract_frames_streaming(
                 request.video_path,
                 request.job_id
             )
+            extraction_metrics = self.frame_processor.get_metrics()
 
+            self.metrics_collector.record_execution(
+                "frame_extraction",
+                extraction_metrics["total_extraction_time"]
+            )
             for frame_idx, frame_data in enumerate(frame_generator):
                 # Get total frames from first frame
                 if total_frames_estimate is None:
