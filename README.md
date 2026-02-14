@@ -129,13 +129,8 @@ OLLAMA_MODEL="qwen2.5:7b-instruct"
 # and pull the ollama model first 
 # ollama pull qwen2.5:7b-instruct
 
-# Option B: Use Local Model (more private, requires model download)
-# USE_LOCAL_MODEL="true"
-# SEARCH_AI_MODEL="/app/models/path/to/.gguf"
-# The AI model should be downloaded and saved it to models folder in the project root dir
-
-# Option C: Use Gemini API (requires API key)
-USE_LOCAL_MODEL="false"
+# Option B: Use Gemini API (requires API key)
+USE_GEMINI="true"
 GEMINI_API_KEY="your-gemini-api-key-from-google-ai-studio"
 
 # 3. GENERATE SECURITY KEYS (REQUIRED)
@@ -223,9 +218,6 @@ docker-compose -f docker-compose.dev.yml up --build
 *Watch the Edit Mind presentation at Twelve Labs (starts at 21:12)*
 
 ---
-<!--START_SECTION:buy-me-a-coffee-->
-<!--END_SECTION:buy-me-a-coffe-->
-
 ---
 ## License
 
