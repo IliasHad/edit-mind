@@ -3,17 +3,6 @@ import { YearStats } from '@shared/types/stats'
 import { VideoWithScenes } from '@shared/types/video'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const mockLocalModel = {
-  generateActionFromPrompt: vi.fn(),
-  generateAssistantMessage: vi.fn(),
-  generateCompilationResponse: vi.fn(),
-  generateGeneralResponse: vi.fn(),
-  classifyIntent: vi.fn(),
-  generateAnalyticsResponse: vi.fn(),
-  generateYearInReviewResponse: vi.fn(),
-  cleanUp: vi.fn(),
-}
-
 const mockGeminiModel = {
   generateActionFromPrompt: vi.fn(),
   generateAssistantMessage: vi.fn(),
@@ -40,10 +29,6 @@ const mockLogger = {
   error: vi.fn(),
 }
 
-vi.mock('@ai/services/localLlm', () => ({
-  LocalModel: mockLocalModel,
-}))
-
 vi.mock('@ai/services/gemini', () => ({
   GeminiModel: mockGeminiModel,
 }))
@@ -56,12 +41,10 @@ vi.mock('@ai/services/ollama', () => ({
 }))
 
 const mockConstants: Record<string, string | null | boolean | number> = {
-  USE_LOCAL: true,
-  SEARCH_AI_MODEL: '/path/to/local/model',
   GEMINI_API_KEY: null,
   GEMINI_MODEL_NAME: 'gemini-pro',
   USE_GEMINI: false,
-  OLLAMA_MODEL: null,
+  OLLAMA_MODEL: "qwen2.5:7b-instruct",
   USE_OLLAMA_MODEL: false,
 }
 
@@ -108,21 +91,7 @@ describe('Model Router', () => {
   })
 
   describe('Model Selection', () => {
-    it('should use LocalModel when USE_LOCAL and SEARCH_AI_MODEL are set', async () => {
-      mockConstants.USE_LOCAL = true
-      mockConstants.SEARCH_AI_MODEL = '/path/to/local/model'
-      mockConstants.GEMINI_API_KEY = null
-
-      vi.resetModules()
-      const modelRouter = await import('@ai/services/modelRouter')
-
-      await modelRouter.generateActionFromPrompt('test', dummyHistory)
-      expect(mockLocalModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
-    })
-
     it('should use GeminiModel when GEMINI_API_KEY and USE_GEMINI is set', async () => {
-      mockConstants.USE_LOCAL = false
-      mockConstants.SEARCH_AI_MODEL = null
       mockConstants.GEMINI_API_KEY = 'test-key'
       mockConstants.GEMINI_MODEL_NAME = 'gemini-pro'
       mockConstants.USE_GEMINI = true
@@ -135,11 +104,9 @@ describe('Model Router', () => {
     })
 
     it('should use Ollama when USE_OLLAMA_MODEL and OLLAMA_MODELis set', async () => {
-      mockConstants.USE_LOCAL = false
-      mockConstants.SEARCH_AI_MODEL = null
       mockConstants.GEMINI_API_KEY = null
       mockConstants.USE_GEMINI = false
-      mockConstants.OLLAMA_MODEL = 'qwen2.5:7b-instruct'
+      mockConstants.OLLAMA_MODEL = '/name/of/model'
       mockConstants.USE_OLLAMA_MODEL = true
 
       vi.resetModules()
@@ -152,7 +119,7 @@ describe('Model Router', () => {
   describe('Function Calls', () => {
     beforeEach(async () => {
       mockConstants.USE_OLLAMA_MODEL = true
-      mockConstants.OLLAMA_MODEL = '/path/to/local/model'
+      mockConstants.OLLAMA_MODEL = '/name/of/model'
       vi.resetModules()
     })
 
@@ -188,7 +155,44 @@ describe('Model Router', () => {
 
     it('should call generateAnalyticsResponse on the active model', async () => {
       const { generateAnalyticsResponse } = await import('@ai/services/modelRouter')
-      const analytics = { data: 'test' }
+      const analytics = {
+        totalDuration: 12847,
+        totalDurationFormatted: "3h 34m 7s",
+
+        uniqueVideos: 42,
+        totalScenes: 318,
+
+        dateRange: {
+          oldest: new Date("2024-01-12T10:15:00Z"),
+          newest: new Date("2024-03-28T18:42:00Z"),
+        },
+
+        emotionCounts: {
+          happy: 124,
+          neutral: 96,
+          surprised: 41,
+          sad: 22,
+          angry: 15,
+          fearful: 11,
+          disgusted: 9,
+        },
+
+        faceOccurrences: {
+          "John Doe": 87,
+          "Sarah Smith": 65
+        },
+
+        objectsOccurrences: {
+          "car": 58,
+          "laptop": 44,
+          "phone": 73,
+          "microphone": 29,
+          "bicycle": 17,
+          "dog": 12,
+        },
+
+        averageSceneDuration: 2.5,
+      }
       await generateAnalyticsResponse('test prompt', analytics, dummyHistory)
       expect(mockOllamaModel.generateAnalyticsResponse).toHaveBeenCalledWith('test prompt', analytics, dummyHistory)
     })

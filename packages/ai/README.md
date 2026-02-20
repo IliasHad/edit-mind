@@ -7,7 +7,6 @@ This package is a service for interacting with various AI models, providing a un
 This package has dependencies on the following AI models:
 
 - `@google/genai` for Google's generative AI models
-- `node-llama-cpp` for running LLaMA models locally
 - `ollama` for interacting with the Ollama service
 
 ## Features

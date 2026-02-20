@@ -1,8 +1,5 @@
 import 'dotenv/config'
 
-// Local AI model Settings with node-llam-cpp
-export const SEARCH_AI_MODEL = process.env.SEARCH_AI_MODEL
-export const USE_LOCAL = process.env.USE_LOCAL_MODEL === 'true'
 
 // Gemini Settings
 export const GEMINI_MODEL_NAME = 'gemini-2.5-pro'

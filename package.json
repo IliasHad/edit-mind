@@ -46,7 +46,6 @@
       "@prisma/engines",
       "esbuild",
       "msgpackr-extract",
-      "node-llama-cpp",
       "onnxruntime-node",
       "prisma",
       "protobufjs",
