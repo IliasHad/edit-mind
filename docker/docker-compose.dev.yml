@@ -1,5 +1,6 @@
 services:
   background-jobs:
+    restart: unless-stopped
     build:
       target: development
       context: ..
@@ -43,8 +44,9 @@ services:
       - ../packages/embedding-core:/app/packages/embedding-core
       - ../packages/embedding-media:/app/packages/embedding-media
       - ../packages/chat:/app/packages/chat
-      - ml-models-dev:/app/ml-models:rw
+      - ml-models-dev:/ml-models:rw
   ml:
+    restart: unless-stopped
     build:
       target: development
       context: ..
@@ -66,10 +68,11 @@ services:
       - app-network-dev
     volumes:
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
-      - ml-models-dev:/app/ml-models:rw
+      - ml-models-dev:/ml-models:rw
       - ../.data:/app/data
       - ../python:/app/python
   web:
+    restart: unless-stopped
     build:
       context: ..
       dockerfile: docker/Dockerfile.web
