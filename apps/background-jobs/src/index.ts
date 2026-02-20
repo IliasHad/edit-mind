@@ -120,7 +120,7 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 server.listen(env.BACKGROUND_JOBS_PORT, async () => {
   await prisma.$connect()
   await initializeWatchers()
-  await suggestionCache.refresh()
+  await suggestionCache.initialize()
 
   const collectionJobId = 'generate-smart-collections-cron'
 

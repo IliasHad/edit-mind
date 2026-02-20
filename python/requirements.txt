@@ -1,7 +1,7 @@
 # Core dependencies
 numpy>=1.24.0,<2.0.0
 tqdm>=4.66.0
-
+av>=16.1.0
 
 # Audio transcription
 faster-whisper>=1.2.1

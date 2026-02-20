@@ -27,6 +27,7 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
         )
 
         self.model_manager = WhisperModelManager(self.config)
+        self.model_manager.download_model()
 
     def _process_sync(
         self,

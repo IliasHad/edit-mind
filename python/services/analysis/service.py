@@ -107,6 +107,15 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 "frame_extraction",
                 extraction_metrics["total_extraction_time"]
             )
+            self.metrics_collector.record_execution(
+                "frame_decoding",
+                extraction_metrics["frame_decode_time"]
+            )
+            self.metrics_collector.record_execution(
+                "video_opening",
+                extraction_metrics["video_open_time"]
+            )
+            
             for frame_idx, frame_data in enumerate(frame_generator):
                 # Get total frames from first frame
                 if total_frames_estimate is None:

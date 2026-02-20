@@ -60,7 +60,7 @@ class WhisperModelManager:
                 # Download if needed
                 if not self._is_model_cached():
                     logger.info("Model not cached, downloading...")
-                    self._download_model()
+                    self.download_model()
 
                 # Load model
                 logger.info(f"Loading Whisper model: {self.config.model_name}")
@@ -107,7 +107,7 @@ class WhisperModelManager:
         except (OSError, FileNotFoundError):
             return False
 
-    def _download_model(self) -> None:
+    def download_model(self) -> None:
         """Download model from HuggingFace."""
         model_repo = self._get_model_repo()
 
