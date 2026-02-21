@@ -1,5 +1,7 @@
 # Edit Mind License
 
+This license applies to all versions of Edit Mind released after 21/02/2026. All prior versions remain under the MIT License as originally released.
+
 Copyright (c) 2025 Ilias Haddad
 
 Depending on the type of your legal entity, you are granted permission to use Edit Mind for your project. Individuals and small companies are allowed to use Edit Mind to process their videos for free (even commercial). This allows the source code to be available and the program to be free for most of the part. 
