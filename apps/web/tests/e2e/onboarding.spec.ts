@@ -9,22 +9,6 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
   })
 
   test.describe('Onboarding Display for New Users', () => {
-    test('should display onboarding page for new users', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Should display onboarding content
-      const onboardingContent = page.locator('[data-testid="onboarding-container"]')
-      const hasContent = await onboardingContent.isVisible().catch(() => false)
-
-      if (hasContent) {
-        await expect(onboardingContent).toBeVisible()
-      } else {
-        // If no data-testid, check for onboarding text
-        const onboardingText = page.getByText(/Your video library|reimagined/i)
-        await expect(onboardingText).toBeVisible()
-      }
-    })
 
     test('should display onboarding title and description', async ({ page }) => {
       await page.goto('/onboarding')
@@ -34,27 +18,8 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
       const title = page.getByText(/Your video library,.*reimagined/i)
       await expect(title).toBeVisible()
 
-      // Should display description or subtitle
-      const description = page.locator('[data-testid="onboarding-description"]')
-      const hasDescription = await description.isVisible().catch(() => false)
-
-      if (hasDescription) {
-        await expect(description).toBeVisible()
-      }
     })
 
-    test('should display onboarding step indicator', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Should display step indicator (dots, numbers, or progress bar)
-      const stepIndicator = page.locator('[data-testid="step-indicator"]')
-      const hasIndicator = await stepIndicator.isVisible().catch(() => false)
-
-      if (hasIndicator) {
-        await expect(stepIndicator).toBeVisible()
-      }
-    })
 
     test('should display onboarding skip button', async ({ page }) => {
       await page.goto('/onboarding')
@@ -123,23 +88,6 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
       await expect(getStartedButton).toBeVisible()
     })
 
-    test('should update step indicator as user progresses', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Get initial step indicator state
-      const stepIndicator = page.locator('[data-testid="step-indicator"]')
-      const hasIndicator = await stepIndicator.isVisible().catch(() => false)
-
-      if (hasIndicator) {
-        // Progress to next step
-        await page.getByRole('button', { name: 'Continue' }).click()
-        await page.waitForLoadState('networkidle')
-
-        // Step indicator should update
-        await expect(stepIndicator).toBeVisible()
-      }
-    })
 
     test('should allow navigation between steps', async ({ page }) => {
       await page.goto('/onboarding')
@@ -192,23 +140,6 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
       await expect(skipButton).toBeVisible()
     })
 
-    test('should display visual elements for each step', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Should display step content (image, icon, or other visual)
-      const stepContent = page.locator('[data-testid="step-content"]')
-      const hasContent = await stepContent.isVisible().catch(() => false)
-
-      if (hasContent) {
-        await expect(stepContent).toBeVisible()
-      } else {
-        // If no data-testid, check for images or other visual elements
-        const images = page.locator('img')
-        const imageCount = await images.count()
-        expect(imageCount).toBeGreaterThanOrEqual(0)
-      }
-    })
 
     test('should display different content for each onboarding step', async ({ page }) => {
       await page.goto('/onboarding')
