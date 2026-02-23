@@ -1,4 +1,3 @@
-import { IS_TESTING } from '@shared/constants'
 import { UserModel } from './models/User'
 
 async function main() {
@@ -16,6 +15,6 @@ async function main() {
   }
 }
 
-if (IS_TESTING) {
+if (process.env.NODE_ENV === 'testing') {
   main()
 }
