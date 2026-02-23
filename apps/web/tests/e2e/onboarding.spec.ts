@@ -239,7 +239,7 @@ test.describe('Onboarding Completion and Navigation', () => {
     })
   })
 
-  test('should navigate through onboarding and land on login', async ({ page }) => {
+  test('should navigate through onboarding and land on register', async ({ page }) => {
     await page.goto('/onboarding')
     await page.waitForLoadState('networkidle')
 
@@ -263,8 +263,8 @@ test.describe('Onboarding Completion and Navigation', () => {
     await page.getByRole('button', { name: 'Get Started' }).click()
     await page.waitForLoadState('networkidle')
 
-    // Should land on login page after onboarding
-    await expect(page).toHaveURL(/.*auth\/login/)
+    // Should land on register page after onboarding
+    await expect(page).toHaveURL(/.*auth\/register/)
     await expect(page.getByText('Welcome back')).toBeVisible()
   })
 
@@ -289,8 +289,8 @@ test.describe('Onboarding Completion and Navigation', () => {
     await finalButton.click()
     await page.waitForLoadState('networkidle')
 
-    // Should navigate to login or home page
-    await expect(page).toHaveURL(/.*auth\/login/)
+    // Should navigate to register or home page
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
   test('property: all onboarding steps are completable', async ({ page }) => {
     await page.goto('/onboarding')
@@ -327,7 +327,7 @@ test.describe('Onboarding Completion and Navigation', () => {
     expect(stepCount).toBeGreaterThan(0)
 
     // Should have navigated away from onboarding
-    await expect(page).toHaveURL(/.*auth\/login/)
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
 })
 
@@ -339,7 +339,7 @@ test.describe('Onboarding Skip and Completion', () => {
     })
   })
 
-  test('should skip onboarding and land on login', async ({ page }) => {
+  test('should skip onboarding and land on register', async ({ page }) => {
     await page.goto('/onboarding')
     await page.waitForLoadState('networkidle')
 
@@ -347,8 +347,8 @@ test.describe('Onboarding Skip and Completion', () => {
     await page.getByRole('button', { name: 'Skip' }).click()
     await page.waitForLoadState('networkidle')
 
-    // Should navigate to login page
-    await expect(page).toHaveURL(/.*auth\/login/)
+    // Should navigate to register page
+    await expect(page).toHaveURL(/.*auth\/register/)
     await expect(page.getByText('Welcome back')).toBeVisible()
   })
 
@@ -391,8 +391,8 @@ test.describe('Onboarding Skip and Completion', () => {
     await page.getByRole('button', { name: 'Get Started' }).click()
     await page.waitForLoadState('networkidle')
 
-    // Should navigate to login page (which leads to home after login)
-    await expect(page).toHaveURL(/.*auth\/login/)
+    // Should navigate to register page (which leads to home after register)
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
 
   test('property: skip onboarding skips all remaining steps', async ({ page }) => {
@@ -408,10 +408,10 @@ test.describe('Onboarding Skip and Completion', () => {
     await page.waitForLoadState('networkidle')
 
     // Should navigate away from onboarding
-    await expect(page).toHaveURL(/.*auth\/login/)
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
 
-  test('property: skip from any step navigates to login', async ({ page }) => {
+  test('property: skip from any step navigates to register', async ({ page }) => {
     await page.goto('/onboarding')
     await page.waitForLoadState('networkidle')
 
@@ -427,21 +427,21 @@ test.describe('Onboarding Skip and Completion', () => {
       await skipButton.click()
       await page.waitForLoadState('networkidle')
 
-      // Should navigate to login page
-      await expect(page).toHaveURL(/.*auth\/login/)
+      // Should navigate to register page
+      await expect(page).toHaveURL(/.*auth\/register/)
     }
   })
 })
 
 test.describe('Onboarding Completion State', () => {
-  test('should redirect to login if onboarding is already completed', async ({ page }) => {
+  test('should redirect to register if onboarding is already completed', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('onboarding_complete', 'true')
     })
 
     await page.goto('/onboarding')
 
-    await expect(page).toHaveURL(/.*auth\/login/)
+    await expect(page).toHaveURL(/.*auth\/register/)
     await expect(page.getByText('Welcome back')).toBeVisible()
   })
 

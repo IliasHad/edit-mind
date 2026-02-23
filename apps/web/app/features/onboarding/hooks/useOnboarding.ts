@@ -13,14 +13,14 @@ export function useOnboarding() {
     const storedStatus = localStorage.getItem('onboarding_complete')
     if (storedStatus === 'true') {
       setIsOnboardingComplete(true)
-      navigate('/auth/login')
+      navigate('/auth/register')
     }
   }, [navigate])
 
   const completeOnboarding = useCallback(() => {
     localStorage.setItem('onboarding_complete', 'true')
     setIsOnboardingComplete(true)
-    navigate('/auth/login')
+    navigate('/auth/register')
   }, [navigate])
 
   const handleNext = useCallback(() => {

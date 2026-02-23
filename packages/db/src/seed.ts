@@ -1,3 +1,4 @@
+import { IS_TESTING } from '@shared/constants'
 import { UserModel } from './models/User'
 
 async function main() {
@@ -15,4 +16,6 @@ async function main() {
   }
 }
 
-main()
+if (IS_TESTING) {
+  main()
+}

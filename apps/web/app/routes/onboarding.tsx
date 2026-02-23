@@ -1,8 +1,13 @@
 import { AnimatePresence } from 'framer-motion'
+import type { MetaFunction } from 'react-router'
 import { OnboardingNavigation } from '~/features/onboarding/components/OnboardingNavigation'
 import { OnboardingStep } from '~/features/onboarding/components/OnboardingStep'
 import { SkipButton } from '~/features/onboarding/components/SkipButton'
 import { useOnboarding } from '~/features/onboarding/hooks/useOnboarding'
+
+export const meta: MetaFunction = () => {
+  return [{ title: 'Onboarding | Edit Mind' }]
+}
 
 export default function Onboarding() {
   const { currentStep, handleNext, handleSkip, goToStep, onboardingSteps, isLastStep, totalSteps } = useOnboarding()
