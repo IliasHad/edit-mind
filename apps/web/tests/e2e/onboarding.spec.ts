@@ -196,7 +196,7 @@ test.describe('Onboarding Completion and Navigation', () => {
 
     // Should land on register page after onboarding
     await expect(page).toHaveURL(/.*auth\/register/)
-    await expect(page.getByText('Welcome back')).toBeVisible()
+    await expect(page.getByText('Create your account')).toBeVisible()
   })
 
   test('property: onboarding completion navigates to home page', async ({ page }) => {
@@ -280,7 +280,7 @@ test.describe('Onboarding Skip and Completion', () => {
 
     // Should navigate to register page
     await expect(page).toHaveURL(/.*auth\/register/)
-    await expect(page.getByText('Welcome back')).toBeVisible()
+    await expect(page.getByText('Create your account')).toBeVisible()
   })
 
   test('should display skip button on all steps', async ({ page }) => {
@@ -373,7 +373,7 @@ test.describe('Onboarding Completion State', () => {
     await page.goto('/onboarding')
 
     await expect(page).toHaveURL(/.*auth\/register/)
-    await expect(page.getByText('Welcome back')).toBeVisible()
+    await expect(page.getByText('Create your account')).toBeVisible()
   })
 
   test('should not display onboarding for users who completed it', async ({ page }) => {

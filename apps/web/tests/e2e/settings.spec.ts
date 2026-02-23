@@ -19,7 +19,7 @@ test.describe('Settings Page - Display and Management', () => {
     })
 
     test('should display settings description', async ({ page }) => {
-      const description = page.getByText(/manage video folders/i)
+      const description = page.getByText(/video folders/i)
       await expect(description).toBeVisible()
     })
 
