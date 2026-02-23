@@ -17,6 +17,7 @@ interface VideoHeaderProps {
   importAt: Date
   disabled: boolean
   shottedAt: Date
+  updatedAt: Date
 }
 
 export function VideoHeader({
@@ -29,6 +30,7 @@ export function VideoHeader({
   importAt,
   disabled,
   shottedAt,
+  updatedAt
 }: VideoHeaderProps) {
   return (
     <motion.section
@@ -52,7 +54,10 @@ export function VideoHeader({
                 <CalendarIcon className="h-4 w-4 text-white/60" />
                 <span className="text-sm font-medium text-white/70">Imported {smartFormatDate(importAt)}</span>
               </div>
-
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                <CalendarIcon className="h-4 w-4 text-white/60" />
+                <span className="text-sm font-medium text-white/70">Updated {smartFormatDate(updatedAt)}</span>
+              </div>
               {shottedAt && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                   <VideoCameraIcon className="h-4 w-4 text-white/60" />
@@ -69,9 +74,8 @@ export function VideoHeader({
               variant="glass"
               leftIcon={
                 <ArrowPathIcon
-                  className={`h-4 w-4 transition-transform ${
-                    disabled ? 'animate-spin' : 'group-hover:rotate-180 duration-500'
-                  }`}
+                  className={`h-4 w-4 transition-transform ${disabled ? 'animate-spin' : 'group-hover:rotate-180 duration-500'
+                    }`}
                 />
               }
             >

@@ -36,7 +36,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         className={twMerge(
           'inline-flex items-center justify-center gap-2',
-          'font-medium transition-all duration-200',
+          'font-medium',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           'disabled:cursor-not-allowed disabled:opacity-50',
           'active:scale-[0.98]',

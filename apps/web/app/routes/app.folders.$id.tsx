@@ -94,8 +94,8 @@ export default function FolderDetailsPage() {
               className="space-y-3"
             >
               <h2 className="text-lg font-semibold text-white mb-4">Processing Queue</h2>
-              {jobs.map((job: Job, index: number) => (
-                <JobCard job={job} index={index} />
+              {jobs.map((job: Job) => (
+                <JobCard job={job} />
               ))}
             </motion.div>
           ) : (

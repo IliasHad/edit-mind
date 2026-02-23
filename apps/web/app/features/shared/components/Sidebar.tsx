@@ -36,8 +36,11 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
       className={`
         fixed left-0 top-0 h-screen z-50
         ${isCollapsed ? 'w-16' : 'w-64'}
+        backdrop-blur-xl
         border-r border-gray-800
+        shadow-2xl shadow-black/10 dark:shadow-black/30
         flex flex-col transition-all duration-300 ease-out
+        before:absolute before:inset-0 before:-z-10 
       `}
     >
       <div className="shrink-0 p-4 border-b border-gray-200 dark:border-white/10">
@@ -45,7 +48,7 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
           <div className="flex items-center gap-3">
             {!isCollapsed && (
               <>
-                <div className="w-8 h-8 rounded-full bg-linear-to-br from-purple-600 to-indigo-400 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-purple-600 to-indigo-400 flex items-center justify-center text-white font-semibold text-sm shadow-lg shadow-purple-500/30 ring-2 ring-white/20">
                   {session.user?.email?.charAt(0).toUpperCase() || 'E'}
                 </div>
                 <span className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[130px]">
@@ -54,17 +57,21 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
               </>
             )}
           </div>
-          <Button size="sm" variant="outline" onClick={() => setIsCollapsed?.(!isCollapsed)} className="border-none">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsCollapsed?.(!isCollapsed)}
+            className="border-white/20 dark:border-white/10 hover:bg-white/50 dark:hover:bg-white/10 backdrop-blur-sm transition-all"
+          >
             <ChevronLeftIcon
-              className={`w-auto h-4 text-gray-700 dark:text-gray-300 transition-transform ${
-                isCollapsed ? 'rotate-180' : ''
-              }`}
+              className={`w-auto h-4 text-gray-700 dark:text-gray-300 transition-transform ${isCollapsed ? 'rotate-180' : ''
+                }`}
             />
           </Button>
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
         <Link isCollapsed={isCollapsed} icon={<HomeIcon className="w-5 h-5" />} to="/app/home" label="Dashboard" />
         <Link
           isCollapsed={isCollapsed}
@@ -94,11 +101,11 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
         {children}
       </nav>
 
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-white/20 dark:border-white/10 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20">
         <ServicesStatus isCollapsed={isCollapsed} />
       </div>
 
-      <div className="p-4 border-t border-gray-800 space-y-2">
+      <div className="p-4 border-t border-white/20 dark:border-white/10 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 space-y-2">
         <Link
           isCollapsed={isCollapsed}
           icon={<Cog6ToothIcon className="w-5 h-5" />}
@@ -111,12 +118,13 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
           size="sm"
           title={isCollapsed ? 'Logout' : undefined}
           leftIcon={<ArrowRightCircleIcon className="w-5 h-5" />}
+          className="hover:bg-white/50 dark:hover:bg-white/10 rounded-lg transition-all"
         >
           {!isCollapsed && <span className="text-sm ml-2 font-medium">Logout</span>}
         </Button>
       </div>
 
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-white/20 dark:border-white/10 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20">
         {!isCollapsed ? (
           <div className="space-y-3">
             <Link
@@ -155,6 +163,7 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
           </div>
         )}
       </div>
+
       {!isCollapsed && <Version />}
     </aside>
   )
