@@ -16,7 +16,7 @@ export class PathValidator {
         this.allowedBasePath = allowedBasePath
 
         this.blockedPatterns = [
-            /\.\./g, // Parent directory traversal
+            /(^|[\\/])\.\.([\\/]|$)/, // Parent directory traversal
             /~\//g, // Home directory
             /\0/g, // Null bytes
         ]
