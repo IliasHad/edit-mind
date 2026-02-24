@@ -10,6 +10,7 @@ import {
   type LinksFunction,
   type LoaderFunctionArgs,
 } from 'react-router'
+import { MotionConfig } from 'framer-motion'
 import './app.css'
 import { SessionProvider } from './features/auth/providers/SessionProvider'
 import { getUser } from './services/user.server'
@@ -90,7 +91,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <SessionProvider initialSession={data?.session}>{children}</SessionProvider>
+        <MotionConfig reducedMotion="user">
+          <SessionProvider initialSession={data?.session}>{children}</SessionProvider>
+        </MotionConfig>
         <ScrollRestoration />
         <Scripts />
       </body>
