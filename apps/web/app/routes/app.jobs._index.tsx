@@ -93,8 +93,8 @@ export default function JobsPage() {
               className="space-y-3"
             >
               <h2 className="text-lg font-semibold text-white mb-4">Processing Queue</h2>
-              {jobs.map((job, index) => (
-                <JobCard job={job} index={index} />
+              {jobs.map((job) => (
+                <JobCard job={job} />
               ))}
             </motion.div>
           ) : (

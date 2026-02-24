@@ -13,16 +13,12 @@ export const meta: MetaFunction = () => {
 
 interface JobCardProps {
   job: Job
-  index: number
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, index }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job }) => {
   return (
-    <motion.div
+    <div
       key={job.id}
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
       className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/[0.07] transition-all duration-200 overflow-hidden"
     >
       <div className="flex items-center justify-between p-5">
@@ -106,6 +102,6 @@ export const JobCard: React.FC<JobCardProps> = ({ job, index }) => {
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }

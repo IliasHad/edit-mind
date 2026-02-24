@@ -177,6 +177,8 @@ jobs:
             sed -i "s|SESSION_SECRET=\"\"|SESSION_SECRET=\"${SESSION_SECRET}\"|g" docker/.env
             sed -i "s|ENCRYPTION_KEY=\"\"|ENCRYPTION_KEY=\"${ENCRYPTION_KEY}\"|g" docker/.env
             
+            sed -i 's|NODE_ENV=.*|NODE_ENV="testing"|g' docker/.env.system
+
         - name: Start Docker Compose (web)
           run: cd docker && docker compose up web -d --wait --wait-timeout 200
 

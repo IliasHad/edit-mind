@@ -8,22 +8,17 @@ import { Button } from '@ui/components/Button'
 
 interface FolderCardProps {
   folder: FolderWithJobs
-  index: number
-  isScanning: boolean
   onDelete: (folder: FolderWithJobs) => void
 }
 
-export const FolderCard: React.FC<FolderCardProps> = ({ folder, index, isScanning, onDelete }) => {
+export const FolderCard: React.FC<FolderCardProps> = ({ folder, onDelete }) => {
   const folderName = folder.path.split('/').pop() || folder.path
 
   const statusInfo = getStatusInfo(folder.status)
 
   return (
-    <motion.div
+    <div
       key={folder.id}
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
       className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/[0.07] transition-all duration-200 overflow-hidden group"
     >
       <div className="p-5">
@@ -44,7 +39,7 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, index, isScannin
               e.preventDefault()
               onDelete(folder)
             }}
-            disabled={isScanning}
+            disabled={folder.status === "scanning"}
             aria-label={`Delete folder ${folderName}`}
             leftIcon={<TrashIcon className="size-4" />}
           >
@@ -91,6 +86,6 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, index, isScannin
           />
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }

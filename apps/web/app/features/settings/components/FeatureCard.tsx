@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Link } from 'react-router'
 
 interface FeatureCardProps {
@@ -15,7 +14,6 @@ interface FeatureCardProps {
     icon?: React.ReactNode
     onClick: () => void
   }
-  index?: number
 }
 
 export const FeatureCard: React.FC<FeatureCardProps> = ({
@@ -24,13 +22,9 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
   description,
   primaryCta,
   secondaryCta,
-  index = 0
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+    <div
       className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/[0.07] transition-all duration-200 p-8"
     >
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -43,7 +37,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
             <p className="text-sm text-white/60">{description}</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3 shrink-0">
           {secondaryCta && (
             <button
@@ -63,6 +57,6 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
           </Link>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

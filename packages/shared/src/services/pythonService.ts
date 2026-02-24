@@ -30,6 +30,9 @@ class PythonService {
     this.serviceUrl = `ws://${ML_HOST}:${ML_PORT}`
     logger.debug(`Connecting to ${this.serviceUrl}`)
   }
+  private markAsRunning(): void {
+    this.isRunning = true
+  }
 
   public static getInstance(): PythonService {
     if (!PythonService.instance) {
@@ -188,6 +191,7 @@ class PythonService {
 
       this.client.on('open', () => {
         clearTimeout(timeout)
+        this.markAsRunning()
         logger.debug('WebSocket connection established.')
         resolve()
       })

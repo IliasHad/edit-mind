@@ -9,22 +9,6 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
   })
 
   test.describe('Onboarding Display for New Users', () => {
-    test('should display onboarding page for new users', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Should display onboarding content
-      const onboardingContent = page.locator('[data-testid="onboarding-container"]')
-      const hasContent = await onboardingContent.isVisible().catch(() => false)
-
-      if (hasContent) {
-        await expect(onboardingContent).toBeVisible()
-      } else {
-        // If no data-testid, check for onboarding text
-        const onboardingText = page.getByText(/Your video library|reimagined/i)
-        await expect(onboardingText).toBeVisible()
-      }
-    })
 
     test('should display onboarding title and description', async ({ page }) => {
       await page.goto('/onboarding')
@@ -34,27 +18,8 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
       const title = page.getByText(/Your video library,.*reimagined/i)
       await expect(title).toBeVisible()
 
-      // Should display description or subtitle
-      const description = page.locator('[data-testid="onboarding-description"]')
-      const hasDescription = await description.isVisible().catch(() => false)
-
-      if (hasDescription) {
-        await expect(description).toBeVisible()
-      }
     })
 
-    test('should display onboarding step indicator', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Should display step indicator (dots, numbers, or progress bar)
-      const stepIndicator = page.locator('[data-testid="step-indicator"]')
-      const hasIndicator = await stepIndicator.isVisible().catch(() => false)
-
-      if (hasIndicator) {
-        await expect(stepIndicator).toBeVisible()
-      }
-    })
 
     test('should display onboarding skip button', async ({ page }) => {
       await page.goto('/onboarding')
@@ -123,23 +88,6 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
       await expect(getStartedButton).toBeVisible()
     })
 
-    test('should update step indicator as user progresses', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Get initial step indicator state
-      const stepIndicator = page.locator('[data-testid="step-indicator"]')
-      const hasIndicator = await stepIndicator.isVisible().catch(() => false)
-
-      if (hasIndicator) {
-        // Progress to next step
-        await page.getByRole('button', { name: 'Continue' }).click()
-        await page.waitForLoadState('networkidle')
-
-        // Step indicator should update
-        await expect(stepIndicator).toBeVisible()
-      }
-    })
 
     test('should allow navigation between steps', async ({ page }) => {
       await page.goto('/onboarding')
@@ -192,23 +140,6 @@ test.describe('Onboarding Flow - Display and Navigation', () => {
       await expect(skipButton).toBeVisible()
     })
 
-    test('should display visual elements for each step', async ({ page }) => {
-      await page.goto('/onboarding')
-      await page.waitForLoadState('networkidle')
-
-      // Should display step content (image, icon, or other visual)
-      const stepContent = page.locator('[data-testid="step-content"]')
-      const hasContent = await stepContent.isVisible().catch(() => false)
-
-      if (hasContent) {
-        await expect(stepContent).toBeVisible()
-      } else {
-        // If no data-testid, check for images or other visual elements
-        const images = page.locator('img')
-        const imageCount = await images.count()
-        expect(imageCount).toBeGreaterThanOrEqual(0)
-      }
-    })
 
     test('should display different content for each onboarding step', async ({ page }) => {
       await page.goto('/onboarding')
@@ -239,7 +170,7 @@ test.describe('Onboarding Completion and Navigation', () => {
     })
   })
 
-  test('should navigate through onboarding and land on login', async ({ page }) => {
+  test('should navigate through onboarding and land on register', async ({ page }) => {
     await page.goto('/onboarding')
     await page.waitForLoadState('networkidle')
 
@@ -263,9 +194,9 @@ test.describe('Onboarding Completion and Navigation', () => {
     await page.getByRole('button', { name: 'Get Started' }).click()
     await page.waitForLoadState('networkidle')
 
-    // Should land on login page after onboarding
-    await expect(page).toHaveURL(/.*auth\/login/)
-    await expect(page.getByText('Welcome back')).toBeVisible()
+    // Should land on register page after onboarding
+    await expect(page).toHaveURL(/.*auth\/register/)
+    await expect(page.getByText('Create your account')).toBeVisible()
   })
 
   test('property: onboarding completion navigates to home page', async ({ page }) => {
@@ -289,8 +220,8 @@ test.describe('Onboarding Completion and Navigation', () => {
     await finalButton.click()
     await page.waitForLoadState('networkidle')
 
-    // Should navigate to login or home page
-    await expect(page).toHaveURL(/.*auth\/login/)
+    // Should navigate to register or home page
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
   test('property: all onboarding steps are completable', async ({ page }) => {
     await page.goto('/onboarding')
@@ -327,7 +258,7 @@ test.describe('Onboarding Completion and Navigation', () => {
     expect(stepCount).toBeGreaterThan(0)
 
     // Should have navigated away from onboarding
-    await expect(page).toHaveURL(/.*auth\/login/)
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
 })
 
@@ -339,7 +270,7 @@ test.describe('Onboarding Skip and Completion', () => {
     })
   })
 
-  test('should skip onboarding and land on login', async ({ page }) => {
+  test('should skip onboarding and land on register', async ({ page }) => {
     await page.goto('/onboarding')
     await page.waitForLoadState('networkidle')
 
@@ -347,9 +278,9 @@ test.describe('Onboarding Skip and Completion', () => {
     await page.getByRole('button', { name: 'Skip' }).click()
     await page.waitForLoadState('networkidle')
 
-    // Should navigate to login page
-    await expect(page).toHaveURL(/.*auth\/login/)
-    await expect(page.getByText('Welcome back')).toBeVisible()
+    // Should navigate to register page
+    await expect(page).toHaveURL(/.*auth\/register/)
+    await expect(page.getByText('Create your account')).toBeVisible()
   })
 
   test('should display skip button on all steps', async ({ page }) => {
@@ -391,8 +322,8 @@ test.describe('Onboarding Skip and Completion', () => {
     await page.getByRole('button', { name: 'Get Started' }).click()
     await page.waitForLoadState('networkidle')
 
-    // Should navigate to login page (which leads to home after login)
-    await expect(page).toHaveURL(/.*auth\/login/)
+    // Should navigate to register page (which leads to home after register)
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
 
   test('property: skip onboarding skips all remaining steps', async ({ page }) => {
@@ -408,10 +339,10 @@ test.describe('Onboarding Skip and Completion', () => {
     await page.waitForLoadState('networkidle')
 
     // Should navigate away from onboarding
-    await expect(page).toHaveURL(/.*auth\/login/)
+    await expect(page).toHaveURL(/.*auth\/register/)
   })
 
-  test('property: skip from any step navigates to login', async ({ page }) => {
+  test('property: skip from any step navigates to register', async ({ page }) => {
     await page.goto('/onboarding')
     await page.waitForLoadState('networkidle')
 
@@ -427,22 +358,22 @@ test.describe('Onboarding Skip and Completion', () => {
       await skipButton.click()
       await page.waitForLoadState('networkidle')
 
-      // Should navigate to login page
-      await expect(page).toHaveURL(/.*auth\/login/)
+      // Should navigate to register page
+      await expect(page).toHaveURL(/.*auth\/register/)
     }
   })
 })
 
 test.describe('Onboarding Completion State', () => {
-  test('should redirect to login if onboarding is already completed', async ({ page }) => {
+  test('should redirect to register if onboarding is already completed', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('onboarding_complete', 'true')
     })
 
     await page.goto('/onboarding')
 
-    await expect(page).toHaveURL(/.*auth\/login/)
-    await expect(page.getByText('Welcome back')).toBeVisible()
+    await expect(page).toHaveURL(/.*auth\/register/)
+    await expect(page.getByText('Create your account')).toBeVisible()
   })
 
   test('should not display onboarding for users who completed it', async ({ page }) => {

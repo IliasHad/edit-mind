@@ -63,9 +63,8 @@ const FaceTraining: React.FC = () => {
                 Known
                 {knownFaces.length > 0 && (
                   <span
-                    className={`ml-2 px-2 py-0.5 text-xs rounded-full transition-all duration-300 ${
-                      activeTab === 'known' ? 'bg-black/10 text-black' : 'bg-zinc-800 text-white'
-                    }`}
+                    className={`ml-2 px-2 py-0.5 text-xs rounded-full transition-all duration-300 ${activeTab === 'known' ? 'bg-black/10 text-black' : 'bg-zinc-800 text-white'
+                      }`}
                   >
                     {knownFaces.length}
                   </span>
@@ -81,9 +80,8 @@ const FaceTraining: React.FC = () => {
                 Unknown
                 {unknownPagination.total > 0 && (
                   <span
-                    className={`ml-2 px-2 py-0.5 text-xs rounded-full transition-all duration-300 ${
-                      activeTab === 'unknown' ? 'bg-black/10 text-black' : 'bg-zinc-800 text-white'
-                    }`}
+                    className={`ml-2 px-2 py-0.5 text-xs rounded-full transition-all duration-300 ${activeTab === 'unknown' ? 'bg-black/10 text-black' : 'bg-zinc-800 text-white'
+                      }`}
                   >
                     {unknownPagination.total}
                   </span>
@@ -94,7 +92,7 @@ const FaceTraining: React.FC = () => {
         </div>
 
         <div className="px-8 pb-16">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl">
             {activeTab === 'unknown' && (
               <div className="space-y-8">
                 {!loading && unknownPagination.total === 0 ? (

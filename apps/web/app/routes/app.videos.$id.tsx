@@ -130,6 +130,7 @@ export default function Video() {
             disabled={isProcessing}
             source={video.source}
             shottedAt={video.shottedAt}
+            updatedAt={video.updatedAt}
           />
         )}
         {video && (
