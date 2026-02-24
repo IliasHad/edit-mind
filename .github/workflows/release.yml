@@ -393,6 +393,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}-gpu
             type=semver,pattern={{major}}-gpu
             type=raw,value=latest-gpu
+          flavor: latest=false  
 
       - name: Build and push GPU image
         id: push
