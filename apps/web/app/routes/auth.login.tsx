@@ -3,7 +3,7 @@ import { FormInput } from '~/features/auth/components/FormInput'
 import { SubmitButton } from '~/features/auth/components/SubmitButton'
 import { LoginSchema } from '~/features/auth/schemas/auth'
 import { AuthHeader } from '~/features/auth/components/AuthHeader'
-import { useActionData, useNavigation, type ActionFunctionArgs, type MetaFunction } from 'react-router'
+import { Link, useActionData, useNavigation, type ActionFunctionArgs, type MetaFunction } from 'react-router'
 import { login } from '~/services/auth.server'
 
 export const meta: MetaFunction = () => {
@@ -46,6 +46,15 @@ export default function Login() {
           placeholder="Password"
           defaultError={actionData?.fieldErrors?.password?.[0]}
         />
+        <p className="mt-4 text-center text-sm text-gray-500 dark:text-zinc-500">
+          Don't have an account?{' '}
+          <Link
+            to="/auth/register"
+            className="text-black dark:text-white font-medium hover:underline underline-offset-4"
+          >
+            Sign up
+          </Link>
+        </p>
         <SubmitButton loading={loading} text="Sign in" loadingText="Signing in..." />
       </AuthForm>
     </>
