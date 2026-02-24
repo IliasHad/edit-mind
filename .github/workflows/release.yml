@@ -71,7 +71,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: ${{ contains(matrix.service.target, 'gpu') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          platforms: 'linux/amd64,linux/arm64'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -389,7 +389,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.image_suffix }}
           tags: |
-            type=ref,event=tag
             type=semver,pattern={{version}}-gpu
             type=semver,pattern={{major}}.{{minor}}-gpu
             type=semver,pattern={{major}}-gpu
@@ -407,8 +406,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
-          cache-to: type=gha,mode=max,scope=ml-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
+          cache-from: type=gha,scope=gpu-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
+          cache-to: type=gha,mode=max,scope=gpu-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/requirements-cuda.txt') }}
           sbom: false
 
       - name: Generate artifact attestation
