@@ -31,7 +31,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/main'
+    if: github.event_name == 'pull_request'
     permissions:
       contents: read
 
@@ -149,7 +149,7 @@ jobs:
       name: Playwright Tests
       needs: build
       runs-on: ubuntu-latest
-      if: github.ref != 'refs/heads/main'
+      if: github.event_name == 'pull_request'
       timeout-minutes: 50
 
       steps:
