@@ -389,11 +389,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.image_suffix }}
           tags: |
-            type=semver,pattern={{version}}-gpu
-            type=semver,pattern={{major}}.{{minor}}-gpu
-            type=semver,pattern={{major}}-gpu
-            type=raw,value=latest-gpu
-          flavor: latest=false  
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+          flavor: |
+              latest=auto
+              suffix=-gpu,onlatest=true
 
       - name: Build and push GPU image
         id: push
