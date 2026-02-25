@@ -7,7 +7,7 @@ export function useServices() {
     const [status, setStatus] = useState<ServiceStatus | null>(null)
 
     useEffect(() => {
-        const socketInstance = io(import.meta.env.VITE_BACKGROUND_JOBS_URL || 'http://localhost:4001', {
+        const socketInstance = io(import.meta.env.VITE_BACKGROUND_JOBS_URL || 'http://localhost:4000', {
             transports: ['websocket', 'polling'],
         })
 
