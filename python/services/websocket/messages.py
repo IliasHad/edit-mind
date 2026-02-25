@@ -131,8 +131,9 @@ class RequestParser:
                 # TODO: If you wanna use your Apple computer with M chips to handle ML services (Advanced Usage) and make sure that the python script can access video file from docker container
                 logger.warning(
                     "You are using external host for the video processing, please make sure to run on the same host as you docker containers")
+                media_base_path = os.getenv("MEDIA_BASE_PATH", "/media")
                 video_path = video_path.replace(
-                    "/media/videos", host_media_path)
+                    media_base_path, host_media_path)
 
             return AnalysisRequest(
                 video_path=video_path,
@@ -161,8 +162,9 @@ class RequestParser:
                 logger.warning(
                     "You are using external host for the video processing, please make sure to run on the same host as you docker containers")
 
+                media_base_path = os.getenv("MEDIA_BASE_PATH", "/media")
                 video_path = video_path.replace(
-                    "/media/videos", host_media_path)
+                    media_base_path, host_media_path)
             return TranscriptionRequest(
                 video_path=video_path,
                 job_id=job_id,
