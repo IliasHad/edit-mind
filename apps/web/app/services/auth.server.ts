@@ -37,7 +37,7 @@ export async function register(request: Request, values: z.infer<typeof Register
   const headers = new Headers()
   headers.set('Set-Cookie', await commitSession(session))
 
-  return redirect('/app/home', { headers })
+  return redirect('/app/setup', { headers })
 }
 
 export async function logout(request: Request) {
