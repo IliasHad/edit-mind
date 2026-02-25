@@ -10,6 +10,7 @@ import { JobCard } from '~/features/jobs/components/JobCard'
 import { useJobs } from '~/features/jobs/hooks/useJobs'
 import { useParams, type MetaFunction } from 'react-router'
 import { Button } from '@ui/components/Button'
+import { useServices } from '~/features/services/hooks/useServices'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Folder Details Page | Edit Mind' }]
@@ -17,6 +18,7 @@ export const meta: MetaFunction = () => {
 
 export default function FolderDetailsPage() {
   const { currentFolder, loading, rescanFolder } = useCurrentFolder()
+  const { status } = useServices()
   const { id } = useParams()
   const { fetchJobsByFolderId, jobs, jobsStatus, total } = useJobs()
 
@@ -28,6 +30,8 @@ export default function FolderDetailsPage() {
     if (id) await rescanFolder(id)
   }
   if (!currentFolder) return null
+  const isReady = status?.backgroundJobsService && status?.mlService;
+  const neitherReady = !status?.backgroundJobsService && !status?.mlService;
 
   return (
     <DashboardLayout sidebar={<Sidebar />}>
@@ -55,15 +59,31 @@ export default function FolderDetailsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+
+            <div className="flex items-center gap-3 flex-col">
               <Button
                 type="button"
                 onClick={handleRescan}
                 loading={loading}
+                disabled={!status?.backgroundJobsService || !status.mlService}
                 leftIcon={<ArrowPathIcon className="w-4 h-4" />}
               >
                 {loading ? 'Scanning...' : 'Rescan Folder'}
               </Button>
+              {!isReady && (
+                <div
+                  className={`flex items-start gap-2.5 rounded-lg border px-3.5 py-2.5 text-xs leading-relaxed ${neitherReady
+                    ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300"
+                    : "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
+                    }`}
+                >
+                  <span>
+                    {neitherReady
+                      ? "Services are starting up. Rescan will be available shortly."
+                      : "One service is still initializing. Please wait before rescanning."}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
