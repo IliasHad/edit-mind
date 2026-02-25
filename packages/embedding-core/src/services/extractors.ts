@@ -41,7 +41,7 @@ export async function getFrameExtractor() {
 
     const processor = await AutoProcessor.from_pretrained(VISUAL_EMBEDDING_MODEL)
     const model = await CLIPVisionModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "auto",
+      device: USE_GPU ? "cuda" : "cpu",
       dtype: "fp16"
     })
     visualModelCache = { processor, model }
@@ -53,7 +53,7 @@ export async function getAudioExtractor() {
   if (!audioModelCache) {
     const processor = await AutoProcessor.from_pretrained(AUDIO_EMBEDDING_MODEL)
     const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "auto"
+      device: USE_GPU ? "cuda" : "cpu"
     })
 
     audioModelCache = { processor, model }
@@ -66,7 +66,7 @@ async function getTextToVisualExtractor() {
 
     const tokenizer = await AutoTokenizer.from_pretrained(VISUAL_EMBEDDING_MODEL)
     const model = await CLIPTextModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "auto",
+      device: USE_GPU ? "cuda" : "cpu",
       dtype: "fp16"
     })
     textToVisualModelCache = { tokenizer, model }
@@ -122,7 +122,7 @@ export async function getTextExtractor() {
   if (!textModelCache) {
 
     const embed = await pipeline('feature-extraction', TEXT_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "auto",
+      device: USE_GPU ? "cuda" : "cpu",
       dtype: "fp16"
     })
 
