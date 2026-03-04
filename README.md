@@ -37,8 +37,6 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be the edit
 *   **Video Indexing and Processing:** A background service watches for new video files and queues them for AI-powered analysis.
 *   **AI-Powered Video Analysis:** Extracts metadata like face recognition, transcription, object & text detection, scene analysis, and more.
 *   **Vector-Based Semantic Search:** Powerful natural language search capabilities on video content using ChromaDB.
-*   **Dual Interfaces:** Access your video library through a **Web App**.
-
 ---
 
 
