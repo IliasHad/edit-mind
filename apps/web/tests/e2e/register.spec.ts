@@ -101,7 +101,7 @@ test.describe('Authentication Pages - Register', () => {
 
             await page.waitForLoadState('networkidle')
 
-            await expect(page).toHaveURL(/\/app\/home/, { timeout: 5000 })
+            await expect(page).toHaveURL(/\/app\/setup/, { timeout: 5000 })
         })
     })
 
@@ -136,7 +136,7 @@ test.describe('Authentication Pages - Register', () => {
 
             await page.waitForLoadState('networkidle')
 
-            await expect(page).toHaveURL(/\/app\/home/, { timeout: 5000 })
+            await expect(page).toHaveURL(/\/app\/setup/, { timeout: 5000 })
         })
     })
 

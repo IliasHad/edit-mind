@@ -6,11 +6,18 @@ import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { embedAudioScenes } from '@embedding-media/utils/audioEmbedding'
 import { updateJob } from '../services/videoIndexer'
+import { AUDIO_EMBEDDINGS_DISABLED } from '@shared/constants/embedding'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, scenesPath } = job.data
 
   try {
+
+    if (AUDIO_EMBEDDINGS_DISABLED) {
+      logger.info("Audio embedding has been disabled by the user")
+      return
+    }
+
     const scenes = await fs.readFile(scenesPath, 'utf-8').then(JSON.parse)
 
     await updateJob(job, { stage: JobStage.embedding_audio, overallProgress: 80 })
