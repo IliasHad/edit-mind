@@ -13,3 +13,7 @@ export const MODEL_DIMENSIONS = {
   visual: 512, // clip-vit-base-patch32
   audio: 512, // clap-htsat-unfused
 }
+
+
+export const AUDIO_EMBEDDINGS_DISABLED = process.env.DISABLE_AUDIO_EMBEDDINGS === 'true'
+export const VISUAL_EMBEDDINGS_DISABLED = process.env.DISABLE_VISUAL_EMBEDDINGS === 'true'

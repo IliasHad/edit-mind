@@ -6,11 +6,18 @@ import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { embedVisualScenes } from '@embedding-media/utils/visualEmbedding'
 import { updateJob } from '../services/videoIndexer'
+import { VISUAL_EMBEDDINGS_DISABLED } from '@shared/constants/embedding'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, scenesPath } = job.data
 
   try {
+
+    if (VISUAL_EMBEDDINGS_DISABLED) {
+      logger.info("Visual embedding has been disabled by the user")
+      return
+    }
+
     const embeddingStart = Date.now()
 
     const scenes = await fs.readFile(scenesPath, 'utf-8').then(JSON.parse)
