@@ -220,4 +220,4 @@ docker-compose -f docker-compose.dev.yml up --build
 ---
 ## License
 
-This project is licensed under the MIT License - see the `LICENSE.md` file for details.
+This project is licensed under the Edit Mind License - see the `LICENSE.md` file for details.
