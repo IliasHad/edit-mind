@@ -16,7 +16,7 @@ export const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000 // 30 days
 export const REDIS_HOST = process.env.REDIS_HOST || 'localhost'
 export const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379')
 
-export const MEDIA_BASE_PATH = '/media/videos'
+export const MEDIA_BASE_PATH = process.env.MEDIA_BASE_PATH || '/media/videos'
 
 export const HOST_MEDIA_PATH = process.env.HOST_MEDIA_PATH
 
