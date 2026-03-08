@@ -6,7 +6,6 @@ Edit Mind lets you index your videos **(including transcription, frame analysis,
 > Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
 
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
 [![Docker](https://img.shields.io/badge/Containerized-Docker-blue.svg)](https://www.docker.com/)
