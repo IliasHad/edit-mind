@@ -18,6 +18,7 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be the edit
 
 [![brycedev](https://img.shields.io/badge/Sponosor-brycedev-blue?logo=github)](https://github.com/brycedev)
 [![alittlebitweird](https://img.shields.io/badge/Sponosor-alittlebitweird-blue?logo=github)](https://github.com/alittlebitweird)
+[![mgerasolo](https://img.shields.io/badge/Sponosor-mgerasolo-blue?logo=github)](https://github.com/mgerasolo)
 
 ## Showcase Video
 
