@@ -30,6 +30,7 @@ import {
   faceDeletionQueue,
   videoFinalizationQueue,
   faceRenameQueue,
+  updateVideoQueue,
 } from './queue'
 
 import './jobs/transcription'
@@ -47,6 +48,7 @@ import './jobs/smartCollection'
 import './jobs/chat'
 import './jobs/export'
 import './jobs/faceRenaming'
+import './jobs/updateVideo'
 
 import { initializeWatchers } from './watcher'
 import { shutdownWorkers } from './utils/workers'
@@ -91,6 +93,7 @@ if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
       new BullMQAdapter(chatQueue),
       new BullMQAdapter(exportQueue),
       new BullMQAdapter(immichImporterQueue),
+      new BullMQAdapter(updateVideoQueue),
     ],
     serverAdapter,
   })

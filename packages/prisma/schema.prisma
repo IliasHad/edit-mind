@@ -231,6 +231,10 @@ model Video {
   shotTypes    Json?
   objects      Json?
 
+  location    String?
+
+  labels      Json?
+
   aspectRatio String? @default("16:9")
 
   userId String

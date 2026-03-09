@@ -68,6 +68,7 @@ export const sceneSchema = z.object({
   category: z.string().optional(),
   aspectRatio: z.string(),
   text: z.string().optional(),
+  labels: z.array(z.record(z.string(), z.string())).optional()
 })
 
 export type Scene = z.infer<typeof sceneSchema>

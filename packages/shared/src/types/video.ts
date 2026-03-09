@@ -82,3 +82,11 @@ export interface VideoProcessingData {
   transcriptionPath: string
   scenesPath: string
 }
+
+export type LabelObject = { name: string; value: string }
+export type MetadataInput = Record<string, string>[] | { labels: LabelObject[] }
+
+export type UpdateSceneData = {
+    source: string
+    metadata: MetadataInput
+}

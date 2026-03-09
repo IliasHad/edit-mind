@@ -148,6 +148,16 @@ export const videoFinalizationQueue = createQueue('video-finalization', {
   },
 })
 
+export const updateVideoQueue = createQueue('update-video', {
+  defaultJobOptions: {
+    attempts: 5,
+    backoff: {
+      type: 'exponential',
+      delay: 3000,
+    },
+  },
+})
+
 export const videoProcessingQueues = [
   transcriptionQueue,
   frameAnalysisQueue,

@@ -1,10 +1,10 @@
 import { Job } from 'bullmq'
 import { JobStatus, JobStage } from '@prisma/client'
 import { logger } from '@shared/services/logger'
-import { VideoIndexJobData, VideoProcessingData } from '@shared/types/video'
+import { UpdateSceneData, VideoIndexJobData, VideoProcessingData } from '@shared/types/video'
 import path from 'path'
 import { PROCESSED_VIDEOS_DIR } from '@shared/constants'
-import { transcriptionQueue } from '@background-jobs/queue'
+import { transcriptionQueue, updateVideoQueue } from '@background-jobs/queue'
 import { JobModel } from '@db/index'
 import { getVideoMetadata } from '@media-utils/utils/videos'
 import { createHash } from 'crypto'
@@ -101,5 +101,12 @@ export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: 
     removeOnComplete: false,
     removeOnFail: false,
     priority: jobPriority,
+  })
+}
+
+export async function addVideoUpdateJob(jobData: UpdateSceneData) {
+  await updateVideoQueue.add('update-scenes', jobData, {
+    removeOnComplete: false,
+    removeOnFail: false,
   })
 }

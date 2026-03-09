@@ -3,6 +3,7 @@ import { logger } from '@shared/services/logger'
 import type { DetectedTextData, FaceData, ObjectData, TranscriptionWord } from '@shared/types/scene'
 import type { Metadata } from 'chromadb'
 import { getAspectRatioDescription } from './aspectRatio'
+import { basename, dirname } from 'path'
 
 const generateVectorDocumentText = async (scene: Scene) => {
   const faces = scene.faces?.join(', ') || ''
@@ -90,6 +91,40 @@ const generateVectorDocumentText = async (scene: Scene) => {
     textParts.push(` described as ${scene.description}`)
   }
 
+  // Location
+  if (scene.location) {
+    textParts.push(` shotted at ${scene.location}`)
+  }
+
+  // Folder Name
+  if (scene.source) {
+    const folderName = basename(dirname(scene.source));
+    textParts.push(` folder name is ${folderName}`)
+  }
+
+  // File Name
+  if (scene.source) {
+    const fileName = basename(scene.source);
+    textParts.push(` file name is ${fileName}`)
+  }
+
+  // Custom Labels
+  if (scene.labels && scene.labels.length > 0) {
+    const labelParts = scene.labels.map((label) => {
+      const [[key, value]] = Object.entries(label)
+      return `${key}: ${value}`
+    })
+
+    if (labelParts.length === 1) {
+      textParts.push(`. This scene is tagged as ${labelParts[0]}`)
+    } else {
+      const last = labelParts[labelParts.length - 1]
+      const rest = labelParts.slice(0, -1).join(', ')
+      textParts.push(`. This scene is tagged as ${rest}, and ${last}`)
+    }
+  }
+
+
   // Clean up and return
   const text = textParts.join('').replace(/\s+/g, ' ').replace(/\.\./g, '.').trim()
 
@@ -124,6 +159,7 @@ export const sceneToVectorFormat = async (scene: Scene) => {
     detectedTextData: JSON.stringify(scene.detectedTextData || []),
     transcriptionWords: JSON.stringify(scene.transcriptionWords || []),
     aspectRatio: scene.aspectRatio,
+    labels: JSON.stringify(scene.labels)
   }
 
   return {
@@ -222,24 +258,24 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
 
   const faces = metadata.faces
     ? metadata.faces
-        .toString()
-        .split(',')
-        .map((f) => f.trim())
-        .filter(Boolean)
+      .toString()
+      .split(',')
+      .map((f) => f.trim())
+      .filter(Boolean)
     : []
   const objects = metadata.objects
     ? metadata.objects
-        .toString()
-        .split(',')
-        .map((o) => o.trim())
-        .filter(Boolean)
+      .toString()
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
     : []
   const detectedText = metadata.detectedText
     ? metadata.detectedText
-        .toString()
-        .split(',')
-        .map((o) => o.trim())
-        .filter(Boolean)
+      .toString()
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
     : []
   let facesData: FaceData[] = []
   try {
@@ -269,6 +305,14 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
     logger.warn('Failed to parse transcriptionWords: ' + e)
   }
 
+
+  let labels: Record<string, string>[] = []
+  try {
+    labels = metadata.labels ? JSON.parse(metadata.labels.toString()) : []
+  } catch (e) {
+    logger.warn('Failed to parse labels: ' + e)
+  }
+
   return {
     id: id,
     thumbnailUrl: metadata.thumbnailUrl?.toString() || '',
@@ -294,6 +338,7 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
     facesData,
     aspectRatio: metadata.aspectRatio?.toString() || '16:9',
     text: text ?? undefined,
+    labels
   }
 }
 

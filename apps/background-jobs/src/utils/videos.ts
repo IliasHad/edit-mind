@@ -66,6 +66,7 @@ export async function importVideoFromVectorDb(video: Video): Promise<Folder | un
           shottedAt: video.createdAt ? new Date(video.createdAt) : new Date(),
           aspectRatio: video.aspectRatio,
           folderId: folder?.id,
+          location: video?.location
         },
       })
       return folder
