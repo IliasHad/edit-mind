@@ -1,8 +1,8 @@
 {
   "name": "prisma",
-  "version": "0.14.4",
+  "version": "0.14.5",
   "private": true,
-  "license": "MIT",
+  "license": "Edit Mind",
   "author": {
     "name": "ilias",
     "url": "https://github.com/iliashad"

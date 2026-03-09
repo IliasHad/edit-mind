@@ -31,6 +31,10 @@ const envSchema = z.object({
     .refine((val) => !Number.isNaN(val) && val > 0, {
       message: 'MAX_CONCURRENT_ANALYSES must be a valid number',
     }),
+  ENABLE_QUEUE_UI: z
+    .string()
+    .default('false')
+    .transform((val) => Boolean(val))
 })
 
 export const env = envSchema.parse(process.env)

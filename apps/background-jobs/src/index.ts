@@ -30,6 +30,7 @@ import {
   faceDeletionQueue,
   videoFinalizationQueue,
   faceRenameQueue,
+  updateVideoQueue,
 } from './queue'
 
 import './jobs/transcription'
@@ -47,6 +48,7 @@ import './jobs/smartCollection'
 import './jobs/chat'
 import './jobs/export'
 import './jobs/faceRenaming'
+import './jobs/updateVideo'
 
 import { initializeWatchers } from './watcher'
 import { shutdownWorkers } from './utils/workers'
@@ -70,7 +72,7 @@ export const io = new Server(server, {
 app.use(cors())
 app.use(express.json())
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
   const serverAdapter = new ExpressAdapter()
   serverAdapter.setBasePath('/')
 
@@ -91,6 +93,7 @@ if (process.env.NODE_ENV === 'development') {
       new BullMQAdapter(chatQueue),
       new BullMQAdapter(exportQueue),
       new BullMQAdapter(immichImporterQueue),
+      new BullMQAdapter(updateVideoQueue),
     ],
     serverAdapter,
   })
@@ -139,7 +142,7 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
   )
 
   logger.debug(`Background jobs server running on port ${env.BACKGROUND_JOBS_PORT}`)
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
     logger.warn(`Bull Board UI available at http://localhost:${env.BACKGROUND_JOBS_PORT}`)
   }
   logger.debug('WebSocket server initialized and ready for connections')
@@ -148,7 +151,7 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
 io.on('connection', async (socket) => {
   logger.debug("WebSocket client connected")
 
- 
+
   // Send initial status
   const status = await checkServicesStatus()
   socket.emit('service-status', status)

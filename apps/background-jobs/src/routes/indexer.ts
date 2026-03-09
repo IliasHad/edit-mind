@@ -1,10 +1,10 @@
 import express from 'express'
 import path from 'path'
-import { addVideoIndexingJob } from '../services/videoIndexer'
+import { addVideoIndexingJob, addVideoUpdateJob } from '../services/videoIndexer'
 import { logger } from '@shared/services/logger'
 import { FolderModel, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
-import { VideoReIndexingSchema } from '../schemas/indexer'
+import { VideoReIndexingSchema, VideoUpdateSchema } from '../schemas/indexer'
 import { removeFailedJobs } from '@background-jobs/utils/jobs'
 
 const router = express.Router()
@@ -97,6 +97,23 @@ router.post('/retry', async (req, res) => {
   } catch (error) {
     logger.error({ error }, 'Failed to retry failed jobs')
     res.status(500).json({ error: 'Failed to retry failed jobs' })
+  }
+})
+router.put('/update', async (req, res) => {
+  try {
+    const { data, success } = VideoUpdateSchema.safeParse(req.body)
+    if (!success) {
+      return res.status(400).json({ error: 'Invalid request body' })
+    }
+    
+    await addVideoUpdateJob(data)
+
+    res.json({
+      message: 'Video has been sent to update',
+    })
+  } catch (error) {
+    logger.error({ error }, 'Failed to update video metadata')
+    res.status(500).json({ error: 'Failed to update video metadata' })
   }
 })
 

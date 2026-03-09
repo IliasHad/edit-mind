@@ -18,6 +18,7 @@ type VideoCreateInput = Pick<
   | 'aspectRatio'
   | 'objects'
   | 'shotTypes'
+  | 'labels'
 >
 
 export class VideoModel {
@@ -30,6 +31,7 @@ export class VideoModel {
         emotions: data.emotions ?? undefined,
         shotTypes: data.shotTypes ?? undefined,
         objects: data.objects ?? undefined,
+        labels: data.labels ?? undefined
       },
     })
     return video
@@ -62,6 +64,7 @@ export class VideoModel {
         emotions: data.emotions ?? undefined,
         shotTypes: data.shotTypes ?? undefined,
         objects: data.objects ?? undefined,
+        labels: data.labels ?? undefined
       },
     })
     return video
@@ -80,6 +83,7 @@ export class VideoModel {
         emotions: data.emotions ?? undefined,
         shotTypes: data.shotTypes ?? undefined,
         objects: data.objects ?? undefined,
+        labels: data.labels ?? undefined
       },
     })
     return video

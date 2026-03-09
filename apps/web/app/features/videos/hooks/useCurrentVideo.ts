@@ -17,7 +17,11 @@ export function useCurrentVideo() {
     reindexVideo,
     relinkVideo,
     relinkSuccess,
-    videoExist
+    videoExist,
+    updateVideoLocation,
+    addVideoLabels,
+    updateLocationSuccess,
+    addLabelsSuccess
   } = useVideosStore()
 
   useEffect(() => {
@@ -39,6 +43,10 @@ export function useCurrentVideo() {
     reindexVideo,
     relinkVideo,
     relinkSuccess,
-    videoExist
+    videoExist,
+    updateVideoLocation,
+    addVideoLabels,
+    updateLocationSuccess,
+    addLabelsSuccess
   }
 }

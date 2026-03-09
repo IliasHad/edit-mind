@@ -15,6 +15,8 @@ import { ConfirmationModal } from '@ui/components/ConfirmationModal'
 import { RelinkVideo } from '~/features/videos/components/RelinkVideo'
 import { PageSkeleton } from '~/features/videos/components/PageSkeleton'
 import { Button } from '@ui/components/Button'
+import { UpdateLocation } from '~/features/videos/components/UpdateLocation'
+import { AddVideoLabels } from '~/features/videos/components/AddVideoLabels'
 
 export const meta = () => {
   return [
@@ -37,6 +39,10 @@ export default function Video() {
     videoExist,
     loading,
     fetchVideoById,
+    updateVideoLocation,
+    addVideoLabels,
+    addLabelsSuccess,
+    updateLocationSuccess
   } = useCurrentVideo()
 
   const { id } = useParams()
@@ -190,6 +196,17 @@ export default function Video() {
               )}
 
               {activeScene && <ActiveSceneCard scene={activeScene} />}
+
+              {(updateLocationSuccess || addLabelsSuccess) && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 rounded-lg">
+                  <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                    Updating scene metadata in the background, refresh the page to get the latest updates.
+                  </span>
+                </div>
+              )}
+
+              {videoExist && id && <UpdateLocation updateVideoLocation={updateVideoLocation} id={id} defaultLocation={video.location || scenes[0].location} loading={loading} refresh={fetchVideoById} />}
+              {videoExist && id && <AddVideoLabels addVideoLabels={addVideoLabels} id={id} loading={loading} refresh={fetchVideoById} defaultLabels={video.labels?.toString()} />}
 
               {currentProcessedJob && <ProcessingJobDetails job={currentProcessedJob} />}
             </div>

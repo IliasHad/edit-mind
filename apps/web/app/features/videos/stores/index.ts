@@ -15,6 +15,8 @@ interface VideosState {
   deleteVideoById: (id: string) => Promise<void>
   reindexVideo: (id: string) => Promise<void>
   relinkVideo: (id: string, newSource: string) => Promise<void>
+  updateVideoLocation: (id: string, locationName: string) => Promise<void>
+  addVideoLabels: (id: string, labels: Record<string, string>[]) => Promise<void>
   clearError: () => void
   clearCurrentVideo: () => void
 
@@ -25,6 +27,8 @@ interface VideosState {
   currentProcessedJob: Job | null
 
   relinkSuccess: boolean
+  updateLocationSuccess: boolean
+  addLabelsSuccess: boolean
 
   videoExist: boolean
 
@@ -50,6 +54,8 @@ export const useVideosStore = create<VideosState>()(
         relinkSuccess: false,
         videoExist: false,
         currentPagination: null,
+        updateLocationSuccess: false,
+        addLabelsSuccess: false,
 
         fetchVideos: async (pageNum, limit, query) => {
           set({ isLoading: true, error: null })
@@ -115,6 +121,34 @@ export const useVideosStore = create<VideosState>()(
               error: error instanceof Error ? error.message : 'Unknown error occurred',
               isLoading: false,
               currentVideo: null,
+            })
+          }
+        },
+        updateVideoLocation: async (id: string, locationName: string) => {
+          set({ isLoading: true, error: null, updateLocationSuccess: false })
+          try {
+            await apiClient.updateVideoLocation(id, locationName)
+            set({ isLoading: false, error: null, updateLocationSuccess: true })
+          } catch (error) {
+            set({
+              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              isLoading: false,
+              currentVideo: null,
+              updateLocationSuccess: false
+            })
+          }
+        },
+        addVideoLabels: async (id: string, labels: Record<string, string>[]) => {
+          set({ isLoading: true, error: null, addLabelsSuccess: false })
+          try {
+            await apiClient.addVideoLabels(id, labels)
+            set({ isLoading: false, error: null, addLabelsSuccess: true })
+          } catch (error) {
+            set({
+              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              isLoading: false,
+              currentVideo: null,
+              addLabelsSuccess: false
             })
           }
         },

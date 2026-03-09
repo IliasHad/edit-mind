@@ -6,9 +6,10 @@ interface FormInputProps {
   placeholder: string
   defaultError?: string
   label?: string
+  disabled?: boolean
 }
 
-export function FormInput({ name, type, placeholder, defaultError, label }: FormInputProps) {
+export function FormInput({ name, type, placeholder, defaultError, label, disabled }: FormInputProps) {
   const {
     register,
     formState: { errors },
@@ -23,6 +24,7 @@ export function FormInput({ name, type, placeholder, defaultError, label }: Form
         type={type}
         placeholder={placeholder}
         aria-label={label}
+        disabled={disabled}
         className={`w-full px-4 py-3.5 rounded-xl text-sm transition-all duration-200
           bg-white/5 border text-white placeholder:text-white/25
           focus:outline-none focus:bg-white/10

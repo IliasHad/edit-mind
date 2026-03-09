@@ -229,6 +229,77 @@ export async function updateScenesSource(oldSource: string, newSource: string): 
     })
   }
 }
+
+export async function updateVideoMetadata(oldSource: string, newMetadata: Record<string, string>): Promise<void> {
+  try {
+
+    const { collection, visual_collection, audio_collection } = await createVectorDbClient()
+
+    if (!collection) throw new Error('Collection not initialized')
+
+    const result = await collection?.get({
+      where: { source: { $eq: oldSource } },
+      include: ['metadatas', 'documents'],
+    })
+
+    if (!result.ids || result.ids.length === 0) {
+      logger.warn(`No scenes found for source: ${oldSource}`)
+      return
+    }
+
+    const ids = result.ids
+
+    const metadatas = result.metadatas.map((metadata) => ({
+      ...(metadata ?? {}),
+      ...newMetadata,
+    }))
+
+    await collection.update({
+      ids,
+      metadatas,
+    })
+    if (visual_collection) {
+      const result = await visual_collection?.get({
+        where: { source: { $eq: oldSource } },
+        include: ['metadatas', 'documents'],
+      })
+
+      if (!result.ids || result.ids.length === 0) {
+        logger.warn(`No scenes found for source: ${oldSource}`)
+        return
+      }
+
+      const ids = result.ids
+
+      await visual_collection.update({
+        ids,
+        metadatas,
+      })
+    }
+
+    if (audio_collection) {
+      const result = await audio_collection?.get({
+        where: { source: { $eq: oldSource } },
+        include: ['metadatas', 'documents'],
+      })
+
+      if (!result.ids || result.ids.length === 0) {
+        logger.warn(`No scenes found for source: ${oldSource}`)
+        return
+      }
+
+      const ids = result.ids
+      await audio_collection.update({
+        ids,
+        metadatas,
+      })
+    }
+
+  } catch (error) {
+    logger.error({ error }, "Error update scenes metadata")
+  }
+}
+
 export async function deleteByVideoSource(source: string): Promise<void> {
   const { collection, visual_collection, audio_collection } = await createVectorDbClient()
 
@@ -649,6 +720,54 @@ export async function* getScenesStream(batchSize: number = 100): AsyncGenerator<
         include: ['metadatas', 'documents'],
         limit: batchSize,
         offset: offset,
+      })
+
+      if (!batch.metadatas || batch.metadatas.length === 0) {
+        hasMore = false
+        break
+      }
+
+      for (let i = 0; i < batch.metadatas.length; i++) {
+        const metadata = batch.metadatas[i]
+        if (!metadata) continue
+
+        const source = metadata.source?.toString()
+        if (!source) continue
+
+        const scene: Scene = metadataToScene(metadata, batch.ids[i], batch.documents[i])
+        yield scene
+      }
+
+      if (batch.metadatas.length < batchSize) {
+        hasMore = false
+      } else {
+        offset += batchSize
+      }
+    }
+  } catch (error) {
+    logger.error('Error streaming scenes: ' + error)
+    throw error
+  }
+}
+
+
+export async function* getScenesStreamBySource(source: string, batchSize: number = 100,): AsyncGenerator<Scene> {
+  try {
+    const { collection } = await createVectorDbClient()
+
+    if (!collection) {
+      throw new Error('Collection not initialized')
+    }
+
+    let offset = 0
+    let hasMore = true
+
+    while (hasMore) {
+      const batch = await collection.get({
+        include: ['metadatas', 'documents'],
+        limit: batchSize,
+        offset: offset,
+        where: { source: { $eq: source } },
       })
 
       if (!batch.metadatas || batch.metadatas.length === 0) {

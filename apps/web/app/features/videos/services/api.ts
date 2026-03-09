@@ -48,4 +48,18 @@ export const apiClient = {
         apiClient.request<void>(`/api/videos/${id}`, {
             method: 'PUT',
         }),
+    updateVideoLocation: (id: string, newLocation: string) =>
+        apiClient.request<void>(`/api/videos/${id}/update-location`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                newLocation,
+            }),
+        }),
+    addVideoLabels: (id: string, labels: Record<string, string>[]) =>
+        apiClient.request<void>(`/api/videos/${id}/add-labels`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                labels,
+            }),
+        }),
 }
