@@ -70,7 +70,7 @@ export const io = new Server(server, {
 app.use(cors())
 app.use(express.json())
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
   const serverAdapter = new ExpressAdapter()
   serverAdapter.setBasePath('/')
 
@@ -139,7 +139,7 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
   )
 
   logger.debug(`Background jobs server running on port ${env.BACKGROUND_JOBS_PORT}`)
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
     logger.warn(`Bull Board UI available at http://localhost:${env.BACKGROUND_JOBS_PORT}`)
   }
   logger.debug('WebSocket server initialized and ready for connections')
@@ -148,7 +148,7 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
 io.on('connection', async (socket) => {
   logger.debug("WebSocket client connected")
 
- 
+
   // Send initial status
   const status = await checkServicesStatus()
   socket.emit('service-status', status)

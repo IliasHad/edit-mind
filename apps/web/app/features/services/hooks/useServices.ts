@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { io } from 'socket.io-client'
 import type { ServiceStatus } from "../types"
+import { BACKGROUND_JOBS_URL } from "../constants"
 
 export function useServices() {
 
     const [status, setStatus] = useState<ServiceStatus | null>(null)
 
     useEffect(() => {
-        const socketInstance = io(import.meta.env.VITE_BACKGROUND_JOBS_URL || 'http://localhost:4000', {
+        const socketInstance = io(BACKGROUND_JOBS_URL, {
             transports: ['websocket', 'polling'],
         })
 
