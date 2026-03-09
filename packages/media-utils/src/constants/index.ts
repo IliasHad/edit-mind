@@ -9,7 +9,7 @@ export const THUMBNAIL_SCALE = '320:-1'
 export const THUMBNAIL_QUALITY = '4'
 export const BATCH_THUMBNAIL_QUALITY = '3'
 
-export const MAX_DEPTH = 1
+export const MAX_DEPTH = parseInt(process.env.MAX_SCAN_DEPTH || '1', 10)
 
 export const THUMBNAILS_DIR = process.env.THUMBNAILS_PATH || '/app/data/.thumbnails'
 
