@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@prisma/client'
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { motion } from 'framer-motion'
 import { ClockIcon, BoltIcon } from '@heroicons/react/24/solid'
 import { StitchedVideo } from './StitchedVideo'
@@ -117,11 +117,10 @@ export function Message({
                   className={`
                 rounded-2xl px-4 py-3 text-base leading-relaxed max-w-max
                 font-normal backdrop-blur-sm transition-all duration-200
-                ${
-                  isUser
-                    ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
-                    : 'bg-black/5 dark:bg-white/5 text-black/90 dark:text-white/90 border border-black/10 dark:border-white/10'
-                }
+                ${isUser
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                      : 'bg-black/5 dark:bg-white/5 text-black/90 dark:text-white/90 border border-black/10 dark:border-white/10'
+                    }
               `}
                 >
                   {renderTextWithMentions(text)}

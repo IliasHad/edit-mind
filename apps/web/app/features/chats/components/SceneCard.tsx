@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { CheckIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence } from 'framer-motion'
 import { humanizeFileName } from '~/features/shared/utils/fileName'

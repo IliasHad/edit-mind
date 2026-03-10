@@ -1,6 +1,6 @@
 import { Message } from './Message'
 import type { ChatMessage } from '@prisma/client';
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 
 type MessageListProps = {
   messages: (ChatMessage & { outputScenes?: Scene[] })[]
