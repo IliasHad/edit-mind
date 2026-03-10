@@ -3,7 +3,7 @@ import { VISUAL_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
 import { cleanupFrames, extractSceneFrames } from '@media-utils/utils/frame'
 import { embedSceneFrames } from '../services'
-import { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { sceneToVectorFormat } from '@vector/utils/shared'
 import { embedVisuals } from '@embedding-media/services/embed'
 

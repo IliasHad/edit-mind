@@ -1,5 +1,5 @@
 import z from 'zod'
-import type { AspectRatio } from '.'
+import type { AspectRatio } from './video'
 import { searchSuggestionSchema, VideoMetadataSummarySchema, VideoSearchParamsSchema } from '../schemas/search'
 
 export type VideoSearchParams = z.infer<typeof VideoSearchParamsSchema>
@@ -7,11 +7,6 @@ export type SearchSuggestion = z.infer<typeof searchSuggestionSchema>
 
 export type VideoMetadataSummary = z.infer<typeof VideoMetadataSummarySchema>
 
-export interface FaceData {
-  name: string
-  count: number
-  thumbnail?: string
-}
 export type LoadedFaces = Record<string, string[]>
 
 export interface GenerationResult {

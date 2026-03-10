@@ -1,4 +1,4 @@
-import { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { spawnFFmpeg } from '@media-utils/lib/ffmpeg'
 import path from 'path'
 import { existsSync } from 'fs'

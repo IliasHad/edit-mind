@@ -7,7 +7,7 @@ import { spawnFFprobe } from '../lib/ffmpeg';
 import { validateFile } from '@shared/utils/file'
 import { logger } from '@shared/services/logger'
 import { FFprobeMetadata, FFprobeStream } from '../types/ffmpeg'
-import { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import * as Jimp from 'jimp'
 import { readFile } from 'fs/promises'
 import micromatch from 'micromatch'

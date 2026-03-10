@@ -71,7 +71,6 @@ export const sceneSchema = z.object({
   labels: z.array(z.record(z.string(), z.string())).optional()
 })
 
-export type Scene = z.infer<typeof sceneSchema>
 
 export const chromaMetadataSchema = z.object({
   source: z.string(),
@@ -100,7 +99,6 @@ export const chromaMetadataSchema = z.object({
   text: z.string().optional(),
 })
 
-export type ChromaMetadata = z.infer<typeof chromaMetadataSchema>
 
 export const videoSchema = z.object({
   fileName: z.string().optional(),
