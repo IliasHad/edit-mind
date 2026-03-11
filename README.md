@@ -4,10 +4,13 @@ Edit Mind lets you **search your videos by content, not just filenames**. Recogn
 
 Perfect for creators, editors, and researchers who need smarter video management.
 
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
+
+https://github.com/user-attachments/assets/d525d5a3-9a12-42df-9687-70ee8206debb
+
+
 [![Docker](https://img.shields.io/badge/Containerized-Docker-blue.svg)](https://www.docker.com/)
 
 > ⚠️ **Development Status:** Edit Mind is currently in **active development** and **not yet production-ready**.
