@@ -67,8 +67,8 @@ model Folder {
 
   watcherEnabled    Boolean  @default(true)
   lastWatcherScan   DateTime?
-  excludePatterns   String[] @default(["*.part", "*.temp"])
-  includePatterns   String[] @default(["*.mp4", "*.mov", "*.avi", "*.mkv"])
+  excludePatterns   String[]
+  includePatterns   String[] 
 
   videos Video[]
 }
@@ -82,6 +82,7 @@ enum JobStatus {
 
 enum JobStage {
   starting
+  transcoding
   transcribing
   frame_analysis
   creating_scenes
@@ -113,6 +114,7 @@ model Job {
   textEmbeddingTime Int?  
   audioEmbeddingTime Int?  
   visualEmbeddingTime Int?
+  transcodingTime Int?
 
   frameAnalysisPlugins Json?
   frameAnalysisStages Json?

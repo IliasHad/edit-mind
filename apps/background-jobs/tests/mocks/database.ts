@@ -21,6 +21,7 @@ import {
   ExportStatus,
   Prisma,
 } from '@prisma/client'
+import { EXCLUDED_VIDEO_PATTERNS, SUPPORTED_VIDEO_PATTERNS } from '@shared/constants/video'
 import { nanoid } from 'nanoid'
 
 /**
@@ -315,8 +316,8 @@ export const MockFolderModel = {
       createdAt: new Date(),
       watcherEnabled: data.watcherEnabled || true,
       lastWatcherScan: data.lastWatcherScan || null,
-      excludePatterns: data.excludePatterns || ['*.part', '*.temp'],
-      includePatterns: data.includePatterns || ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+      excludePatterns: data.excludePatterns || EXCLUDED_VIDEO_PATTERNS,
+      includePatterns: data.includePatterns || SUPPORTED_VIDEO_PATTERNS,
     }
     this.data.set(folder.id, folder)
     return folder

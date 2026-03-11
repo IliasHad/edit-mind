@@ -31,8 +31,10 @@ import {
   videoFinalizationQueue,
   faceRenameQueue,
   updateVideoQueue,
+  transcodingVideoQueue
 } from './queue'
 
+import './jobs/transcoding'
 import './jobs/transcription'
 import './jobs/frameAnalysis'
 import './jobs/sceneCreation'
@@ -78,6 +80,7 @@ if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
 
   createBullBoard({
     queues: [
+      new BullMQAdapter(transcodingVideoQueue),
       new BullMQAdapter(transcriptionQueue),
       new BullMQAdapter(frameAnalysisQueue),
       new BullMQAdapter(sceneCreationQueue),

@@ -3,7 +3,7 @@ import { Sidebar } from '~/features/shared/components/Sidebar'
 import { type MetaFunction } from 'react-router'
 import { Tabs } from '~/features/settings/components/Tabs'
 import FolderSettings from '~/features/settings/components/FolderSettings'
-import { FolderArrowDownIcon, Cog6ToothIcon, UserCircleIcon } from '@heroicons/react/24/solid'
+import { FolderArrowDownIcon, Cog6ToothIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react'
 import { AdvancedSettings } from '~/features/settings/components/AdvancedSettings'
 

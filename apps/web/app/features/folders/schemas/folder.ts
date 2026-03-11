@@ -1,3 +1,4 @@
+import { EXCLUDED_VIDEO_PATTERNS, SUPPORTED_VIDEO_PATTERNS } from '@shared/constants/video'
 import { z } from 'zod'
 
 export const FolderCreateSchema = z.object({
@@ -7,10 +8,10 @@ export const FolderCreateSchema = z.object({
     .default(true),
   includePatterns: z
     .array(z.string())
-    .default(['*.mp4', '*.mov', '*.avi', '*.mkv']),
+    .default(SUPPORTED_VIDEO_PATTERNS),
   excludePatterns: z
     .array(z.string())
-    .default(['*.part', '*.temp']),
+    .default(EXCLUDED_VIDEO_PATTERNS),
 })
 
 export const FolderUpdateSchema = z.object({
@@ -19,8 +20,8 @@ export const FolderUpdateSchema = z.object({
     .default(true),
   includePatterns: z
     .array(z.string())
-    .default(['*.mp4', '*.mov', '*.avi', '*.mkv']),
+    .default(SUPPORTED_VIDEO_PATTERNS),
   excludePatterns: z
     .array(z.string())
-    .default(['*.part', '*.temp']),
+    .default(EXCLUDED_VIDEO_PATTERNS),
 })

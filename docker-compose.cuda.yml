@@ -20,7 +20,7 @@ services:
     networks:
       - app-network
     volumes:
-      - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ${HOST_MEDIA_PATH:-./media}:/media/videos:rw
       - .data:/app/data
       - ml-models:/app/ml-models:rw
     environment:

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { EXCLUDED_VIDEO_PATTERNS, SUPPORTED_VIDEO_PATTERNS } from '@shared/constants/video'
 
 test.beforeEach(async ({ page }) => {
     await page.goto('/auth/login')
@@ -145,8 +146,8 @@ test.describe('Setup Flow - Display and Navigation', () => {
                         createdAt: new Date().toISOString(),
                         watcherEnabled: true,
                         lastWatcherScan: null,
-                        excludePatterns: ['*.part', '*.temp'],
-                        includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+                        excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+                        includePatterns: SUPPORTED_VIDEO_PATTERNS,
                     },
                 }
 

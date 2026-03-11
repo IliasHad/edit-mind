@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { EXCLUDED_VIDEO_PATTERNS, SUPPORTED_VIDEO_PATTERNS } from '@shared/constants/video'
 
 test.describe('Settings Page - Display and Management', () => {
   test.beforeEach(async ({ page }) => {
@@ -96,8 +97,8 @@ test.describe('Settings Page - Display and Management', () => {
               createdAt: new Date().toISOString(),
               watcherEnabled: true,
               lastWatcherScan: null,
-              excludePatterns: ['*.part', '*.temp'],
-              includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+              excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+              includePatterns: SUPPORTED_VIDEO_PATTERNS,
             },
           ],
           totalVideos: 5,
@@ -199,8 +200,8 @@ test.describe('Settings Page', () => {
               createdAt: new Date().toISOString(),
               watcherEnabled: true,
               lastWatcherScan: null,
-              excludePatterns: ['*.part', '*.temp'],
-              includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+              excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+              includePatterns: SUPPORTED_VIDEO_PATTERNS
             },
           ],
           totalVideos: 1,
@@ -258,8 +259,8 @@ test.describe('Settings Persistence', () => {
             createdAt: new Date().toISOString(),
             watcherEnabled: true,
             lastWatcherScan: null,
-            excludePatterns: ['*.part', '*.temp'],
-            includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+            excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+            includePatterns: SUPPORTED_VIDEO_PATTERNS
           },
         ],
         totalVideos: 5,
@@ -310,8 +311,8 @@ test.describe('Settings Persistence', () => {
             createdAt: new Date().toISOString(),
             watcherEnabled: true,
             lastWatcherScan: null,
-            excludePatterns: ['*.part', '*.temp'],
-            includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+            excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+            includePatterns: SUPPORTED_VIDEO_PATTERNS
           },
           {
             id: '456',
@@ -417,8 +418,8 @@ test.describe('Settings Reset and Validation', () => {
               createdAt: new Date().toISOString(),
               watcherEnabled: true,
               lastWatcherScan: null,
-              excludePatterns: ['*.part', '*.temp'],
-              includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+              excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+              includePatterns: SUPPORTED_VIDEO_PATTERNS
             },
           ],
           totalVideos: 5,
@@ -543,8 +544,8 @@ test.describe('Settings Reset Functionality', () => {
             createdAt: new Date().toISOString(),
             watcherEnabled: true,
             lastWatcherScan: null,
-            excludePatterns: ['*.part', '*.temp'],
-            includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+            excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+            includePatterns: SUPPORTED_VIDEO_PATTERNS
           },
         ],
         totalVideos: 5,
@@ -613,8 +614,8 @@ test.describe('Settings Reset Functionality', () => {
             createdAt: new Date().toISOString(),
             watcherEnabled: true,
             lastWatcherScan: null,
-            excludePatterns: ['*.part', '*.temp'],
-            includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+            excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+            includePatterns: SUPPORTED_VIDEO_PATTERNS
           },
         ],
         totalVideos: 5,

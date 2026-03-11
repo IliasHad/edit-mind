@@ -4,10 +4,11 @@ import { logger } from '@shared/services/logger'
 import { UpdateSceneData, VideoIndexJobData, VideoProcessingData } from '@shared/types/video'
 import path from 'path'
 import { PROCESSED_VIDEOS_DIR } from '@shared/constants'
-import { transcriptionQueue, updateVideoQueue } from '@background-jobs/queue'
+import { transcodingVideoQueue, transcriptionQueue, updateVideoQueue } from '@background-jobs/queue'
 import { JobModel } from '@db/index'
 import { getVideoMetadata } from '@media-utils/utils/videos'
 import { createHash } from 'crypto'
+import { TRANSCODE_REQUIRED_EXTENSIONS } from '@shared/constants/video'
 
 export async function updateJob(
   job: Job<VideoIndexJobData>,
@@ -24,6 +25,7 @@ export async function updateJob(
     textEmbeddingTime?: number
     audioEmbeddingTime?: number
     visualEmbeddingTime?: number
+    transcodingTime?: number
     frameAnalysisPlugins?: Record<string, string | number>[]
     frameAnalysisStages?: Record<string, string | number>[]
     folderId?: string
@@ -50,6 +52,7 @@ export async function updateJob(
     if (data.textEmbeddingTime) updateData.textEmbeddingTime = data.textEmbeddingTime
     if (data.audioEmbeddingTime) updateData.audioEmbeddingTime = data.audioEmbeddingTime
     if (data.visualEmbeddingTime) updateData.visualEmbeddingTime = data.visualEmbeddingTime
+    if (data.transcodingTime) updateData.transcodingTime = data.transcodingTime
     if (data.frameAnalysisPlugins) {
       updateData.frameAnalysisPlugins = data.frameAnalysisPlugins
     }
@@ -78,6 +81,16 @@ export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: 
   const transcriptionPath = path.join(encodeURI(videoDir), 'transcription.json')
   const scenesPath = path.join(encodeURI(videoDir), 'scenes.json')
 
+  if (TRANSCODE_REQUIRED_EXTENSIONS.test(jobData.videoPath)) {
+    await transcodingVideoQueue.add('transcoding-video',
+      jobData, {
+      removeOnComplete: false,
+      removeOnFail: false,
+    }
+    )
+    logger.debug(`Video file queued for transcoding before indexing: ${jobData.videoPath}`)
+    return
+  }
   const metadata = await getVideoMetadata(jobData.videoPath)
 
   const videoData: VideoProcessingData = {
