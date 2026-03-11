@@ -8,6 +8,8 @@ Perfect for creators, editors, and researchers who need smarter video management
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
 
+### Year In Review Video 
+
 https://github.com/user-attachments/assets/d525d5a3-9a12-42df-9687-70ee8206debb
 
 
