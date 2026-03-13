@@ -53,7 +53,8 @@ export async function getAudioExtractor() {
   if (!audioModelCache) {
     const processor = await AutoProcessor.from_pretrained(AUDIO_EMBEDDING_MODEL)
     const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "cpu"
+      device: USE_GPU ? "cuda" : "cpu",
+      dtype: "fp16"
     })
 
     audioModelCache = { processor, model }
@@ -166,4 +167,15 @@ export async function getEmbeddingDimension(): Promise<number> {
     normalize: true,
   })
   return (testOutput.data as Float32Array).length
+}
+export async function loadAllEmbeddingModels(): Promise<void> {
+  logger.info('Pre-loading all embedding models...')
+
+  await Promise.all([
+    getTextExtractor().then(() => logger.info('Text model ready')),
+    getFrameExtractor().then(() => logger.info('Visual model ready')),
+    getAudioExtractor().then(() => logger.info('Audio model ready')),
+  ])
+
+  logger.info('All embedding models loaded')
 }

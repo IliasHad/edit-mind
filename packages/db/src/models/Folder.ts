@@ -23,7 +23,9 @@ export class FolderModel {
   static async findById(id: string) {
     return prisma.folder.findUnique({ where: { id } })
   }
-
+  static async upsert(options: Prisma.FolderUpsertArgs) {
+    return prisma.folder.upsert(options)
+  }
   static async findByPath(path: string) {
     return prisma.folder.findUnique({ where: { path } })
   }

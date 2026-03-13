@@ -61,8 +61,8 @@ class PythonService {
   }
 
   private async _doStart(): Promise<string> {
-    const maxRetries = 50
-    const retryDelay = 5000
+    const maxRetries = 100
+    const retryDelay = 10000
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {

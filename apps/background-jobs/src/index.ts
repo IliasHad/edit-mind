@@ -60,6 +60,7 @@ import { SMART_COLLECTION_CRON_PATTERN } from '@smart-collections/constants/coll
 import { rateLimiter } from './middleware/rateLimiter'
 import { checkServicesStatus } from './websockets'
 import { suggestionCache } from '@search/services/suggestion'
+import { loadAllEmbeddingModels } from '@embedding-core/services/extractors'
 
 const app = express()
 const server = createServer(app)
@@ -144,6 +145,7 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
     }
   )
 
+  await loadAllEmbeddingModels()
   logger.debug(`Background jobs server running on port ${env.BACKGROUND_JOBS_PORT}`)
   if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
     logger.warn(`Bull Board UI available at http://localhost:${env.BACKGROUND_JOBS_PORT}`)

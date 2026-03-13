@@ -19,6 +19,7 @@ interface VideosState {
   addVideoLabels: (id: string, labels: Record<string, string>[]) => Promise<void>
   clearError: () => void
   clearCurrentVideo: () => void
+  importDemoVideos: () => Promise<void>
 
   currentScenes: Scene[]
 
@@ -29,6 +30,7 @@ interface VideosState {
   relinkSuccess: boolean
   updateLocationSuccess: boolean
   addLabelsSuccess: boolean
+  importVideoSuccess: boolean
 
   videoExist: boolean
 
@@ -56,6 +58,7 @@ export const useVideosStore = create<VideosState>()(
         currentPagination: null,
         updateLocationSuccess: false,
         addLabelsSuccess: false,
+        importVideoSuccess: false,
 
         fetchVideos: async (pageNum, limit, query) => {
           set({ isLoading: true, error: null })
@@ -168,6 +171,19 @@ export const useVideosStore = create<VideosState>()(
         clearError: () => set({ error: null }),
 
         clearCurrentVideo: () => set({ currentVideo: null }),
+
+        importDemoVideos: async () => {
+          set({ isLoading: true, error: null })
+          try {
+            await apiClient.importDemoVideos()
+            set({ isLoading: false, importVideoSuccess: false })
+          } catch (error) {
+            set({
+              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              isLoading: false,
+            })
+          }
+        },
       }),
       {
         name: 'videos-storage',
