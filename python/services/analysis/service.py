@@ -1,9 +1,10 @@
 """Video analysis service."""
 from typing import Optional, Callable, List
 from pathlib import Path
+from threading import Event
 import time
 
-from core.types import AnalysisRequest, FrameAnalysis
+from core.types import AnalysisRequest, FrameAnalysis, AnalysisCancelledError
 from core.config import AnalysisConfig
 from core.errors import AnalysisError
 from services.base_service import BaseProcessingService
@@ -35,7 +36,20 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         self.plugin_manager = PluginManager(self.config)
         self.performance_metrics: List[PerformanceMetrics] = []
         self.metrics_collector = StageMetricsCollector()
-    
+        self._cancel_flags: dict[str, Event] = {}
+        self._cancelled_jobs: set[str] = set()
+
+    def cancel(self, job_id: str) -> None:
+        """Signal a running analysis job to stop."""
+        if job_id in self._cancel_flags:
+            logger.info(f"Cancelling analysis job {job_id}")
+            self._cancel_flags[job_id].set()
+        else:
+            # Job not yet running — mark it so _process_sync can bail immediately
+            logger.info(
+                f"Pre-cancelling analysis job {job_id} (not yet started)")
+            self._cancelled_jobs.add(job_id)
+
     def _process_sync(
         self,
         request: AnalysisRequest,
@@ -44,20 +58,33 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         """Synchronous analysis implementation."""
         start_time = time.time()
 
+        if request.job_id in self._cancelled_jobs:
+            logger.info(
+                f"Analysis job {request.job_id} was pre-cancelled, skipping")
+            self._cancelled_jobs.discard(request.job_id)
+            raise AnalysisCancelledError()
+
+        cancel_flag = Event()
+        self._cancel_flags[request.job_id] = cancel_flag
+
         try:
             # Setup plugins
             with StageTimer("plugin_setup") as timer:
                 self.plugin_manager.setup_plugins(
                     request.video_path, request.job_id)
             self._record_stage_metric(timer)
-            self.metrics_collector.record_execution("plugin_setup", time.time() - start_time)
+            self.metrics_collector.record_execution(
+                "plugin_setup", time.time() - start_time)
 
             # Analyze frames
             frame_analyses = self._analyze_frames(
                 request,
-                progress_callback
+                progress_callback,
+                cancel_flag
             )
-            self.metrics_collector.record_execution("frame_analysis", time.time() - start_time)
+            self.metrics_collector.record_execution(
+                "frame_analysis", time.time() - start_time)
+
             # Build result
             result = ResultBuilder.build_success_result(
                 video_path=request.video_path,
@@ -68,13 +95,16 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 processing_time=time.time() - start_time,
                 stage_metrics=self.metrics_collector.get_metrics()
             )
-            
-            # Rest plugin metrics after each video has been processed
+
+            # Reset plugin metrics after each video has been processed
             self.plugin_manager.reset_metrics()
             self.metrics_collector = StageMetricsCollector()
 
             return result
 
+        except AnalysisCancelledError:
+            logger.info(f"Analysis job {request.job_id} was cancelled")
+            raise
         except Exception as e:
             logger.error(f"Analysis failed: {e}")
             return ResultBuilder.build_error_result(
@@ -82,11 +112,14 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 error=str(e),
                 memory_stats=self.memory_monitor.get_stats() if self.memory_monitor else {}
             )
+        finally:
+            self._cancel_flags.pop(request.job_id, None)
 
     def _analyze_frames(
         self,
         request: AnalysisRequest,
-        progress_callback: Optional[Callable]
+        progress_callback: Optional[Callable],
+        cancel_flag: Event
     ) -> List[FrameAnalysis]:
         """Analyze video frames with plugins."""
         frame_analyses: List[FrameAnalysis] = []
@@ -95,7 +128,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         # Track progress
         total_frames_estimate = None
         frames_processed = 0
-        
+
         with StageTimer("frame_analysis") as timer:
             frame_generator = self.frame_processor.extract_frames_streaming(
                 request.video_path,
@@ -115,8 +148,14 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 "video_opening",
                 extraction_metrics["video_open_time"]
             )
-            
+
             for frame_idx, frame_data in enumerate(frame_generator):
+                if cancel_flag.is_set():
+                    logger.info(
+                        f"Cancellation detected at frame {frame_idx}, stopping analysis")
+                    self.plugin_manager.cleanup_plugins()
+                    raise AnalysisCancelledError()
+
                 # Get total frames from first frame
                 if total_frames_estimate is None:
                     total_frames_estimate = frame_data.get('total_frames', 0)
@@ -126,7 +165,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 # Process batch when buffer is full
                 if len(batch) >= self.config.frame_buffer_limit:
                     batch_results = self._process_batch(
-                        batch, request.video_path)
+                        batch, request.video_path, cancel_flag)
                     frame_analyses.extend(batch_results)
                     frames_processed += len(batch_results)
                     batch.clear()
@@ -171,15 +210,25 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
             f"Completed analysis: {len(frame_analyses)} frames processed")
         return frame_analyses
 
-    def _process_batch(self, batch: List, video_path: str) -> List[FrameAnalysis]:
+    def _process_batch(
+        self,
+        batch: List,
+        video_path: str,
+        cancel_flag: Optional[Event] = None 
+    ) -> List[FrameAnalysis]:
         """Process a batch of frames through plugins."""
         results: List[FrameAnalysis] = []
         video_hash = hashlib.md5(video_path.encode('utf-8')).hexdigest()
 
         for frame_data in batch:
+            if cancel_flag and cancel_flag.is_set():
+                logger.info("Cancellation detected mid-batch, stopping")
+                raise AnalysisCancelledError()
+
             # Initialize frame analysis
             frame_idx = frame_data['frame_idx']
-            thumbnail_path = os.path.join(self.config.thumbnail_dir, f"${video_hash}_{frame_idx}.jpeg")
+            thumbnail_path = os.path.join(
+                self.config.thumbnail_dir, f"${video_hash}_{frame_idx}.jpeg")
             analysis: FrameAnalysis = {
                 'start_time_ms': frame_data['timestamp_ms'],
                 'end_time_ms': frame_data['end_timestamp_ms'],
@@ -199,7 +248,8 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
             )
             start_thumb = time.time()
             self.save_frame(thumbnail_path, frame_data['frame'])
-            self.metrics_collector.record_execution("thumbnail_extraction", time.time() - start_thumb)
+            self.metrics_collector.record_execution(
+                "thumbnail_extraction", time.time() - start_thumb)
 
             results.append(analysis)
 
@@ -274,7 +324,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         try:
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            
+
             import json
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(result.to_dict(), f, indent=2, ensure_ascii=False)
@@ -283,7 +333,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         except Exception as e:
             logger.error(f"Failed to save results: {e}")
             raise AnalysisError(f"Failed to save results: {e}")
-        
+
     def save_frame(self, thumbnail_path: str, frame: np.ndarray) -> None:
         """Save frame resized as scene thumbnail """
         try:
@@ -300,7 +350,8 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 interpolation=cv2.INTER_AREA
             )
 
-            cv2.imwrite(thumbnail_path, resized_frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            cv2.imwrite(thumbnail_path, resized_frame,
+                        [cv2.IMWRITE_JPEG_QUALITY, 85])
 
         except Exception as e:
             logger.error(f"Failed to save frame: {e}")

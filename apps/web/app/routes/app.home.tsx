@@ -252,7 +252,7 @@ export default function Dashboard() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="space-y-3 max-w-7xl"
             >
-              <h2 className="text-lg font-semibold text-white mb-4">Processing queue"</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">Processing queue</h2>
               {jobs.map((job) => (
                 <JobCard job={job} />
               ))}

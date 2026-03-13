@@ -14,7 +14,7 @@ export class FolderModel {
         id: nanoid(),
         ...data,
         excludePatterns: data.excludePatterns ?? EXCLUDED_VIDEO_PATTERNS,
-        includePatterns: data.excludePatterns ?? SUPPORTED_VIDEO_PATTERNS
+        includePatterns: data.includePatterns ?? SUPPORTED_VIDEO_PATTERNS
       },
     })
     return folder

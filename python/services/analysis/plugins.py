@@ -2,16 +2,17 @@
 import importlib
 import inspect
 import time
-from typing import List, Dict
+from typing import List, Dict, Optional
 from dataclasses import asdict
 
 from core.config import AnalysisConfig
-from core.types import FrameAnalysis
+from core.types import FrameAnalysis, AnalysisCancelledError
 from monitoring.metrics import PluginMetricsCollector
 from services.logger import get_logger
 import numpy as np
 from plugins.base import AnalyzerPlugin, FrameAnalysis
 import traceback
+from threading import Event
 
 logger = get_logger(__name__)
 
@@ -95,10 +96,16 @@ class PluginManager:
         frame: np.ndarray,
         frame_analysis: FrameAnalysis,
         frame_idx: int,
-        video_path: str
+        video_path: str,
+        cancel_flag: Optional[Event] = None 
     ) -> FrameAnalysis:
         """Process frame through all applicable plugins."""
         for plugin in self.plugins:
+            
+            if cancel_flag and cancel_flag.is_set():
+                logger.info("Cancellation detected mid-batch, stopping")
+                raise AnalysisCancelledError()
+            
             if not self._should_run_plugin(plugin, frame_idx):
                 continue
 

@@ -1,5 +1,5 @@
 import type { MetaFunction } from 'react-router'
-import { VideoCameraIcon, LanguageIcon, PhotoIcon, SpeakerWaveIcon, CubeIcon } from '@heroicons/react/24/outline'
+import { VideoCameraIcon, LanguageIcon, PhotoIcon, SpeakerWaveIcon, CubeIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { getStageLabel, getStatusColor } from '~/features/jobs/utils'
@@ -7,6 +7,10 @@ import { JobStageIcon } from '~/features/jobs/components/JobStageIcon'
 import { JobStatusIcon } from '~/features/jobs/components/JobStatusIcon'
 import type { Job } from '@prisma/client'
 import { ArrowsRightLeftIcon } from '@heroicons/react/24/solid'
+import { JOB_STAGE_CANCELLABLE } from "@shared/constants/jobs"
+import { Button } from '@ui/components/Button'
+import { useJob } from '../hooks/useCurrentJob'
+import { useJobs } from '../hooks/useJobs'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Jobs | Edit Mind' }]
@@ -14,9 +18,31 @@ export const meta: MetaFunction = () => {
 
 interface JobCardProps {
   job: Job
+
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job }) => {
+
+export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
+  const canCancel = JOB_STAGE_CANCELLABLE.includes(job.stage) && job.status !== "cancelled" && job.status !== "error"
+  const canRetry = job.status === 'error' || job.status === 'cancelled'
+  const { cancelJob, retryJob, loading } = useJob()
+
+  const handleRetry = async () => {
+    try {
+      await retryJob(job.id)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const handleCancel = async () => {
+    try {
+      await cancelJob(job.id)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   return (
     <div
       key={job.id}
@@ -39,76 +65,108 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               <p className="text-xs text-white/40 font-mono">{new Date(job.updatedAt).toLocaleString()}</p>
             )}
           </div>
+
+
+
+          {canRetry && (
+            <Button
+              variant="secondary"
+              title="Retry job"
+              size="sm"
+              onClick={handleRetry}
+              disabled={loading}
+            >
+              <ArrowPathIcon className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </Button>
+          )}
+          {canCancel && (
+            <Button
+              variant="destructive"
+              title="Cancel job"
+              size="sm"
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              <XMarkIcon className="w-3.5 h-3.5" />
+              <span>Cancel</span>
+            </Button>
+          )}
+
+          <span
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(
+              job.status
+            )} uppercase tracking-wider whitespace-nowrap`}
+          >
+            {job.status}
+          </span>
         </div>
-        <span
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusColor(
-            job.status
-          )} uppercase tracking-wider whitespace-nowrap`}
-        >
-          {job.status}
-        </span>
       </div>
 
-      {job.status === 'processing' && (
-        <div className="relative h-1 bg-white/5">
-          <motion.div
-            className="absolute inset-y-0 left-0 bg-white"
-            initial={{ width: 0 }}
-            animate={{ width: `${job.progress}%` }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-          />
-        </div>
-      )}
+      {
+        job.status === 'processing' && (
+          <div className="relative h-1 bg-white/5">
+            <motion.div
+              className="absolute inset-y-0 left-0 bg-white"
+              initial={{ width: 0 }}
+              animate={{ width: `${job.progress}%` }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
+          </div>
+        )
+      }
 
-      {job.status === 'done' && (
-        <div className="px-5 pb-5 pt-3 border-t border-white/5">
-          <div className="grid grid-cols-3 gap-4 text-xs">
-            {job.transcodingTime && (
-              <div className="flex items-center gap-2">
-                <ArrowsRightLeftIcon className="w-3.5 h-3.5 text-white/40" />
-                <span className="text-white/60">Transcoding: {humanizeSeconds(job.transcodingTime)}</span>
-              </div>
-            )}
-            {job.transcriptionTime && (
-              <div className="flex items-center gap-2">
-                <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
-                <span className="text-white/60">Transcription: {humanizeSeconds(job.transcriptionTime)}</span>
-              </div>
-            )}
-            {job.frameAnalysisTime && (
-              <div className="flex items-center gap-2">
-                <VideoCameraIcon className="w-3.5 h-3.5 text-white/40" />
-                <span className="text-white/60">Frame Analysis: {humanizeSeconds(job.frameAnalysisTime)}</span>
-              </div>
-            )}
-            {job.sceneCreationTime && (
-              <div className="flex items-center gap-2">
-                <CubeIcon className="w-3.5 h-3.5 text-white/40" />
-                <span className="text-white/60">Scene Creation: {humanizeSeconds(job.sceneCreationTime)}</span>
-              </div>
-            )}
-            {(job.textEmbeddingTime ||
-              job.textEmbeddingTime === 0) && (
+      {
+        job.status === 'done' && (
+          <div className="px-5 pb-5 pt-3 border-t border-white/5">
+            <div className="grid grid-cols-3 gap-4 text-xs">
+              {job.transcodingTime && (
                 <div className="flex items-center gap-2">
-                  <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Text Embedding: {humanizeSeconds(job.textEmbeddingTime)}</span>
+                  <ArrowsRightLeftIcon className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-white/60">Transcoding: {humanizeSeconds(job.transcodingTime)}</span>
                 </div>
               )}
-            {job.visualEmbeddingTime && (
-              <div className="flex items-center gap-2">
-                <PhotoIcon className="w-3.5 h-3.5 text-white/40" />
-                <span className="text-white/60">Visual Embedding: {humanizeSeconds(job.visualEmbeddingTime)}</span>
-              </div>
-            )}
-            {job.audioEmbeddingTime && (
-              <div className="flex items-center gap-2">
-                <SpeakerWaveIcon className="w-3.5 h-3.5 text-white/40" />
-                <span className="text-white/60">Audio Embedding: {humanizeSeconds(job.audioEmbeddingTime)}</span>
-              </div>
-            )}
+              {job.transcriptionTime && (
+                <div className="flex items-center gap-2">
+                  <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-white/60">Transcription: {humanizeSeconds(job.transcriptionTime)}</span>
+                </div>
+              )}
+              {job.frameAnalysisTime && (
+                <div className="flex items-center gap-2">
+                  <VideoCameraIcon className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-white/60">Frame Analysis: {humanizeSeconds(job.frameAnalysisTime)}</span>
+                </div>
+              )}
+              {job.sceneCreationTime && (
+                <div className="flex items-center gap-2">
+                  <CubeIcon className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-white/60">Scene Creation: {humanizeSeconds(job.sceneCreationTime)}</span>
+                </div>
+              )}
+              {(job.textEmbeddingTime ||
+                job.textEmbeddingTime === 0) && (
+                  <div className="flex items-center gap-2">
+                    <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
+                    <span className="text-white/60">Text Embedding: {humanizeSeconds(job.textEmbeddingTime)}</span>
+                  </div>
+                )}
+              {job.visualEmbeddingTime && (
+                <div className="flex items-center gap-2">
+                  <PhotoIcon className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-white/60">Visual Embedding: {humanizeSeconds(job.visualEmbeddingTime)}</span>
+                </div>
+              )}
+              {job.audioEmbeddingTime && (
+                <div className="flex items-center gap-2">
+                  <SpeakerWaveIcon className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-white/60">Audio Embedding: {humanizeSeconds(job.audioEmbeddingTime)}</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   )
 }

@@ -19,14 +19,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
 
       if (!folder) return new Response(JSON.stringify({ error: 'Folder not found' }), { status: 404 })
 
-      await backgroundJobsFetch(`/internal/folders/${folder?.id}/trigger`, undefined, user, 'POST')
+      await backgroundJobsFetch(`/internal/folders/${folder.id}/trigger`, undefined, user, 'POST')
       return {
         folder,
       }
     }
     throw new Error('Folder ID not set')
   } catch (error) {
-    logger.error('Error fetching folder details: ' + error)
+    logger.error({ error }, 'Error fetching folder details')
     return new Response(JSON.stringify({ error: 'Failed to fetch folder details' }), { status: 500 })
   }
 }

@@ -78,6 +78,7 @@ enum JobStatus {
   processing
   done
   error
+  cancelled
 }
 
 enum JobStage {

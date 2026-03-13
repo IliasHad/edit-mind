@@ -78,6 +78,14 @@ class WebSocketServer:
             MessageType.TRANSCRIBE,
             self.message_handlers.handle_transcribe
         )
+        self.message_router.register_handler(
+            MessageType.CANCEL_TRANSCRIPTION,
+            self.message_handlers.handle_cancel_transcription
+        )
+        self.message_router.register_handler(
+            MessageType.CANCEL_ANALYSIS,
+            self.message_handlers.handle_cancel_analysis
+        )     
 
     async def handle_connection(self, websocket: ServerConnection) -> None:
         """Handle a WebSocket connection lifecycle."""

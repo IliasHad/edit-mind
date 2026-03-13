@@ -91,7 +91,6 @@ export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: 
     logger.debug(`Video file queued for transcoding before indexing: ${jobData.videoPath}`)
     return
   }
-  const metadata = await getVideoMetadata(jobData.videoPath)
 
   const videoData: VideoProcessingData = {
     ...jobData,
@@ -102,12 +101,17 @@ export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: 
   }
 
   // Assign priority: shorter videos = higher priority
-  let jobPriority: number
-  if (priority !== 0) {
-    jobPriority = priority // manual override
-  } else {
+  let jobPriority: number = priority
+  
+  if (jobPriority === 0) {
     // Short videos (<10 min) = 1, Long videos (~1h) = 10
-    jobPriority = metadata.duration < 600 ? 0 : 10
+    try {
+      const metadata = await getVideoMetadata(jobData.videoPath)
+      jobPriority = metadata.duration < 600 ? 0 : 10
+
+    } catch (error) {
+      logger.debug(error)
+    }
   }
 
   await transcriptionQueue.add('transcription', videoData, {

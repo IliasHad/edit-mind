@@ -1,5 +1,5 @@
 import type { Job } from '@prisma/client'
-import { ArrowPathIcon, CheckCircleIcon, ClockIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, CheckCircleIcon, ClockIcon, NoSymbolIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 export const JobStatusIcon = ({ status }: { status: Job['status'] }) => {
   switch (status) {
@@ -11,6 +11,8 @@ export const JobStatusIcon = ({ status }: { status: Job['status'] }) => {
       return <ClockIcon className="w-5 h-5 text-white/40" />
     case 'processing':
       return <ArrowPathIcon className="w-5 h-5 text-white animate-spin" />
+    case 'cancelled':
+      return <NoSymbolIcon className="w-5 h-5 text-white/30" />
     default:
       return null
   }

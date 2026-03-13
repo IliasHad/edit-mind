@@ -17,7 +17,8 @@ class PythonService {
   private client: WebSocket | null = null
   private serviceUrl: string
   private isRunning = false
-  private jobCallbacks: Map<string, JobCallbacks> = new Map()
+  private analysisCallbacks: Map<string, JobCallbacks<Analysis>> = new Map()
+  private transcriptionCallbacks: Map<string, JobCallbacks<Transcription>> = new Map()
   private startPromise: Promise<string> | null = null
 
   // TODO: We need to implement session for this websocket,
@@ -99,7 +100,8 @@ class PythonService {
       this.serviceProcess.kill('SIGTERM')
       this.serviceProcess = null
     }
-    this.jobCallbacks.clear()
+    this.analysisCallbacks.clear()
+    this.transcriptionCallbacks.clear()
     this.isRunning = false
   }
 
@@ -116,7 +118,7 @@ class PythonService {
       return
     }
 
-    this.jobCallbacks.set(job_id, {
+    this.analysisCallbacks.set(job_id, {
       onProgress: onProgress as (progress: TranscriptionProgress | AnalysisProgress) => void,
       onComplete: onComplete as (data: Analysis | Transcription) => void,
       onError,
@@ -130,7 +132,7 @@ class PythonService {
     try {
       this.client.send(JSON.stringify(message))
     } catch (error) {
-      this.jobCallbacks.delete(job_id)
+      this.analysisCallbacks.delete(job_id)
       onError(new Error(`Failed to send message: ${error}`))
     }
   }
@@ -142,13 +144,14 @@ class PythonService {
     onProgress: (progress: TranscriptionProgress) => void,
     onComplete: (data: Transcription) => void,
     onError: (error: Error) => void
+
   ): void {
     if (this.client?.readyState !== WebSocket.OPEN) {
       onError(new Error(`WebSocket not open. State: ${this.client?.readyState}`))
       return
     }
 
-    this.jobCallbacks.set(job_id, {
+    this.transcriptionCallbacks.set(job_id, {
       onProgress: onProgress as (progress: TranscriptionProgress | AnalysisProgress) => void,
       onComplete: onComplete as (data: Analysis | Transcription) => void,
       onError,
@@ -162,8 +165,36 @@ class PythonService {
     try {
       this.client?.send(JSON.stringify(message))
     } catch (error) {
-      this.jobCallbacks.delete(job_id)
+      this.transcriptionCallbacks.delete(job_id)
       onError(new Error(`Failed to send message: ${error}`))
+    }
+  }
+
+  public cancelAnalysis(job_id: string): void {
+    if (this.client?.readyState !== WebSocket.OPEN) {
+      logger.warn(`Cannot cancel analysis for job ${job_id}: WebSocket not open`)
+      return
+    }
+
+    try {
+      this.client.send(JSON.stringify({ type: 'cancel_analysis', payload: { job_id } }))
+      logger.debug(`Cancelled analysis for job ${job_id}`)
+    } catch (error) {
+      logger.error({ error, job_id }, 'Failed to send cancel_analysis message')
+    }
+  }
+
+  public cancelTranscription(job_id: string): void {
+    if (this.client?.readyState !== WebSocket.OPEN) {
+      logger.warn(`Cannot cancel transcription for job ${job_id}: WebSocket not open`)
+      return
+    }
+
+    try {
+      this.client.send(JSON.stringify({ type: 'cancel_transcription', payload: { job_id } }))
+      logger.debug(`Cancelled transcription for job ${job_id}`)
+    } catch (error) {
+      logger.error({ error, job_id }, 'Failed to send cancel_transcription message')
     }
   }
 
@@ -211,11 +242,11 @@ class PythonService {
             return
           }
 
-          const callbacks = this.jobCallbacks.get(job_id)
+          const callbacks = this.analysisCallbacks.get(job_id) || this.transcriptionCallbacks.get(job_id)
 
           if (!callbacks) {
             logger.warn(`No callbacks registered for job_id: ${job_id}`)
-            throw new Error(`No callbacks registered for job_id: ${job_id}`)
+            return 
           }
 
           switch (type) {
@@ -225,12 +256,12 @@ class PythonService {
 
             case 'analysis_completed':
               callbacks.onComplete?.(payload)
-              this.jobCallbacks.delete(job_id)
+              this.analysisCallbacks.delete(job_id)
               break
 
             case 'analysis_error':
               callbacks.onError?.(new Error(payload.message || 'Analysis failed'))
-              this.jobCallbacks.delete(job_id)
+              this.analysisCallbacks.delete(job_id)
               break
 
             case 'transcription_progress':
@@ -239,12 +270,12 @@ class PythonService {
 
             case 'transcription_completed':
               callbacks.onComplete?.(payload)
-              this.jobCallbacks.delete(job_id)
+              this.transcriptionCallbacks.delete(job_id)
               break
 
             case 'transcription_error':
               callbacks.onError?.(new Error(payload.message || 'Transcription failed'))
-              this.jobCallbacks.delete(job_id)
+              this.transcriptionCallbacks.delete(job_id)
               break
 
             default:

@@ -28,7 +28,11 @@ export function analyzeVideo(
         }
       },
       (data) => {
-        resolve(data)
+        if (data.cancelled) {
+          resolve(undefined)
+        } else {
+          resolve(data)
+        }
       },
       (error) => {
         reject(error)

@@ -11,6 +11,7 @@ import { frameAnalysisQueue } from '@background-jobs/queue'
 import { pythonService } from '@shared/services/pythonService'
 import { USE_EXTERNAL_ML_SERVICE } from '@shared/constants'
 import { env } from '@background-jobs/utils/env'
+import { JobModel } from 'db'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = false, transcriptionPath } = job.data
@@ -28,6 +29,13 @@ async function processVideo(job: Job<VideoProcessingData>) {
   try {
     if (!pythonService.isServiceRunning()) {
       await pythonService.start()
+    }
+
+    const videoJob = await JobModel.findById(jobId)
+
+    if (videoJob?.status === "cancelled") {
+      logger.info({ jobId }, 'Transcription cancelled, stopping pipeline')
+      return
     }
 
     const videoDir = path.dirname(transcriptionPath)
@@ -67,6 +75,11 @@ async function processVideo(job: Job<VideoProcessingData>) {
         },
         'Transcription processing complete'
       )
+      // result is undefined when cancelled — don't proceed to frame analysis
+      if (!result) {
+        logger.info({ jobId }, 'Transcription cancelled, stopping pipeline')
+        return
+      }
 
       await updateJob(job, { transcriptionTime })
     } else {
