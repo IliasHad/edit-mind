@@ -62,4 +62,8 @@ export const apiClient = {
                 labels,
             }),
         }),
+    importDemoVideos: () =>
+        apiClient.request<void>(`/api/import-videos`, {
+            method: 'POST',
+        }),
 }

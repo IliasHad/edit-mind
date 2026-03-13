@@ -27,3 +27,18 @@ export const IS_TESTING = process.env.NODE_ENV === 'testing'
 export const MAX_MESSAGES_PER_CHAT = 10
 
 export const USE_EXTERNAL_ML_SERVICE = process.env.USE_EXTERNAL_ML_SERVICE === 'true'
+
+export const DEMO_VIDEOS= [
+  {
+    filename: 'biking.mp4',
+    url: 'https://github.com/IliasHad/edit-mind/raw/refs/heads/main/videos/biking.mp4',
+  },
+  {
+    filename: 'smile.mp4',
+    url: 'https://github.com/IliasHad/edit-mind/raw/refs/heads/main/videos/smile.mp4',
+  },
+  {
+    filename: 'nature.mp4',
+    url: 'https://github.com/IliasHad/edit-mind/raw/refs/heads/main/videos/nature.mp4',
+  },
+]

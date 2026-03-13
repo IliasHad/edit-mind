@@ -2,10 +2,15 @@ import express from 'express'
 import path from 'path'
 import { addVideoIndexingJob, addVideoUpdateJob } from '../services/videoIndexer'
 import { logger } from '@shared/services/logger'
-import { FolderModel, JobModel } from '@db/index'
+import { FolderModel, generateId, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
 import { VideoReIndexingSchema, VideoUpdateSchema } from '../schemas/indexer'
 import { removeFailedJobs } from '@background-jobs/utils/jobs'
+import { DEMO_VIDEOS, MEDIA_BASE_PATH } from '@shared/constants'
+import { existsSync, mkdirSync } from 'fs';
+import { EXCLUDED_VIDEO_PATTERNS, SUPPORTED_VIDEO_PATTERNS } from '@shared/constants/video'
+import { pipeline } from 'stream/promises'
+import { createWriteStream } from 'fs'
 
 const router = express.Router()
 
@@ -105,7 +110,7 @@ router.put('/update', async (req, res) => {
     if (!success) {
       return res.status(400).json({ error: 'Invalid request body' })
     }
-    
+
     await addVideoUpdateJob(data)
 
     res.json({
@@ -114,6 +119,82 @@ router.put('/update', async (req, res) => {
   } catch (error) {
     logger.error({ error }, 'Failed to update video metadata')
     res.status(500).json({ error: 'Failed to update video metadata' })
+  }
+})
+
+router.post('/import-videos', async (req, res) => {
+  try {
+    const demoDir = path.join(MEDIA_BASE_PATH, 'Edit Mind Demo')
+
+    if (!existsSync(demoDir)) {
+      mkdirSync(demoDir, { recursive: true })
+    }
+
+    const folder = await FolderModel.upsert({
+      where: {
+        path: demoDir,
+      },
+      create: {
+        path: demoDir,
+        watcherEnabled: false,
+        userId: req.userId,
+        excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+        includePatterns: SUPPORTED_VIDEO_PATTERNS,
+        id: generateId()
+      },
+      update: {
+        lastScanned: new Date()
+      }
+    })
+
+    const count = await JobModel.count({
+      where: {
+        folderId: folder.id
+      },
+    })
+
+    if (count > 0) {
+      return res.json({ message: 'Demo videos already imported and we are processing them' })
+    }
+
+    for (const { filename, url } of DEMO_VIDEOS) {
+      const dest = path.join(demoDir, filename)
+
+      if (!existsSync(dest)) {
+        const response = await fetch(url)
+
+        if (!response.ok || !response.body) {
+          throw new Error(`Failed to download ${filename}: ${response.statusText}`)
+        }
+
+        await pipeline(response.body, createWriteStream(dest))
+      }
+
+      const stats = await stat(dest)
+
+      const job = await JobModel.create({
+        videoPath: dest,
+        userId: folder.userId,
+        folderId: folder.id,
+        fileSize: BigInt(stats.size),
+      })
+      await addVideoIndexingJob(
+        {
+          videoPath: dest,
+          jobId: job.id,
+          forceReIndexing: true
+        },
+        100
+      )
+    }
+    await FolderModel.update(folder.id, {
+      watcherEnabled: true
+    })
+
+    res.json({ message: 'Demo videos imported successfully' })
+  } catch (error) {
+    logger.error({ error }, 'Failed to import demo videos')
+    res.status(500).json({ error: 'Failed to import demo videos' })
   }
 })
 
