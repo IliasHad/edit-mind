@@ -4,7 +4,7 @@ import { AUDIO_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
 import { cleanupAudio, extractSceneAudio, hasAudioStream } from '@media-utils/utils/audio'
 import { embedSceneAudio } from '../services'
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { sceneToVectorFormat } from '@vector/utils/shared'
 import { embedAudios } from '@embedding-media/services/embed'
 

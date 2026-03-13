@@ -1,4 +1,4 @@
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -77,10 +77,9 @@ export default function ScenesList({
                 className={`
                   relative h-full rounded-xl overflow-hidden
                   transition-all duration-200
-                  ${
-                    isActive
-                      ? 'bg-black/5 dark:bg-white/5 ring-1 ring-black/10 dark:ring-white/10'
-                      : 'bg-transparent hover:bg-black/2 dark:hover:bg-white/2'
+                  ${isActive
+                    ? 'bg-black/5 dark:bg-white/5 ring-1 ring-black/10 dark:ring-white/10'
+                    : 'bg-transparent hover:bg-black/2 dark:hover:bg-white/2'
                   }
                 `}
               >
@@ -96,10 +95,9 @@ export default function ScenesList({
                         className={`
                           inline-flex items-center justify-center w-6 h-6 text-xs font-medium rounded-full
                           backdrop-blur-sm
-                          ${
-                            isActive
-                              ? 'bg-black/90 dark:bg-white/90 text-white dark:text-black'
-                              : 'bg-white/90 dark:bg-black/90 text-black dark:text-white'
+                          ${isActive
+                            ? 'bg-black/90 dark:bg-white/90 text-white dark:text-black'
+                            : 'bg-white/90 dark:bg-black/90 text-black dark:text-white'
                           }
                         `}
                       >
@@ -113,10 +111,9 @@ export default function ScenesList({
                       className={`
                         text-xs leading-relaxed line-clamp-3
                         transition-colors duration-150
-                        ${
-                          isActive
-                            ? 'text-black dark:text-white font-medium'
-                            : 'text-black/60 dark:text-white/60'
+                        ${isActive
+                          ? 'text-black dark:text-white font-medium'
+                          : 'text-black/60 dark:text-white/60'
                         }
                       `}
                     >

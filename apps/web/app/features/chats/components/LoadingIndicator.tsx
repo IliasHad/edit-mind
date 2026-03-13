@@ -1,5 +1,5 @@
 import type { MessageStage } from '@prisma/client'
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 
 interface LoadingIndicatorProps {
   stage?: MessageStage | null

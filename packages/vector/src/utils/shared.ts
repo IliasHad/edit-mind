@@ -1,4 +1,4 @@
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { logger } from '@shared/services/logger'
 import type { DetectedTextData, FaceData, ObjectData, TranscriptionWord } from '@shared/types/scene'
 import type { Metadata } from 'chromadb'

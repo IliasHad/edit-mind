@@ -1,5 +1,5 @@
 import type { Metadata, QueryResult } from 'chromadb'
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { metadataToScene } from '@vector/utils/shared'
 
 export function collectScenesFromQuery(

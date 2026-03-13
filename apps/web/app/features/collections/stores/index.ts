@@ -1,4 +1,4 @@
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { CollectionWithItems } from '../types'

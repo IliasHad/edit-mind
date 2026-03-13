@@ -1,4 +1,4 @@
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import type { CollectionWithItems } from '../types'
 import type { SortOption, SortOrder } from '~/features/videos/types'
 

@@ -3,3 +3,4 @@ export { ConfirmationModal } from './components/ConfirmationModal';
 export { DeleteModal } from './components/DeleteModal';
 export { Modal } from './components/Modal';
 export { Disclosure } from './components/Disclosure';
+export { AlertModal } from './components/AlertModal';

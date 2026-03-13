@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { VideoResults } from './VideoResults'
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { motion } from 'framer-motion'
 import { FilmIcon, ArrowDownTrayIcon } from '@heroicons/react/24/solid'
 import { useCurrentChat } from '../hooks/useCurrentChat'

@@ -3,6 +3,7 @@
   "version": "0.14.5",
   "description": "AI-Powered Video Indexing and Search",
   "type": "module",
+  "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "Edit Mind",
@@ -27,5 +28,9 @@
     "pino": "^10.1.0",
     "pino-pretty": "^13.1.2",
     "@types/jsonwebtoken": "^9.0.2"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
   }
 }

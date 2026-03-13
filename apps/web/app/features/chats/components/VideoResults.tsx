@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import type { Scene } from '@shared/schemas'
+import type { Scene } from '@shared/types'
 import { AnimatePresence } from 'framer-motion'
 import { SceneCard } from './SceneCard'
 import { PreviewModal } from './PreviewModal'

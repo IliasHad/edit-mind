@@ -1,7 +1,7 @@
 {
   "name": "ui",
   "version": "0.14.5",
-  "private": true,
+  "private": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -20,5 +20,9 @@
   },
   "dependencies": {
     "tailwind-merge": "^3.4.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
   }
 }
