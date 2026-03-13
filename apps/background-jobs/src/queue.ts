@@ -158,6 +158,16 @@ export const updateVideoQueue = createQueue('update-video', {
   },
 })
 
+export const transcodingVideoQueue = createQueue('transcoding-video', {
+  defaultJobOptions: {
+    attempts: 5,
+    backoff: {
+      type: 'exponential',
+      delay: 3000,
+    },
+  },
+})
+
 export const videoProcessingQueues = [
   transcriptionQueue,
   frameAnalysisQueue,
@@ -165,4 +175,5 @@ export const videoProcessingQueues = [
   textEmbeddingQueue,
   visualEmbeddingQueue,
   audioEmbeddingQueue,
+  transcodingVideoQueue
 ]

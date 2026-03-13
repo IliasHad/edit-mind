@@ -6,6 +6,7 @@ import { getStageLabel, getStatusColor } from '~/features/jobs/utils'
 import { JobStageIcon } from '~/features/jobs/components/JobStageIcon'
 import { JobStatusIcon } from '~/features/jobs/components/JobStatusIcon'
 import type { Job } from '@prisma/client'
+import { ArrowsRightLeftIcon } from '@heroicons/react/24/solid'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Jobs | Edit Mind' }]
@@ -62,6 +63,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
       {job.status === 'done' && (
         <div className="px-5 pb-5 pt-3 border-t border-white/5">
           <div className="grid grid-cols-3 gap-4 text-xs">
+            {job.transcodingTime && (
+              <div className="flex items-center gap-2">
+                <ArrowsRightLeftIcon className="w-3.5 h-3.5 text-white/40" />
+                <span className="text-white/60">Transcoding: {humanizeSeconds(job.transcodingTime)}</span>
+              </div>
+            )}
             {job.transcriptionTime && (
               <div className="flex items-center gap-2">
                 <LanguageIcon className="w-3.5 h-3.5 text-white/40" />

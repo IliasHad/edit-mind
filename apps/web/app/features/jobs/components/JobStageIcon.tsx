@@ -7,6 +7,7 @@ import {
   CubeIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
+import { ArrowsRightLeftIcon } from '@heroicons/react/24/solid';
 
 export const JobStageIcon = ({ stage }: { stage: Job['stage'] }) => {
   switch (stage) {
@@ -24,6 +25,8 @@ export const JobStageIcon = ({ stage }: { stage: Job['stage'] }) => {
       return <PhotoIcon className="w-4 h-4" />
     case 'embedding_audio':
       return <SpeakerWaveIcon className="w-4 h-4" />
+    case 'transcoding':
+      return <ArrowsRightLeftIcon className="w-4 h-4" />
     default:
       return null
   }

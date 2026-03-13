@@ -2,6 +2,8 @@ import type { Job } from "@prisma/client"
 
 export const getStageLabel = (stage: Job['stage']) => {
     switch (stage) {
+        case 'transcoding':
+            return 'Transcoding'
         case 'starting':
             return 'Starting'
         case 'transcribing':

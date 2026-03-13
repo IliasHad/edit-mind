@@ -1,5 +1,3 @@
-import 'dotenv/config'
-
 // Directories
 export const THUMBNAILS_DIR = process.env.THUMBNAILS_PATH || '.thumbnails'
 export const FACES_DIR = process.env.FACES_DIR || '.faces'
@@ -8,7 +6,6 @@ export const UNKNOWN_FACES_DIR = process.env.UNKNOWN_FACES_DIR || '.unknown_face
 
 export const CACHE_FILE = '.locations.json'
 
-export const SUPPORTED_VIDEO_EXTENSIONS = /\.(mp4|mov|avi|mkv)$/i
 
 // Redis Cache
 export const CACHE_TTL = 5 * 60 * 1000 // 5 minutes

@@ -1,6 +1,7 @@
 import path from 'path'
 import { logger } from '@shared/services/logger'
 import { THUMBNAILS_DIR } from '@shared/constants'
+import { EXCLUDED_VIDEO_PATTERNS, SUPPORTED_VIDEO_PATTERNS } from '@shared/constants/video'
 import { generateVideoCover } from '@media-utils/utils/thumbnails'
 import { Video } from '@shared/types/video'
 import { FolderModel, UserModel, VideoModel, generateId } from '@db/index'
@@ -30,8 +31,8 @@ export async function importVideoFromVectorDb(video: Video): Promise<Folder | un
           path: path.dirname(video.source),
           watcherEnabled: true,
           userId: user.id,
-          excludePatterns: ['*.part', '*.temp'],
-          includePatterns: ['*.mp4', '*.mov', '*.avi', '*.mkv'],
+          excludePatterns: EXCLUDED_VIDEO_PATTERNS,
+          includePatterns: SUPPORTED_VIDEO_PATTERNS,
         })
       }
 

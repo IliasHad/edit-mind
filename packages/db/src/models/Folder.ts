@@ -1,6 +1,7 @@
 import type { Folder, Prisma } from '@prisma/client'
 import prisma from '../db'
 import { nanoid } from 'nanoid'
+import { EXCLUDED_VIDEO_PATTERNS, SUPPORTED_VIDEO_PATTERNS } from '@shared/constants/video'
 
 type FolderUpdateData = Partial<Omit<Folder, 'id' | 'userId'>>
 
@@ -12,6 +13,8 @@ export class FolderModel {
       data: {
         id: nanoid(),
         ...data,
+        excludePatterns: data.excludePatterns ?? EXCLUDED_VIDEO_PATTERNS,
+        includePatterns: data.excludePatterns ?? SUPPORTED_VIDEO_PATTERNS
       },
     })
     return folder
