@@ -1,7 +1,13 @@
 services:
   background-jobs:
     restart: unless-stopped
-    image: ghcr.io/iliashad/edit-mind-background-jobs:latest-gpu
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.background-jobs
+      target: production
+      args:
+        TARGET_BASE: base-gpu
+    image: edit-mind-background-jobs:local-gpu
     container_name: edit-mind-background-jobs
     env_file:
       - .env.system
@@ -20,12 +26,20 @@ services:
     networks:
       - app-network
     volumes:
+      # To use multiple media directories:
+      # 1. Set MEDIA_BASE_PATH=/media in your .env file
+      # 2. Mount your volumes under /media like this:
+      # - /path/to/videos:/media/videos:ro
+      # - /path/to/movies:/media/movies:ro
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ${HOST_MEDIA_PATH2:-./media2}:/media/videos2:ro
+      - ${HOST_MEDIA_PATH3:-./media3}:/media/videos3:ro
       - .data:/app/data
       - ml-models:/app/ml-models:rw
     environment:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      MEDIA_BASE_PATH: /media
     deploy:
       resources:
         reservations:
@@ -35,7 +49,11 @@ services:
               capabilities: [gpu]
   web:
     restart: unless-stopped
-    image: ghcr.io/iliashad/edit-mind-web:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+      target: production
+    image: edit-mind-web:local
     container_name: edit-mind-web
     env_file:
       - .env.system
@@ -50,7 +68,14 @@ services:
       redis:
         condition: service_healthy
     volumes:
+      # To use multiple media directories:
+      # 1. Set MEDIA_BASE_PATH=/media in your .env file
+      # 2. Mount your volumes under /media like this:
+      # - /path/to/videos:/media/videos:ro
+      # - /path/to/movies:/media/movies:ro
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ${HOST_MEDIA_PATH2:-./media2}:/media/videos2:ro
+      - ${HOST_MEDIA_PATH3:-./media3}:/media/videos3:ro
       - .data:/app/data
     networks:
       - app-network
@@ -118,7 +143,11 @@ services:
         - "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
   ml:
     restart: unless-stopped
-    image: ghcr.io/iliashad/edit-mind-ml:latest-gpu
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ml
+      target: production-gpu
+    image: edit-mind-ml:local-gpu
     container_name: edit-mind-ml
     env_file:
       - .env.system
@@ -133,10 +162,18 @@ services:
       HF_HOME: /ml-models/huggingface  
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      MEDIA_BASE_PATH: /media
     networks:
       - app-network
     volumes:
+      # To use multiple media directories:
+      # 1. Set MEDIA_BASE_PATH=/media in your .env file
+      # 2. Mount your volumes under /media like this:
+      # - /path/to/videos:/media/videos:ro
+      # - /path/to/movies:/media/movies:ro
       - ${HOST_MEDIA_PATH:-./media}:/media/videos:ro
+      - ${HOST_MEDIA_PATH2:-./media2}:/media/videos2:ro
+      - ${HOST_MEDIA_PATH3:-./media3}:/media/videos3:ro
       - ml-models:/ml-models:rw
       - .data:/app/data
     deploy:
