@@ -54,7 +54,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build ${{ matrix.package.name }}
-        run: pnpm --filter ${{ matrix.package.name }} build 
+        run: pnpm --filter prisma generate && pnpm --filter ${{ matrix.package.name }} build 
 
       - name: Publish ${{ matrix.package.name }}
         if: startsWith(github.ref, 'refs/tags/')
