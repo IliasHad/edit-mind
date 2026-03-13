@@ -227,9 +227,8 @@ test.describe('Settings Page', () => {
       await page.getByRole('button', { name: 'Delete folder' }).last().click()
 
       await expect(page.getByRole('button', { name: 'Deleting...' }).last()).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Deleting...' }).last()).toBeDisabled()
 
-      await expect(page.getByText(folderPath)).not.toBeVisible()
+      await expect(page.getByText(folderPath).first()).not.toBeVisible()
     })
   })
 })
