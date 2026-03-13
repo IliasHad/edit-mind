@@ -23,6 +23,7 @@ export interface Transcription {
   text: string
   segments: TranscriptionSegment[]
   language: string
+  cancelled?: boolean
 }
 export type TranscriptionProgress = {
   progress: number

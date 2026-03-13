@@ -76,7 +76,9 @@ class MessageType(Enum):
     TRANSCRIPTION_ERROR = "transcription_error"
     PING = "ping"
     PONG = "pong"
-
+    
+    CANCEL_ANALYSIS = "cancel_analysis"
+    CANCEL_TRANSCRIPTION = "cancel_transcription"
 
 @dataclass(frozen=True)
 class JobRequest:
@@ -95,4 +97,10 @@ class AnalysisRequest(JobRequest):
 @dataclass(frozen=True)
 class TranscriptionRequest(JobRequest):
     """Transcription job request."""
+    pass
+class AnalysisCancelledError(Exception):
+    """Raised when an analysis job is cancelled."""
+    pass
+class TranscriptionCancelledError(Exception):
+    """Raised when a transcription job is cancelled."""
     pass

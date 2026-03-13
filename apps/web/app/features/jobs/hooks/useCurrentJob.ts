@@ -5,7 +5,7 @@ import { useParams } from 'react-router'
 export const useJob = () => {
     const { id } = useParams()
 
-    const { fetchJobById, clearError, isLoading, currentJob, retryJob, deleteJob, clearCurrentJob, error, } = useJobsStore()
+    const { fetchJobById, clearError, isLoading, currentJob, retryJob, deleteJob, clearCurrentJob, error, cancelJob } = useJobsStore()
 
     useEffect(() => {
         if (id) {
@@ -23,6 +23,7 @@ export const useJob = () => {
         currentJob,
         retryJob,
         deleteJob,
-        error
+        error,
+        cancelJob
     }
 }

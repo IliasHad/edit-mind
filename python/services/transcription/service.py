@@ -2,9 +2,10 @@
 import json
 import time
 from pathlib import Path
+from threading import Event
 from typing import Optional, Callable
 
-from core.types import TranscriptionRequest
+from core.types import TranscriptionRequest, TranscriptionCancelledError
 from core.config import TranscriptionConfig
 from core.errors import TranscriptionError
 from services.base_service import BaseProcessingService
@@ -28,6 +29,19 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
 
         self.model_manager = WhisperModelManager(self.config)
         self.model_manager.download_model()
+        self._cancel_flags: dict[str, Event] = {}
+        self._cancelled_jobs: set[str] = set()
+
+    def cancel(self, job_id: str) -> None:
+        """Signal a running transcription job to stop."""
+        if job_id in self._cancel_flags:
+            logger.info(f"Cancelling transcription job {job_id}")
+            self._cancel_flags[job_id].set()
+        else:
+            # Job not yet running — mark it so _process_sync can bail immediately
+            logger.info(
+                f"Pre-cancelling analysis job {job_id} (not yet started)")
+            self._cancelled_jobs.add(job_id)
 
     def _process_sync(
         self,
@@ -37,6 +51,16 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
         """Synchronous transcription implementation."""
         logger.info(f"Starting transcription: {request.video_path}")
         start_time = time.time()
+
+        if request.job_id in self._cancelled_jobs:
+            logger.info(
+                f"Transcription job {request.job_id} was pre-cancelled, skipping")
+            self._cancelled_jobs.discard(request.job_id)
+            raise TranscriptionCancelledError()
+
+        cancel_flag = Event()
+        self._cancel_flags[request.job_id] = cancel_flag
+
         try:
             # Get model (loads if needed)
             model = self.model_manager.get_model()
@@ -45,7 +69,8 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
             result = self._transcribe_video(
                 model,
                 request.video_path,
-                progress_callback
+                progress_callback,
+                cancel_flag
             )
 
             # Final progress update
@@ -57,15 +82,21 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                 f"Transcription completed in {time.time() - start_time:.1f}s")
             return result
 
+        except TranscriptionCancelledError:
+            logger.info(f"Transcription job {request.job_id} was cancelled")
+            raise
         except Exception as e:
             logger.error(f"Transcription failed: {e}")
             raise TranscriptionError(f"Transcription failed: {e}")
+        finally:
+            self._cancel_flags.pop(request.job_id, None)
 
     def _transcribe_video(
         self,
         model,
         video_path: str,
-        progress_callback: Optional[Callable]
+        progress_callback: Optional[Callable],
+        cancel_flag: Event
     ) -> TranscriptionResult:
         """Transcribe video with progress updates."""
         try:
@@ -91,6 +122,9 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
             total_duration = info.duration if info else 0.0
 
             for seg in segments:
+                if cancel_flag.is_set():
+                    raise TranscriptionCancelledError()
+
                 # Create segment
                 segment = Segment(
                     id=seg.id,
@@ -121,6 +155,7 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                         int(percent),
                         self._format_time(processed_duration)
                     )
+
             end = time.time()
             processing_time = end - start
             return TranscriptionResult(
@@ -130,6 +165,8 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                 processing_time=processing_time
             )
 
+        except TranscriptionCancelledError:
+            raise
         except (RuntimeError, IndexError) as e:
             error_msg = str(e).lower()
             if any(x in error_msg for x in ["no audio", "failed to load", "tuple index"]):

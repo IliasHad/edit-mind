@@ -46,4 +46,12 @@ export const apiClient = {
     apiClient.request<void>(`/api/jobs/retry`, {
       method: 'POST',
     }),
+  retryJob: (id: string) =>
+    apiClient.request<{ job: Job }>(`/api/jobs/${id}/retry`, {
+      method: 'POST',
+    }),
+  cancelJob: (id: string) =>
+    apiClient.request<{ job: Job }>(`/api/jobs/${id}/cancel`, {
+      method: 'POST',
+    }),
 }

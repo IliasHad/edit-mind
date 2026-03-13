@@ -17,6 +17,7 @@ interface JobsState {
   fetchJobById: (id: string) => Promise<Job | null>
   deleteJob: (id: string) => Promise<void>
   retryJob: (id: string) => Promise<void>
+  cancelJob: (id: string) => Promise<void>
 
   updateJobProgress: (id: string, progress: Partial<Job>) => void
 
@@ -126,6 +127,43 @@ export const useJobsStore = create<JobsState>()(
           jobs: state.jobs.map((j) => (j.id === id ? { ...j, ...progress } : j)),
           currentJob: state.currentJob?.id === id ? { ...state.currentJob, ...progress } : state.currentJob,
         }))
+      },
+
+
+      retryJob: async (id: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const { job } = await apiClient.retryJob(id)
+
+          set((state) => ({
+            ...state,
+            isLoading: false,
+            jobs: state.jobs.map((j) => (j.id === id ? { ...job } : j)),
+          }))
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+            isLoading: false,
+          })
+        }
+      },
+
+      cancelJob: async (id: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const { job } = await apiClient.cancelJob(id)
+
+          set((state) => ({
+            ...state,
+            isLoading: false,
+            jobs: state.jobs.map((j) => (j.id === id ? { ...job } : j)),
+          }))
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error occurred',
+            isLoading: false,
+          })
+        }
       },
 
       clearError: () => set({ error: null }),

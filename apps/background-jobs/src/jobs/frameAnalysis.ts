@@ -13,6 +13,7 @@ import { dirname } from 'path'
 import { mkdir, readFile } from 'fs/promises'
 import type { Analysis } from '@shared/types/analysis'
 import { env } from '@background-jobs/utils/env'
+import { JobModel } from 'db'
 
 async function processVideo(job: Job<VideoProcessingData>) {
   const { videoPath, jobId, forceReIndexing = true, analysisPath } = job.data
@@ -25,6 +26,13 @@ async function processVideo(job: Job<VideoProcessingData>) {
     }
     const videoDir = dirname(analysisPath)
     await mkdir(videoDir, { recursive: true })
+
+    const videoJob = await JobModel.findById(jobId)
+
+    if (videoJob?.status === "cancelled") {
+      logger.info({ jobId }, 'Frame Analysis cancelled, stopping pipeline')
+      return
+    }
 
     const analysisExists = existsSync(analysisPath)
 
@@ -54,6 +62,11 @@ async function processVideo(job: Job<VideoProcessingData>) {
       })
       if (USE_EXTERNAL_ML_SERVICE) {
         writeFileSync(analysisPath, JSON.stringify(result), 'utf-8')
+      }
+      // result is undefined when cancelled — don't proceed to scene creation
+      if (!result) {
+        logger.info({ jobId }, 'Frame Analysis cancelled, stopping pipeline')
+        return
       }
 
       logger.debug({ jobId, analysisPath }, 'Frame analysis completed and saved')

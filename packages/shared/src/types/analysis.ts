@@ -39,7 +39,7 @@ export interface FrameAnalysis {
     is_muted: boolean
   }
   description: string
-  thumbnail_path:string
+  thumbnail_path: string
 }
 
 export interface DetectedText {
@@ -100,6 +100,7 @@ export interface Analysis {
   plugin_performance: PluginAnalysisSummary[]
   performance_metrics: PerformanceMetric[]
   stage_metrics: StageAnalysisSummary[]
+  cancelled?: boolean
 }
 
 export interface PerformanceMetric {
