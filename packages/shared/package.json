@@ -30,7 +30,7 @@
     "@types/jsonwebtoken": "^9.0.2"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "public"
+    "name": "@iliashad/shared",
+    "registry": "https://npm.pkg.github.com"
   }
 }

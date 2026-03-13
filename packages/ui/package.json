@@ -22,7 +22,7 @@
     "tailwind-merge": "^3.4.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "public"
+    "name": "@iliashad/shared",
+    "registry": "https://npm.pkg.github.com"
   }
 }
