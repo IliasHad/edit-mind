@@ -1,5 +1,5 @@
 {
-  "name": "shared",
+  "name": "@iliashad/shared",
   "version": "0.20.0",
   "description": "AI-Powered Video Indexing and Search",
   "type": "module",
