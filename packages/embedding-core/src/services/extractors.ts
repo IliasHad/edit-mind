@@ -7,11 +7,14 @@ import {
   VISUAL_EMBEDDING_MODEL,
   AUDIO_EMBEDDING_MODEL,
   TEXT_EMBEDDING_MODEL,
+  AUDIO_EMBEDDINGS_DISABLED,
+  VISUAL_EMBEDDINGS_DISABLED,
 } from '@shared/constants/embedding'
 import type { PreTrainedModel, Processor, PreTrainedTokenizer, FeatureExtractionPipeline } from '@huggingface/transformers'
 import { AutoProcessor, AutoTokenizer, ClapAudioModelWithProjection, ClapTextModelWithProjection, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, env, pipeline, RawImage } from '@huggingface/transformers'
 import { accessSync, existsSync, mkdirSync, constants } from 'node:fs'
 import { USE_GPU } from '@shared/constants/gpu'
+import { withModelAutoDelete } from './model'
 
 // Set the cache directory for Xenova Transformers models
 try {
@@ -38,51 +41,56 @@ let textToAudioModelCache: { tokenizer: PreTrainedTokenizer; model: PreTrainedMo
 
 export async function getFrameExtractor() {
   if (!visualModelCache) {
-
-    const processor = await AutoProcessor.from_pretrained(VISUAL_EMBEDDING_MODEL)
-    const model = await CLIPVisionModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "cpu",
-      dtype: "fp16"
+    visualModelCache = await withModelAutoDelete(VISUAL_EMBEDDING_MODEL, async () => {
+      const processor = await AutoProcessor.from_pretrained(VISUAL_EMBEDDING_MODEL)
+      const model = await CLIPVisionModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
+        device: USE_GPU ? 'cuda' : 'cpu',
+        dtype: "auto"
+      })
+      return { processor, model }
     })
-    visualModelCache = { processor, model }
   }
   return visualModelCache
 }
 
 export async function getAudioExtractor() {
   if (!audioModelCache) {
-    const processor = await AutoProcessor.from_pretrained(AUDIO_EMBEDDING_MODEL)
-    const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "cpu",
-      dtype: "fp16"
+    audioModelCache = await withModelAutoDelete(AUDIO_EMBEDDING_MODEL, async () => {
+      const processor = await AutoProcessor.from_pretrained(AUDIO_EMBEDDING_MODEL)
+      const model = await ClapAudioModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
+        device: USE_GPU ? 'cuda' : 'cpu',
+        dtype: "auto"
+      })
+      return { processor, model }
     })
-
-    audioModelCache = { processor, model }
   }
   return audioModelCache
 }
 
 async function getTextToVisualExtractor() {
   if (!textToVisualModelCache) {
-
-    const tokenizer = await AutoTokenizer.from_pretrained(VISUAL_EMBEDDING_MODEL)
-    const model = await CLIPTextModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "cpu",
-      dtype: "fp16"
+    textToVisualModelCache = await withModelAutoDelete(VISUAL_EMBEDDING_MODEL, async () => {
+      const tokenizer = await AutoTokenizer.from_pretrained(VISUAL_EMBEDDING_MODEL)
+      const model = await CLIPTextModelWithProjection.from_pretrained(VISUAL_EMBEDDING_MODEL, {
+        device: USE_GPU ? 'cuda' : 'cpu',
+        dtype: "auto"
+      })
+      return { tokenizer, model }
     })
-    textToVisualModelCache = { tokenizer, model }
   }
   return textToVisualModelCache
 }
 
 async function getTextToAudioExtractor() {
   if (!textToAudioModelCache) {
-
-    const tokenizer = await AutoTokenizer.from_pretrained(AUDIO_EMBEDDING_MODEL)
-    const model = await ClapTextModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "cpu",
+    textToAudioModelCache = await withModelAutoDelete(AUDIO_EMBEDDING_MODEL, async () => {
+      const tokenizer = await AutoTokenizer.from_pretrained(AUDIO_EMBEDDING_MODEL)
+      const model = await ClapTextModelWithProjection.from_pretrained(AUDIO_EMBEDDING_MODEL, {
+        device: USE_GPU ? 'cuda' : 'cpu',
+        dtype: "auto"
+      })
+      return { tokenizer, model }
     })
-    textToAudioModelCache = { tokenizer, model }
   }
   return textToAudioModelCache
 }
@@ -119,15 +127,16 @@ export async function getImageEmbedding(imageBuffer: Buffer): Promise<number[]> 
   return embedding.map((val) => val / norm)
 }
 
+
 export async function getTextExtractor() {
   if (!textModelCache) {
-
-    const embed = await pipeline('feature-extraction', TEXT_EMBEDDING_MODEL, {
-      device: USE_GPU ? "cuda" : "cpu",
-      dtype: "fp16"
+    textModelCache = await withModelAutoDelete(TEXT_EMBEDDING_MODEL, async () => {
+      const embed = await pipeline('feature-extraction', TEXT_EMBEDDING_MODEL, {
+        device: USE_GPU ? 'cuda' : 'cpu',
+        dtype: "auto"
+      })
+      return { embed }
     })
-
-    textModelCache = { embed }
   }
   return textModelCache
 }
@@ -171,11 +180,18 @@ export async function getEmbeddingDimension(): Promise<number> {
 export async function loadAllEmbeddingModels(): Promise<void> {
   logger.info('Pre-loading all embedding models...')
 
-  await Promise.all([
-    getTextExtractor().then(() => logger.info('Text model ready')),
-    getFrameExtractor().then(() => logger.info('Visual model ready')),
-    getAudioExtractor().then(() => logger.info('Audio model ready')),
-  ])
+  await getTextExtractor()
+  logger.info('Text model ready')
+
+  if (!VISUAL_EMBEDDINGS_DISABLED) {
+    await getFrameExtractor()
+    logger.info('Visual model ready')
+  }
+
+  if (!AUDIO_EMBEDDINGS_DISABLED) {
+    await getAudioExtractor()
+    logger.info('Audio model ready')
+  }
 
   logger.info('All embedding models loaded')
 }
