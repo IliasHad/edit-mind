@@ -24,7 +24,7 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   NODE_VERSION: 22.20.0
-  PNPM_VERSION: 10.20.0
+  PNPM_VERSION: 10.32.1
   PYTHON_VERSION: 3.11
   CUDA_VERSION: 12.8.0
 
@@ -45,7 +45,7 @@ jobs:
             tag: latest
             args: |
               NODE_VERSION=22.20.0
-              PNPM_VERSION=10.20.0
+              PNPM_VERSION=10.32.1
 
           - name: web
             dockerfile: docker/Dockerfile.web
@@ -54,7 +54,7 @@ jobs:
             tag: latest
             args: |
               NODE_VERSION=22.20.0
-              PNPM_VERSION=10.20.0
+              PNPM_VERSION=10.32.1
 
           - name: ml
             dockerfile: docker/Dockerfile.ml
@@ -109,7 +109,7 @@ jobs:
             tag: latest-gpu
             args: |
               NODE_VERSION=22.20.0
-              PNPM_VERSION=10.20.0
+              PNPM_VERSION=10.32.1
               CUDA_VERSION=12.8.0
               TARGET_BASE=base-gpu
 
@@ -252,7 +252,7 @@ jobs:
             tag: latest
             args: |
               NODE_VERSION=22.20.0
-              PNPM_VERSION=10.20.0
+              PNPM_VERSION=10.32.1
 
 
           - name: ml
@@ -271,7 +271,7 @@ jobs:
             tag: latest
             args: |
               NODE_VERSION=22.20.0
-              PNPM_VERSION=10.20.0
+              PNPM_VERSION=10.32.1
 
     steps:
       - name: Set lowercase image prefix
@@ -349,7 +349,7 @@ jobs:
             image_suffix: background-jobs
             args: |
               NODE_VERSION=22.20.0
-              PNPM_VERSION=10.20.0
+              PNPM_VERSION=10.32.1
               CUDA_VERSION=12.8.0
               TARGET_BASE=base-gpu
 

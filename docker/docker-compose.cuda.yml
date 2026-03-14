@@ -7,7 +7,7 @@ services:
       dockerfile: docker/Dockerfile.background-jobs
       args:
         NODE_VERSION: 22.20.0
-        PNPM_VERSION: 10.20.0
+        PNPM_VERSION: 10.32.1
         CUDA_VERSION: 12.8.0
         TARGET_BASE: base-gpu
     image: edit-mind-background-jobs:latest-gpu
@@ -40,7 +40,7 @@ services:
       target: production
       args:
         NODE_VERSION: 22.20.0
-        PNPM_VERSION: 10.20.0
+        PNPM_VERSION: 10.32.1
     image: edit-mind-web:${VERSION:-latest}
     container_name: edit-mind-web
     env_file:
