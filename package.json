@@ -1,6 +1,6 @@
 {
   "name": "edit-mind",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "description": "AI-Powered Video Indexing and Search",
   "license": "Edit Mind",
   "author": {
@@ -58,5 +58,5 @@
   "overrides": {
     "sharp": "0.34.5"
   },
-  "packageManager": "pnpm@10.20.0"
+  "packageManager": "pnpm@10.20.1"
 }
