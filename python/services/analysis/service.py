@@ -37,7 +37,6 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         self.performance_metrics: List[PerformanceMetrics] = []
         self.metrics_collector = StageMetricsCollector()
         self._cancel_flags: dict[str, Event] = {}
-        self._cancelled_jobs: set[str] = set()
 
     def cancel(self, job_id: str) -> None:
         """Signal a running analysis job to stop."""
@@ -45,10 +44,9 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
             logger.info(f"Cancelling analysis job {job_id}")
             self._cancel_flags[job_id].set()
         else:
-            # Job not yet running — mark it so _process_sync can bail immediately
+            # Job not yet running
             logger.info(
                 f"Pre-cancelling analysis job {job_id} (not yet started)")
-            self._cancelled_jobs.add(job_id)
 
     def _process_sync(
         self,
@@ -57,12 +55,6 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
     ) -> VideoAnalysisResult:
         """Synchronous analysis implementation."""
         start_time = time.time()
-
-        if request.job_id in self._cancelled_jobs:
-            logger.info(
-                f"Analysis job {request.job_id} was pre-cancelled, skipping")
-            self._cancelled_jobs.discard(request.job_id)
-            raise AnalysisCancelledError()
 
         cancel_flag = Event()
         self._cancel_flags[request.job_id] = cancel_flag
