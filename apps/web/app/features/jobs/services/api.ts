@@ -15,7 +15,7 @@ export const apiClient = {
     return response.json()
   },
 
-  list: () =>
+  list: (page: number) =>
     apiClient.request<{
       jobs: Job[]
       page: number
@@ -24,8 +24,8 @@ export const apiClient = {
       totalPages: number
       hasMore: boolean
       jobsStatus: Record<JobStatus, number>
-    }>('/api/jobs'),
-  listByFolderId: (folderId: string) =>
+    }>(`/api/jobs?page=${page}`),
+  listByFolderId: (folderId: string, page: number) =>
     apiClient.request<{
       jobs: Job[]
       page: number
@@ -34,7 +34,7 @@ export const apiClient = {
       totalPages: number
       hasMore: boolean
       jobsStatus: Record<JobStatus, number>
-    }>(`/api/folders/${folderId}/jobs`),
+    }>(`/api/folders/${folderId}/jobs?page=${page}`),
 
   get: (id: string) => apiClient.request<{ job: Job }>(`/api/jobs/${id}`),
 
