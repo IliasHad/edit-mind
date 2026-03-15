@@ -1,11 +1,12 @@
 import chokidar from 'chokidar'
 import path from 'path'
-import { SUPPORTED_VIDEO_EXTENSIONS } from '@shared/constants/video'
 import { addVideoIndexingJob } from './services/videoIndexer.js'
 import { FolderModel, JobModel } from '@db/index.js'
 import { stat } from 'fs/promises'
 import { logger } from '@shared/services/logger.js'
 import { existsSync } from 'fs'
+import micromatch from 'micromatch'
+
 
 const watchers = new Map<string, chokidar.FSWatcher>()
 
@@ -28,11 +29,14 @@ export function watchFolder(folderPath: string) {
 
   watcher.on('add', async (filePath) => {
     try {
-      if (!SUPPORTED_VIDEO_EXTENSIONS.test(filePath)) return
 
       const folder = await FolderModel.findByPath(path.dirname(filePath))
 
       if (!folder) return
+
+      if (!micromatch.isMatch(filePath.toLocaleLowerCase(), folder.includePatterns)) return
+      if (micromatch.isMatch(filePath.toLocaleLowerCase(), folder.excludePatterns)) return
+
       const stats = await stat(filePath)
 
       const job = await JobModel.create({
