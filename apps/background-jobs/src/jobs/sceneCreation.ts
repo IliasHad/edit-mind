@@ -75,7 +75,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
         }))
       })
     }
-    await updateJob(job, { stage: JobStage.creating_scenes, overallProgress: 70 })
+    await updateJob(job, { stage: JobStage.creating_scenes, overallProgress: 70, progress: 0 })
 
     const scenes = await createScenes(analysisData, transcriptionData, videoPath)
     await fs.writeFile(scenesPath, JSON.stringify(scenes, null, 2))

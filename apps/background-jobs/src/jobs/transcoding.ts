@@ -23,7 +23,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
         const transcodingStartTime = Date.now()
 
-        await updateJob(job, { status: 'processing', overallProgress: 0, stage: "transcoding" })
+        await updateJob(job, { status: 'processing', overallProgress: 0, stage: "transcoding", progress: 0 })
 
         const videoFolder = dirname(videoPath)
 
