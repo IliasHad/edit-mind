@@ -50,7 +50,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     if (forceReIndexing || !analysisExists) {
       logger.debug({ jobId, videoPath, analysisPath }, 'Starting frame analysis')
 
-      await updateJob(job, { stage: JobStage.frame_analysis, overallProgress: 40 })
+      await updateJob(job, { stage: JobStage.frame_analysis, overallProgress: 40, progress: 0 })
 
       const result = await analyzeVideo(videoPath, analysisPath, jobId, async ({ progress, job_id }) => {
         if (job_id !== jobId) {

@@ -15,7 +15,7 @@ import { useAuth } from '~/features/auth/hooks/useAuth'
 import { Button } from '@ui/components/Button'
 import { ServicesStatus } from './ServicesStatus'
 import { Version } from './Version'
-import { ArrowRightCircleIcon } from '@heroicons/react/24/solid'
+import { ArrowRightCircleIcon, BriefcaseIcon } from '@heroicons/react/24/solid'
 
 interface SidebarProps {
   isCollapsed?: boolean
@@ -98,6 +98,12 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
           to="/app/faces"
           label="Face Training"
         />
+        <Link
+          isCollapsed={isCollapsed}
+          icon={<BriefcaseIcon className="w-5 h-5" />}
+          to="/app/jobs"
+          label="Jobs"
+        />
         {children}
       </nav>
 
@@ -105,7 +111,7 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
         <ServicesStatus isCollapsed={isCollapsed} />
       </div>
 
-      <div className="p-4 border-t border-white/20 dark:border-white/10 backdrop-blur-sm bg-white/20 dark:bg-gray-800/20 space-y-2">
+      <div className="p-4 border-t border-white/20 dark:border-white/10 backdrop-blur-sm space-y-2">
         <Link
           isCollapsed={isCollapsed}
           icon={<Cog6ToothIcon className="w-5 h-5" />}

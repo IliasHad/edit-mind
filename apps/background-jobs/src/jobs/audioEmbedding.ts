@@ -20,7 +20,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     const scenes = await fs.readFile(scenesPath, 'utf-8').then(JSON.parse)
 
-    await updateJob(job, { stage: JobStage.embedding_audio, overallProgress: 80 })
+    await updateJob(job, { stage: JobStage.embedding_audio, overallProgress: 80, progress: 0 })
 
     const embeddingStart = Date.now()
 

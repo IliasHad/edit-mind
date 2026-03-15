@@ -1,25 +1,30 @@
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
-import type { MetaFunction } from 'react-router'
+import { useSearchParams, type MetaFunction } from 'react-router'
 import type { Job } from '@prisma/client'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
 import { useJobs } from '~/features/jobs/hooks/useJobs'
 import { JobStatusIcon } from '~/features/jobs/components/JobStatusIcon'
 import { JobCard } from '~/features/jobs/components/JobCard'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
+import { Pagination } from '~/features/shared/components/Pagination'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Jobs | Edit Mind' }]
 }
 
 export default function JobsPage() {
-  const { jobs, total, jobsStatus, fetchJobs, loading, retryAllFailedJobs, refreshJobs } = useJobs()
+  const { jobs, total, jobsStatus, fetchJobs, loading, retryAllFailedJobs, refreshJobs, totalPages, page } = useJobs()
+
+  const [searchParams] = useSearchParams()
+
+  const currentPage = useMemo(() => Number(searchParams.get('page') ?? '1'), [searchParams])
 
   useEffect(() => {
-    fetchJobs()
-  }, [fetchJobs])
+    fetchJobs(currentPage)
+  }, [fetchJobs, currentPage])
 
   const handleRetryFailedJobs = async () => {
     try {
@@ -114,6 +119,7 @@ export default function JobsPage() {
             </motion.div>
           )}
         </motion.div>
+        {totalPages > 1 && <Pagination total={totalPages} page={page} />}
       </main>
     </DashboardLayout>
   )

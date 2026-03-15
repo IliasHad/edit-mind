@@ -21,7 +21,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     const scenes = await fs.readFile(scenesPath, 'utf-8').then(JSON.parse)
 
-    await updateJob(job, { stage: JobStage.embedding_text, overallProgress: 80 })
+    await updateJob(job, { stage: JobStage.embedding_text, overallProgress: 80, progress: 0 })
 
     logger.debug({ jobId, videoPath, sceneCount: scenes.length }, 'Starting scene text embedding')
 

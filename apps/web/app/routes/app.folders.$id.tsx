@@ -1,6 +1,6 @@
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { Job } from '@prisma/client'
 import { ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
@@ -8,9 +8,10 @@ import { useCurrentFolder } from '~/features/folders/hooks/useCurrentFolder'
 import { JobStatusIcon } from '~/features/jobs/components/JobStatusIcon'
 import { JobCard } from '~/features/jobs/components/JobCard'
 import { useJobs } from '~/features/jobs/hooks/useJobs'
-import { useParams, type MetaFunction } from 'react-router'
+import { useParams, useSearchParams, type MetaFunction } from 'react-router'
 import { Button } from '@ui/components/Button'
 import { useServices } from '~/features/services/hooks/useServices'
+import { Pagination } from '~/features/shared/components/Pagination'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Folder Details Page | Edit Mind' }]
@@ -20,11 +21,14 @@ export default function FolderDetailsPage() {
   const { currentFolder, loading, rescanFolder } = useCurrentFolder()
   const { status } = useServices()
   const { id } = useParams()
-  const { fetchJobsByFolderId, jobs, jobsStatus, total } = useJobs()
+  const { fetchJobsByFolderId, jobs, jobsStatus, total, totalPages, page } = useJobs()
+  const [searchParams] = useSearchParams()
+
+  const currentPage = useMemo(() => Number(searchParams.get('page') ?? '1'), [searchParams])
 
   useEffect(() => {
-    if (id) fetchJobsByFolderId(id)
-  }, [fetchJobsByFolderId, id])
+    if (id) fetchJobsByFolderId(id, currentPage)
+  }, [fetchJobsByFolderId, id, currentPage])
 
   const handleRescan = async () => {
     if (id) await rescanFolder(id)
@@ -135,6 +139,9 @@ export default function FolderDetailsPage() {
             </motion.div>
           )}
         </motion.div>
+
+        {totalPages > 1 && <Pagination total={totalPages} page={page} />}
+
       </main>
     </DashboardLayout>
   )

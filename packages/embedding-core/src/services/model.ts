@@ -12,6 +12,7 @@ export async function withModelAutoDelete<T>(modelName: string, loader: () => Pr
     try {
       rmSync(dir, { recursive: true, force: true })
       logger.info(`Deleted corrupted model cache: ${dir}`)
+      return await loader()
     } catch (rmError) {
       logger.error({ rmError }, `Failed to delete model cache dir`)
     }

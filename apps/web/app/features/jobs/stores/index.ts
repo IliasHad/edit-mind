@@ -11,8 +11,8 @@ interface JobsState {
 
   jobsStatus: Record<JobStatus, number>
 
-  fetchJobs: () => Promise<void>
-  fetchJobsByFolderId: (folderId: string) => Promise<void>
+  fetchJobs: (page?: number) => Promise<void>
+  fetchJobsByFolderId: (folderId: string, page?: number) => Promise<void>
 
   fetchJobById: (id: string) => Promise<Job | null>
   deleteJob: (id: string) => Promise<void>
@@ -50,10 +50,10 @@ export const useJobsStore = create<JobsState>()(
       limit: 20,
       totalPages: 0,
 
-      fetchJobs: async () => {
+      fetchJobs: async (page = 1) => {
         set({ isLoading: true, error: null })
         try {
-          const { jobs, page, total, limit, hasMore, totalPages, jobsStatus } = await apiClient.list()
+          const { jobs, total, limit, hasMore, totalPages, jobsStatus } = await apiClient.list(page)
 
           set({ jobs, isLoading: false, page, total, limit, hasMore, totalPages, jobsStatus })
         } catch (error) {
@@ -64,7 +64,7 @@ export const useJobsStore = create<JobsState>()(
         }
       },
 
-      fetchJobsByFolderId: async (folderId: string) => {
+      fetchJobsByFolderId: async (folderId: string, page = 1) => {
         set({ isLoading: true, error: null })
         try {
           const response = await fetch(`/api/folders/${folderId}/jobs`)
@@ -73,7 +73,7 @@ export const useJobsStore = create<JobsState>()(
             throw new Error(`Failed to fetch jobs: ${response.statusText}`)
           }
 
-          const { jobs, page, total, limit, hasMore, totalPages, jobsStatus } = await apiClient.listByFolderId(folderId)
+          const { jobs, total, limit, hasMore, totalPages, jobsStatus } = await apiClient.listByFolderId(folderId, page)
 
           set({ jobs, isLoading: false, page, total, limit, hasMore, totalPages, jobsStatus })
         } catch (error) {
