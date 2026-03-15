@@ -20,10 +20,10 @@ export function watchFolder(folderPath: string) {
     persistent: true,
     ignoreInitial: true,
     awaitWriteFinish: {
-      stabilityThreshold: 2000,
-      pollInterval: 100,
+      stabilityThreshold: 1000 * 60, // wait at least 60 seconds before considering it as completed file
+      pollInterval: 500,
     },
-    atomic: 100,
+    atomic: 500,
   })
 
   watcher.on('add', async (filePath) => {

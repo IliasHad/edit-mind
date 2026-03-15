@@ -1,7 +1,7 @@
 import { spawnFFmpeg } from '@media-utils/lib/ffmpeg'
 import path from 'path'
 import { existsSync } from 'fs'
-import { mkdir } from 'fs/promises'
+import { mkdir, rename } from 'fs/promises'
 import { logger } from '@shared/services/logger'
 import { buildEncodingArgs } from '@media-utils/lib/ffmpegGpu'
 import { USE_FFMPEG_GPU } from '@media-utils/constants'
@@ -16,6 +16,7 @@ export const transcodeVideo = async (
 
   const baseName = path.basename(videoPath, path.extname(videoPath))
   const outputPath = path.join(outputDir, `${baseName}.mp4`)
+  const tmpPath = path.join(outputDir, `${baseName}.temp.mp4`)
 
   logger.info(`Transcoding video to MP4 (GPU: ${USE_FFMPEG_GPU}): ${videoPath} to ${outputPath}`)
 
@@ -25,8 +26,9 @@ export const transcodeVideo = async (
     '-i',
     videoPath,
     ...encodingArgs,
+    '-movflags', '+faststart',
     '-y',
-    outputPath,
+    tmpPath,
   ]
 
   try {
@@ -39,8 +41,9 @@ export const transcodeVideo = async (
         stderr += data.toString()
       })
 
-      ffmpegProcess.on('close', (code) => {
+      ffmpegProcess.on('close', async (code) => {
         if (code === 0) {
+          await rename(tmpPath, outputPath)
           logger.info(`Transcoded video successfully: ${outputPath}`)
           resolve()
         } else {
