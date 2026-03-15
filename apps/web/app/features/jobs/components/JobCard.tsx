@@ -120,44 +120,43 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
         job.status === 'done' && (
           <div className="px-5 pb-5 pt-3 border-t border-white/5">
             <div className="grid grid-cols-3 gap-4 text-xs">
-              {job.transcodingTime && (
+              {(job.transcodingTime || job.transcodingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <ArrowsRightLeftIcon className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-white/60">Transcoding: {humanizeSeconds(job.transcodingTime)}</span>
                 </div>
               )}
-              {job.transcriptionTime && (
+              {(job.transcriptionTime || job.transcriptionTime === 0) && (
                 <div className="flex items-center gap-2">
                   <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-white/60">Transcription: {humanizeSeconds(job.transcriptionTime)}</span>
                 </div>
               )}
-              {job.frameAnalysisTime && (
+              {(job.frameAnalysisTime || job.frameAnalysisTime === 0) && (
                 <div className="flex items-center gap-2">
                   <VideoCameraIcon className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-white/60">Frame Analysis: {humanizeSeconds(job.frameAnalysisTime)}</span>
                 </div>
               )}
-              {job.sceneCreationTime && (
+              {(job.sceneCreationTime || job.sceneCreationTime === 0) && (
                 <div className="flex items-center gap-2">
                   <CubeIcon className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-white/60">Scene Creation: {humanizeSeconds(job.sceneCreationTime)}</span>
                 </div>
               )}
-              {(job.textEmbeddingTime ||
-                job.textEmbeddingTime === 0) && (
-                  <div className="flex items-center gap-2">
-                    <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
-                    <span className="text-white/60">Text Embedding: {humanizeSeconds(job.textEmbeddingTime)}</span>
-                  </div>
-                )}
-              {job.visualEmbeddingTime && (
+              {(job.textEmbeddingTime || job.textEmbeddingTime === 0) && (
+                <div className="flex items-center gap-2">
+                  <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
+                  <span className="text-white/60">Text Embedding: {humanizeSeconds(job.textEmbeddingTime)}</span>
+                </div>
+              )}
+              {(job.visualEmbeddingTime || job.visualEmbeddingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <PhotoIcon className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-white/60">Visual Embedding: {humanizeSeconds(job.visualEmbeddingTime)}</span>
                 </div>
               )}
-              {job.audioEmbeddingTime && (
+              {(job.audioEmbeddingTime || job.audioEmbeddingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <SpeakerWaveIcon className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-white/60">Audio Embedding: {humanizeSeconds(job.audioEmbeddingTime)}</span>
