@@ -37,14 +37,13 @@ export function CustomVideoPlayer({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const seekDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
-  // Track whether we're in transcode mode without closing over stale state
   const isTranscoding = useRef(false)
+  const [seekOffset, setSeekOffset] = useState(0)
 
   const [currentObjectFit, setCurrentObjectFit] = useState<ObjectFit>(objectFit)
   const [transcodedSrc, setTranscodedSrc] = useState<string | null>(null)
   const [transcodeStatus, setTranscodeStatus] = useState<TranscodeStatus>('direct')
 
-  // No stray &t=0 on the direct path
   const activeSrc = transcodedSrc ?? `/media?source=${encodeURIComponent(source)}`
 
   const { videoDimensions, updateVideoDimensions } = useVideoDimensions(videoRef, overlayRef, currentObjectFit)
@@ -54,9 +53,11 @@ export function CustomVideoPlayer({
   const { overlayMode, setOverlayMode, showOverlays, setShowOverlays } = useOverlayState()
   const { showControls, setShowControls, handleMouseMove } = useAutoHideControls(isPlaying)
 
+  const displayTime = isTranscoding.current ? seekOffset + currentTime : currentTime
+
   const currentScene = useMemo(
-    () => scenes.find((s) => currentTime >= s.startTime && currentTime <= s.endTime) || null,
-    [scenes, currentTime]
+    () => scenes.find((s) => displayTime >= s.startTime && displayTime <= s.endTime) || null,
+    [scenes, displayTime],
   )
 
   // Imperatively update the video src — bypasses React re-render so the
@@ -66,22 +67,27 @@ export function CustomVideoPlayer({
     const video = videoRef.current
     if (!video) return
     video.src = src
+    setLoading(true)
     video.load()
   }, [])
 
-  const handleSeek = useCallback((time: number) => {
-    if (!isTranscoding.current) {
-      seekTo(time)
-      return
-    }
+  const handleSeek = useCallback(
+    (time: number) => {
+      if (!isTranscoding.current) {
+        seekTo(time)
+        return
+      }
 
-    // Debounce: only spawn a new FFmpeg after the user stops scrubbing
-    if (seekDebounce.current) clearTimeout(seekDebounce.current)
-    seekDebounce.current = setTimeout(() => {
-      const newSrc = `/internal/media/transcode?source=${encodeURIComponent(source)}&t=${Math.floor(time)}`
-      applyTranscodeSrc(newSrc)
-    }, 300)
-  }, [source, seekTo, applyTranscodeSrc])
+      if (seekDebounce.current) clearTimeout(seekDebounce.current)
+      seekDebounce.current = setTimeout(() => {
+        const seekTime = Math.floor(time)
+        const newSrc = `/internal/media/transcode?source=${encodeURIComponent(source)}&t=${seekTime}`
+        setSeekOffset(seekTime)
+        applyTranscodeSrc(newSrc)
+      }, 300)
+    },
+    [source, seekTo, applyTranscodeSrc, setSeekOffset],
+  )
 
   // Fires after every src swap — both initial transcode and seeks
   const handleCanPlay = useCallback(() => {
@@ -101,9 +107,11 @@ export function CustomVideoPlayer({
 
     const handleError = () => {
       if (transcodeStatus === 'direct' && !transcodedSrc) {
-        const src = `/internal/media/transcode?source=${encodeURIComponent(source)}&t=0`
+        const startTime = Math.floor(videoRef.current?.currentTime || defaultStartTime || 0)
+        const src = `/internal/media/transcode?source=${encodeURIComponent(source)}&t=${startTime}`
         isTranscoding.current = true
         setTranscodeStatus('transcoding')
+        setSeekOffset(startTime)
         applyTranscodeSrc(src)
       }
     }
@@ -123,7 +131,17 @@ export function CustomVideoPlayer({
       video.removeEventListener('loadeddata', updateVideoDimensions)
       video.removeEventListener('fullscreenchange', updateVideoDimensions)
     }
-  }, [setIsPlaying, updateVideoDimensions, source, transcodedSrc, transcodeStatus, handleCanPlay, applyTranscodeSrc])
+  }, [
+    setIsPlaying,
+    updateVideoDimensions,
+    source,
+    transcodedSrc,
+    transcodeStatus,
+    handleCanPlay,
+    applyTranscodeSrc,
+    defaultStartTime,
+    setSeekOffset,
+  ])
 
   useEffect(() => {
     if (defaultStartTime) skipTo(defaultStartTime)
@@ -234,9 +252,9 @@ export function CustomVideoPlayer({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: showControls || !isPlaying ? 1 : 0, y: showControls || !isPlaying ? 0 : 20 }}
-        className="absolute bottom-20 left-6 right-6 pointer-events-auto"
+        className="absolute bottom-20 left-6 right-6 pointer-events-auto z-0"
       >
-        <ProgressBar scenes={scenes} duration={duration} currentTime={currentTime} onSeek={handleSeek} />
+        <ProgressBar scenes={scenes} duration={duration} currentTime={displayTime} onSeek={handleSeek} />
       </motion.div>
 
       <motion.div
