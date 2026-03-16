@@ -72,3 +72,5 @@ export interface Bucket {
   start: number
   scenes: Scene[]
 }
+
+export type TranscodeStatus = 'transcoding' | 'ready' | 'direct'

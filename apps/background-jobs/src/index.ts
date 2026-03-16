@@ -12,6 +12,7 @@ import facesRoute from './routes/faces'
 import indexerRoute from './routes/indexer'
 import immichRoute from './routes/immich'
 import jobsRoute from './routes/jobs'
+import mediaRoute from './routes/media'
 import prisma from '@db/db'
 import { requireAuth } from './middleware/auth'
 
@@ -123,6 +124,10 @@ app.use('/internal/faces', requireAuth, rateLimiter, facesRoute)
 app.use('/internal/indexer', requireAuth, rateLimiter, indexerRoute)
 app.use('/internal/immich', requireAuth, rateLimiter, immichRoute)
 app.use('/internal/jobs', requireAuth, rateLimiter, jobsRoute)
+app.use('/internal/media', cors({
+  origin: env.WEB_APP_URL,
+  methods: ['GET'],
+}), mediaRoute)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 

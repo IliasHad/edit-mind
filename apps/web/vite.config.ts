@@ -12,6 +12,12 @@ export default defineConfig(({ isSsrBuild }) => {
     plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
     server: {
       allowedHosts: ['web', 'localhost', '127.0.0.1'],
+      proxy: {
+        '/internal': {
+          target: process.env.BACKGROUND_JOBS_URL,
+          changeOrigin: true,
+        },
+      },
     },
     resolve: {
       alias: {

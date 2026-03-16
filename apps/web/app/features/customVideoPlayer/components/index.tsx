@@ -1,7 +1,7 @@
-import { useRef, useMemo, useEffect, useState } from 'react'
+import { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useVideoDimensions, type ObjectFit } from '../hooks/useVideoDimensions'
-import type { CustomVideoPlayerProps } from '../types'
+import type { CustomVideoPlayerProps, TranscodeStatus } from '../types'
 
 import { useVideoControls } from '../hooks/useVideoControls'
 import { useVideoProgress } from '../hooks/useVideoProgress'
@@ -18,6 +18,8 @@ import { ProgressBar } from './ProgressBar'
 import { LiveCaptions } from './LiveCaptions'
 import { CaptionsButton } from './CaptionsButton'
 import { FitButton } from './FitButton'
+import { TranscodingOverlay } from './TranscodingOverlay'
+import { LoadingOverlay } from './LoadingOverlay'
 
 interface ExtendedCustomVideoPlayerProps extends CustomVideoPlayerProps {
   objectFit?: ObjectFit
@@ -34,18 +36,22 @@ export function CustomVideoPlayer({
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const overlayRef = useRef<HTMLDivElement | null>(null)
+  const seekDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Track whether we're in transcode mode without closing over stale state
+  const isTranscoding = useRef(false)
 
   const [currentObjectFit, setCurrentObjectFit] = useState<ObjectFit>(objectFit)
+  const [transcodedSrc, setTranscodedSrc] = useState<string | null>(null)
+  const [transcodeStatus, setTranscodeStatus] = useState<TranscodeStatus>('direct')
+
+  // No stray &t=0 on the direct path
+  const activeSrc = transcodedSrc ?? `/media?source=${encodeURIComponent(source)}`
 
   const { videoDimensions, updateVideoDimensions } = useVideoDimensions(videoRef, overlayRef, currentObjectFit)
-
-  const { isPlaying, setIsPlaying, volume, isMuted, togglePlay, toggleMute, handleVolumeChange, toggleFullscreen } =
+  const { isPlaying, setIsPlaying, volume, isMuted, togglePlay, toggleMute, handleVolumeChange, toggleFullscreen, setLoading, loading } =
     useVideoControls(videoRef)
-
   const { currentTime, duration, seekTo, skipTo } = useVideoProgress(videoRef, onTimeUpdate)
-
   const { overlayMode, setOverlayMode, showOverlays, setShowOverlays } = useOverlayState()
-
   const { showControls, setShowControls, handleMouseMove } = useAutoHideControls(isPlaying)
 
   const currentScene = useMemo(
@@ -53,30 +59,74 @@ export function CustomVideoPlayer({
     [scenes, currentTime]
   )
 
+  // Imperatively update the video src — bypasses React re-render so the
+  // browser doesn't cancel the in-flight stream on rapid seeks
+  const applyTranscodeSrc = useCallback((src: string) => {
+    setTranscodedSrc(src)
+    const video = videoRef.current
+    if (!video) return
+    video.src = src
+    video.load()
+  }, [])
+
+  const handleSeek = useCallback((time: number) => {
+    if (!isTranscoding.current) {
+      seekTo(time)
+      return
+    }
+
+    // Debounce: only spawn a new FFmpeg after the user stops scrubbing
+    if (seekDebounce.current) clearTimeout(seekDebounce.current)
+    seekDebounce.current = setTimeout(() => {
+      const newSrc = `/internal/media/transcode?source=${encodeURIComponent(source)}&t=${Math.floor(time)}`
+      applyTranscodeSrc(newSrc)
+    }, 300)
+  }, [source, seekTo, applyTranscodeSrc])
+
+  // Fires after every src swap — both initial transcode and seeks
+  const handleCanPlay = useCallback(() => {
+    if (!isTranscoding.current) return
+    setTranscodeStatus('ready')
+    videoRef.current?.play().catch((err) => {
+      console.warn('Autoplay blocked:', err)
+    })
+  }, [])
+
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
-    const handlePause = () => setIsPlaying(false)
-    const handlePlaying = () => setIsPlaying(true)
+    const handlePause = () => { setLoading(false); setIsPlaying(false) }
+    const handlePlaying = () => { setLoading(false); setIsPlaying(true) }
+
+    const handleError = () => {
+      if (transcodeStatus === 'direct' && !transcodedSrc) {
+        const src = `/internal/media/transcode?source=${encodeURIComponent(source)}&t=0`
+        isTranscoding.current = true
+        setTranscodeStatus('transcoding')
+        applyTranscodeSrc(src)
+      }
+    }
 
     video.addEventListener('pause', handlePause)
     video.addEventListener('playing', handlePlaying)
+    video.addEventListener('error', handleError)
+    video.addEventListener('canplay', handleCanPlay)
     video.addEventListener('loadeddata', updateVideoDimensions)
     video.addEventListener('fullscreenchange', updateVideoDimensions)
 
     return () => {
       video.removeEventListener('pause', handlePause)
       video.removeEventListener('playing', handlePlaying)
+      video.removeEventListener('error', handleError)
+      video.removeEventListener('canplay', handleCanPlay)
       video.removeEventListener('loadeddata', updateVideoDimensions)
       video.removeEventListener('fullscreenchange', updateVideoDimensions)
     }
-  }, [setIsPlaying, updateVideoDimensions])
+  }, [setIsPlaying, updateVideoDimensions, source, transcodedSrc, transcodeStatus, handleCanPlay, applyTranscodeSrc])
 
   useEffect(() => {
-    if (defaultStartTime) {
-      skipTo(defaultStartTime)
-    }
+    if (defaultStartTime) skipTo(defaultStartTime)
   }, [defaultStartTime, skipTo])
 
   useEffect(() => {
@@ -89,6 +139,11 @@ export function CustomVideoPlayer({
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [])
 
+  // Cleanup debounce on unmount
+  useEffect(() => () => {
+    if (seekDebounce.current) clearTimeout(seekDebounce.current)
+  }, [])
+
   return (
     <div
       ref={containerRef}
@@ -98,11 +153,36 @@ export function CustomVideoPlayer({
     >
       <video
         ref={videoRef}
-        src={source}
+        src={activeSrc}
         poster={scenes[0]?.thumbnailUrl ? '/thumbnails/' + scenes[0].thumbnailUrl : undefined}
         className="w-full h-full bg-black"
         onClick={togglePlay}
       />
+
+      <AnimatePresence>
+        {transcodeStatus === 'transcoding' && (
+          <motion.div
+            key="transcoding-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <TranscodingOverlay status={transcodeStatus} />
+          </motion.div>
+        )}
+        {loading && transcodeStatus !== 'transcoding' && (
+          <motion.div
+            key="loading-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <LoadingOverlay />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="absolute overlay inset-0 pointer-events-none" ref={overlayRef}>
         <OverlayManager
@@ -124,6 +204,12 @@ export function CustomVideoPlayer({
         >
           {title}
         </motion.div>
+      )}
+
+      {transcodeStatus === 'ready' && (
+        <div className="absolute top-0 right-0 px-2 py-0.5 text-xs font-mono font-bold tracking-widest z-10 bg-yellow-500 text-black">
+          Transcoded Playback
+        </div>
       )}
 
       <OverlayControls
@@ -150,7 +236,7 @@ export function CustomVideoPlayer({
         animate={{ opacity: showControls || !isPlaying ? 1 : 0, y: showControls || !isPlaying ? 0 : 20 }}
         className="absolute bottom-20 left-6 right-6 pointer-events-auto"
       >
-        <ProgressBar scenes={scenes} duration={duration} currentTime={currentTime} onSeek={seekTo} />
+        <ProgressBar scenes={scenes} duration={duration} currentTime={currentTime} onSeek={handleSeek} />
       </motion.div>
 
       <motion.div
@@ -159,31 +245,21 @@ export function CustomVideoPlayer({
         className="absolute bottom-6 left-6 right-6 flex items-center gap-4 pointer-events-auto"
       >
         <PlaybackControls isPlaying={isPlaying} onTogglePlay={togglePlay} />
-
-        <VolumeControl
-          volume={volume}
-          isMuted={isMuted}
-          onToggleMute={toggleMute}
-          onVolumeChange={handleVolumeChange}
-        />
-
+        <VolumeControl volume={volume} isMuted={isMuted} onToggleMute={toggleMute} onVolumeChange={handleVolumeChange} />
         <div className="flex-1" />
-
         <FitButton
           onToggle={() => setCurrentObjectFit((prev) => (prev === 'contain' ? 'cover' : 'contain'))}
           currentObjectFit={currentObjectFit}
         />
-
         <CaptionsButton
           onToggle={() => setOverlayMode(overlayMode === 'captions' || overlayMode === 'all' ? 'none' : 'captions')}
           active={overlayMode === 'captions'}
         />
-
         <FullscreenButton onToggleFullscreen={() => toggleFullscreen(containerRef)} />
       </motion.div>
 
       <AnimatePresence>
-        {!isPlaying && showControls && (
+        {!isPlaying && showControls && !loading && transcodeStatus !== 'transcoding' && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}

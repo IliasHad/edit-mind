@@ -4,6 +4,7 @@ export function useVideoControls(videoRef: RefObject<HTMLVideoElement | null>) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [volume, setVolume] = useState(1)
   const [isMuted, setIsMuted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const togglePlay = useCallback(() => {
     if (!videoRef) return null
@@ -11,6 +12,7 @@ export function useVideoControls(videoRef: RefObject<HTMLVideoElement | null>) {
     if (!video) return
 
     if (video.paused) {
+      setLoading(true)
       video.play()
       setIsPlaying(true)
     } else {
@@ -69,5 +71,7 @@ export function useVideoControls(videoRef: RefObject<HTMLVideoElement | null>) {
     toggleMute,
     handleVolumeChange,
     toggleFullscreen,
+    setLoading,
+    loading
   }
 }
