@@ -1,3 +1,17 @@
+import { ChildProcess } from "node:child_process"
+
+// One active FFmpeg process per source path
+export const activeProcesses = new Map<string, ChildProcess>()
+
+export function killExisting(key: string) {
+  const existing = activeProcesses.get(key)
+  if (existing) {
+    existing.kill('SIGKILL')
+    activeProcesses.delete(key)
+  }
+}
+
+
 export function buildFfmpegArgs(inputPath: string, startSeconds: number): string[] {
   const args: string[] = []
 

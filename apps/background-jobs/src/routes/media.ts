@@ -4,20 +4,9 @@ import fs from 'fs'
 import { logger } from '@shared/services/logger'
 import { createPathValidator } from '@shared/services/pathValidator'
 import { MEDIA_BASE_PATH } from '@shared/constants'
-import { buildFfmpegArgs } from '@background-jobs/utils/transcoder'
+import { activeProcesses, buildFfmpegArgs, killExisting } from '@background-jobs/utils/transcoder'
 
 const router = Router()
-
-// One active FFmpeg process per source path
-const activeProcesses = new Map<string, ChildProcess>()
-
-function killExisting(key: string) {
-  const existing = activeProcesses.get(key)
-  if (existing) {
-    existing.kill('SIGKILL')
-    activeProcesses.delete(key)
-  }
-}
 
 router.get('/transcode', async (req: Request, res: Response) => {
   const source = req.query.source as string | undefined
