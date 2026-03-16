@@ -18,7 +18,8 @@ export const meta: MetaFunction = () => {
 }
 
 export default function FolderDetailsPage() {
-  const { currentFolder, loading, rescanFolder } = useCurrentFolder()
+  const { currentFolder, loading, rescanFolder, } = useCurrentFolder()
+
   const { status } = useServices()
   const { id } = useParams()
   const { fetchJobsByFolderId, jobs, jobsStatus, total, totalPages, page } = useJobs()
@@ -32,6 +33,7 @@ export default function FolderDetailsPage() {
 
   const handleRescan = async () => {
     if (id) await rescanFolder(id)
+    if (id) await fetchJobsByFolderId(id, currentPage)
   }
   if (!currentFolder) return null
   const isReady = status?.backgroundJobsService && status?.mlService;
