@@ -4,6 +4,7 @@ import path from 'path'
 import { FACES_DIR } from '@shared/constants'
 import { logger } from '@shared/services/logger'
 import { requireUser } from '~/services/user.server'
+import { getContentType } from '~/features/shared/utils/contentType';
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const filePath = params['*']
@@ -37,15 +38,4 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   } catch (error) {
     logger.error(error)
   }
-}
-
-function getContentType(filePath: string): string {
-  const ext = path.extname(filePath).toLowerCase()
-  const types: Record<string, string> = {
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.webp': 'image/webp',
-  }
-  return types[ext] ?? 'application/octet-stream'
 }

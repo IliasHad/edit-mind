@@ -5,6 +5,7 @@ import { logger } from '@shared/services/logger'
 import { requireUser } from '~/services/user.server'
 import { createPathValidator } from '@shared/services/pathValidator'
 import { MEDIA_BASE_PATH } from '@shared/constants'
+import { getContentType } from '~/features/shared/utils/contentType'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
@@ -80,18 +81,4 @@ export async function loader({ request }: LoaderFunctionArgs) {
     logger.warn(error)
     throw new Response('Error loading media', { status: 404 })
   }
-}
-
-function getContentType(filePath: string): string {
-  const ext = path.extname(filePath).toLowerCase()
-  const contentTypes: Record<string, string> = {
-    '.mp4': 'video/mp4',
-    '.webm': 'video/webm',
-    '.ogg': 'video/ogg',
-    '.mov': 'video/quicktime',
-    '.avi': 'video/x-msvideo',
-    '.mkv': 'video/x-matroska',
-    '.m4v': 'video/x-m4v',
-  }
-  return contentTypes[ext] || 'application/octet-stream'
 }
