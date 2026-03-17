@@ -68,6 +68,6 @@ export function useVideoControls(videoRef: RefObject<HTMLVideoElement | null>) {
     togglePlay,
     toggleMute,
     handleVolumeChange,
-    toggleFullscreen,
+    toggleFullscreen
   }
 }

@@ -180,7 +180,7 @@ export default function Video() {
               )}
               {videoExist ? (
                 <CustomVideoPlayer
-                  source={'/media?source=' + encodeURIComponent(video.source)}
+                  source={video.source}
                   scenes={scenes}
                   title={video.source}
                   defaultStartTime={defaultStartTime}

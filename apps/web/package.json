@@ -28,6 +28,7 @@
     "db": "workspace:*",
     "express": "^5.1.0",
     "framer-motion": "^12.23.24",
+    "http-proxy-middleware": "^3.0.5",
     "immich": "workspace:*",
     "isbot": "^5.1.31",
     "lexical": "^0.39.0",

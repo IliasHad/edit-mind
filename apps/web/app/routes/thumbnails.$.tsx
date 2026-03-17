@@ -6,6 +6,7 @@ import { requireUser } from '~/services/user.server'
 import { createPathValidator } from '@shared/services/pathValidator'
 import { THUMBNAILS_DIR } from '@shared/constants'
 import { logger } from '@shared/services/logger'
+import { getContentType } from '~/features/shared/utils/contentType'
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const filePath = params['*'] || ''
@@ -62,15 +63,3 @@ function generateEtag(filePath: string, stats: fs.Stats): string {
   return `"${hash.digest('hex')}"`
 }
 
-function getContentType(filePath: string): string {
-  const ext = path.extname(filePath).toLowerCase()
-  const types: Record<string, string> = {
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.webp': 'image/webp',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-  }
-  return types[ext] || 'application/octet-stream'
-}
