@@ -188,17 +188,6 @@ export function CustomVideoPlayer({
             <TranscodingOverlay status={transcodeStatus} />
           </motion.div>
         )}
-        {transcodeStatus !== 'transcoding' && (
-          <motion.div
-            key="loading-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <LoadingOverlay />
-          </motion.div>
-        )}
       </AnimatePresence>
 
       <div className="absolute overlay inset-0 pointer-events-none" ref={overlayRef}>
