@@ -49,7 +49,7 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be the edit
 | **Containerization** | [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/) |
 | **Web Service**      | [React Router V7](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/) |
 | **Background Jobs Service** | [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/), [BullMQ](https://bullmq.io/) |
-| **ML Sevice**       | [Python](https://www.python.org/), [OpenCV](https://opencv.org/), [PyTorch](https://pytorch.org/), OpenAI Whisper, Google Gemini or Ollama (Used for NLP) |
+| **ML Sevice**       | [Python](https://www.python.org/), [PyAV](https://github.com/PyAV-Org/PyAV), [PyTorch](https://pytorch.org/), OpenAI Whisper, Google Gemini or Ollama (Used for NLP) |
 | **Vector Database** | [ChromaDB](https://www.trychroma.com/)           |
 | **Relational DB** | [PostgreSQL](https://www.postgresql.org/) (via [Prisma ORM](https://www.prisma.io/)) |
 
