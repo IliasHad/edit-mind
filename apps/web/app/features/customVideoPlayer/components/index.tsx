@@ -47,7 +47,7 @@ export function CustomVideoPlayer({
   const activeSrc = transcodedSrc ?? `/media?source=${encodeURIComponent(source)}`
 
   const { videoDimensions, updateVideoDimensions } = useVideoDimensions(videoRef, overlayRef, currentObjectFit)
-  const { isPlaying, setIsPlaying, volume, isMuted, togglePlay, toggleMute, handleVolumeChange, toggleFullscreen, setLoading, loading } =
+  const { isPlaying, setIsPlaying, volume, isMuted, togglePlay, toggleMute, handleVolumeChange, toggleFullscreen } =
     useVideoControls(videoRef)
   const { currentTime, duration, seekTo, skipTo } = useVideoProgress(videoRef, onTimeUpdate)
   const { overlayMode, setOverlayMode, showOverlays, setShowOverlays } = useOverlayState()
@@ -67,7 +67,6 @@ export function CustomVideoPlayer({
     const video = videoRef.current
     if (!video) return
     video.src = src
-    setLoading(true)
     video.load()
   }, [])
 
@@ -102,8 +101,8 @@ export function CustomVideoPlayer({
     const video = videoRef.current
     if (!video) return
 
-    const handlePause = () => { setLoading(false); setIsPlaying(false) }
-    const handlePlaying = () => { setLoading(false); setIsPlaying(true) }
+    const handlePause = () => setIsPlaying(false)
+    const handlePlaying = () => setIsPlaying(true)
 
     const handleError = () => {
       if (transcodeStatus === 'direct' && !transcodedSrc) {
@@ -189,7 +188,7 @@ export function CustomVideoPlayer({
             <TranscodingOverlay status={transcodeStatus} />
           </motion.div>
         )}
-        {loading && transcodeStatus !== 'transcoding' && (
+        {transcodeStatus !== 'transcoding' && (
           <motion.div
             key="loading-overlay"
             initial={{ opacity: 0 }}
@@ -277,7 +276,7 @@ export function CustomVideoPlayer({
       </motion.div>
 
       <AnimatePresence>
-        {!isPlaying && showControls && !loading && transcodeStatus !== 'transcoding' && (
+        {!isPlaying && showControls && transcodeStatus !== 'transcoding' && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
