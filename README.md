@@ -49,7 +49,7 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be the edit
 | **Containerization** | [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/) |
 | **Web Service**      | [React Router V7](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/) |
 | **Background Jobs Service** | [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/), [BullMQ](https://bullmq.io/) |
-| **ML Sevice**       | [Python](https://www.python.org/), [PyAV](https://github.com/PyAV-Org/PyAV), [PyTorch](https://pytorch.org/), OpenAI Whisper, Google Gemini or Ollama (Used for NLP) |
+| **ML Sevice**       | [Python](https://www.python.org/), [PyAV](https://github.com/PyAV-Org/PyAV), [PyTorch](https://pytorch.org/), OpenAI Whisper, Google Gemini, [MiniMax](https://www.minimaxi.com/) or Ollama (Used for NLP) |
 | **Vector Database** | [ChromaDB](https://www.trychroma.com/)           |
 | **Relational DB** | [PostgreSQL](https://www.postgresql.org/) (via [Prisma ORM](https://www.prisma.io/)) |
 
@@ -131,6 +131,11 @@ OLLAMA_MODEL="qwen2.5:7b-instruct"
 # Option B: Use Gemini API (requires API key)
 USE_GEMINI="true"
 GEMINI_API_KEY="your-gemini-api-key-from-google-ai-studio"
+
+# Option C: Use MiniMax API (requires API key)
+USE_MINIMAX="true"
+MINIMAX_API_KEY="your-minimax-api-key"
+MINIMAX_MODEL="MiniMax-M1"  # or MiniMax-M1-highspeed
 
 # 3. GENERATE SECURITY KEYS (REQUIRED)
 # Generate with: openssl rand -base64 32
