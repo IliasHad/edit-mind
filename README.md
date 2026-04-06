@@ -5,6 +5,7 @@ Edit Mind lets you index your videos **(including transcription, frame analysis,
 > **Development Status:** Edit Mind is currently in **active development** and **not yet production-ready**.
 > Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
 
+---
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
@@ -58,6 +59,19 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be the edit
 ## Getting Started
 
 Edit Mind uses Docker Compose to run everything in containers.
+
+### Desktop App
+
+**Want Edit Mind without Docker or any terminal setup?** The commercial desktop app packages everything into a one-click installer for macOS and Windows with the same features (plus Davinci Resolve and Final Cut Pro direct integration). This will help us support the development of the community's version.
+
+I built the self-hosted version because a lot of people asked for it. I built the desktop app because I got couple of emails and calls people doesn't wanna run this as server. The self hosted version, It's free. It's not going anywhere. The desktop app is for the people who want it to just work on their Mac or Windows or the ones with Apple chips and wanna utilize Apple GPU because using Docker, we cannot utilize that.
+ 
+> **[Preorder the Desktop App →](https://shop.edit-mind.com/checkout/buy/9f18a6f0-b437-47ec-b2fa-b71216abcedd)**
+>
+> Early bird pricing · Lifetime license · one year of updates included · 14-day refund guarantee (starting when the app ships)
+> The desktop app will be delivered by email when the app ships.
+
+
 
 ## Setup Video
 
