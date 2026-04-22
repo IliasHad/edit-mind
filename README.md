@@ -10,6 +10,7 @@ Edit Mind lets you index your videos **(including transcription, frame analysis,
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
 [![Docker](https://img.shields.io/badge/Containerized-Docker-blue.svg)](https://www.docker.com/)
+[![Featured on Syntax.fm](https://img.shields.io/badge/Featured%20on-Syntax.fm-f39c12.svg)](https://www.youtube.com/watch?v=9O0lQBEPL2U&t=2483s)
 
 > Prefer a one-click install? [Desktop app available →](#desktop-app)
 
@@ -226,12 +227,18 @@ cd docker
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
-## Community Presentations
+## Community Presentations and Videos
 
-[![Edit Mind at Twelve Labs](https://img.youtube.com/vi/k_aesDa3sFw/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_aesDa3sFw&t=1272s)  
-*Watch the Edit Mind presentation at Twelve Labs (starts at 21:12)*
+[![Edit Mind at Twelve Labs](https://img.youtube.com/vi/9O0lQBEPL2U/maxresdefault.jpg)](https://www.youtube.com/watch?v=9O0lQBEPL2U&t=2483s)  
+*Watch the Edit Mind featured at Syntax.fm (starts at 41:21)*
 
 ---
+
+[![Edit Mind at Twelve Labs](https://img.youtube.com/vi/k_aesDa3sFw/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_aesDa3sFw&t=1272s)  
+
+*Watch the Edit Mind presentation at Twelve Labs (starts at 21:12)*
+
+
 ---
 ## License
 
