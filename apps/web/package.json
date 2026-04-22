@@ -14,7 +14,7 @@
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
-    "@lexical/react": "^0.43.0",
+    "@lexical/react": "^0.39.0",
     "@react-router/express": "7.14.2",
     "@react-router/fs-routes": "^7.14.2",
     "@react-router/node": "^7.14.2",
