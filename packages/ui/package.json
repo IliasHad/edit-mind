@@ -12,14 +12,14 @@
     "clean": "rm -rf .turbo node_modules dist"
   },
   "devDependencies": {
-    "tsup": "^8.1.0"
+    "tsup": "^8.5.1"
   },
   "peerDependencies": {
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "dependencies": {
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.5.0"
   },
   "publishConfig": {
     "name": "@iliashad/shared",

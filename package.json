@@ -18,22 +18,22 @@
     "build:web": "turbo build --filter='./apps/web'"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.0",
+    "@prisma/client": "^6.19.3",
     "date-fns": "^4.1.0",
-    "ioredis": "^5.9.2",
+    "ioredis": "^5.10.1",
     "jiti": "^2.6.1",
     "tsx": "^4.21.0",
-    "zod": "^4.1.12"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/ui": "^4.0.18",
-    "prisma": "6.19.0",
+    "@types/node": "^22.19.17",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
+    "prisma": "6.19.3",
     "tsconfig-paths": "^4.2.0",
-    "turbo": "^2.7.2",
+    "turbo": "^2.9.6",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.5"
   },
   "pnpm": {
     "overrides": {
@@ -56,13 +56,14 @@
     "sharp": "0.34.5",
     "protobufjs": "7.5.5",
     "tar": "7.5.11",
-    "minimatch": "9.0.6"
+    "minimatch": "9.0.9"
   },
   "overrides": {
     "sharp": "0.34.5",
     "protobufjs": "7.5.5",
     "tar": "7.5.11",
-    "minimatch": "9.0.6"
+    "minimatch": "9.0.9",
+    "rollup": "^4.59.0"
   },
-  "packageManager": "pnpm@10.32.1"
+  "packageManager": "pnpm@10.33.1"
 }
