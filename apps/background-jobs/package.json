@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@bull-board/api": "^6.21.3",
-    "@bull-board/express": "^7.0.0",
+    "@bull-board/express": "^6.21.3",
     "@bull-board/ui": "^6.21.3",
     "ai": "workspace:*",
     "archiver": "^7.0.1",
