@@ -20,7 +20,7 @@
   "dependencies": {
     "db": "workspace:*",
     "shared": "workspace:*",
-    "jimp": "^1.6.0"
+    "jimp": "^1.6.1"
   },
   "devDependencies": {}
 }

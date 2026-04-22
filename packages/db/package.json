@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "nanoid": "^5.1.6",
+    "nanoid": "^5.1.9",
     "prisma": "workspace:*",
     "shared": "workspace:*"
   },
