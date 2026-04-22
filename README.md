@@ -11,6 +11,7 @@ Edit Mind lets you index your videos **(including transcription, frame analysis,
 [![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple.svg)](https://www.trychroma.com/)
 [![Docker](https://img.shields.io/badge/Containerized-Docker-blue.svg)](https://www.docker.com/)
 
+> Prefer a one-click install? [Desktop app available →](#desktop-app)
 
 ---
 Note: (Edit Mind name is coming from Video Editor Mind, so this will be the editor's second brain and companion in the future)
