@@ -46,7 +46,7 @@
     "search": "workspace:*",
     "semver": "^7.7.3",
     "shared": "workspace:*",
-    "socket.io-client": "^4.8.3",
+    "socket.io-client": "^4.2.6",
     "ui": "workspace:*",
     "vector": "workspace:*",
     "zustand": "^5.0.9"

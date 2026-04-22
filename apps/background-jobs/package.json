@@ -32,7 +32,7 @@
     "search": "workspace:*",
     "shared": "workspace:*",
     "smart-collections": "workspace:*",
-    "socket.io": "^4.8.3",
+    "socket.io": "^4.2.6",
     "vector": "workspace:*"
   },
   "devDependencies": {
