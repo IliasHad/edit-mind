@@ -53,10 +53,16 @@
     ]
   },
   "resolutions": {
-    "sharp": "0.34.5"
+    "sharp": "0.34.5",
+    "protobufjs": "7.5.5",
+    "tar": "7.5.11",
+    "minimatch": "9.0.6"
   },
   "overrides": {
-    "sharp": "0.34.5"
+    "sharp": "0.34.5",
+    "protobufjs": "7.5.5",
+    "tar": "7.5.11",
+    "minimatch": "9.0.6"
   },
   "packageManager": "pnpm@10.32.1"
 }
