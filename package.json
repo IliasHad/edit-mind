@@ -27,13 +27,13 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/ui": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/ui": "^4.1.5",
     "prisma": "6.19.0",
     "tsconfig-paths": "^4.2.0",
     "turbo": "^2.7.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.5"
   },
   "pnpm": {
     "overrides": {
@@ -56,13 +56,14 @@
     "sharp": "0.34.5",
     "protobufjs": "7.5.5",
     "tar": "7.5.11",
-    "minimatch": "9.0.6"
+    "minimatch": "9.0.9"
   },
   "overrides": {
     "sharp": "0.34.5",
     "protobufjs": "7.5.5",
     "tar": "7.5.11",
-    "minimatch": "9.0.6"
+    "minimatch": "9.0.9",
+    "rollup": "^4.59.0"
   },
   "packageManager": "pnpm@10.32.1"
 }

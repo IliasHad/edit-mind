@@ -42,11 +42,11 @@
     "react-hot-toast": "^2.6.0",
     "react-intersection-observer": "^10.0.0",
     "react-router": "^7.12.0",
-    "react-router-dom": "^7.9.5",
+    "react-router-dom": "^7.12.0",
     "search": "workspace:*",
     "semver": "^7.7.3",
     "shared": "workspace:*",
-    "socket.io-client": "^4.2.6",
+    "socket.io-client": "^4.8.3",
     "ui": "workspace:*",
     "vector": "workspace:*",
     "zustand": "^5.0.9"
