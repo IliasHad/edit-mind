@@ -7,6 +7,7 @@ export interface Face {
   }
   bbox: BBox
   confidence: number
+  custom_metadata: Record<string, string | number | boolean>
 }
 export interface BBox {
   x: number

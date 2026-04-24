@@ -4,8 +4,7 @@ import { logger } from '@shared/services/logger'
 import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 import { JobStatus } from '@prisma/client'
-import { unlink, rm } from 'fs/promises'
-import { existsSync } from 'fs'
+import { rm } from 'fs/promises';
 import { getByVideoSource } from '@vector/services/db'
 import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
@@ -45,27 +44,15 @@ async function finalizeVideo(job: Job<VideoProcessingData>) {
       }
     }
 
-    const filesToClean = [scenesPath, analysisPath, transcriptionPath]
-
     if (process.env.NODE_ENV === 'production') {
       logger.debug({ jobId }, 'Cleaning up temporary files')
 
-      for (const filePath of filesToClean) {
-        if (existsSync(filePath)) {
-          try {
-            await unlink(filePath)
-            logger.info({ jobId, filePath }, 'Deleted temporary file')
-          } catch (error) {
-            logger.warn({ jobId, filePath, error }, 'Failed to delete temporary file')
-          }
-        }
-      }
-    }
-    const videoDir = dirname(transcriptionPath)
+      const videoDir = dirname(transcriptionPath)
 
-    await rm(videoDir, {
-      recursive: true,
-    })
+      await rm(videoDir, {
+        recursive: true,
+      })
+    }
 
     await updateJob(job, { status: 'done', overallProgress: 100 })
     await suggestionCache.refresh()

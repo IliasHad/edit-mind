@@ -1,4 +1,4 @@
-import { Analysis, DetectedObject, Face, PerformanceMetric } from '@shared/types/analysis';
+import { Analysis, DetectedObject, Face } from '@shared/types/analysis';
 import { Scene } from '@shared/types/scene'
 import { Transcription } from '@shared/types/transcription'
 import { createHash } from 'crypto'
@@ -160,6 +160,7 @@ export const createScenes = async (
           label: face.emotion.label,
           confidence: face.emotion.confidence,
         },
+        customMetadata: face.custom_metadata
       })),
       transcriptionWords: transcription?.segments
         .filter((segment) => segment.end >= startTime && segment.start <= endTime)

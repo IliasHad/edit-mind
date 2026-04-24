@@ -21,6 +21,7 @@ export const faceSchema = z.object({
     label: z.string().optional(),
     confidence: z.number().optional(),
   }),
+  customMetadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).nullable(),
 })
 
 export const objectDataSchema = z.object({

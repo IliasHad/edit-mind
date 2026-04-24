@@ -1,9 +1,9 @@
 import chokidar from 'chokidar'
 import path from 'path'
-import { addVideoIndexingJob } from './services/videoIndexer.js'
-import { FolderModel, JobModel } from '@db/index.js'
+import { addVideoIndexingJob } from './services/videoIndexer'
+import { FolderModel, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
-import { logger } from '@shared/services/logger.js'
+import { logger } from '@shared/services/logger'
 import { existsSync } from 'fs'
 import micromatch from 'micromatch'
 
