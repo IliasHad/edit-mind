@@ -34,11 +34,20 @@ const generateVectorDocumentText = async (scene: Scene) => {
     } else if (faceList.length === 2) {
       textParts.push(` featuring ${faceList[0]} and ${faceList[1]}`)
     } else if (faceList.length > 2) {
-      const lastFace = faceList[faceList.length - 1]
-      const otherFaces = faceList.slice(0, -1).join(', ')
-      textParts.push(` featuring ${otherFaces}, and ${lastFace}`)
+      faceList?.forEach(face => textParts.push((` featuring ${face} `)))
     }
   }
+
+  // Faces custom metadata
+  const facesWithDetails = scene.facesData?.filter((face) => face.customMetadata && Object.keys(face.customMetadata).length > 0)
+    .map((face) => {
+      const attributes = Object.entries(face.customMetadata!)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ')
+      return ` ${face.name} (${attributes}) `
+    })
+
+  facesWithDetails?.forEach(metadata => textParts.push(metadata))
 
   // Objects detected
   if (objects) {

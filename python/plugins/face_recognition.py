@@ -67,6 +67,12 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         output_faces = []
         for face in recognized_faces:
             scaled_face = self._scale_face_coordinates(face, scale_factor, width, height)
+            
+            if not face['name'].startswith("Unknown_"):
+                custom_metadata = self._load_custom_face_metadata(face['name'])
+                if custom_metadata:
+                    scaled_face['custom_metadata'] = custom_metadata
+                
             output_faces.append(scaled_face)
 
             if face['name'].startswith("Unknown_"):
@@ -337,6 +343,29 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         if removed:
             logger.info(
                 f"Cleaned {removed} previous unknown faces for job {self.current_job_id}")
+
+    def _load_custom_face_metadata(self, name: str) -> Optional[Dict]:
+        """Load metadata.json from the known face's folder in FACE_DIR, if present.
+
+        Expected structure:
+            <FACE_DIR>/<name>/metadata.json
+
+        Returns the parsed dict on success, or None if the file doesn't exist or
+        cannot be read.
+        """
+        faces_dir = Path(os.getenv("FACES_DIR", ".faces"))  
+        metadata_file = faces_dir / name / "metadata.json"
+
+        if not metadata_file.exists():
+            return None
+
+        try:
+            data = json.loads(metadata_file.read_text(encoding="utf-8"))
+            logger.debug(f"Loaded custom metadata for '{name}' from {metadata_file}")
+            return data
+        except Exception as e:
+            logger.warning(f"Failed to load metadata.json for '{name}': {e}")
+            return None
 
     def get_results(self) -> PluginResult:
         """" Get all faces back"""
