@@ -10,7 +10,7 @@ MEDIA_PATH="${MEDIA_PATH:-${ROOT_DIR}/media}"
 NODE_MEDIA_PATH="${KIND_NODE_MEDIA_PATH:-/media/videos}"
 WEB_PORT="${WEB_PORT:-3745}"
 NODE_PORT="${NODE_PORT:-30080}"
-POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-password}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-$(openssl rand -hex 24)}"
 SESSION_SECRET="${SESSION_SECRET:-$(openssl rand -hex 32)}"
 ENCRYPTION_KEY="${ENCRYPTION_KEY:-$(openssl rand -base64 32)}"
 
@@ -28,15 +28,26 @@ require_command helm
 require_command openssl
 require_command realpath
 
+is_system_path() {
+  local path="$1"
+  local system_dirs=(/ /bin /boot /dev /etc /lib /lib64 /proc /root /run /sbin /sys /usr /var)
+
+  for dir in "${system_dirs[@]}"; do
+    if [ "${path}" = "${dir}" ] || [[ "${path}" == "${dir}/"* ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 mkdir -p "${MEDIA_PATH}"
 MEDIA_PATH_REAL="$(realpath "${MEDIA_PATH}")"
 
-case "${MEDIA_PATH_REAL}" in
-  /|/bin|/bin/*|/boot|/boot/*|/dev|/dev/*|/etc|/etc/*|/lib|/lib/*|/lib64|/lib64/*|/proc|/proc/*|/root|/root/*|/run|/run/*|/sbin|/sbin/*|/sys|/sys/*|/usr|/usr/*|/var|/var/*)
-    echo "MEDIA_PATH points to a system directory. Choose a dedicated media directory." >&2
-    exit 1
-    ;;
-esac
+if is_system_path "${MEDIA_PATH_REAL}"; then
+  echo "MEDIA_PATH points to a system directory. Choose a dedicated media directory." >&2
+  exit 1
+fi
 
 if [ ! -d "${MEDIA_PATH_REAL}" ] || [ ! -r "${MEDIA_PATH_REAL}" ]; then
   echo "MEDIA_PATH must be a readable directory: ${MEDIA_PATH}" >&2

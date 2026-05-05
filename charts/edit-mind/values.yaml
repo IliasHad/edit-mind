@@ -62,13 +62,15 @@ secrets:
   existingSecret: ""
   sessionSecret: ""
   encryptionKey: ""
-  # Development default for local installs. Override for any shared or production cluster.
-  postgresPassword: password
+  # Required unless existingSecret is set. Use URL-safe characters: letters, numbers, '.', '_', '~', and '-'.
+  postgresPassword: ""
   geminiApiKey: ""
 
 media:
   hostPath: /media/videos
   mountPath: /media/videos
+  # Mirrors docker-compose.yml, where background-jobs gets read-write media access.
+  backgroundJobsReadOnly: false
 
 persistence:
   data:

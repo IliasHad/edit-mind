@@ -214,6 +214,7 @@ helm upgrade --install edit-mind ./charts/edit-mind \
   --namespace edit-mind \
   --create-namespace \
   --set media.hostPath="/media/videos" \
+  --set secrets.postgresPassword="$(openssl rand -hex 24)" \
   --set secrets.sessionSecret="$(openssl rand -hex 32)" \
   --set secrets.encryptionKey="$(openssl rand -base64 32)"
 ```

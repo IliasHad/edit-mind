@@ -32,6 +32,7 @@ spec:
           volumeMounts:
             - name: media
               mountPath: {{ .Values.media.mountPath | quote }}
+              readOnly: {{ .Values.media.backgroundJobsReadOnly }}
               readOnly: true
             - name: data
               mountPath: /app/data
