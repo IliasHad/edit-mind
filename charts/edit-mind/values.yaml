@@ -79,7 +79,7 @@ persistence:
     size: 1Gi
   postgres:
     size: 10Gi
-  mlModels:
+  ml-models:
     size: 10Gi
 
 resources: {}

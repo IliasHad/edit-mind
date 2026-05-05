@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "edit-mind.fullname" $ }}-{{ $name | kebabcase }}
+  name: {{ include "edit-mind.fullname" $ }}-{{ $name }}
   labels:
     {{- include "edit-mind.labels" $ | nindent 4 }}
 spec:
