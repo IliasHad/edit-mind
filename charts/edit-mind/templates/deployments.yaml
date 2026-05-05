@@ -102,7 +102,7 @@ spec:
             claimName: {{ include "edit-mind.fullname" . }}-data
         - name: ml-models
           persistentVolumeClaim:
-            claimName: {{ include "edit-mind.fullname" . }}-mlModels
+            claimName: {{ include "edit-mind.fullname" . }}-ml-models
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -166,4 +166,4 @@ spec:
             claimName: {{ include "edit-mind.fullname" . }}-data
         - name: ml-models
           persistentVolumeClaim:
-            claimName: {{ include "edit-mind.fullname" . }}-mlModels
+            claimName: {{ include "edit-mind.fullname" . }}-ml-models
