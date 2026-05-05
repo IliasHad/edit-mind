@@ -10,9 +10,9 @@ MEDIA_PATH="${MEDIA_PATH:-${ROOT_DIR}/media}"
 NODE_MEDIA_PATH="${KIND_NODE_MEDIA_PATH:-/media/videos}"
 WEB_PORT="${WEB_PORT:-3745}"
 NODE_PORT="${NODE_PORT:-30080}"
-POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-$(openssl rand -hex 24)}"
-SESSION_SECRET="${SESSION_SECRET:-$(openssl rand -hex 32)}"
-ENCRYPTION_KEY="${ENCRYPTION_KEY:-$(openssl rand -base64 32)}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-}"
+SESSION_SECRET="${SESSION_SECRET:-}"
+ENCRYPTION_KEY="${ENCRYPTION_KEY:-}"
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -27,6 +27,7 @@ require_command kubectl
 require_command helm
 require_command openssl
 require_command realpath
+require_command base64
 
 is_system_path() {
   local path="$1"
@@ -39,6 +40,25 @@ is_system_path() {
   done
 
   return 1
+}
+
+chart_fullname() {
+  if [[ "${RELEASE_NAME}" == *edit-mind* ]]; then
+    printf '%s' "${RELEASE_NAME}"
+  else
+    printf '%s-edit-mind' "${RELEASE_NAME}"
+  fi
+}
+
+reuse_secret_value() {
+  local secret_name="$1"
+  local key="$2"
+  local encoded
+
+  encoded="$(kubectl -n "${NAMESPACE}" get secret "${secret_name}" -o "jsonpath={.data.${key}}" 2>/dev/null || true)"
+  if [ -n "${encoded}" ]; then
+    printf '%s' "${encoded}" | base64 --decode 2>/dev/null || printf '%s' "${encoded}" | base64 -D
+  fi
 }
 
 mkdir -p "${MEDIA_PATH}"
@@ -75,10 +95,19 @@ if ! kind get clusters | grep -qx "${CLUSTER_NAME}"; then
   kind create cluster --name "${CLUSTER_NAME}" --config "${KIND_CONFIG}"
 else
   echo "Using existing Kind cluster '${CLUSTER_NAME}'."
+  echo "Ensure it was created with host port ${WEB_PORT}->${NODE_PORT} and media mount ${MEDIA_PATH_REAL}->${NODE_MEDIA_PATH}."
 fi
 
 kubectl config use-context "kind-${CLUSTER_NAME}"
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+SECRET_NAME="$(chart_fullname)-secrets"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-$(reuse_secret_value "${SECRET_NAME}" POSTGRES_PASSWORD)}"
+SESSION_SECRET="${SESSION_SECRET:-$(reuse_secret_value "${SECRET_NAME}" SESSION_SECRET)}"
+ENCRYPTION_KEY="${ENCRYPTION_KEY:-$(reuse_secret_value "${SECRET_NAME}" ENCRYPTION_KEY)}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-$(openssl rand -hex 24)}"
+SESSION_SECRET="${SESSION_SECRET:-$(openssl rand -hex 32)}"
+ENCRYPTION_KEY="${ENCRYPTION_KEY:-$(openssl rand -base64 32)}"
 
 helm upgrade --install "${RELEASE_NAME}" "${CHART_DIR}" \
   --namespace "${NAMESPACE}" \
