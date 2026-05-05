@@ -57,7 +57,9 @@ reuse_secret_value() {
 
   encoded="$(kubectl -n "${NAMESPACE}" get secret "${secret_name}" -o "jsonpath={.data.${key}}" 2>/dev/null || true)"
   if [ -n "${encoded}" ]; then
-    printf '%s' "${encoded}" | base64 --decode 2>/dev/null || printf '%s' "${encoded}" | base64 -D
+    if ! printf '%s' "${encoded}" | base64 --decode 2>/dev/null; then
+      printf '%s' "${encoded}" | base64 -D
+    fi
   fi
 }
 
