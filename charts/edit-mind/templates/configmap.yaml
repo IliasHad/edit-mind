@@ -10,6 +10,7 @@ data:
   PGDATA: /var/lib/postgresql/data/pgdata
   REDIS_URL: redis://{{ include "edit-mind.fullname" . }}-redis:{{ .Values.redis.port }}
   REDIS_HOST: {{ include "edit-mind.fullname" . }}-redis
+  REDIS_PORT: {{ .Values.redis.port | quote }}
   CHROMA_HOST: {{ include "edit-mind.fullname" . }}-chroma
   IS_PERSISTENT: "TRUE"
   ML_HOST: {{ include "edit-mind.fullname" . }}-ml
@@ -19,7 +20,7 @@ data:
   BACKGROUND_JOBS_URL: http://{{ include "edit-mind.fullname" . }}-background-jobs:{{ .Values.backgroundJobs.port }}
   NODE_ENV: {{ .Values.config.nodeEnv | quote }}
   ANONYMIZED_TELEMETRY: {{ .Values.config.anonymizedTelemetry | quote }}
-  WEB_APP_URL: http://{{ include "edit-mind.fullname" . }}-web:{{ .Values.web.port }}
+  WEB_APP_URL: {{ .Values.web.externalUrl | default (printf "http://%s-web:%v" (include "edit-mind.fullname" .) .Values.web.port) | quote }}
   PROCESSED_VIDEOS_DIR: /app/data
   THUMBNAILS_PATH: /app/data/.thumbnails
   STITCHED_VIDEOS_DIR: /app/data/.stitched-videos

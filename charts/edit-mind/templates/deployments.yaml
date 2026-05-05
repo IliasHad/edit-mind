@@ -73,11 +73,18 @@ spec:
     spec:
       containers:
         - name: background-jobs
-          image: "{{ .Values.backgroundJobs.image.repository }}:{{ .Values.backgroundJobs.image.tag }}"
+          image: "{{ .Values.backgroundJobs.image.repository }}:{{ .Values.backgroundJobs.image.tag }}{{ if and .Values.gpu.enabled .Values.gpu.backgroundJobs.enabled }}{{ .Values.gpu.imageTagSuffix }}{{ end }}"
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.backgroundJobs.port }}
+          {{- if and .Values.gpu.enabled .Values.gpu.backgroundJobs.enabled }}
+          env:
+            {{- range $k, $v := .Values.gpu.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "edit-mind.fullname" . }}-config
@@ -92,7 +99,12 @@ spec:
             - name: ml-models
               mountPath: /app/ml-models
           resources:
+            {{- if and .Values.gpu.enabled .Values.gpu.backgroundJobs.enabled }}
+            limits:
+              {{ .Values.gpu.resourceName }}: {{ .Values.gpu.backgroundJobs.count }}
+            {{- else }}
             {{- toYaml .Values.resources | nindent 12 }}
+            {{- end }}
       volumes:
         - name: media
           hostPath:
@@ -126,7 +138,7 @@ spec:
     spec:
       containers:
         - name: ml
-          image: "{{ .Values.ml.image.repository }}:{{ .Values.ml.image.tag }}"
+          image: "{{ .Values.ml.image.repository }}:{{ .Values.ml.image.tag }}{{ if and .Values.gpu.enabled .Values.gpu.ml.enabled }}{{ .Values.gpu.imageTagSuffix }}{{ end }}"
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - name: http
@@ -142,6 +154,12 @@ spec:
               value: /ml-models/torch
             - name: HF_HOME
               value: /ml-models/huggingface
+            {{- if and .Values.gpu.enabled .Values.gpu.ml.enabled }}
+            {{- range $k, $v := .Values.gpu.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "edit-mind.fullname" . }}-config
@@ -156,7 +174,12 @@ spec:
             - name: ml-models
               mountPath: /ml-models
           resources:
+            {{- if and .Values.gpu.enabled .Values.gpu.ml.enabled }}
+            limits:
+              {{ .Values.gpu.resourceName }}: {{ .Values.gpu.ml.count }}
+            {{- else }}
             {{- toYaml .Values.resources | nindent 12 }}
+            {{- end }}
       volumes:
         - name: media
           hostPath:

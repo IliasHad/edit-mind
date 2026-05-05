@@ -9,6 +9,9 @@ web:
     tag: latest
   port: 3745
   replicaCount: 1
+  # Browser-facing URL used as the CORS origin allowed by background-jobs.
+  # Must match the host:port the user opens in their browser.
+  externalUrl: ""
   service:
     type: NodePort
     nodePort: 30080
@@ -19,6 +22,9 @@ backgroundJobs:
     tag: latest
   port: 4000
   replicaCount: 1
+  service:
+    type: NodePort
+    nodePort: 30040
 
 ml:
   image:
@@ -85,3 +91,22 @@ persistence:
     size: 10Gi
 
 resources: {}
+
+# GPU access is granted per component. `gpu.enabled` is the master switch and
+# also controls cluster-side setup (NVIDIA device plugin install in
+# scripts/kind-deploy.sh). A component gets a GPU only when both
+# `gpu.enabled` and `gpu.<component>.enabled` are true. Requires the NVIDIA
+# device plugin in the cluster.
+gpu:
+  enabled: false
+  resourceName: nvidia.com/gpu
+  imageTagSuffix: "-gpu"
+  env:
+    NVIDIA_VISIBLE_DEVICES: all
+    NVIDIA_DRIVER_CAPABILITIES: compute,utility
+  ml:
+    enabled: true
+    count: 1
+  backgroundJobs:
+    enabled: false
+    count: 1
