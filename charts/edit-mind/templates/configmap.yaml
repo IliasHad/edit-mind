@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-config
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+data:
+  POSTGRES_USER: {{ .Values.postgres.user | quote }}
+  POSTGRES_DB: {{ .Values.postgres.database | quote }}
+  PGDATA: /var/lib/postgresql/data/pgdata
+  REDIS_URL: redis://{{ include "edit-mind.fullname" . }}-redis:{{ .Values.redis.port }}
+  REDIS_HOST: {{ include "edit-mind.fullname" . }}-redis
+  CHROMA_HOST: {{ include "edit-mind.fullname" . }}-chroma
+  IS_PERSISTENT: "TRUE"
+  ML_HOST: {{ include "edit-mind.fullname" . }}-ml
+  ML_PORT: {{ .Values.ml.port | quote }}
+  PORT: {{ .Values.web.port | quote }}
+  BACKGROUND_JOBS_PORT: {{ .Values.backgroundJobs.port | quote }}
+  BACKGROUND_JOBS_URL: http://{{ include "edit-mind.fullname" . }}-background-jobs:{{ .Values.backgroundJobs.port }}
+  NODE_ENV: {{ .Values.config.nodeEnv | quote }}
+  ANONYMIZED_TELEMETRY: {{ .Values.config.anonymizedTelemetry | quote }}
+  WEB_APP_URL: http://{{ include "edit-mind.fullname" . }}-web:{{ .Values.web.port }}
+  PROCESSED_VIDEOS_DIR: /app/data
+  THUMBNAILS_PATH: /app/data/.thumbnails
+  STITCHED_VIDEOS_DIR: /app/data/.stitched-videos
+  FACES_DIR: /app/data/.faces
+  UNKNOWN_FACES_DIR: /app/data/.unknown_faces
+  KNOWN_FACES_FILE: /app/data/.faces.json
+  KNOWN_FACES_FILE_LOADED: /app/data/.known_faces.json
+  OLLAMA_MODEL: {{ .Values.config.ollamaModel | quote }}
+  USE_OLLAMA_MODEL: {{ .Values.config.useOllamaModel | quote }}
+  OLLAMA_HOST: {{ .Values.config.ollamaHost | quote }}
+  OLLAMA_PORT: {{ .Values.config.ollamaPort | quote }}
+  USE_GEMINI: {{ .Values.config.useGemini | quote }}

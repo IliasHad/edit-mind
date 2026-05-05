@@ -1,0 +1,83 @@
+nameOverride: ""
+fullnameOverride: ""
+
+imagePullPolicy: IfNotPresent
+
+web:
+  image:
+    repository: ghcr.io/iliashad/edit-mind-web
+    tag: latest
+  port: 3745
+  replicaCount: 1
+  service:
+    type: NodePort
+    nodePort: 30080
+
+backgroundJobs:
+  image:
+    repository: ghcr.io/iliashad/edit-mind-background-jobs
+    tag: latest
+  port: 4000
+  replicaCount: 1
+
+ml:
+  image:
+    repository: ghcr.io/iliashad/edit-mind-ml
+    tag: latest
+  port: 8765
+  replicaCount: 1
+
+chroma:
+  image:
+    repository: chromadb/chroma
+    tag: 1.3.5
+  port: 8000
+  corsAllowOrigins: '["http://localhost:3745", "http://localhost:4000", "http://web:3745", "http://background-jobs:4000"]'
+
+redis:
+  image:
+    repository: redis
+    tag: "7"
+  port: 6379
+
+postgres:
+  image:
+    repository: postgres
+    tag: 16-alpine
+  port: 5432
+  user: user
+  database: app
+
+config:
+  nodeEnv: production
+  anonymizedTelemetry: "FALSE"
+  useOllamaModel: "false"
+  ollamaHost: ""
+  ollamaPort: ""
+  ollamaModel: qwen2.5:7b-instruct
+  useGemini: "false"
+
+secrets:
+  create: true
+  existingSecret: ""
+  sessionSecret: ""
+  encryptionKey: ""
+  postgresPassword: password
+  geminiApiKey: ""
+
+media:
+  hostPath: /media/videos
+
+persistence:
+  data:
+    size: 10Gi
+  chroma:
+    size: 10Gi
+  redis:
+    size: 1Gi
+  postgres:
+    size: 10Gi
+  mlModels:
+    size: 10Gi
+
+resources: {}

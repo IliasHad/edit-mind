@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-web
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "edit-mind.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        {{- include "edit-mind.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: web
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.web.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "edit-mind.fullname" . }}-config
+            - secretRef:
+                name: {{ include "edit-mind.secretName" . }}
+          volumeMounts:
+            - name: media
+              mountPath: /media/videos
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: media
+          hostPath:
+            path: {{ .Values.media.hostPath | quote }}
+            type: DirectoryOrCreate
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-background-jobs
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+    app.kubernetes.io/component: background-jobs
+spec:
+  replicas: {{ .Values.backgroundJobs.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "edit-mind.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: background-jobs
+  template:
+    metadata:
+      labels:
+        {{- include "edit-mind.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: background-jobs
+    spec:
+      containers:
+        - name: background-jobs
+          image: "{{ .Values.backgroundJobs.image.repository }}:{{ .Values.backgroundJobs.image.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backgroundJobs.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "edit-mind.fullname" . }}-config
+            - secretRef:
+                name: {{ include "edit-mind.secretName" . }}
+          volumeMounts:
+            - name: media
+              mountPath: /media/videos
+            - name: data
+              mountPath: /app/data
+            - name: ml-models
+              mountPath: /app/ml-models
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: media
+          hostPath:
+            path: {{ .Values.media.hostPath | quote }}
+            type: DirectoryOrCreate
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-data
+        - name: ml-models
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-mlModels
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-ml
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ml
+spec:
+  replicas: {{ .Values.ml.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "edit-mind.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ml
+  template:
+    metadata:
+      labels:
+        {{- include "edit-mind.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: ml
+    spec:
+      containers:
+        - name: ml
+          image: "{{ .Values.ml.image.repository }}:{{ .Values.ml.image.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.ml.port }}
+          env:
+            - name: YOLO_CONFIG_DIR
+              value: /ml-models/ultralytics
+            - name: DEEPFACE_HOME
+              value: /ml-models/deepface
+            - name: TRANSCRIPTION_MODEL_CACHE
+              value: /ml-models/whisper
+            - name: TORCH_HOME
+              value: /ml-models/torch
+            - name: HF_HOME
+              value: /ml-models/huggingface
+          envFrom:
+            - configMapRef:
+                name: {{ include "edit-mind.fullname" . }}-config
+            - secretRef:
+                name: {{ include "edit-mind.secretName" . }}
+          volumeMounts:
+            - name: media
+              mountPath: /media/videos
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+            - name: ml-models
+              mountPath: /ml-models
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: media
+          hostPath:
+            path: {{ .Values.media.hostPath | quote }}
+            type: DirectoryOrCreate
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-data
+        - name: ml-models
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-mlModels
