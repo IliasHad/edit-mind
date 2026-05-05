@@ -62,7 +62,7 @@ secrets:
   existingSecret: ""
   sessionSecret: ""
   encryptionKey: ""
-  # Required unless existingSecret is set. Use URL-safe characters: letters, numbers, '.', '_', '~', and '-'.
+  # Required unless existingSecret is set.
   postgresPassword: ""
   geminiApiKey: ""
 
