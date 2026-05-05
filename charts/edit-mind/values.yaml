@@ -62,11 +62,13 @@ secrets:
   existingSecret: ""
   sessionSecret: ""
   encryptionKey: ""
+  # Development default for local installs. Override for any shared or production cluster.
   postgresPassword: password
   geminiApiKey: ""
 
 media:
   hostPath: /media/videos
+  mountPath: /media/videos
 
 persistence:
   data:

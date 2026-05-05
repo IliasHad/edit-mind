@@ -31,7 +31,7 @@ spec:
                 name: {{ include "edit-mind.secretName" . }}
           volumeMounts:
             - name: media
-              mountPath: /media/videos
+              mountPath: {{ .Values.media.mountPath | quote }}
               readOnly: true
             - name: data
               mountPath: /app/data
@@ -85,7 +85,7 @@ spec:
                 name: {{ include "edit-mind.secretName" . }}
           volumeMounts:
             - name: media
-              mountPath: /media/videos
+              mountPath: {{ .Values.media.mountPath | quote }}
             - name: data
               mountPath: /app/data
             - name: ml-models
@@ -148,7 +148,7 @@ spec:
                 name: {{ include "edit-mind.secretName" . }}
           volumeMounts:
             - name: media
-              mountPath: /media/videos
+              mountPath: {{ .Values.media.mountPath | quote }}
               readOnly: true
             - name: data
               mountPath: /app/data

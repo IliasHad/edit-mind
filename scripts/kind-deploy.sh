@@ -27,7 +27,19 @@ require_command kubectl
 require_command helm
 require_command openssl
 
+case "$(cd "$(dirname "${MEDIA_PATH}")" && pwd)/$(basename "${MEDIA_PATH}")" in
+  /|/bin|/boot|/dev|/etc|/lib|/lib64|/proc|/root|/run|/sbin|/sys|/usr|/var)
+    echo "MEDIA_PATH points to a system directory. Choose a dedicated media directory." >&2
+    exit 1
+    ;;
+esac
+
 mkdir -p "${MEDIA_PATH}"
+if [ ! -d "${MEDIA_PATH}" ] || [ ! -r "${MEDIA_PATH}" ]; then
+  echo "MEDIA_PATH must be a readable directory: ${MEDIA_PATH}" >&2
+  exit 1
+fi
+
 KIND_CONFIG="$(mktemp)"
 trap 'rm -f "${KIND_CONFIG}"' EXIT
 
@@ -57,6 +69,7 @@ kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply
 helm upgrade --install "${RELEASE_NAME}" "${CHART_DIR}" \
   --namespace "${NAMESPACE}" \
   --set media.hostPath="${NODE_MEDIA_PATH}" \
+  --set media.mountPath="${NODE_MEDIA_PATH}" \
   --set web.port="${WEB_PORT}" \
   --set web.service.nodePort="${NODE_PORT}" \
   --set secrets.postgresPassword="${POSTGRES_PASSWORD}" \
