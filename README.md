@@ -182,6 +182,43 @@ Once all services are running (look for "ready" messages in logs):
 
 If you're using Safari, use [http://127.0.0.1:3745](http://127.0.0.1:3745)
 
+### Kubernetes with Helm and Kind
+
+This repository also includes a Helm chart at `charts/edit-mind` and a helper script for launching a local Kind cluster.
+
+Prerequisites:
+
+* Docker
+* [Kind](https://kind.sigs.k8s.io/)
+* [kubectl](https://kubernetes.io/docs/tasks/tools/)
+* [Helm](https://helm.sh/)
+
+Run Edit Mind in a new or existing Kind cluster:
+
+```bash
+MEDIA_PATH="/path/to/your/media/folder" ./scripts/kind-deploy.sh
+```
+
+The script creates a Kind cluster named `edit-mind` when one does not already exist, mounts `MEDIA_PATH` into the Kind node, and installs the Helm chart into the `edit-mind` namespace. The web app is exposed at [http://localhost:3745](http://localhost:3745).
+
+You can pass extra Helm overrides after the script command:
+
+```bash
+MEDIA_PATH="/path/to/your/media/folder" ./scripts/kind-deploy.sh --set config.useGemini=true --set secrets.geminiApiKey="your-key"
+```
+
+To install the chart manually:
+
+```bash
+helm upgrade --install edit-mind ./charts/edit-mind \
+  --namespace edit-mind \
+  --create-namespace \
+  --set media.hostPath="/media/videos" \
+  --set secrets.postgresPassword="$(openssl rand -hex 24)" \
+  --set secrets.sessionSecret="$(openssl rand -hex 32)" \
+  --set secrets.encryptionKey="$(openssl rand -base64 32)"
+```
+
 ### 6. Add Your First Videos
 
 1. Navigate to the web app at `http://localhost:3745`
