@@ -10,34 +10,14 @@ import { logger } from '@shared/services/logger'
 import { STITCHED_VIDEOS_DIR } from '../constants'
 import { buildEncodingArgs, getScaleFilter } from '@media-utils/lib/ffmpegGpu'
 import { USE_FFMPEG_GPU } from '@media-utils/constants'
+import { validateScenes } from './validation'
+
 
 const DEFAULT_ASPECT_RATIO = '16:9'
 const DEFAULT_FPS = 30
 const DEFAULT_OUTPUT_DIR = 'output-videos'
 const STANDARD_DIMENSION = 1080
 
-const validateScenes = (scenes: ExportedScene[]) => {
-  if (scenes.length === 0) {
-    throw new Error('At least one scene is required for stitching')
-  }
-
-  scenes
-    .map((scene, index) => {
-      if (!scene.source) {
-        throw new Error(`Scene ${index}: source path is required`)
-      }
-      if (!fs.existsSync(scene.source)) {
-        throw new Error(`Scene ${index}: source file not found: ${scene.source}`)
-      }
-      if (scene.startTime < 0 || scene.endTime <= scene.startTime) {
-        logger.debug(`Scene ${index}: invalid time range (${scene.startTime}s - ${scene.endTime}s)`)
-        return null
-      }
-      return scene
-    })
-    .filter((scene) => scene !== null)
-  return scenes
-}
 
 const validateOutputFileName = (fileName: string): void => {
   if (!fileName || !fileName.endsWith('.mp4')) {
@@ -256,9 +236,9 @@ export async function stitchVideos(
     for (let i = 0; i < validatedScenes.length; i++) {
       const scene = validatedScenes[i]
       const clipPath = path.join(os.tmpdir(), `clip_${i}_${Date.now()}.mp4`)
-      clipPaths.push(clipPath)
 
       await processClip(scene, clipPath, dimensions, targetFps)
+      clipPaths.push(clipPath)
     }
 
     createFileList(clipPaths, fileListPath)
