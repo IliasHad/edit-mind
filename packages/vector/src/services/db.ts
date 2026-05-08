@@ -29,6 +29,30 @@ export async function getByVideoSource(videoSource: string): Promise<VideoWithSc
   }
 }
 
+export async function getByVideoSources(videoSources: string[]): Promise<Map<string, VideoWithScenes>> {
+  try {
+    const { collection } = await createVectorDbClient()
+    if (!collection) throw new Error('Collection not initialized')
+
+    const result = await collection.get({
+      where: { source: { $in: videoSources } },
+      include: ['metadatas', 'documents'],
+    })
+
+    const scenes = result.metadatas.map((m, i) => metadataToScene(m, result.ids[i], result.documents[i]))
+    const videos = convertScenesToVideos(scenes)
+
+    const map = new Map<string, VideoWithScenes>()
+    for (const video of videos) {
+      map.set(video.source, video)
+    }
+    return map
+  } catch (error) {
+    logger.error('Error getting videos by sources: ' + error)
+    return new Map()
+  }
+}
+
 export async function updateMetadata(
   vector: {
     metadata: Metadata
