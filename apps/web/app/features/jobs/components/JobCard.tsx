@@ -1,5 +1,13 @@
 import type { MetaFunction } from 'react-router'
-import { VideoCameraIcon, LanguageIcon, PhotoIcon, SpeakerWaveIcon, CubeIcon, XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import {
+  VideoCameraIcon,
+  LanguageIcon,
+  PhotoIcon,
+  SpeakerWaveIcon,
+  CubeIcon,
+  XMarkIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { getStageLabel, getStatusColor } from '~/features/jobs/utils'
@@ -10,7 +18,6 @@ import { ArrowsRightLeftIcon } from '@heroicons/react/24/solid'
 import { JOB_STAGE_CANCELLABLE } from "@shared/constants/jobs"
 import { Button } from '@ui/components/Button'
 import { useJob } from '../hooks/useCurrentJob'
-import { useJobs } from '../hooks/useJobs'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Jobs | Edit Mind' }]
@@ -23,8 +30,9 @@ interface JobCardProps {
 
 
 export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
-  const canCancel = JOB_STAGE_CANCELLABLE.includes(job.stage) && job.status !== "cancelled" && job.status !== "error"
-  const canRetry = job.status === 'error' || job.status === 'cancelled'
+  const isIrrecoverable = job.status === 'irrecoverable'
+  const canCancel = JOB_STAGE_CANCELLABLE.includes(job.stage) && job.status !== "cancelled" && job.status !== "error" && !isIrrecoverable
+  const canRetry = (job.status === 'error' || job.status === 'cancelled') && !isIrrecoverable
   const { cancelJob, retryJob, loading } = useJob()
 
   const handleRetry = async () => {
@@ -98,7 +106,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
               job.status
             )} uppercase tracking-wider whitespace-nowrap`}
           >
-            {job.status}
+            {job.status === 'irrecoverable' ? 'Unsupported' : job.status}
           </span>
         </div>
       </div>
@@ -112,6 +120,21 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
               animate={{ width: `${job.progress}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
             />
+          </div>
+        )
+      }
+
+      {
+        isIrrecoverable && (
+          <div className="px-5 pb-5 pt-3 border-t border-white/5">
+            <div className="flex items-start gap-2.5">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-white/80 mb-0.5">Cannot be processed</p>
+                {job.failureReason && (
+                  <p className="text-xs text-white/50 leading-relaxed">{job.failureReason}</p>
+                )}
+              </div>
+            </div>
           </div>
         )
       }

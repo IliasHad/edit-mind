@@ -79,6 +79,7 @@ enum JobStatus {
   done
   error
   cancelled
+  irrecoverable
 }
 
 enum JobStage {
@@ -119,6 +120,8 @@ model Job {
 
   frameAnalysisPlugins Json?
   frameAnalysisStages Json?
+
+  failureReason String?
 }
 
 enum Sender {
