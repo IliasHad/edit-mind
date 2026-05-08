@@ -27,6 +27,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
   )
 
   try {
+    await updateJob(job, { stage: JobStage.transcribing, overallProgress: 10, progress: 0 })
+
     if (!pythonService.isServiceRunning()) {
       await pythonService.start()
     }
@@ -43,7 +45,6 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     logger.debug({ jobId, videoDir }, 'Ensured video directory exists')
 
-    await updateJob(job, { stage: JobStage.transcribing, overallProgress: 10, progress: 0 })
 
     const transcriptionExists = existsSync(transcriptionPath)
 
