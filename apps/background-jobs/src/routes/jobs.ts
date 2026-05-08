@@ -11,6 +11,19 @@ router.post('/:id/retry', async (req, res) => {
     try {
         const { id } = req.params
 
+        const existing = await JobModel.findById(id)
+
+        if (!existing) {
+            return res.status(404).json({ error: 'Job not found' })
+        }
+
+        if (existing.status === 'irrecoverable') {
+            return res.status(409).json({
+                error: 'This job cannot be retried.',
+                failureReason: existing.failureReason,
+            })
+        }
+
         const job = await JobModel.update(id, {
             status: 'pending'
         })
