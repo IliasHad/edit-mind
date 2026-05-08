@@ -120,7 +120,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         },
       }
     }
-    throw new Error('ailed to send message to background jobs service')
+    throw new Error('Failed to send message to background jobs service')
   } catch (error) {
     logger.error({ error }, 'Failed to send message to background jobs service')
     return new Response(JSON.stringify({ error: 'Sorry, there was a problem connecting to the chat service.' }), {

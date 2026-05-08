@@ -95,6 +95,7 @@ async function processChatMessageJob(job: Job<ChatJobData>) {
         isError: true,
         isThinking: false,
       })
+      throw error
     }
   } catch (error) {
     logger.error(error)

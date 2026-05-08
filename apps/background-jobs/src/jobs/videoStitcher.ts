@@ -34,17 +34,26 @@ async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
       text = response.data
     }
 
-    await ChatMessageModel.update(messageId, {
-      stage: 'compiling',
-      isThinking: false,
-      stitchedVideoPath,
-      text,
-    })
+    try {
+      await ChatMessageModel.update(messageId, {
+        stage: 'compiling',
+        isThinking: false,
+        stitchedVideoPath,
+        text,
+      })
+
+    } catch (error) {
+      logger.error({ error, messageId }, 'Failed to update chat message with stitched video path')
+    }
 
     logger.debug({ jobId: job.id, messageId, chatId }, 'Video stitcher job completed')
   } catch (error) {
-    await ChatMessageModel.delete(messageId)
-
+    logger.error({ error, messageId }, 'Video stitcher failed, deleting message')
+    try {
+      await ChatMessageModel.delete(messageId)
+    } catch (deleteError) {
+      logger.error({ deleteError, messageId }, 'Failed to delete message after stitch error')
+    }
     throw error
   }
 }
@@ -52,4 +61,8 @@ async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
 export const videoStitcherWorker = new Worker('video-stitcher', processVideoStitcherJob, {
   connection,
   concurrency: 1,
+  lockDuration: 2 * 60 * 60 * 1000,
+  lockRenewTime: 30 * 1000,
+  stalledInterval: 30 * 1000,
+  maxStalledCount: 1,
 })

@@ -20,7 +20,7 @@ const setupModel = () => {
   if (USE_OLLAMA_MODEL && OLLAMA_MODEL) {
     logger.debug(`Using Ollama Model: ${OLLAMA_MODEL}`)
     activeModel = OllamaModel
-  } if (GEMINI_API_KEY && USE_GEMINI) {
+  } else if (GEMINI_API_KEY && USE_GEMINI) {
     logger.debug(`Using Gemini Model: ${GEMINI_MODEL_NAME}`)
     activeModel = GeminiModel
   } else {
