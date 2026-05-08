@@ -22,11 +22,15 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     const scenes = await fs.readFile(scenesPath, 'utf-8').then(JSON.parse)
 
-    await updateJob(job, { stage: JobStage.embedding_visual, overallProgress: 80, progress: 0 })
+    await updateJob(job, { stage: JobStage.embedding_visual, overallProgress: 86, progress: 0 })
 
     logger.debug({ jobId, videoPath, sceneCount: scenes.length }, 'Starting scene visual embedding')
 
-    await embedVisualScenes(scenes, videoPath)
+    await embedVisualScenes(scenes, videoPath, async (batchIndex, totalBatches) => {
+      const progress = Math.round((batchIndex / totalBatches) * 100)
+      const overallProgress = 86 + Math.round((batchIndex / totalBatches) * 7)
+      await updateJob(job, { progress, overallProgress })
+    })
 
     const embeddingDuration = (Date.now() - embeddingStart) / 1000
 
@@ -50,7 +54,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const visualEmbeddingWorker = new Worker('visual-embedding', processVideo, {
   connection,
   concurrency: 1,
-  lockDuration: 6 * 60 * 60 * 1000, // 6 hours
+  lockDuration: 5 * 60 * 1000, // 5 min — renewed every 30s; crash detected within 5 min
   stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,
   lockRenewTime: 30 * 1000,
