@@ -8,7 +8,11 @@ import type { Scene } from '@shared/types'
 import { sceneToVectorFormat } from '@vector/utils/shared'
 import { embedAudios } from '@embedding-media/services/embed'
 
-export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
+export const embedAudioScenes = async (
+  scenes: Scene[],
+  videoFullPath: string,
+  onProgress?: (batchIndex: number, totalBatches: number) => Promise<void>
+): Promise<void> => {
   try {
     const { audio_collection } = await createVectorDbClient()
 
@@ -23,8 +27,10 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
       return
     }
 
+    const totalBatches = Math.ceil(scenes.length / AUDIO_BATCH_SIZE)
     for (let i = 0; i < scenes.length; i += AUDIO_BATCH_SIZE) {
       const batch = scenes.slice(i, i + AUDIO_BATCH_SIZE)
+      const batchNumber = i / AUDIO_BATCH_SIZE + 1
 
       logger.info(`Processing ${batch.length} scenes for audio embeddings`)
 
@@ -80,10 +86,11 @@ export const embedAudioScenes = async (scenes: Scene[], videoFullPath: string): 
           embedding: doc.embedding!,
         }))
       )
-      logger.info(
-        `Batch ${i / AUDIO_BATCH_SIZE + 1}/${Math.ceil(scenes.length / AUDIO_BATCH_SIZE)} complete: ` +
-          `${validAudioEmbeddings.length} audio embeddings stored`
-      )
+      logger.info(`Batch ${batchNumber}/${totalBatches} complete: ${validAudioEmbeddings.length} audio embeddings stored`)
+
+      if (onProgress) {
+        await onProgress(batchNumber, totalBatches)
+      }
     }
   } catch (err) {
     logger.error(`Error in embedScenes for ${videoFullPath}: ${err}`)
