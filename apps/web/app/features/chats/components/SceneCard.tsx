@@ -27,9 +27,11 @@ export const SceneCard: React.FC<SceneCardProps> = ({
   const [progress, setProgress] = useState(0)
   const [imageError, setImageError] = useState(false)
   const [videoError, setVideoError] = useState(false)
+  const [videoSrc, setVideoSrc] = useState<string | undefined>(undefined)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const playVideoRef = useRef<(() => void) | null>(null)
 
   const startTime = scene.startTime || 0
   const endTime = scene.endTime || 0
@@ -54,7 +56,12 @@ export const SceneCard: React.FC<SceneCardProps> = ({
     }
 
     if (isHovered && !imageError) {
-      hoverTimeoutRef.current = setTimeout(() => {
+      // Set src lazily on first hover to avoid loading all videos on mount
+      if (!videoSrc && scene.source) {
+        setVideoSrc(`/media?source=${encodeURIComponent(scene.source)}`)
+      }
+
+      const playVideo = () => {
         video.currentTime = startTime
         video
           .play()
@@ -63,7 +70,17 @@ export const SceneCard: React.FC<SceneCardProps> = ({
             video.addEventListener('timeupdate', handleTimeUpdate)
           })
           .catch(handleError)
-      }, 500)
+      }
+      playVideoRef.current = playVideo
+
+      const delay = video.readyState >= 1 ? 0 : 500
+      hoverTimeoutRef.current = setTimeout(() => {
+        if (video.readyState >= 1) {
+          playVideo()
+        } else {
+          video.addEventListener('loadedmetadata', playVideo, { once: true })
+        }
+      }, delay)
     } else {
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
       video.pause()
@@ -77,16 +94,19 @@ export const SceneCard: React.FC<SceneCardProps> = ({
 
     return () => {
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+      if (playVideoRef.current) video.removeEventListener('loadedmetadata', playVideoRef.current)
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('error', handleError)
     }
-  }, [isHovered, videoError, imageError, endTime, startTime])
+  }, [isHovered, videoError, imageError, endTime, startTime, videoSrc, scene.source])
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      variants={{
+        hidden: { opacity: 0, scale: 0.9 },
+        visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
+      }}
       exit={{ opacity: 0, scale: 0.9 }}
       className="relative"
     >
@@ -96,7 +116,7 @@ export const SceneCard: React.FC<SceneCardProps> = ({
           onFocus?.()
         }}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={onSelect}
+        onClick={onPreview}
         className={`
           relative cursor-pointer group overflow-hidden rounded-2xl 
           bg-white/10 dark:bg-white/5 backdrop-blur-sm 
@@ -116,11 +136,17 @@ export const SceneCard: React.FC<SceneCardProps> = ({
           </div>
         )}
 
-        {isSelected && (
-          <div className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg z-20 animate-in zoom-in-50 duration-200">
-            <CheckIcon className="w-5 h-5 text-black" strokeWidth={3} />
-          </div>
-        )}
+        <button
+          onClick={(e) => { e.stopPropagation(); onSelect() }}
+          aria-label={isSelected ? 'Deselect scene' : 'Select scene'}
+          className={`absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center z-20 transition-all duration-200
+            ${isSelected
+              ? 'bg-white shadow-lg scale-100'
+              : 'bg-black/30 backdrop-blur-sm border-2 border-white/50 hover:border-white hover:bg-black/50'
+            }`}
+        >
+          {isSelected && <CheckIcon className="w-4 h-4 text-black" />}
+        </button>
 
         <Button
           onClick={onPreview}
@@ -135,6 +161,7 @@ export const SceneCard: React.FC<SceneCardProps> = ({
           <img
             src={scene.thumbnailUrl ? `/thumbnails/${scene.thumbnailUrl}` : undefined}
             alt={`Scene from ${scene.id}`}
+            loading="lazy"
             onError={() => setImageError(true)}
             className={`
               object-cover w-full h-full rounded-2xl transition-opacity duration-300
@@ -145,8 +172,8 @@ export const SceneCard: React.FC<SceneCardProps> = ({
           {!videoError && (
             <video
               ref={videoRef}
-              src={scene.source ? `/media?source=${encodeURIComponent(scene.source)}` : undefined}
-              preload="metadata"
+              src={videoSrc}
+              preload="none"
               playsInline
               onError={() => setVideoError(true)}
               className={`

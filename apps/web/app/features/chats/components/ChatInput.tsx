@@ -1,7 +1,7 @@
 import type { Project } from '@prisma/client'
 import { ArrowPathIcon, PaperAirplaneIcon, FolderOpenIcon } from '@heroicons/react/24/solid'
 import type { RefObject } from 'react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin'
@@ -53,19 +53,14 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [projects, chat?.projectId])
 
-  const theme = {}
-
-  function onError(error: Error) {
-    console.error(error)
-  }
-
-  const initialConfig = {
+  const initialConfig = useMemo(() => ({
     namespace: 'Chat',
-    theme,
+    theme: {},
     nodes: [FaceMentionNode],
-    onError,
+    onError: (error: Error) => console.error(error),
     editable: !loading || !chat?.isLocked,
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [loading, chat?.isLocked])
 
   function onChange(editorState: EditorState) {
     editorState.read(() => {
@@ -125,7 +120,7 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
   }
 
   return (
-    <footer className="sticky bottom-0 z-100 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-black/5 dark:border-white/10">
+    <footer data-chat-footer className="sticky bottom-0 z-100 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-black/5 dark:border-white/10">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
         <div
           className={`relative flex items-end gap-2 bg-white/60 dark:bg-white/5 rounded-2xl border transition-all duration-200 px-4 py-3 ${

@@ -72,14 +72,6 @@ export const useCurrentChat = () => {
     return currentChatMessages[currentChatMessages.length - 1]?.stage === 'exporting_scenes'
   }, [currentChatMessages])
 
-  // Smart polling: faster when assistant is thinking, slower when idle
-  const getPollingInterval = useCallback(() => {
-    if (isLastMessageThinking || isLastMessageStitchingVideos || isLastMessageExporting) {
-      return 2000 // fast polling
-    }
-    return 30000 // slow / idle
-  }, [isLastMessageThinking, isLastMessageStitchingVideos, isLastMessageExporting])
-
   const stopPolling = () => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current)
@@ -106,17 +98,18 @@ export const useCurrentChat = () => {
       return
     }
 
+    const interval = isLastMessageThinking || isLastMessageStitchingVideos || isLastMessageExporting ? 2000 : 30000
+
     // Start polling immediately
     pollingIntervalRef.current = setInterval(() => {
       fetchMessagesWithDebounce(currentChatId)
-    }, getPollingInterval())
+    }, interval)
 
     return stopPolling
   }, [
     currentChatId,
     currentChatMessages.length,
     fetchMessagesWithDebounce,
-    getPollingInterval,
     id,
     isLastMessageThinking,
     isLastMessageStitchingVideos,
