@@ -29,6 +29,7 @@ export async function updateJob(
     frameAnalysisPlugins?: Record<string, string | number>[]
     frameAnalysisStages?: Record<string, string | number>[]
     folderId?: string
+    failureReason?: string
   }>
 ) {
   if (!job.data?.jobId) return
@@ -41,8 +42,8 @@ export async function updateJob(
     if (!data.status) updateData.status = 'processing'
 
     if (data.stage) updateData.stage = data.stage
-    if (data.progress) updateData.progress = data.progress
-    if (data.overallProgress) updateData.overallProgress = data.overallProgress
+    if (data.progress !== undefined) updateData.progress = data.progress
+    if (data.overallProgress !== undefined) updateData.overallProgress = data.overallProgress
     if (data.status) updateData.status = data.status
     if (data.thumbnailPath) updateData.thumbnailPath = data.thumbnailPath
     if (data.fileSize) updateData.fileSize = data.fileSize
@@ -59,6 +60,7 @@ export async function updateJob(
     if (data.frameAnalysisStages) {
       updateData.frameAnalysisStages = data.frameAnalysisStages
     }
+    if (data.failureReason) updateData.failureReason = data.failureReason
 
     if (Object.keys(updateData).length === 1) return
 
