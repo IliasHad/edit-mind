@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import type { Scene } from '@shared/types'
-import { AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { SceneCard } from './SceneCard'
 import { PreviewModal } from './PreviewModal'
 
@@ -80,7 +80,7 @@ export const VideoResults: React.FC<VideoResultsProps> = ({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [scenes, focusedIndex, previewScene, handleSelectScene, resetSelectedScenes])
+  }, [scenes, previewScene, resetSelectedScenes])
 
   const setCardRef = (index: number) => (el: HTMLDivElement | null) => {
     if (el) {
@@ -92,7 +92,13 @@ export const VideoResults: React.FC<VideoResultsProps> = ({
 
   return (
     <>
-      <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <motion.div
+        ref={containerRef}
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+        initial="hidden"
+        animate="visible"
+        variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+      >
         {scenes.map((scene, index) => (
           <div key={scene.id} ref={setCardRef(index)}>
             <SceneCard
@@ -105,7 +111,7 @@ export const VideoResults: React.FC<VideoResultsProps> = ({
             />
           </div>
         ))}
-      </div>
+      </motion.div>
 
       <AnimatePresence>
         {previewScene && (
@@ -128,11 +134,11 @@ export const VideoResults: React.FC<VideoResultsProps> = ({
         </kbd>{' '}
         to navigate,{' '}
         <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 rounded border border-black/10 dark:border-white/10 font-medium">
-          Hover
+          Click
         </kbd>{' '}
         to preview,{' '}
         <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 rounded border border-black/10 dark:border-white/10 font-medium">
-          Enter
+          ○
         </kbd>{' '}
         to select
       </div>
