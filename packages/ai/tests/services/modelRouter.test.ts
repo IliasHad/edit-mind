@@ -24,6 +24,18 @@ const mockOllamaModel = {
   generateYearInReviewResponse: vi.fn(),
   cleanUp: vi.fn(),
 }
+
+const mockMiniMaxModel = {
+  generateActionFromPrompt: vi.fn(),
+  generateAssistantMessage: vi.fn(),
+  generateCompilationResponse: vi.fn(),
+  generateGeneralResponse: vi.fn(),
+  classifyIntent: vi.fn(),
+  generateAnalyticsResponse: vi.fn(),
+  generateYearInReviewResponse: vi.fn(),
+  cleanUp: vi.fn(),
+}
+
 const mockLogger = {
   debug: vi.fn(),
   error: vi.fn(),
@@ -33,11 +45,14 @@ vi.mock('@ai/services/gemini', () => ({
   GeminiModel: mockGeminiModel,
 }))
 
-vi.mock('@ai/services/logger', () => ({
+vi.mock('@shared/services/logger', () => ({
   logger: mockLogger,
 }))
 vi.mock('@ai/services/ollama', () => ({
   OllamaModel: mockOllamaModel,
+}))
+vi.mock('@ai/services/minimax', () => ({
+  MiniMaxModel: mockMiniMaxModel,
 }))
 
 const mockConstants: Record<string, string | null | boolean | number> = {
@@ -46,6 +61,9 @@ const mockConstants: Record<string, string | null | boolean | number> = {
   USE_GEMINI: false,
   OLLAMA_MODEL: "qwen2.5:7b-instruct",
   USE_OLLAMA_MODEL: false,
+  MINIMAX_API_KEY: null,
+  MINIMAX_MODEL: 'MiniMax-M1',
+  USE_MINIMAX: false,
 }
 
 vi.mock('@ai/constants', () => mockConstants)
@@ -108,12 +126,29 @@ describe('Model Router', () => {
       mockConstants.USE_GEMINI = false
       mockConstants.OLLAMA_MODEL = '/name/of/model'
       mockConstants.USE_OLLAMA_MODEL = true
+      mockConstants.MINIMAX_API_KEY = null
+      mockConstants.USE_MINIMAX = false
 
       vi.resetModules()
       const modelRouter = await import('@ai/services/modelRouter')
 
       await modelRouter.generateActionFromPrompt('test', dummyHistory)
       expect(mockOllamaModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
+    })
+
+    it('should use MiniMax when MINIMAX_API_KEY and USE_MINIMAX is set', async () => {
+      mockConstants.GEMINI_API_KEY = null
+      mockConstants.USE_GEMINI = false
+      mockConstants.OLLAMA_MODEL = null
+      mockConstants.USE_OLLAMA_MODEL = false
+      mockConstants.MINIMAX_API_KEY = 'test-minimax-key'
+      mockConstants.USE_MINIMAX = true
+
+      vi.resetModules()
+      const modelRouter = await import('@ai/services/modelRouter')
+
+      await modelRouter.generateActionFromPrompt('test', dummyHistory)
+      expect(mockMiniMaxModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
     })
   })
   describe('Function Calls', () => {

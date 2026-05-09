@@ -1,11 +1,15 @@
 import { GeminiModel } from '@ai/services/gemini'
 import { OllamaModel } from '@ai/services/ollama'
+import { MiniMaxModel } from '@ai/services/minimax'
 import { logger } from '@shared/services/logger'
 import {
   GEMINI_API_KEY,
   GEMINI_MODEL_NAME,
+  MINIMAX_API_KEY,
+  MINIMAX_MODEL,
   OLLAMA_MODEL,
   USE_GEMINI,
+  USE_MINIMAX,
   USE_OLLAMA_MODEL,
 } from '@ai/constants'
 import { AIModel } from '@ai/types/ai'
@@ -20,11 +24,14 @@ const setupModel = () => {
   if (USE_OLLAMA_MODEL && OLLAMA_MODEL) {
     logger.debug(`Using Ollama Model: ${OLLAMA_MODEL}`)
     activeModel = OllamaModel
-  } if (GEMINI_API_KEY && USE_GEMINI) {
+  } else if (MINIMAX_API_KEY && USE_MINIMAX) {
+    logger.debug(`Using MiniMax Model: ${MINIMAX_MODEL}`)
+    activeModel = MiniMaxModel
+  } else if (GEMINI_API_KEY && USE_GEMINI) {
     logger.debug(`Using Gemini Model: ${GEMINI_MODEL_NAME}`)
     activeModel = GeminiModel
   } else {
-    throw new Error('No valid AI backend found. Set USE_OLLAMA_MODEL + OLLAMA_MODEL or GEMINI_API_KEY + USE_GEMINI.')
+    throw new Error('No valid AI backend found. Set USE_OLLAMA_MODEL + OLLAMA_MODEL, MINIMAX_API_KEY + USE_MINIMAX, or GEMINI_API_KEY + USE_GEMINI.')
   }
 }
 
