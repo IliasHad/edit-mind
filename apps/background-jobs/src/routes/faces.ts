@@ -70,16 +70,15 @@ router.delete('/', async (req, res) => {
  */
 router.get('/processing', async (_req, res) => {
   try {
-    const results = await Promise.allSettled([
-      faceLabellingQueue.getActive(),
-      faceLabellingQueue.getWaiting(),
-      faceLabellingQueue.getDelayed(),
-      faceDeletionQueue.getActive(),
-      faceDeletionQueue.getWaiting(),
-      faceDeletionQueue.getDelayed(),
-    ])
     const [labellingActive, labellingWaiting, labellingDelayed, deletionActive, deletionWaiting, deletionDelayed] =
-      results.map((r) => (r.status === 'fulfilled' ? r.value : []))
+      await Promise.all([
+        faceLabellingQueue.getActive(),
+        faceLabellingQueue.getWaiting(),
+        faceLabellingQueue.getDelayed(),
+        faceDeletionQueue.getActive(),
+        faceDeletionQueue.getWaiting(),
+        faceDeletionQueue.getDelayed(),
+      ])
 
     const labellingJobs = [...labellingActive, ...labellingWaiting, ...labellingDelayed].flatMap(
       (job: Job<FaceLabellingJobData>) =>
