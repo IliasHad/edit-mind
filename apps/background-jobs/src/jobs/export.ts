@@ -84,14 +84,11 @@ async function processExportJob(job: Job<ExportProcessingJob>) {
       try {
         const text = "Here's your exports video zip file!"
 
-        await ChatMessageModel.update(chatMessageId, {
+       const message = await ChatMessageModel.update(chatMessageId, {
           stage: 'compiling',
           isThinking: false,
           exportId,
           text,
-        })
-        const message = await ChatMessageModel.update(chatMessageId, {
-          exportId,
         })
         return {
           filePath: zipPath,

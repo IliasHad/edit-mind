@@ -44,6 +44,7 @@ async function processVideoStitcherJob(job: Job<VideoStitcherJobData>) {
 
     } catch (error) {
       logger.error({ error, messageId }, 'Failed to update chat message with stitched video path')
+      throw error
     }
 
     logger.debug({ jobId: job.id, messageId, chatId }, 'Video stitcher job completed')
