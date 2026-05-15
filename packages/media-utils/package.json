@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@types/micromatch": "^4.0.10",
-    "exiftool-vendored": "^31.3.0",
+    "exiftool-vendored": "^35.20.0",
     "gopro-telemetry": "^1.2.11",
     "gpmf-extract": "^0.3.3",
     "jimp": "^1.6.1",

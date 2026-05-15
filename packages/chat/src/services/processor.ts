@@ -1,4 +1,5 @@
-import { generateGeneralResponse } from '@ai/services/modelRouter';
+import { generateGeneralResponse } from '@ai/services/modelRouter'
+import { logger } from '@shared/services/logger'
 import {
   handleAnalyticsIntent,
   handleCompilationIntent,
@@ -49,6 +50,18 @@ export async function processIntent(input: ProcessIntentInput): Promise<ProcessI
     case 'general':
     default: {
       const response = await generateGeneralResponse(prompt, recentMessages)
+      if (!response.data) {
+        logger.warn(
+          {
+            intentType: intent.type,
+            responseError: response.error,
+            tokens: response.tokens,
+            promptLength: prompt.length,
+            recentMessagesCount: recentMessages.length,
+          },
+          'Using generic chat fallback because model returned no data'
+        )
+      }
       assistantText = response.data || 'Sorry, I could not generate a response.'
       tokensUsed = response.tokens
       break

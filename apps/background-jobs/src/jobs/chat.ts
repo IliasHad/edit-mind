@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq'
 import { connection } from '../services/redis'
 import { logger } from '@shared/services/logger'
-import { classifyIntent } from '@ai/services/modelRouter';
+import { classifyIntent } from '@ai/services/modelRouter'
 import { ChatMessageModel, ChatModel, ProjectModel } from '@db/index'
 import { processIntent } from '@chat/services/processor'
 
@@ -15,7 +15,15 @@ async function processChatMessageJob(job: Job<ChatJobData>) {
   const { chatId, prompt } = job.data
 
   try {
-    logger.info({ jobId: job.id, chatId: chatId }, 'Starting chat message job')
+    logger.info(
+      {
+        jobId: job.id,
+        chatId,
+        attemptsMade: job.attemptsMade,
+        promptLength: prompt.length,
+      },
+      'Starting chat message job'
+    )
 
     const chat = await ChatModel.findById(chatId)
 
@@ -28,10 +36,23 @@ async function processChatMessageJob(job: Job<ChatJobData>) {
       const project = await ProjectModel.findByIdWithVideos(chat.projectId)
       projectVideos = project?.videos?.map((video) => video.source) ?? undefined
 
-      logger.debug(`Using project videos: ${JSON.stringify(projectVideos, null, 2)}`)
+      logger.debug(
+        { jobId: job.id, chatId, projectVideosCount: projectVideos?.length ?? 0 },
+        'Loaded project videos for chat job'
+      )
     }
 
     const recentMessages = await ChatMessageModel.findManyByChatId(chat.id)
+    logger.debug(
+      {
+        jobId: job.id,
+        chatId,
+        recentMessagesCount: recentMessages.length,
+        latestMessageStage: recentMessages[0]?.stage,
+        latestMessageIsThinking: recentMessages[0]?.isThinking,
+      },
+      'Loaded recent messages for chat job'
+    )
     let newMessage = recentMessages[0]
 
     if (recentMessages.length > 0 && recentMessages[0].stage !== 'understanding' && !recentMessages[0].isThinking) {
@@ -44,7 +65,23 @@ async function processChatMessageJob(job: Job<ChatJobData>) {
       })
     }
 
+    const classifyStartedAt = Date.now()
     const intentResult = await classifyIntent(prompt, recentMessages)
+    const classifyElapsedMs = Date.now() - classifyStartedAt
+
+    logger.debug(
+      {
+        jobId: job.id,
+        chatId,
+        classifyElapsedMs,
+        intentType: intentResult.data?.type,
+        needsVideoData: intentResult.data?.needsVideoData,
+        keepPrevious: intentResult.data?.keepPrevious,
+        tokens: intentResult.tokens,
+        error: intentResult.error,
+      },
+      'Classified chat intent'
+    )
 
     if (intentResult.error || !intentResult.data) {
       if (intentResult.error?.includes('Gemini API quotas')) {
@@ -74,6 +111,7 @@ async function processChatMessageJob(job: Job<ChatJobData>) {
     }
 
     try {
+      const processStartedAt = Date.now()
       const { assistantText, outputSceneIds, tokensUsed } = await processIntent({
         intent,
         prompt,
@@ -81,6 +119,20 @@ async function processChatMessageJob(job: Job<ChatJobData>) {
         newMessage,
         projectVideos,
       })
+      const processElapsedMs = Date.now() - processStartedAt
+
+      logger.debug(
+        {
+          jobId: job.id,
+          chatId,
+          intentType: intent.type,
+          processElapsedMs,
+          assistantTextLength: assistantText.length,
+          outputSceneIdsCount: outputSceneIds.length,
+          tokensUsed,
+        },
+        'Processed chat intent'
+      )
 
       await ChatMessageModel.update(newMessage.id, {
         text: assistantText,

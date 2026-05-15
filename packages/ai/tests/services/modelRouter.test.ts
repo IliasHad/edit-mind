@@ -24,28 +24,48 @@ const mockOllamaModel = {
   generateYearInReviewResponse: vi.fn(),
   cleanUp: vi.fn(),
 }
+
+const mockOpenaiLikeModel = {
+  generateActionFromPrompt: vi.fn(),
+  generateAssistantMessage: vi.fn(),
+  generateCompilationResponse: vi.fn(),
+  generateGeneralResponse: vi.fn(),
+  classifyIntent: vi.fn(),
+  generateAnalyticsResponse: vi.fn(),
+  generateYearInReviewResponse: vi.fn(),
+  cleanUp: vi.fn(),
+}
 const mockLogger = {
   debug: vi.fn(),
   error: vi.fn(),
+  warn: vi.fn(),
+  info: vi.fn(),
 }
 
 vi.mock('@ai/services/gemini', () => ({
   GeminiModel: mockGeminiModel,
 }))
 
-vi.mock('@ai/services/logger', () => ({
+vi.mock('@shared/services/logger', () => ({
   logger: mockLogger,
 }))
+
 vi.mock('@ai/services/ollama', () => ({
   OllamaModel: mockOllamaModel,
 }))
 
-const mockConstants: Record<string, string | null | boolean | number> = {
+vi.mock('@ai/services/openaiLike', () => ({
+  OpenaiLikeModel: mockOpenaiLikeModel,
+}))
+
+const mockConstants: Record<string, string | null | boolean | number | undefined> = {
   GEMINI_API_KEY: null,
   GEMINI_MODEL_NAME: 'gemini-pro',
   USE_GEMINI: false,
-  OLLAMA_MODEL: "qwen2.5:7b-instruct",
+  OLLAMA_MODEL: 'qwen2.5:7b-instruct',
   USE_OLLAMA_MODEL: false,
+  OPENAI_LIKE_BASE_URL: undefined,
+  OPENAI_LIKE_MODEL: 'gpt-4o-mini',
 }
 
 vi.mock('@ai/constants', () => mockConstants)
@@ -91,10 +111,40 @@ describe('Model Router', () => {
   })
 
   describe('Model Selection', () => {
+    it('should use OpenaiLikeModel when OPENAI_LIKE_BASE_URL is set', async () => {
+      mockConstants.OPENAI_LIKE_BASE_URL = 'https://test-api.example.com/v1'
+      mockConstants.OPENAI_LIKE_MODEL = 'gpt-4o-mini'
+      mockConstants.GEMINI_API_KEY = null
+      mockConstants.USE_GEMINI = false
+      mockConstants.USE_OLLAMA_MODEL = false
+
+      vi.resetModules()
+      const modelRouter = await import('@ai/services/modelRouter')
+
+      await modelRouter.generateActionFromPrompt('test', dummyHistory)
+      expect(mockOpenaiLikeModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
+    })
+
+    it('should prefer OpenAI-like over Ollama and Gemini', async () => {
+      mockConstants.OPENAI_LIKE_BASE_URL = 'https://test-api.example.com/v1'
+      mockConstants.USE_OLLAMA_MODEL = true
+      mockConstants.OLLAMA_MODEL = '/name/of/model'
+      mockConstants.GEMINI_API_KEY = 'test-key'
+      mockConstants.USE_GEMINI = true
+
+      vi.resetModules()
+      const modelRouter = await import('@ai/services/modelRouter')
+
+      await modelRouter.generateActionFromPrompt('test', dummyHistory)
+      expect(mockOpenaiLikeModel.generateActionFromPrompt).toHaveBeenCalledWith('test', dummyHistory)
+    })
+
     it('should use GeminiModel when GEMINI_API_KEY and USE_GEMINI is set', async () => {
+      mockConstants.OPENAI_LIKE_BASE_URL = undefined
       mockConstants.GEMINI_API_KEY = 'test-key'
       mockConstants.GEMINI_MODEL_NAME = 'gemini-pro'
       mockConstants.USE_GEMINI = true
+      mockConstants.USE_OLLAMA_MODEL = false
 
       vi.resetModules()
       const modelRouter = await import('@ai/services/modelRouter')
@@ -104,6 +154,7 @@ describe('Model Router', () => {
     })
 
     it('should use Ollama when USE_OLLAMA_MODEL and OLLAMA_MODELis set', async () => {
+      mockConstants.OPENAI_LIKE_BASE_URL = undefined
       mockConstants.GEMINI_API_KEY = null
       mockConstants.USE_GEMINI = false
       mockConstants.OLLAMA_MODEL = '/name/of/model'
@@ -118,6 +169,7 @@ describe('Model Router', () => {
   })
   describe('Function Calls', () => {
     beforeEach(async () => {
+      mockConstants.OPENAI_LIKE_BASE_URL = undefined
       mockConstants.USE_OLLAMA_MODEL = true
       mockConstants.OLLAMA_MODEL = '/name/of/model'
       vi.resetModules()
@@ -142,9 +194,21 @@ describe('Model Router', () => {
     })
 
     it('should call generateGeneralResponse on the active model', async () => {
+      mockOllamaModel.generateGeneralResponse.mockResolvedValueOnce({ data: '', tokens: 5, error: 'empty model output' })
+
       const { generateGeneralResponse } = await import('@ai/services/modelRouter')
       await generateGeneralResponse('test prompt', dummyHistory)
       expect(mockOllamaModel.generateGeneralResponse).toHaveBeenCalledWith('test prompt', dummyHistory)
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          operation: 'generateGeneralResponse',
+          queryLength: 11,
+          hasData: false,
+          tokens: 5,
+          responseError: 'empty model output',
+        }),
+        'AI model returned no data'
+      )
     })
 
     it('should call classifyIntent on the active model', async () => {
