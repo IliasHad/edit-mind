@@ -43,11 +43,15 @@ describe('i18n resource aggregators', () => {
   it('exports folder detail translations used by the folder page', () => {
     expect(en.folders.actions.rescan).toBe('Rescan')
     expect(en.folders.actions.scanning).toBe('Scanning...')
+    expect(en.folders.services.starting).toBe('Starting services...')
+    expect(en.folders.services.initializing).toBe('Initializing services...')
     expect(en.folders.jobCount_one).toBe('{{count}} job')
     expect(en.folders.jobCount_other).toBe('{{count}} jobs')
 
     expect(ru.folders.actions.rescan).toBe('Пересканировать')
     expect(ru.folders.actions.scanning).toBe('Сканирование...')
+    expect(ru.folders.services.starting).toBe('Запуск сервисов...')
+    expect(ru.folders.services.initializing).toBe('Инициализация сервисов...')
     expect(ru.folders.jobCount_one).toBe('{{count}} задание')
     expect(ru.folders.jobCount_few).toBe('{{count}} задания')
     expect(ru.folders.jobCount_many).toBe('{{count}} заданий')

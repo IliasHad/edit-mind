@@ -7,6 +7,10 @@ const folders = {
     rescan: 'Пересканировать',
     scanning: 'Сканирование...',
   },
+  services: {
+    starting: 'Запуск сервисов...',
+    initializing: 'Инициализация сервисов...',
+  },
   stats: {
     totalFolders: 'Всего папок',
     videosScanned: 'Видео просканировано',

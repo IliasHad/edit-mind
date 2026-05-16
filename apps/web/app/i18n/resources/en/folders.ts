@@ -5,6 +5,10 @@ const folders = {
     rescan: 'Rescan',
     scanning: 'Scanning...',
   },
+  services: {
+    starting: 'Starting services...',
+    initializing: 'Initializing services...',
+  },
   stats: {
     totalFolders: 'Total Folders',
     videosScanned: 'Videos Scanned',
