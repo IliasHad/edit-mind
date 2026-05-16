@@ -4,6 +4,7 @@ import { Button } from '@ui/components/Button'
 import { Modal } from '@ui/components/Modal'
 import { useMediaBrowser } from '../hooks/useMediaBrowser'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface AddFolderProps {
   isOpen: boolean
@@ -15,6 +16,7 @@ interface AddFolderProps {
 export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
   const { currentPath, folders, loading, selectedPath, setSelectedPath, navigateToFolder, fetchFolders, reset } =
     useMediaBrowser()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (isOpen) {
@@ -33,10 +35,10 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
   }
 
   const getBreadcrumbs = () => {
-    if (currentPath === '/') return [{ name: 'Root', path: '/' }]
+    if (currentPath === '/') return [{ name: t('folders.modal.root'), path: '/' }]
     const parts = currentPath.split('/').filter(Boolean)
     return [
-      { name: 'Root', path: '/' },
+      { name: t('folders.modal.root'), path: '/' },
       ...parts.map((part, idx) => ({
         name: part,
         path: '/' + parts.slice(0, idx + 1).join('/'),
@@ -48,9 +50,9 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="2xl">
       <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-black dark:text-white">Add Folder</h2>
+          <h2 className="text-lg font-semibold text-black dark:text-white">{t('folders.modal.title')}</h2>
           <p className="text-sm text-black/60 dark:text-white/60 mt-1 truncate">
-            Select a folder on your server to be indexed.
+            {t('folders.modal.description')}
           </p>
         </div>
       </div>
@@ -80,7 +82,7 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
         ) : folders.length === 0 ? (
           <div className="text-center py-16 text-black/40 dark:text-white/40">
             <FolderIcon className="size-10 mx-auto mb-3" />
-            <p className="text-sm">No folders found</p>
+            <p className="text-sm">{t('folders.modal.noFolders')}</p>
           </div>
         ) : (
           folders.map((folder) => (
@@ -104,7 +106,7 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
                   variant={selectedPath === folder.path ? 'primary' : 'secondary'}
                   size="sm"
                 >
-                  {selectedPath === folder.path ? 'Selected' : 'Select'}
+                  {selectedPath === folder.path ? t('folders.modal.selectedButton') : t('folders.modal.selectButton')}
                 </Button>
                 <ChevronRightIcon className="size-4 text-black/30 dark:text-white/30" />
               </div>
@@ -115,7 +117,7 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
 
       {selectedPath && (
         <div className="px-6 py-3 border-t border-black/10 dark:border-white/10 text-sm text-black/60 dark:text-white/60 truncate">
-          Selected: <span className="font-mono text-black dark:text-white">{selectedPath}</span>
+          {t('folders.modal.selected')} <span className="font-mono text-black dark:text-white">{selectedPath}</span>
         </div>
       )}
 
@@ -126,10 +128,10 @@ export function AddFolder({ isOpen, onClose, onAdd, error }: AddFolderProps) {
           loading={loading}
           leftIcon={loading ? <ArrowPathIcon className="size-4" /> : <PlusIcon className="size-4" />}
         >
-          Add Folder
+          {t('folders.modal.addFolder')}
         </Button>
-        <Button variant="secondary" onClick={handleAddFolder} disabled={loading} loading={loading} aria-label='Cancel'>
-          Cancel
+        <Button variant="secondary" onClick={handleAddFolder} disabled={loading} loading={loading} aria-label={t('folders.modal.cancel')}>
+          {t('folders.modal.cancel')}
         </Button>
       </div>
     </Modal>

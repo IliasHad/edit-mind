@@ -4,6 +4,7 @@ import { devtools, persist } from 'zustand/middleware'
 import type { Chat, ChatMessage } from '@prisma/client'
 import type { ChatSuggestion } from '@shared/types/chat'
 import type { ChatMessageWithScenes, PaginationInfo } from '../types'
+import { translate } from '~/i18n/translate'
 import { apiClient } from '../services/api'
 
 interface ChatState {
@@ -109,7 +110,7 @@ export const useChatStore = create<ChatState>()(
               currentChatLoading: false,
             })
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch chats'
+            const message = error instanceof Error ? error.message : translate('chats.errors.fetchChats')
             set({ chatsLoading: false, chatsError: message })
             console.error('Error fetching chats:', error)
           }
@@ -132,7 +133,7 @@ export const useChatStore = create<ChatState>()(
 
             set({ currentChatLoading: false })
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch chat'
+            const message = error instanceof Error ? error.message : translate('chats.errors.fetchChat')
             set({ currentChatLoading: false, currentChatError: message })
             console.error('Error fetching chat:', error)
           }
@@ -154,7 +155,7 @@ export const useChatStore = create<ChatState>()(
 
             return result.chat
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to create chat'
+            const message = error instanceof Error ? error.message : translate('chats.errors.createChat')
             set({ chatsLoading: false, chatsError: message })
             console.error('Error creating chat:', error)
             return null
@@ -227,7 +228,7 @@ export const useChatStore = create<ChatState>()(
               ...(shouldSetLoading && { currentChatLoading: false }),
             }))
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch messages'
+            const message = error instanceof Error ? error.message : translate('chats.errors.fetchMessages')
             set({ currentChatLoading: false, currentChatError: message })
             console.error('Error fetching messages:', error)
           }
@@ -248,7 +249,7 @@ export const useChatStore = create<ChatState>()(
 
             return result.message
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to create chat'
+            const message = error instanceof Error ? error.message : translate('chats.errors.createChat')
             set({ chatsLoading: false, chatsError: message })
             console.error('Error creating chat:', error)
             return null
@@ -259,7 +260,7 @@ export const useChatStore = create<ChatState>()(
           try {
             await apiClient.chats.stitchScenes(chatId, selectedSceneIds)
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to stitch message scenes'
+            const message = error instanceof Error ? error.message : translate('chats.errors.stitchScenes')
             set({ currentChatLoading: false, currentChatError: message })
             console.error('Error stitching video scenes:', error)
           }
@@ -269,7 +270,7 @@ export const useChatStore = create<ChatState>()(
           try {
             await apiClient.chats.exportScenes(chatId, selectedSceneIds)
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to export message scenes'
+            const message = error instanceof Error ? error.message : translate('chats.errors.exportScenes')
             set({ currentChatLoading: false, currentChatError: message })
             console.error('Error stitching video scenes:', error)
           }
@@ -316,7 +317,7 @@ export const useChatStore = create<ChatState>()(
               suggestionsLastFetched: Date.now(),
             })
           } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to fetch suggestions'
+            const message = error instanceof Error ? error.message : translate('chats.errors.fetchSuggestions')
             set({ suggestionsLoading: false, suggestionsError: message })
             console.error('Error fetching suggestions:', error)
           }

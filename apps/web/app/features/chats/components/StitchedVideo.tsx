@@ -1,12 +1,14 @@
 import { ArrowDownTrayIcon, FilmIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface StitchedVideoProps {
   stitchedVideoPath: string
 }
 
 export function StitchedVideo({ stitchedVideoPath }: StitchedVideoProps) {
+  const { t } = useTranslation()
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
 
   return (
@@ -24,7 +26,7 @@ export function StitchedVideo({ stitchedVideoPath }: StitchedVideoProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FilmIcon className="w-4 h-4 text-black/70 dark:text-white/70" />
-                <span className="text-sm font-medium text-black/70 dark:text-white/70">Compiled Video</span>
+                <span className="text-sm font-medium text-black/70 dark:text-white/70">{t('chats.stitchedVideo.title')}</span>
               </div>
 
               <a
@@ -33,7 +35,7 @@ export function StitchedVideo({ stitchedVideoPath }: StitchedVideoProps) {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-black/70 dark:text-white/70 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Download
+                {t('chats.stitchedVideo.download')}
               </a>
             </div>
           </div>

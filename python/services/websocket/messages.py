@@ -155,6 +155,9 @@ class RequestParser:
             video_path = urllib.parse.unquote(str(payload['video_path']))
             json_file_path = str(payload['json_file_path'])
             job_id = str(payload['job_id'])
+            language = str(payload.get('language', 'en'))
+            if language not in ('en', 'ru'):
+                language = 'en'
 
             if use_external_host:
                 # TODO: If you wanna use your Apple computer with M chips to handle ML services (Advanced Usage) and make sure that the python script can access video file from docker container
@@ -166,7 +169,8 @@ class RequestParser:
             return TranscriptionRequest(
                 video_path=video_path,
                 job_id=job_id,
-                json_file_path=json_file_path
+                json_file_path=json_file_path,
+                language=language
             )
         except KeyError as e:
             raise InvalidRequestError(f"Missing required field: {e}")

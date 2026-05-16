@@ -1,10 +1,13 @@
 import type { ComponentType } from 'react'
 import { useSearchSuggestions } from '../hooks/useSearchSuggestions'
 import { Button } from '@ui/components/Button'
+import { getSuggestionFilterValue } from '@search/utils/localizedQuery'
 import type { SearchFiltersType } from '../types'
 
 interface Suggestion {
   text: string
+  value?: string
+  displayText?: string
   count: number
   sceneCount?: number
 }
@@ -22,10 +25,12 @@ export function SuggestionSection({ title, icon: Icon, items, type }: Suggestion
   const selectedItems = (filters[type as keyof typeof filters] as string[]) || []
 
   const handleClick = (item: Suggestion) => {
-    if (item && selectedItems.includes(item.text)) {
-      removeFilter(type, item.text)
+    const filterValue = getSuggestionFilterValue(item)
+
+    if (selectedItems.includes(filterValue)) {
+      removeFilter(type, filterValue)
     } else {
-      addFilter(type, item.text)
+      addFilter(type, filterValue)
       clearQuery()
     }
   }
@@ -45,7 +50,8 @@ export function SuggestionSection({ title, icon: Icon, items, type }: Suggestion
         {items
           .filter((item) => item)
           .map((item, index) => {
-            const isSelected = item && selectedItems.includes(item.text)
+            const filterValue = getSuggestionFilterValue(item)
+            const isSelected = selectedItems.includes(filterValue)
 
             return (
               <Button

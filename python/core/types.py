@@ -97,7 +97,7 @@ class AnalysisRequest(JobRequest):
 @dataclass(frozen=True)
 class TranscriptionRequest(JobRequest):
     """Transcription job request."""
-    pass
+    language: str = "en"
 class AnalysisCancelledError(Exception):
     """Raised when an analysis job is cancelled."""
     pass

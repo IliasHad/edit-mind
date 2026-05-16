@@ -9,6 +9,7 @@ interface AlertModalProps {
   description: string
   buttonText?: string
   variant?: 'info' | 'success' | 'warning' | 'error'
+  closeButtonAriaLabel?: string
 }
 
 const variantConfig = {
@@ -37,11 +38,12 @@ export function AlertModal({
   description,
   buttonText = 'Got it',
   variant = 'info',
+  closeButtonAriaLabel,
 }: AlertModalProps) {
   const config = variantConfig[variant]
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="sm">
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="sm" closeButtonAriaLabel={closeButtonAriaLabel}>
       <div className="p-6">
         <div className={`mb-4 flex size-12 items-center justify-center rounded-xl border ${config.iconBg}`}>
           <InformationCircleIcon className={`size-6 ${config.iconColor}`} />

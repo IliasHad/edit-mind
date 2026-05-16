@@ -1,5 +1,6 @@
 import { ArrowRightIcon, CalendarIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/solid'
 import { Link } from "react-router"
+import { useTranslation } from 'react-i18next'
 
 interface ChatCardProps {
   id: string
@@ -10,7 +11,8 @@ interface ChatCardProps {
 }
 
 export function ChatCard({ id, title, messageCount, createdAt, updatedAt }: ChatCardProps) {
-  const formattedDate = new Intl.DateTimeFormat('en-US', {
+  const { t, i18n } = useTranslation()
+  const formattedDate = new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
@@ -33,12 +35,12 @@ export function ChatCard({ id, title, messageCount, createdAt, updatedAt }: Chat
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0 pr-4">
           <h3 className="text-lg font-semibold text-zinc-900 dark:text-white truncate mb-1">
-            {title || 'Untitled Chat'}
+            {title || t('chats.card.untitled')}
           </h3>
           <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
             <div className="flex items-center gap-1.5">
               <ChatBubbleLeftIcon className="w-3.5 h-3.5" />
-              <span>{messageCount} {messageCount === 1 ? 'message' : 'messages'}</span>
+              <span>{messageCount} {messageCount === 1 ? t('chats.card.message') : t('chats.card.messages')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CalendarIcon className="w-3.5 h-3.5" />
@@ -56,7 +58,7 @@ export function ChatCard({ id, title, messageCount, createdAt, updatedAt }: Chat
 
       {isRecent && (
         <div className="inline-flex items-center px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs text-zinc-600 dark:text-zinc-400">
-          Active today
+          {t('chats.card.activeToday')}
         </div>
       )}
 

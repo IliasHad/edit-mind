@@ -1,5 +1,6 @@
 import z from 'zod'
 import type { Scene } from './scene'
+import type { AppLanguage } from './language'
 import { videoSchema } from '../schemas'
 
 export type Video = z.infer<typeof videoSchema>
@@ -72,12 +73,14 @@ export interface VideoIndexJobData {
   videoPath: string
   jobId: string
   forceReIndexing?: boolean
+  language?: AppLanguage
 }
 
 export interface VideoProcessingData {
   videoPath: string
   jobId: string
   forceReIndexing?: boolean
+  language?: AppLanguage
   analysisPath: string
   transcriptionPath: string
   scenesPath: string

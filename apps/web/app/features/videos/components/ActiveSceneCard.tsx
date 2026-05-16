@@ -1,17 +1,19 @@
 import { formatTime } from '~/features/customVideoPlayer/utils/formatting'
 import { type Scene } from '@shared/types/scene'
+import { useTranslation } from 'react-i18next'
 
 interface ActiveSceneCardProps {
   scene: Scene
 }
 
 export function ActiveSceneCard({ scene }: ActiveSceneCardProps) {
+  const { t } = useTranslation()
   const metadata = [
-    { label: 'Dominant Color', value: scene.dominantColorName },
-    { label: 'Shot Type', value: scene.shotType },
-    { label: 'Camera', value: scene.camera },
-    { label: 'Location', value: scene.location },
-    { label: 'Aspect Ratio', value: scene.aspectRatio },
+    { label: t('videos.scenes.metadata.dominantColor'), value: scene.dominantColorName },
+    { label: t('videos.scenes.metadata.shotType'), value: scene.shotType },
+    { label: t('videos.scenes.metadata.camera'), value: scene.camera },
+    { label: t('videos.scenes.metadata.location'), value: scene.location },
+    { label: t('videos.scenes.metadata.aspectRatio'), value: scene.aspectRatio },
   ]
 
   return (
@@ -20,7 +22,7 @@ export function ActiveSceneCard({ scene }: ActiveSceneCardProps) {
         <div className="flex items-start gap-6 mb-8">
           <img
             src={'/thumbnails/' + scene.thumbnailUrl}
-            alt="Scene thumbnail"
+            alt={t('videos.scenes.thumbnailAlt')}
             className="w-48 h-28 rounded-xl object-cover"
           />
 

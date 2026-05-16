@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import { translate } from '~/i18n/translate'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { MetaFunction } from 'react-router'
 import type { JsonArray } from '@prisma/client/runtime/library'
@@ -19,18 +21,19 @@ import { VideoCard } from '~/features/shared/components/VideoCard'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { smartFormatDate } from '@shared/utils/duration'
 import { useCurrentCollection } from '~/features/collections/hooks/useCurrentCollection'
-import { ICON_MAP, TYPE_LABELS } from '~/features/collections/constants'
+import { ICON_MAP, TYPE_LABEL_KEYS } from '~/features/collections/constants'
 import { Button } from '@ui/components/Button'
 import { SortButton } from '~/features/videos/components/SortButton'
 import { PageSkeleton } from '~/features/collections/components/PageSkeleton'
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Collection Details | Edit Mind' }]
+  return [{ title: translate('collections.meta.detailsTitle') }]
 }
 
 type ViewMode = 'grid' | 'list'
 
 export default function CollectionDetail() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { currentCollection, sortOrder, sortBy, loading, error } = useCurrentCollection()
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -47,10 +50,10 @@ export default function CollectionDetail() {
             <div className="mb-6 rounded-2xl bg-red-500/10 border border-red-500/30 p-6">
               <MagnifyingGlassIcon className="h-12 w-12 text-red-400 mx-auto" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold tracking-tight text-white">Error Loading Collection</h3>
+            <h3 className="mb-2 text-xl font-semibold tracking-tight text-white">{t('collections.details.errorTitle')}</h3>
             <p className="text-white/60 mb-6">{error}</p>
             <Button variant="glass" onClick={() => navigate('/app/collections')} leftIcon={<ArrowLeftIcon />}>
-              Back to Collections
+              {t('collections.details.backToCollections')}
             </Button>
           </div>
         </main>
@@ -66,10 +69,10 @@ export default function CollectionDetail() {
             <div className="mb-6 rounded-2xl bg-white/5 border border-white/10 p-6">
               <MagnifyingGlassIcon className="h-12 w-12 text-white/20 mx-auto" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold tracking-tight text-white">Collection Not Found</h3>
-            <p className="text-white/60 mb-6">The collection you're looking for doesn't exist.</p>
+            <h3 className="mb-2 text-xl font-semibold tracking-tight text-white">{t('collections.details.notFoundTitle')}</h3>
+            <p className="text-white/60 mb-6">{t('collections.details.notFoundDescription')}</p>
             <Button variant="glass" onClick={() => navigate('/app/collections')} leftIcon={<ArrowLeftIcon />}>
-              Back to Collections
+              {t('collections.details.backToCollections')}
             </Button>
           </div>
         </main>
@@ -114,7 +117,7 @@ export default function CollectionDetail() {
                   >
                     <Icon className="w-3.5 h-3.5 text-white/90" />
                     <span className="text-xs font-semibold tracking-wide text-white/90 uppercase">
-                      {TYPE_LABELS[currentCollection.type]}
+                      {t(TYPE_LABEL_KEYS[currentCollection.type])}
                     </span>
                   </motion.div>
 
@@ -152,20 +155,20 @@ export default function CollectionDetail() {
                   <div className="flex items-center gap-2.5">
                     <FilmIcon className="h-4 w-4 text-white/50" />
                     <span className="text-sm font-semibold text-white">{currentCollection.itemCount}</span>
-                    <span className="text-sm text-white/50">videos</span>
+                    <span className="text-sm text-white/50">{t('collections.details.videos')}</span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <ClockIcon className="h-4 w-4 text-white/50" />
                     <span className="text-sm font-semibold text-white">
                       {humanizeSeconds(parseInt(currentCollection.totalDuration))}
                     </span>
-                    <span className="text-sm text-white/50">duration</span>
+                    <span className="text-sm text-white/50">{t('collections.details.duration')}</span>
                   </div>
                   {currentCollection.lastUpdated && (
                     <div className="flex items-center gap-2.5">
                       <ArrowTrendingUpIcon className="h-4 w-4 text-emerald-400" />
                       <span className="text-sm font-semibold text-white">
-                        Updated {smartFormatDate(currentCollection.lastUpdated)}
+                        {t('collections.details.updated', { date: smartFormatDate(currentCollection.lastUpdated) })}
                       </span>
                     </div>
                   )}
@@ -184,7 +187,7 @@ export default function CollectionDetail() {
           >
             <Link to={`/app/collections/${currentCollection.id}/scenes`}>
               <Button variant="glass" leftIcon={<VideoCameraIcon />}>
-                Matched Scenes
+                {t('collections.details.matchedScenes')}
               </Button>
             </Link>
           </motion.div>
@@ -220,10 +223,10 @@ export default function CollectionDetail() {
                   sortBy={sortBy}
                   sortOrder={sortOrder}
                   options={[
-                    { value: 'shottedAt', label: 'Shot Date' },
-                    { value: 'importAt', label: 'Import Date' },
-                    { value: 'updatedAt', label: 'Last Updated' },
-                    { value: 'duration', label: 'Duration' },
+                    { value: 'shottedAt', label: t('collections.details.sortShotDate') },
+                    { value: 'importAt', label: t('collections.details.sortImportDate') },
+                    { value: 'updatedAt', label: t('collections.details.sortLastUpdated') },
+                    { value: 'duration', label: t('collections.details.sortDuration') },
                   ]}
                 />
               }
@@ -350,7 +353,7 @@ export default function CollectionDetail() {
                               : 'bg-white/5 border-white/10 text-white/70'
                             }`}
                         >
-                          {(item.confidence * 100).toFixed(0)}% match
+                          {(item.confidence * 100).toFixed(0)}% {t('collections.details.match')}
                         </div>
                       </div>
                     </motion.div>
@@ -370,8 +373,8 @@ export default function CollectionDetail() {
               <div className="mb-6 rounded-2xl bg-white/5 border border-white/10 p-6">
                 <MagnifyingGlassIcon className="h-12 w-12 text-white/20" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold tracking-tight text-white">No videos found</h3>
-              <p className="text-white/60">This collection doesn't have any videos yet.</p>
+              <h3 className="mb-2 text-xl font-semibold tracking-tight text-white">{t('collections.details.noVideosTitle')}</h3>
+              <p className="text-white/60">{t('collections.details.noVideosDescription')}</p>
             </motion.div>
           )}
         </motion.div>

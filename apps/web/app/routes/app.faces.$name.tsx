@@ -7,8 +7,10 @@ import { KnownFaceCard } from '~/features/faces/components/KnownFaceCard'
 import { PencilIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid'
 import { RenameDialog } from '~/features/faces/components/RenameDialog'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 export default function PersonFacesPage() {
+  const { t } = useTranslation()
   const { currentKnownFace } = useCurrentKnowFace()
   const [showRenameDialog, setShowRenameDialog] = useState(false)
 
@@ -24,7 +26,7 @@ export default function PersonFacesPage() {
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 <p className="text-sm font-medium text-white/60">
-                  {currentKnownFace?.images.length} {currentKnownFace?.images.length === 1 ? 'Image' : 'Images'}
+                  {t('faces.detail.imageCount', { count: currentKnownFace?.images.length ?? 0 })}
                 </p>
               </div>
             </div>
@@ -35,7 +37,7 @@ export default function PersonFacesPage() {
                   variant="outline"
                   leftIcon={<MagnifyingGlassIcon className="w-4 h-4" />}
                 >
-                  Search Videos of {name}
+                  {t('faces.detail.searchVideos', { name })}
                 </Button>
               </Link>
 
@@ -46,7 +48,7 @@ export default function PersonFacesPage() {
                 }}
                 leftIcon={<PencilIcon className="w-4 h-4" />}
               >
-                Rename
+                {t('faces.detail.rename')}
               </Button>
             </div>
           </div>
@@ -56,13 +58,13 @@ export default function PersonFacesPage() {
           <div className="max-w-7xl mx-auto">
             {!currentKnownFace || currentKnownFace?.images.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center py-16">
-                <h4 className="text-xl font-semibold text-black dark:text-white mb-3">No faces found for {name}</h4>
+                <h4 className="text-xl font-semibold text-black dark:text-white mb-3">{t('faces.empty.noFacesForPerson', { name })}</h4>
                 <p className="text-gray-600 dark:text-gray-400 text-base mb-8">
-                  We couldn't find any faces for this person. It might be that the face labelling is still in progress.
+                  {t('faces.empty.noFacesForPersonDescription')}
                 </p>
                 <Link to="/app/faces">
                   <Button>
-                    Back to all faces
+                    {t('faces.detail.backToAll')}
                   </Button>
                 </Link>
               </div>

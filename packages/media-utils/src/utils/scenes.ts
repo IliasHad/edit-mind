@@ -7,6 +7,7 @@ import { formatLocation, getLocationName } from '@shared/utils/location'
 import { extractGPS, getGoProDeviceName, getGoProVideoMetadata } from '@media-utils/lib/gopro'
 import { GoProMetadataWithStreams } from '@media-utils/types/gopro'
 import { logger } from '@shared/services/logger'
+import { DEFAULT_LANGUAGE, type AppLanguage } from '@shared/types/language'
 import { gcd } from './shared'
 
 const generateSceneId = (videoPath: string, startTime: number, endTime: number) => {
@@ -60,6 +61,100 @@ export const generateSceneDescription = (objects: DetectedObject[], faces: Face[
 
   return `A scene with ${description}.`
 }
+
+type SceneDescriptionFrame = {
+  description?: string
+  objects?: DetectedObject[] | null
+  faces?: Face[] | null
+  detected_text?: Array<{ text?: string | null }> | null
+  shot_type?: string | null
+}
+
+const RU_OBJECT_LABELS: Record<string, string> = {
+  trailer: 'трейлер',
+  door: 'дверь',
+  person: 'человек',
+  dog: 'собака',
+  cat: 'кошка',
+}
+
+const RU_SHOT_TYPES: Record<string, string> = {
+  'long-shot': 'общий план',
+  'close-up': 'крупный план',
+  'medium-shot': 'средний план',
+}
+
+const RU_FACE_EMOTIONS: Record<string, string> = {
+  happy: 'счастливый',
+  sad: 'грустный',
+  neutral: 'нейтральный',
+  angry: 'сердитый',
+  surprised: 'удивлённый',
+}
+
+const localizeRussianLabel = (label: string, dictionary: Record<string, string>): string => {
+  const normalized = label.trim().toLocaleLowerCase('en-US')
+  return dictionary[normalized] ?? label
+}
+
+const formatRussianPersonCount = (count: number): string => {
+  const mod10 = count % 10
+  const mod100 = count % 100
+
+  if (mod10 === 1 && mod100 !== 11) return `${count} человек`
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${count} человека`
+  return `${count} человек`
+}
+
+export const buildSceneDescription = (
+  frame: SceneDescriptionFrame,
+  language: AppLanguage = DEFAULT_LANGUAGE
+): string => {
+  if (language !== 'ru') {
+    return frame.description || ''
+  }
+
+  const parts: string[] = []
+  const objectLabels = (frame.objects || [])
+    .map((object) => object.label?.trim())
+    .filter((label): label is string => Boolean(label))
+    .map((label) => localizeRussianLabel(label, RU_OBJECT_LABELS))
+  const detectedText = (frame.detected_text || [])
+    .map((item) => item.text?.trim())
+    .filter((text): text is string => Boolean(text))
+  const faceCount = frame.faces?.length || 0
+  const shotType = frame.shot_type ? localizeRussianLabel(frame.shot_type, RU_SHOT_TYPES) : ''
+  const faceEmotions = (frame.faces || [])
+    .map((face) => face.emotion?.label?.trim())
+    .filter((emotion): emotion is string => Boolean(emotion) && (faceCount === 1 || emotion.toLocaleLowerCase('en-US') !== 'neutral'))
+    .map((emotion) => localizeRussianLabel(emotion, RU_FACE_EMOTIONS))
+
+  if (objectLabels.length > 0) {
+    parts.push(`Сцена с объектами: ${objectLabels.join(', ')}.`)
+  }
+
+  if (shotType) {
+    parts.push(`Тип плана: ${shotType}.`)
+  }
+
+  if (faceCount > 0) {
+    parts.push(`В кадре ${formatRussianPersonCount(faceCount)}.`)
+  }
+
+  if (faceEmotions.length > 0) {
+    parts.push(`Эмоции: ${Array.from(new Set(faceEmotions)).join(', ')}.`)
+  }
+
+  if (detectedText.length > 0) {
+    parts.push(`Текст на экране: ${detectedText.map((text) => `"${text}"`).join(', ')}.`)
+  }
+
+  if (parts.length === 0) {
+    return 'Сцена без распознанных объектов или людей.'
+  }
+
+  return parts.join(' ')
+}
 const getTranscriptionForTimeRange = (
   startTime: number,
   endTime: number,
@@ -86,7 +181,8 @@ const getTranscriptionForTimeRange = (
 export const createScenes = async (
   analysis: Analysis,
   transcription: Transcription | null,
-  videoPath: string
+  videoPath: string,
+  language: AppLanguage = DEFAULT_LANGUAGE
 ): Promise<Scene[]> => {
   const scenes: Scene[] = []
 
@@ -122,7 +218,7 @@ export const createScenes = async (
     }
   }
 
-  const locationName = await getLocationName(location)
+  const locationName = await getLocationName(location, language)
 
 
   for (const frame of analysis.frame_analysis) {
@@ -136,7 +232,7 @@ export const createScenes = async (
       objects: frame.objects?.map((obj: DetectedObject) => obj.label) || [],
       faces: frame.faces?.map((face: Face) => face.name) || [],
       transcription: getTranscriptionForTimeRange(startTime, endTime, transcription),
-      description: frame.description,
+      description: buildSceneDescription(frame, language),
       shotType: frame.shot_type,
       emotions: frame.faces?.map((face) => ({
         name: face.name,
@@ -144,7 +240,7 @@ export const createScenes = async (
         confidence: face.emotion.confidence,
       })),
       source: videoPath,
-      camera,
+      camera: initialCamera,
       createdAt: new Date(createdAt).getTime(),
       thumbnailUrl: frame.thumbnail_path,
       dominantColorHex: frame.dominant_color?.hex || '',

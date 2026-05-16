@@ -6,6 +6,7 @@ import {
   ChevronDoubleRightIcon 
 } from '@heroicons/react/24/solid'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface PaginationProps {
   currentPage: number
@@ -22,6 +23,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   itemsPerPage = 40,
 }) => {
+  const { t } = useTranslation()
   const startItem = (currentPage - 1) * itemsPerPage + 1
   const endItem = Math.min(currentPage * itemsPerPage, totalItems)
 
@@ -63,9 +65,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     <div className="flex items-center justify-between px-6 py-4 bg-white/5 backdrop-blur-sm border-t border-white/10">
       <div className="flex items-center gap-2 text-sm text-gray-400">
         <span>
-          Showing <span className="font-medium text-white">{startItem}</span> to{' '}
-          <span className="font-medium text-white">{endItem}</span> of{' '}
-          <span className="font-medium text-white">{totalItems}</span> results
+          {t('faces.pagination.showing', { start: startItem, end: endItem, total: totalItems })}
         </span>
       </div>
 
@@ -73,7 +73,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <Button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          title="First page"
+          title={t('faces.pagination.first')}
           variant="ghost"
           size="icon-sm"
           leftIcon={<ChevronDoubleLeftIcon className="w-4 h-4" />}
@@ -82,7 +82,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <Button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          title="Previous page"
+          title={t('faces.pagination.previous')}
           variant="ghost"
           size="icon-sm"
           leftIcon={<ChevronLeftIcon className="w-4 h-4" />}
@@ -109,7 +109,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <Button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          title="Next page"
+          title={t('faces.pagination.next')}
           variant="ghost"
           size="icon-sm"
           leftIcon={<ChevronRightIcon className="w-4 h-4" />}
@@ -118,7 +118,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <Button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          title="Last page"
+          title={t('faces.pagination.last')}
           variant="ghost"
           size="icon-sm"
           leftIcon={<ChevronDoubleRightIcon className="w-4 h-4" />}

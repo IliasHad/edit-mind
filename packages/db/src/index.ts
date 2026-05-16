@@ -1,5 +1,6 @@
 export * from './models/User';
 export * from './models/Settings';
+export * from './models/AppSettings';
 export * from './models/Folder';
 export * from './models/Job';
 export * from './models/Chat';

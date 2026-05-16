@@ -17,6 +17,7 @@ import { PageSkeleton } from '~/features/videos/components/PageSkeleton'
 import { Button } from '@ui/components/Button'
 import { UpdateLocation } from '~/features/videos/components/UpdateLocation'
 import { AddVideoLabels } from '~/features/videos/components/AddVideoLabels'
+import { useTranslation } from 'react-i18next'
 
 export const meta = () => {
   return [
@@ -27,6 +28,7 @@ export const meta = () => {
 }
 
 export default function Video() {
+  const { t } = useTranslation()
   const {
     currentVideo: video,
     currentScenes: scenes,
@@ -145,19 +147,19 @@ export default function Video() {
               <DeleteModal
                 isOpen={deleteModalOpen}
                 onClose={closeDeleteModal}
-                title="Delete video"
-                description="Removing this video will remove all indexed data. This action cannot be undone."
+                title={t('videos.modals.delete.title')}
+                description={t('videos.modals.delete.description')}
                 resourceName={video.source}
-                confirmText="Delete this video"
+                confirmText={t('videos.modals.delete.confirm')}
                 onConfirm={handleDelete}
               />
               <ConfirmationModal
                 isOpen={reindexModalOpen}
                 onClose={closeReindexModal}
-                title="Reindex video"
-                description="Reindexing this video will re-run all the video indexing jobs. This action cannot be undone."
+                title={t('videos.modals.reindex.title')}
+                description={t('videos.modals.reindex.description')}
                 resourceName={video.source}
-                confirmText="Reindex video"
+                confirmText={t('videos.modals.reindex.confirm')}
                 onConfirm={handleReindex}
               />
 
@@ -173,8 +175,7 @@ export default function Video() {
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 rounded-lg">
                   <div className="size-2 bg-blue-500 rounded-full animate-pulse" />
                   <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                    We have processing video job for this video, the details of this video will be updated once all jobs
-                    is completed
+                    {t('videos.notices.processing')}
                   </span>
                 </div>
               )}
@@ -189,9 +190,9 @@ export default function Video() {
               ) : (
                 <div className="p-4 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 dark:border-amber-500/20 rounded-xl flex items-center justify-between">
                   <span className="text-sm text-amber-900 dark:text-amber-100">
-                    Video file is missing. Please relink.
+                    {t('videos.notices.missingFile')}
                   </span>
-                  <Button onClick={() => openRelinkModal()}>Relink</Button>
+                  <Button onClick={() => openRelinkModal()}>{t('videos.actions.relink')}</Button>
                 </div>
               )}
 
@@ -200,7 +201,7 @@ export default function Video() {
               {(updateLocationSuccess || addLabelsSuccess) && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 rounded-lg">
                   <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                    Updating scene metadata in the background, refresh the page to get the latest updates.
+                    {t('videos.notices.metadataUpdating')}
                   </span>
                 </div>
               )}

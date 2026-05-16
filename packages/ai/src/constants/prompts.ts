@@ -1,6 +1,35 @@
 import { VideoAnalytics } from '@shared/types/analytics'
+import type { AppLanguage } from '@shared/types/language'
 import { YearStats } from '@shared/types/stats'
 import { VideoWithScenes } from '@shared/types/video'
+
+export const responseLanguageInstruction = (language: AppLanguage = 'en') =>
+  language === 'ru'
+    ? 'Отвечай на русском. Keep canonical metadata values, JSON schema keys, IDs, names, labels, enum values, camera names, @mentions, and file paths unchanged.'
+    : 'Respond in English.'
+
+export const buildPromptInstructions = (options?: { language?: AppLanguage; projectInstructions?: string }) =>
+  [options?.projectInstructions, responseLanguageInstruction(options?.language)].filter(Boolean).join('\n') || undefined
+
+const localizedJsonRules = (projectInstructions?: string) =>
+  projectInstructions?.includes('Отвечай на русском')
+    ? `\n\nЛОКАЛИЗАЦИЯ:\n- Понимай запросы на русском и английском.\n- JSON schema keys MUST remain in English exactly as documented.\n- Canonical filter values MUST remain in English where the app expects them: objects such as dog/cat/laptop, emotions such as happy/sad/angry/surprised/excited/neutral, shotType values close-up/medium-shot/long-shot, and searchMode values text/visual/audio/all.\n- Natural-language fields such as description, semanticQuery, and transcriptionQuery should match the user's selected language when useful for semantic search.\n- Do not translate person names, @mentions, camera names, IDs, file paths, aspect ratios, or regex syntax.\n`
+    : ''
+
+const localizedResponseRules = (projectInstructions?: string) =>
+  projectInstructions?.includes('Отвечай на русском')
+    ? `\n\nЛОКАЛИЗАЦИЯ:\n- Отвечай пользователю на русском языке.\n- Не переводи имена людей, @mentions, названия камер, пути файлов, ID, технические enum-значения и числовые данные.\n- Если нужно вернуть JSON, ключи JSON должны остаться на английском точно по схеме.\n`
+    : ''
+
+const localizedSearchExamples = (projectInstructions?: string) =>
+  projectInstructions?.includes('Отвечай на русском')
+    ? `\nВход: "Покажи мою собаку, которая бегает"\nВыход: {"action":"running","emotions":[],"objects":["dog"],"duration":null,"shotType":null,"aspectRatio":null,"transcriptionQuery":null,"semanticQuery":"собака бегает играет активное движение","transcriptionRegex":null,"excludeTranscriptionRegex":null,"detectedTextRegex":null,"camera":null,"description":"Клипы с бегущей собакой","faces":[],"limit":30,"searchMode":"all"}\n\nВход: "Найди счастливые моменты с @Илья"\nВыход: {"action":null,"emotions":["happy"],"objects":[],"duration":null,"shotType":null,"aspectRatio":null,"transcriptionQuery":null,"semanticQuery":"счастливые радостные позитивные весёлые моменты","transcriptionRegex":null,"excludeTranscriptionRegex":null,"detectedTextRegex":null,"camera":null,"description":"Счастливые моменты с Илья","faces":["Илья"],"limit":30,"searchMode":"all"}\n\nВход: "Где я говорю привет"\nВыход: {"action":null,"emotions":[],"objects":[],"duration":null,"shotType":null,"aspectRatio":null,"transcriptionQuery":"привет","semanticQuery":null,"transcriptionRegex":null,"excludeTranscriptionRegex":null,"detectedTextRegex":null,"camera":null,"description":"Сцены, где говорится привет","faces":[],"limit":30,"searchMode":"text"}\n`
+    : ''
+
+const localizedIntentExamples = (projectInstructions?: string) =>
+  projectInstructions?.includes('Отвечай на русском')
+    ? `\nВход: "Сделай видео"\nВыход: {"type": "compilation", "needsVideoData": true, "keepPrevious": false}\n\nВход: "Сколько у меня клипов?"\nВыход: {"type": "analytics", "needsVideoData": true, "keepPrevious": false}\n\nВход: "Привет"\nВыход: {"type": "general", "needsVideoData": false, "keepPrevious": false}\n\nВход: "Покажи ещё похожие сцены"\nВыход: {"type": "refinement", "needsVideoData": true, "keepPrevious": true}\n`
+    : ''
 
 export const SEARCH_PROMPT = (
   query: string,
@@ -16,7 +45,7 @@ ${chatHistory ? `\nContext: ${chatHistory}` : ''}
 </input>
 
 <examples>
-
+${localizedSearchExamples(projectInstructions)}
 Input: "Generate me a compilation of moments with [Ilias]"
 Output: {"emotions":[],"objects":[],"duration":null,"shotType":null,"aspectRatio":null,"transcriptionQuery":null,"semanticQuery":"Ilias moments","transcriptionRegex":null,"excludeTranscriptionRegex":null,"detectedTextRegex":null,"description":"Scenes with Ilias","faces":["Ilias"],"limit":30,"searchMode":"all","camera":null}
 
@@ -74,7 +103,7 @@ Output: {"emotions":["happy"],"objects":[],"duration":30,"shotType":null,"aspect
 
 </examples>
 
-<rules>
+<rules>${localizedJsonRules(projectInstructions)}
 OUTPUT FORMAT:
 - You MUST output ONLY valid JSON
 - No explanations, no markdown code blocks, just the JSON object
@@ -238,6 +267,7 @@ ${projectInstructions ? `Project Instructions: ${projectInstructions}\n` : ''}${
 </input>
 
 <examples>
+${localizedIntentExamples(projectInstructions)}
 Input: "Make a video"
 Output: {"type": "compilation", "needsVideoData": true, "keepPrevious": false}
 
@@ -272,7 +302,7 @@ Input: "Find similar scenes"
 Output: {"type": "similarity", "needsVideoData": true, "keepPrevious": false}
 </examples>
 
-<rules>
+<rules>${localizedJsonRules(projectInstructions)}
 INTENT CATEGORIES:
 
 1. "compilation": Creating, searching, finding, or editing video content  
@@ -337,7 +367,7 @@ export const ANALYTICS_RESPONSE_PROMPT = (
   return `You are an enthusiastic, precise video library analytics assistant.
 
 <input>
-${projectInstructions ? `Project Instructions: ${projectInstructions}\n` : ''}${history ? `Conversation History: "${history}"\n` : ''}User Question: "${userPrompt}"
+${projectInstructions ? `Project Instructions: ${projectInstructions}\n` : ''}${localizedResponseRules(projectInstructions)}${history ? `Conversation History: "${history}"\n` : ''}User Question: "${userPrompt}"
 
 AVAILABLE DATA:
 - Total Videos: ${analytics.uniqueVideos ?? 0}
@@ -444,7 +474,7 @@ USER ACTIONS (not your role):
 </capabilities>
 
 <input>
-${projectInstructions ? `Project Context: ${projectInstructions}\n` : ''}
+${projectInstructions ? `Project Context: ${projectInstructions}\n` : ''}${localizedResponseRules(projectInstructions)}
 User Query: "${userPrompt}"
 Results Found: ${resultsCount}
 ${history ? `Previous Context: ${history}` : ''}
@@ -555,7 +585,7 @@ USER ACTIONS (they do these manually):
 </capabilities>
 
 <input>
-${projectInstructions ? `Project Context: ${projectInstructions}\n` : ''}
+${projectInstructions ? `Project Context: ${projectInstructions}\n` : ''}${localizedResponseRules(projectInstructions)}
 User Request: "${userPrompt}"
 Matching Clips: ${resultsCount}
 ${history ? `Previous Context: ${history}` : ''}
@@ -653,7 +683,7 @@ Generate a helpful response now:`
 export const GENERAL_RESPONSE_PROMPT = (userPrompt: string, chatHistory: string, projectInstructions?: string) => `
 You are a friendly video library AI assistant.
 
-${projectInstructions ? `[Project Instructions]\n${projectInstructions}\n\n` : ''}
+${projectInstructions ? `[Project Instructions]\n${projectInstructions}\n\n` : ''}${localizedResponseRules(projectInstructions)}
 User Message: "${userPrompt}"
 Conversation History: ${chatHistory || 'None'}
 
@@ -838,7 +868,7 @@ ${JSON.stringify(contextData, null, 2)}
 ADDITIONAL INSIGHTS:
 ${extraDetails}
 
-${projectInstructions ? `[Project Instructions]\n${projectInstructions}\n\n` : ''}
+${projectInstructions ? `[Project Instructions]\n${projectInstructions}\n\n` : ''}${localizedResponseRules(projectInstructions)}
 
 OUTPUT REQUIREMENTS:
 Generate a valid JSON object matching this exact schema. Every field is REQUIRED.

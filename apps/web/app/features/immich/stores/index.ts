@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 import type { ImmichImportStatus, ImmichIntegration } from '@immich/types/immich'
 import { immichApiClient } from '../services/api'
 import { type ImmichConfig } from '@immich/types/immich'
+import { translate } from '~/i18n/translate'
 
 interface ImmichState {
   integration: ImmichIntegration | null
@@ -46,7 +47,7 @@ export const useImmichStore = create<ImmichState>()(
             set({ integration: config, isLoading: false })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to fetch config',
+              error: error instanceof Error ? error.message : translate('immich.errors.fetchConfig'),
               isLoading: false,
             })
           }
@@ -60,7 +61,7 @@ export const useImmichStore = create<ImmichState>()(
             return integration
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to save integration',
+              error: error instanceof Error ? error.message : translate('immich.errors.saveIntegration'),
               isLoading: false,
             })
             return null
@@ -75,7 +76,7 @@ export const useImmichStore = create<ImmichState>()(
             return integration
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to update integration',
+              error: error instanceof Error ? error.message : translate('immich.errors.updateIntegration'),
               isLoading: false,
             })
             return null
@@ -99,7 +100,7 @@ export const useImmichStore = create<ImmichState>()(
             })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to delete integration',
+              error: error instanceof Error ? error.message : translate('immich.errors.deleteIntegration'),
               isLoading: false,
             })
           }
@@ -119,7 +120,7 @@ export const useImmichStore = create<ImmichState>()(
             })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to refresh import',
+              error: error instanceof Error ? error.message : translate('immich.errors.refreshImport'),
               isLoading: false,
             })
           }
@@ -133,10 +134,10 @@ export const useImmichStore = create<ImmichState>()(
             return { success, message }
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Connection test failed',
+              error: error instanceof Error ? error.message : translate('immich.errors.connectionTestFailed'),
               isLoading: false,
             })
-            return { success: false, message: 'Connection test failed' }
+            return { success: false, message: translate('immich.errors.connectionTestFailed') }
           }
         },
 

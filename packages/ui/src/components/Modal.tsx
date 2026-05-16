@@ -10,6 +10,7 @@ interface ModalProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   closeOnBackdrop?: boolean
   showCloseButton?: boolean
+  closeButtonAriaLabel?: string
 }
 
 const maxWidthClasses = {
@@ -27,6 +28,7 @@ export function Modal({
   maxWidth = 'md',
   closeOnBackdrop = true,
   showCloseButton = true,
+  closeButtonAriaLabel = 'Close modal',
 }: ModalProps) {
   const handleBackdropClick = () => {
     if (closeOnBackdrop) {
@@ -64,7 +66,7 @@ export function Modal({
                   variant="glass"
                   size="icon-xs"
                   onClick={onClose}
-                  aria-label="Close modal"
+                  aria-label={closeButtonAriaLabel}
                 />
               </div>
             )}

@@ -181,6 +181,19 @@ describe('Model Router', () => {
       expect(mockOllamaModel.generateActionFromPrompt).toHaveBeenCalledWith('test query', dummyHistory)
     })
 
+    it('should pass language options to the active model', async () => {
+      const { generateActionFromPrompt, generateGeneralResponse, classifyIntent } = await import('@ai/services/modelRouter')
+      const options = { language: 'ru' as const, projectInstructions: 'Use project tone.' }
+
+      await generateActionFromPrompt('test query', dummyHistory, options)
+      await generateGeneralResponse('test prompt', dummyHistory, options)
+      await classifyIntent('test prompt', dummyHistory, options)
+
+      expect(mockOllamaModel.generateActionFromPrompt).toHaveBeenCalledWith('test query', dummyHistory, options)
+      expect(mockOllamaModel.generateGeneralResponse).toHaveBeenCalledWith('test prompt', dummyHistory, options)
+      expect(mockOllamaModel.classifyIntent).toHaveBeenCalledWith('test prompt', dummyHistory, options)
+    })
+
     it('should call generateAssistantMessage on the active model', async () => {
       const { generateAssistantMessage } = await import('@ai/services/modelRouter')
       await generateAssistantMessage('test prompt', 5)

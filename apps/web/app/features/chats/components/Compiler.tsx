@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { VideoResults } from './VideoResults'
 import type { Scene } from '@shared/types'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -14,6 +15,7 @@ interface CompilerProps {
 }
 
 export const Compiler: React.FC<CompilerProps> = ({ outputScenes, isStitching, isExporting, chatId }) => {
+  const { t } = useTranslation()
   const { stitchMessageScenes, loading, refreshMessages, exportMessageScenes } = useCurrentChat()
 
   const [selectedScenes, setSelectedScenes] = React.useState<Set<string>>(new Set())
@@ -59,7 +61,7 @@ export const Compiler: React.FC<CompilerProps> = ({ outputScenes, isStitching, i
     <>
       <div className="max-w-4xl mx-auto pb-8">
         {outputScenes.length === 0 && (
-          <p className="text-black/50 dark:text-white/50 text-sm">No scenes to compile yet.</p>
+          <p className="text-black/50 dark:text-white/50 text-sm">{t('chats.compiler.noScenes')}</p>
         )}
 
         {outputScenes.length > 0 && (
@@ -74,7 +76,7 @@ export const Compiler: React.FC<CompilerProps> = ({ outputScenes, isStitching, i
                     : setSelectedScenes(new Set(outputScenes.map((s) => s.id)))
                 }
               >
-                {selectedScenes.size === outputScenes.length ? 'Deselect all' : 'Select all'}
+                {selectedScenes.size === outputScenes.length ? t('chats.compiler.deselectAll') : t('chats.compiler.selectAll')}
               </Button>
             </div>
 
@@ -99,7 +101,7 @@ export const Compiler: React.FC<CompilerProps> = ({ outputScenes, isStitching, i
             className="fixed left-1/2 -translate-x-1/2 z-2000 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-black/85 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/10 shadow-2xl"
           >
             <span className="text-white/60 text-sm font-medium pl-1">
-              {selectedScenes.size} scene{selectedScenes.size !== 1 ? 's' : ''}
+              {selectedScenes.size} {selectedScenes.size === 1 ? t('chats.compiler.scene') : t('chats.compiler.scenes')}
             </span>
 
             <div className="w-px h-5 bg-white/15" />
@@ -110,7 +112,7 @@ export const Compiler: React.FC<CompilerProps> = ({ outputScenes, isStitching, i
               loading={isStitching}
               leftIcon={<FilmIcon className="w-4 h-4" />}
             >
-              {isStitching ? 'Compiling…' : 'Compile'}
+              {isStitching ? t('chats.compiler.compiling') : t('chats.compiler.compile')}
             </Button>
 
             <Button
@@ -119,7 +121,7 @@ export const Compiler: React.FC<CompilerProps> = ({ outputScenes, isStitching, i
               loading={isExporting}
               leftIcon={<ArrowDownTrayIcon className="w-4 h-4" />}
             >
-              {isExporting ? 'Exporting…' : 'Export'}
+              {isExporting ? t('chats.compiler.exporting') : t('chats.compiler.export')}
             </Button>
           </motion.div>
         )}

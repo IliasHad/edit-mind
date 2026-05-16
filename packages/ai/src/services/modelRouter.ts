@@ -11,7 +11,7 @@ import {
   OPENAI_LIKE_BASE_URL,
   OPENAI_LIKE_MODEL,
 } from '@ai/constants'
-import { AIModel } from '@ai/types/ai'
+import { AIModel, type AIRequestOptions } from '@ai/types/ai'
 import type { ChatMessage } from '@prisma/client'
 import { YearStats } from '@shared/types/stats'
 import { VideoWithScenes } from '@shared/types/video'
@@ -92,26 +92,90 @@ async function runWithLogging<T>(operation: string, fn: () => Promise<T>, query:
   }
 }
 
-export const generateActionFromPrompt = async (query: string, chatHistory?: ChatMessage[]) =>
-  runWithLogging('generateActionFromPrompt', () => activeModel.generateActionFromPrompt(query, chatHistory), query)
+export const generateActionFromPrompt = async (
+  query: string,
+  chatHistory?: ChatMessage[],
+  options?: AIRequestOptions
+) =>
+  runWithLogging(
+    'generateActionFromPrompt',
+    () =>
+      options
+        ? activeModel.generateActionFromPrompt(query, chatHistory, options)
+        : activeModel.generateActionFromPrompt(query, chatHistory),
+    query
+  )
 
-export const generateAssistantMessage = async (userPrompt: string, resultsCount: number) =>
-  runWithLogging('generateAssistantMessage', () => activeModel.generateAssistantMessage(userPrompt, resultsCount), userPrompt)
+export const generateAssistantMessage = async (
+  userPrompt: string,
+  resultsCount: number,
+  chatHistory?: ChatMessage[],
+  options?: AIRequestOptions
+) =>
+  runWithLogging(
+    'generateAssistantMessage',
+    () => {
+      if (options) return activeModel.generateAssistantMessage(userPrompt, resultsCount, chatHistory, options)
+      if (chatHistory) return activeModel.generateAssistantMessage(userPrompt, resultsCount, chatHistory)
+      return activeModel.generateAssistantMessage(userPrompt, resultsCount)
+    },
+    userPrompt
+  )
 
 export const generateCompilationResponse = async (
   userPrompt: string,
   resultsCount: number,
-  chatHistory?: ChatMessage[]
-) => runWithLogging('generateCompilationResponse', () => activeModel.generateCompilationResponse(userPrompt, resultsCount, chatHistory), userPrompt)
+  chatHistory?: ChatMessage[],
+  options?: AIRequestOptions
+) =>
+  runWithLogging(
+    'generateCompilationResponse',
+    () =>
+      options
+        ? activeModel.generateCompilationResponse(userPrompt, resultsCount, chatHistory, options)
+        : activeModel.generateCompilationResponse(userPrompt, resultsCount, chatHistory),
+    userPrompt
+  )
 
-export const generateGeneralResponse = async (userPrompt: string, chatHistory?: ChatMessage[]) =>
-  runWithLogging('generateGeneralResponse', () => activeModel.generateGeneralResponse(userPrompt, chatHistory), userPrompt)
+export const generateGeneralResponse = async (
+  userPrompt: string,
+  chatHistory?: ChatMessage[],
+  options?: AIRequestOptions
+) =>
+  runWithLogging(
+    'generateGeneralResponse',
+    () =>
+      options
+        ? activeModel.generateGeneralResponse(userPrompt, chatHistory, options)
+        : activeModel.generateGeneralResponse(userPrompt, chatHistory),
+    userPrompt
+  )
 
-export const classifyIntent = async (prompt: string, chatHistory?: ChatMessage[]) =>
-  runWithLogging('classifyIntent', () => activeModel.classifyIntent(prompt, chatHistory), prompt)
+export const classifyIntent = async (
+  prompt: string,
+  chatHistory?: ChatMessage[],
+  options?: AIRequestOptions
+) =>
+  runWithLogging(
+    'classifyIntent',
+    () => (options ? activeModel.classifyIntent(prompt, chatHistory, options) : activeModel.classifyIntent(prompt, chatHistory)),
+    prompt
+  )
 
-export const generateAnalyticsResponse = async (userPrompt: string, analytics: VideoAnalytics, chatHistory?: ChatMessage[]) =>
-  runWithLogging('generateAnalyticsResponse', () => activeModel.generateAnalyticsResponse(userPrompt, analytics, chatHistory), userPrompt)
+export const generateAnalyticsResponse = async (
+  userPrompt: string,
+  analytics: VideoAnalytics,
+  chatHistory?: ChatMessage[],
+  options?: AIRequestOptions
+) =>
+  runWithLogging(
+    'generateAnalyticsResponse',
+    () =>
+      options
+        ? activeModel.generateAnalyticsResponse(userPrompt, analytics, chatHistory, options)
+        : activeModel.generateAnalyticsResponse(userPrompt, analytics, chatHistory),
+    userPrompt
+  )
 
 export const cleanup = async () => {
   if (activeModel && activeModel.cleanUp) {
@@ -119,5 +183,17 @@ export const cleanup = async () => {
   }
 }
 
-export const generateYearInReviewResponse = async (stats: YearStats, videos: VideoWithScenes[], extraDetails: string) =>
-  runWithLogging('generateYearInReviewResponse', () => activeModel.generateYearInReviewResponse(stats, videos, extraDetails), extraDetails)
+export const generateYearInReviewResponse = async (
+  stats: YearStats,
+  videos: VideoWithScenes[],
+  extraDetails: string,
+  options?: AIRequestOptions
+) =>
+  runWithLogging(
+    'generateYearInReviewResponse',
+    () =>
+      options
+        ? activeModel.generateYearInReviewResponse(stats, videos, extraDetails, options)
+        : activeModel.generateYearInReviewResponse(stats, videos, extraDetails),
+    extraDetails
+  )

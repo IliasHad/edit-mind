@@ -1,4 +1,5 @@
 import { CheckCircleIcon, SignalIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@ui/components/Button'
 import { FormField } from './FormField'
 import { ConnectionStatus } from './ConnectionStatus'
@@ -14,6 +15,7 @@ interface FormProps {
 }
 
 export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
+  const { t } = useTranslation()
   const {
     handleTestConnection,
     handleSubmit: submitIntegration,
@@ -64,32 +66,32 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
     <div className="p-8">
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-white mb-1">
-          {hasIntegration ? 'Update Integration' : 'Connect Immich'}
+          {hasIntegration ? t('immich.form.updateTitle') : t('immich.form.connectTitle')}
         </h2>
         <p className="text-md text-white/60">
-          {hasIntegration ? 'Update your API key or base URL' : 'Enter your Immich credentials to get started'}
+          {hasIntegration ? t('immich.form.updateDescription') : t('immich.form.connectDescription')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <FormField
-          label="API Key"
+          label={t('immich.form.apiKeyLabel')}
           name="apiKey"
           type="password"
-          placeholder="Enter your Immich API key"
+          placeholder={t('immich.form.apiKeyPlaceholder')}
           required
           register={register}
           error={errors.apiKey?.message}
         />
 
         <FormField
-          label="Base URL"
+          label={t('immich.form.baseUrlLabel')}
           name="baseUrl"
           type="url"
           placeholder="http://host.docker.internal:2283"
           register={register}
           error={errors.baseUrl?.message}
-          helperText="The URL where your Immich instance is hosted"
+          helperText={t('immich.form.baseUrlHelper')}
         />
 
         <ConnectionStatus status={connectionStatus} />
@@ -104,7 +106,7 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
             disabled={!isValid || isTestingConnection}
             fullWidth
           >
-            Test Connection
+            {t('immich.form.testConnection')}
           </Button>
 
           <Button
@@ -115,7 +117,7 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
             fullWidth
             disabled={!connectionStatus?.success || loading}
           >
-            {hasIntegration ? 'Update & Restart Import' : 'Connect & Start Import'}
+            {hasIntegration ? t('immich.form.updateSubmit') : t('immich.form.connectSubmit')}
           </Button>
 
           {hasIntegration && (
@@ -127,13 +129,13 @@ export function IntegrationForm({ setShowApiKeyForm }: FormProps) {
               }}
               variant="ghost"
             >
-              Cancel
+              {t('immich.form.cancel')}
             </Button>
           )}
         </div>
 
         {!connectionStatus?.success && !hasIntegration && isValid && (
-          <p className="text-xs text-white/50 text-center">Please test the connection before submitting</p>
+          <p className="text-xs text-white/50 text-center">{t('immich.form.testBeforeSubmit')}</p>
         )}
       </form>
     </div>

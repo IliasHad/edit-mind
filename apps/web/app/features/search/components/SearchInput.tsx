@@ -2,6 +2,7 @@ import { forwardRef, type KeyboardEvent, type ChangeEvent } from 'react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useSearchStore } from '~/features/search/stores'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface SearchInputProps {
   onSearch?: () => void
@@ -10,6 +11,7 @@ interface SearchInputProps {
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(({ onSearch, onFocus }, ref) => {
   const { query, setQuery, filters, searchMode, imagePreview, clearSearch } = useSearchStore()
+  const { t } = useTranslation()
 
   const hasContent = query.trim().length > 0 || Object.keys(filters).length > 0 || !!imagePreview
 
@@ -31,14 +33,14 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(({ onS
   }
   const getPlaceholder = () => {
     if (searchMode === 'image' && imagePreview) {
-      return 'Image search active...'
+      return t('search.input.imageActivePlaceholder')
     }
-    return 'Search scenes, people, objects...'
+    return t('search.input.placeholder')
   }
 
   return (
     <div
-      aria-label='Search'
+      aria-label={t('search.input.ariaLabel')}
       className={`relative flex items-center gap-3 px-5 py-4 
         bg-black/5 dark:bg-white/5 
         backdrop-blur-xl
@@ -76,7 +78,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(({ onS
           variant="ghost"
           size="icon-sm"
           leftIcon={<XMarkIcon className="size-4 text-black/60 dark:text-white/60" />}
-          aria-label="Clear search"
+          aria-label={t('search.input.clear')}
         />
       )}
     </div>

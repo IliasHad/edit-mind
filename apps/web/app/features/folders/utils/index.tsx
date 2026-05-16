@@ -4,22 +4,22 @@ export const getStatusInfo = (status: FolderStatus) => {
   switch (status) {
     case 'scanning':
       return {
-        text: 'Scanning...',
+        textKey: 'folders.status.scanning',
         color: 'text-blue-600 dark:text-blue-400',
       }
     case 'indexed':
       return {
-        text: 'Indexed',
+        textKey: 'folders.status.indexed',
         color: 'text-green-600 dark:text-green-400',
       }
     case 'error':
       return {
-        text: 'Error',
+        textKey: 'folders.status.error',
         color: 'text-red-600 dark:text-red-400',
       }
     default:
       return {
-        text: 'Idle',
+        textKey: 'folders.status.idle',
         color: 'text-black/50 dark:text-white/50',
       }
   }

@@ -59,4 +59,42 @@ describe('processIntent diagnostics', () => {
       'Using generic chat fallback because model returned no data'
     )
   })
+
+  it('passes the language snapshot to the AI router options', async () => {
+    mockGenerateGeneralResponse.mockResolvedValue({
+      data: 'Привет!',
+      tokens: 8,
+      error: undefined,
+    })
+
+    const { processIntent } = await import('@chat/services/processor')
+    await processIntent({
+      intent: { type: 'general', needsVideoData: false, keepPrevious: false },
+      prompt: 'hello local model',
+      recentMessages: [],
+      newMessage: { id: 'assistant-message-id' } as never,
+      language: 'ru',
+    })
+
+    expect(mockGenerateGeneralResponse).toHaveBeenCalledWith('hello local model', [], { language: 'ru' })
+  })
+
+  it('uses Russian fallback text when the model returns no general response in Russian', async () => {
+    mockGenerateGeneralResponse.mockResolvedValue({
+      data: '',
+      tokens: 12,
+      error: 'Empty response from model',
+    })
+
+    const { processIntent } = await import('@chat/services/processor')
+    const result = await processIntent({
+      intent: { type: 'general', needsVideoData: false, keepPrevious: false },
+      prompt: 'hello local model',
+      recentMessages: [],
+      newMessage: { id: 'assistant-message-id' } as never,
+      language: 'ru',
+    })
+
+    expect(result.assistantText).toBe('Извините, я не смог сгенерировать ответ.')
+  })
 })

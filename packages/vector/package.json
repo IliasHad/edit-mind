@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "tsc -b --force",
+    "test": "vitest run",
     "test:ui": "vitest --ui"
   },
   "dependencies": {

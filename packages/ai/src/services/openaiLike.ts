@@ -8,13 +8,14 @@ import {
   GENERAL_RESPONSE_PROMPT,
   CLASSIFY_INTENT_PROMPT,
   ANALYTICS_RESPONSE_PROMPT,
+  buildPromptInstructions,
 } from '../constants/prompts'
 import { OPENAI_LIKE_BASE_URL, OPENAI_LIKE_API_KEY, OPENAI_LIKE_MODEL } from '@ai/constants'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
 import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import type { VideoWithScenes } from '@shared/types/video'
 import type { YearStats } from '@shared/types/stats'
-import { ModelResponse } from '@ai/types/ai'
+import { ModelResponse, type AIRequestOptions } from '@ai/types/ai'
 import { logger } from '@shared/services/logger'
 import { VideoSearchParams } from '@shared/types/search'
 import { VideoAnalytics } from '@shared/types/analytics'
@@ -248,7 +249,7 @@ class OpenaiLikeModelImpl {
   async generateActionFromPrompt(
     query: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<VideoSearchParams>> {
     const fallback = VideoSearchParamsSchema.parse({})
 
@@ -257,7 +258,7 @@ class OpenaiLikeModelImpl {
     try {
       const openai = this.getOpenAI()
       const history = formatHistory(chatHistory)
-      const prompt = SEARCH_PROMPT(query, history, projectInstructions)
+      const prompt = SEARCH_PROMPT(query, history, buildPromptInstructions(options))
 
       const { data: raw, tokens, error } = await chatCompletionWithPrompt(openai, 'generateActionFromPrompt', prompt, 'json')
 
@@ -284,12 +285,12 @@ class OpenaiLikeModelImpl {
     userPrompt: string,
     count: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     try {
       const openai = this.getOpenAI()
       const history = formatHistory(chatHistory)
-      const prompt = ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions)
+      const prompt = ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history, buildPromptInstructions(options))
 
       return chatCompletionWithPrompt(openai, 'generateAssistantMessage', prompt, 'text')
     } catch (error) {
@@ -302,12 +303,12 @@ class OpenaiLikeModelImpl {
     userPrompt: string,
     count: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     try {
       const openai = this.getOpenAI()
       const history = formatHistory(chatHistory)
-      const prompt = VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions)
+      const prompt = VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history, buildPromptInstructions(options))
 
       return chatCompletionWithPrompt(openai, 'generateCompilationResponse', prompt, 'text')
     } catch (error) {
@@ -320,11 +321,11 @@ class OpenaiLikeModelImpl {
     stats: YearStats,
     videos: VideoWithScenes[],
     extraDetails: string,
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<YearInReviewData | null>> {
     try {
       const openai = this.getOpenAI()
-      const prompt = YEAR_IN_REVIEW(stats, videos, extraDetails, projectInstructions)
+      const prompt = YEAR_IN_REVIEW(stats, videos, extraDetails, buildPromptInstructions(options))
 
       const { data: raw, tokens, error } = await chatCompletionWithPrompt(openai, 'generateYearInReviewResponse', prompt, 'json')
 
@@ -347,12 +348,12 @@ class OpenaiLikeModelImpl {
   async generateGeneralResponse(
     userPrompt: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     try {
       const openai = this.getOpenAI()
       const history = formatHistory(chatHistory)
-      const prompt = GENERAL_RESPONSE_PROMPT(userPrompt, history, projectInstructions)
+      const prompt = GENERAL_RESPONSE_PROMPT(userPrompt, history, buildPromptInstructions(options))
 
       return chatCompletionWithPrompt(openai, 'generateGeneralResponse', prompt, 'text')
     } catch (err) {
@@ -364,12 +365,12 @@ class OpenaiLikeModelImpl {
   async classifyIntent(
     prompt: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<IntentData>> {
     try {
       const openai = this.getOpenAI()
       const history = formatHistory(chatHistory)
-      const fullPrompt = CLASSIFY_INTENT_PROMPT(prompt, history, projectInstructions)
+      const fullPrompt = CLASSIFY_INTENT_PROMPT(prompt, history, buildPromptInstructions(options))
 
       const { data: raw, tokens, error } = await chatCompletionWithPrompt(openai, 'classifyIntent', fullPrompt, 'json')
 
@@ -391,12 +392,12 @@ class OpenaiLikeModelImpl {
     userPrompt: string,
     analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     try {
       const openai = this.getOpenAI()
       const history = formatHistory(chatHistory)
-      const prompt = ANALYTICS_RESPONSE_PROMPT(userPrompt, analytics, history, projectInstructions)
+      const prompt = ANALYTICS_RESPONSE_PROMPT(userPrompt, analytics, history, buildPromptInstructions(options))
 
       return chatCompletionWithPrompt(openai, 'generateAnalyticsResponse', prompt, 'text')
     } catch (error) {

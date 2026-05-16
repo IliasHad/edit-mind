@@ -1,7 +1,7 @@
 import express from 'express'
 import { findVideoFiles } from '@media-utils/utils/videos'
 import { addVideoIndexingJob } from '../services/videoIndexer'
-import { FolderModel, JobModel } from '@db/index'
+import { AppSettingsModel, FolderModel, JobModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import { deleteJobsByDataJobId } from '@background-jobs/utils/jobs'
 import { watchFolder } from '@background-jobs/watcher'
@@ -46,6 +46,8 @@ router.post('/:id/trigger', async (req, res) => {
       lastScanned: new Date(),
     })
 
+    const language = await AppSettingsModel.getLanguage()
+
     for await (const video of uniqueVideos) {
       const job = await JobModel.create({
         videoPath: video.path,
@@ -56,6 +58,7 @@ router.post('/:id/trigger', async (req, res) => {
       await addVideoIndexingJob({
         videoPath: video.path,
         jobId: job.id,
+        language,
       })
     }
 

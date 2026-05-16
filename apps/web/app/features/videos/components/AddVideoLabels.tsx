@@ -2,6 +2,7 @@ import { TrashIcon } from '@heroicons/react/24/solid'
 import { Button } from '@ui/components/Button'
 import { FormProvider, useForm, useFieldArray } from 'react-hook-form'
 import { FormInput } from '~/features/auth/components/FormInput'
+import { useTranslation } from 'react-i18next'
 
 interface AddVideoLabelsProps {
     id: string
@@ -21,6 +22,7 @@ type FormValues = {
 }
 
 export function AddVideoLabels({ addVideoLabels, id, loading, refresh, defaultLabels }: AddVideoLabelsProps) {
+    const { t } = useTranslation()
     const labels = defaultLabels ? JSON.parse(defaultLabels) : undefined
 
     const form = useForm<FormValues>({
@@ -53,7 +55,7 @@ export function AddVideoLabels({ addVideoLabels, id, loading, refresh, defaultLa
 
                 <div className="flex items-center gap-3 mb-6">
                     <div>
-                        <h3 className="text-sm font-medium text-black dark:text-white">Add Labels</h3>
+                        <h3 className="text-sm font-medium text-black dark:text-white">{t('videos.labels.title')}</h3>
                     </div>
                 </div>
 
@@ -62,10 +64,10 @@ export function AddVideoLabels({ addVideoLabels, id, loading, refresh, defaultLa
 
                         <div className="grid grid-cols-[1fr_1fr_2rem] gap-2">
                             <span className="text-xs text-black/40 dark:text-white/40 uppercase tracking-wide px-1">
-                                Name
+                                {t('videos.labels.name')}
                             </span>
                             <span className="text-xs text-black/40 dark:text-white/40 uppercase tracking-wide px-1">
-                                Value
+                                {t('videos.labels.value')}
                             </span>
                             <span />
                         </div>
@@ -76,13 +78,13 @@ export function AddVideoLabels({ addVideoLabels, id, loading, refresh, defaultLa
                                     <FormInput
                                         name={`labels.${index}.name`}
                                         type="text"
-                                        placeholder="e.g. Event"
+                                        placeholder={t('videos.labels.namePlaceholder')}
                                         disabled={loading}
                                     />
                                     <FormInput
                                         name={`labels.${index}.value`}
                                         type="text"
-                                        placeholder="e.g. Birthday Party"
+                                        placeholder={t('videos.labels.valuePlaceholder')}
                                         disabled={loading}
                                     />
 
@@ -92,7 +94,7 @@ export function AddVideoLabels({ addVideoLabels, id, loading, refresh, defaultLa
                                         onClick={() => remove(index)}
                                         disabled={loading}
                                         className="flex items-center justify-center w-10 h-10 rounded-lg text-black/25 dark:text-white/25 hover:text-black/60 dark:hover:text-white/60 hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                                        aria-label="Remove row"
+                                        aria-label={t('videos.labels.removeRow')}
                                     >
                                         <TrashIcon className='w-full h-full text-white' />
                                     </Button>
@@ -107,7 +109,7 @@ export function AddVideoLabels({ addVideoLabels, id, loading, refresh, defaultLa
                             disabled={loading}
                             className="flex items-center gap-1.5 text-xs text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         >
-                            Add another label
+                            {t('videos.labels.addAnother')}
                         </Button>
 
                         <div className="border-t border-black/5 dark:border-white/5" />
@@ -116,9 +118,9 @@ export function AddVideoLabels({ addVideoLabels, id, loading, refresh, defaultLa
 
                             <Button type="submit" disabled={loading}>
                                 {loading ? (
-                                    'Saving…'
+                                    t('videos.labels.saving')
                                 ) : (
-                                    'Save labels'
+                                    t('videos.labels.save')
                                 )}
                             </Button>
                         </div>

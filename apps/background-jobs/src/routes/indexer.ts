@@ -2,7 +2,7 @@ import express from 'express'
 import path from 'path'
 import { addVideoIndexingJob, addVideoUpdateJob } from '../services/videoIndexer'
 import { logger } from '@shared/services/logger'
-import { FolderModel, generateId, JobModel } from '@db/index'
+import { AppSettingsModel, FolderModel, generateId, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
 import { VideoReIndexingSchema, VideoUpdateSchema } from '../schemas/indexer'
 import { removeFailedJobs } from '@background-jobs/utils/jobs'
@@ -21,7 +21,7 @@ router.post('/reindex', async (req, res) => {
     return res.status(400).json({ error: form.error.message })
   }
 
-  const { jobId, videoPath, priority, forceReIndexing } = form.data
+  const { jobId, videoPath, priority, forceReIndexing, language } = form.data
 
   try {
     let job
@@ -53,6 +53,7 @@ router.post('/reindex', async (req, res) => {
         videoPath,
         jobId: job.id,
         forceReIndexing,
+        language,
       },
       priority
     )
@@ -77,6 +78,8 @@ router.post('/retry', async (req, res) => {
     })
     await removeFailedJobs(failedJobs.map((job) => job.id))
 
+    const language = await AppSettingsModel.getLanguage()
+
     for (const job of failedJobs) {
       const newJob = await JobModel.create({
         videoPath: job.videoPath,
@@ -86,7 +89,8 @@ router.post('/retry', async (req, res) => {
       })
       await addVideoIndexingJob({
         jobId: newJob.id,
-        videoPath: job.videoPath
+        videoPath: job.videoPath,
+        language,
       })
     }
 
@@ -124,6 +128,7 @@ router.put('/update', async (req, res) => {
 
 router.post('/import-videos', async (req, res) => {
   try {
+    const language = VideoReIndexingSchema.shape.language.parse(req.body?.language)
     const demoDir = path.join(MEDIA_BASE_PATH, 'Edit Mind Demo')
 
     if (!existsSync(demoDir)) {
@@ -182,7 +187,8 @@ router.post('/import-videos', async (req, res) => {
         {
           videoPath: dest,
           jobId: job.id,
-          forceReIndexing: true
+          forceReIndexing: true,
+          language,
         },
         100
       )

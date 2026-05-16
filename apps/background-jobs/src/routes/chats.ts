@@ -21,6 +21,7 @@ router.post('/:id/messages', async (req, res) => {
       chatId: chat?.id,
       prompt: validatedData.prompt,
       projectId: validatedData.projectId,
+      language: validatedData.language,
     })
 
     return res.json({

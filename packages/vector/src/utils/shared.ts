@@ -4,14 +4,28 @@ import type { DetectedTextData, FaceData, ObjectData, TranscriptionWord } from '
 import type { Metadata } from 'chromadb'
 import { getAspectRatioDescription } from './aspectRatio'
 import { basename, dirname } from 'path'
+import { DEFAULT_LANGUAGE, type AppLanguage } from '@shared/types/language'
 
-const generateVectorDocumentText = async (scene: Scene) => {
+const joinWithAnd = (values: string[], language: AppLanguage) => {
+  if (values.length <= 1) return values.join('')
+  if (values.length === 2) return values.join(language === 'ru' ? ' и ' : ' and ')
+
+  const last = values[values.length - 1]
+  const rest = values.slice(0, -1).join(', ')
+  return language === 'ru' ? `${rest} и ${last}` : `${rest}, and ${last}`
+}
+
+const generateVectorDocumentText = async (scene: Scene, language: AppLanguage = DEFAULT_LANGUAGE) => {
   const faces = scene.faces?.join(', ') || ''
   const objects = scene.objects?.join(', ') || ''
   const emotionsText =
     scene.emotions
       ?.map((face) =>
-        face.emotion ? `${face.name} is ${face.emotion} with ${Math.ceil(face.confidence)}% confidence` : ''
+        face.emotion
+          ? language === 'ru'
+            ? `${face.name}: ${face.emotion}, уверенность ${Math.ceil(face.confidence)}%`
+            : `${face.name} is ${face.emotion} with ${Math.ceil(face.confidence)}% confidence`
+          : ''
       )
       .filter(Boolean)
       .join(', ') || ''
@@ -19,131 +33,131 @@ const generateVectorDocumentText = async (scene: Scene) => {
 
   const textParts: string[] = []
 
-  // Shot type description
-  if (scene.shotType) {
-    textParts.push(`This is ${scene.shotType} shot`)
-  } else {
-    textParts.push('This is a video scene')
-  }
-
-  // Faces/people in the scene
-  if (faces) {
-    const faceList = scene.faces || []
-    if (faceList.length === 1) {
-      textParts.push(` featuring ${faces}`)
-    } else if (faceList.length === 2) {
-      textParts.push(` featuring ${faceList[0]} and ${faceList[1]}`)
-    } else if (faceList.length > 2) {
-      faceList?.forEach(face => textParts.push((` featuring ${face} `)))
-    }
-  }
-
-  // Faces custom metadata
-  const facesWithDetails = scene.facesData?.filter((face) => face.customMetadata && Object.keys(face.customMetadata).length > 0)
-    .map((face) => {
-      const attributes = Object.entries(face.customMetadata!)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(', ')
-      return ` ${face.name} (${attributes}) `
-    })
-
-  facesWithDetails?.forEach(metadata => textParts.push(metadata))
-
-  // Objects detected
-  if (objects) {
-    const objectList = scene.objects || []
-    if (objectList.length === 1) {
-      textParts.push(`. A ${objects} is visible in the scene`)
-    } else if (objectList.length > 1) {
-      textParts.push(`. Detected objects include ${objects}`)
-    }
-  }
-
-  // Camera information
-  if (scene.camera) {
-    textParts.push(`, captured with ${scene.camera}`)
-  }
-
-  // Emotional analysis
-  if (emotionsText) {
-    textParts.push(`. Emotional analysis indicates that ${emotionsText}`)
-  }
-
-  // On-screen text
-  if (detectedText) {
-    textParts.push(`. On-screen text displays: "${detectedText}"`)
-  }
-
-  // Color palette
-  if (scene.dominantColorName) {
-    textParts.push(`. The scene has a ${scene.dominantColorName} color palette`)
-  }
-
-  // Transcription
-  if (scene.transcription) {
-    textParts.push(`. The transcription reads: "${scene.transcription}"`)
-  }
-
-  // Creation timestamp
-  if (scene.createdAt) {
-    textParts.push(`, captured at ${new Date(scene.createdAt).toISOString()}`)
-  }
-
-  // Aspect ratio
-  if (scene.aspectRatio) {
-    const aspectRatioDesc = getAspectRatioDescription(scene.aspectRatio)
-    textParts.push(` in ${aspectRatioDesc} format`)
-  }
-
-  // Description
-  if (scene.description) {
-    textParts.push(` described as ${scene.description}`)
-  }
-
-  // Location
-  if (scene.location) {
-    textParts.push(` shotted at ${scene.location}`)
-  }
-
-  // Folder Name
-  if (scene.source) {
-    const folderName = basename(dirname(scene.source));
-    textParts.push(` folder name is ${folderName}`)
-  }
-
-  // File Name
-  if (scene.source) {
-    const fileName = basename(scene.source);
-    textParts.push(` file name is ${fileName}`)
-  }
-
-  // Custom Labels
-  if (scene.labels && scene.labels.length > 0) {
-    const labelParts = scene.labels.map((label) => {
-      const [[key, value]] = Object.entries(label)
-      return `${key}: ${value}`
-    })
-
-    if (labelParts.length === 1) {
-      textParts.push(`. This scene is tagged as ${labelParts[0]}`)
+  if (language === 'ru') {
+    if (scene.shotType) {
+      textParts.push(`Это сцена с типом кадра ${scene.shotType}`)
     } else {
-      const last = labelParts[labelParts.length - 1]
-      const rest = labelParts.slice(0, -1).join(', ')
-      textParts.push(`. This scene is tagged as ${rest}, and ${last}`)
+      textParts.push('Это сцена видео')
+    }
+
+    const faceList = scene.faces || []
+    if (faces) {
+      textParts.push(` с участием ${joinWithAnd(faceList, language)}`)
+    }
+
+    const facesWithDetails = scene.facesData
+      ?.filter((face) => face.customMetadata && Object.keys(face.customMetadata).length > 0)
+      .map((face) => {
+        const attributes = Object.entries(face.customMetadata!)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', ')
+        return ` ${face.name} (${attributes}) `
+      })
+
+    facesWithDetails?.forEach((metadata) => textParts.push(metadata))
+
+    const objectList = scene.objects || []
+    if (objects) {
+      textParts.push(
+        objectList.length === 1
+          ? `. В сцене виден объект ${objects}`
+          : `. Обнаруженные объекты: ${objects}`
+      )
+    }
+
+    if (scene.camera) textParts.push(`, снято на ${scene.camera}`)
+    if (emotionsText) textParts.push(`. Эмоциональный анализ: ${emotionsText}`)
+    if (detectedText) textParts.push(`. Текст на экране: "${detectedText}"`)
+    if (scene.dominantColorName) textParts.push(`. Цветовая палитра сцены: ${scene.dominantColorName}`)
+    if (scene.transcription) textParts.push(`. Транскрипция: "${scene.transcription}"`)
+    if (scene.createdAt) textParts.push(`, снято в ${new Date(scene.createdAt).toISOString()}`)
+    if (scene.aspectRatio) textParts.push(` в формате ${getAspectRatioDescription(scene.aspectRatio)}`)
+    if (scene.description) textParts.push(`, описание: ${scene.description}`)
+    if (scene.location) textParts.push(`, место съемки: ${scene.location}`)
+    if (scene.source) textParts.push(`, имя папки: ${basename(dirname(scene.source))}`)
+    if (scene.source) textParts.push(`, имя файла: ${basename(scene.source)}`)
+
+    if (scene.labels && scene.labels.length > 0) {
+      const labelParts = scene.labels.map((label) => {
+        const [[key, value]] = Object.entries(label)
+        return `${key}: ${value}`
+      })
+      textParts.push(`. Метки сцены: ${joinWithAnd(labelParts, language)}`)
+    }
+  } else {
+    // Shot type description
+    if (scene.shotType) {
+      textParts.push(`This is ${scene.shotType} shot`)
+    } else {
+      textParts.push('This is a video scene')
+    }
+
+    // Faces/people in the scene
+    if (faces) {
+      const faceList = scene.faces || []
+      if (faceList.length === 1) {
+        textParts.push(` featuring ${faces}`)
+      } else if (faceList.length === 2) {
+        textParts.push(` featuring ${faceList[0]} and ${faceList[1]}`)
+      } else if (faceList.length > 2) {
+        faceList?.forEach(face => textParts.push((` featuring ${face} `)))
+      }
+    }
+
+    // Faces custom metadata
+    const facesWithDetails = scene.facesData?.filter((face) => face.customMetadata && Object.keys(face.customMetadata).length > 0)
+      .map((face) => {
+        const attributes = Object.entries(face.customMetadata!)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', ')
+        return ` ${face.name} (${attributes}) `
+      })
+
+    facesWithDetails?.forEach(metadata => textParts.push(metadata))
+
+    // Objects detected
+    if (objects) {
+      const objectList = scene.objects || []
+      if (objectList.length === 1) {
+        textParts.push(`. A ${objects} is visible in the scene`)
+      } else if (objectList.length > 1) {
+        textParts.push(`. Detected objects include ${objects}`)
+      }
+    }
+
+    if (scene.camera) textParts.push(`, captured with ${scene.camera}`)
+    if (emotionsText) textParts.push(`. Emotional analysis indicates that ${emotionsText}`)
+    if (detectedText) textParts.push(`. On-screen text displays: "${detectedText}"`)
+    if (scene.dominantColorName) textParts.push(`. The scene has a ${scene.dominantColorName} color palette`)
+    if (scene.transcription) textParts.push(`. The transcription reads: "${scene.transcription}"`)
+    if (scene.createdAt) textParts.push(`, captured at ${new Date(scene.createdAt).toISOString()}`)
+    if (scene.aspectRatio) textParts.push(` in ${getAspectRatioDescription(scene.aspectRatio)} format`)
+    if (scene.description) textParts.push(` described as ${scene.description}`)
+    if (scene.location) textParts.push(` shotted at ${scene.location}`)
+    if (scene.source) textParts.push(` folder name is ${basename(dirname(scene.source))}`)
+    if (scene.source) textParts.push(` file name is ${basename(scene.source)}`)
+
+    if (scene.labels && scene.labels.length > 0) {
+      const labelParts = scene.labels.map((label) => {
+        const [[key, value]] = Object.entries(label)
+        return `${key}: ${value}`
+      })
+
+      if (labelParts.length === 1) {
+        textParts.push(`. This scene is tagged as ${labelParts[0]}`)
+      } else {
+        textParts.push(`. This scene is tagged as ${joinWithAnd(labelParts, language)}`)
+      }
     }
   }
 
-
-  // Clean up and return
-  const text = textParts.join('').replace(/\s+/g, ' ').replace(/\.\./g, '.').trim()
-
-  return text
+  return textParts.join('').replace(/\s+/g, ' ').replace(/\.\./g, '.').trim()
 }
 
-export const sceneToVectorFormat = async (scene: Scene) => {
+export const sceneToVectorFormat = async (scene: Scene, language: AppLanguage = DEFAULT_LANGUAGE) => {
   const detectedText = Array.isArray(scene.detectedText) ? scene.detectedText.join(', ') : scene.detectedText || ''
 
-  const text = await generateVectorDocumentText(scene)
+  const text = await generateVectorDocumentText(scene, language)
 
   const metadata: Metadata = {
     source: scene.source,

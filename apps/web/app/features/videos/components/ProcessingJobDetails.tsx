@@ -1,19 +1,21 @@
 import type { Job } from '@prisma/client'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import { type FrameAnalysisPluginAnalysis, type FrameAnalysisStageAnalysis } from '@shared/types/analysis'
+import { useTranslation } from 'react-i18next'
 
 interface ProcessingJobDetailsProps {
   job: Job
 }
 
 export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
+  const { t } = useTranslation()
   const processingTimes = [
-    { label: 'Frame Analysis', value: job.frameAnalysisTime },
-    { label: 'Scene Creation', value: job.sceneCreationTime },
-    { label: 'Transcription', value: job.transcriptionTime },
-    { label: 'Text Embedding', value: job.textEmbeddingTime },
-    { label: 'Audio Embedding', value: job.audioEmbeddingTime },
-    { label: 'Visual Embedding', value: job.visualEmbeddingTime },
+    { label: t('videos.processingDetails.frameAnalysis'), value: job.frameAnalysisTime },
+    { label: t('videos.processingDetails.sceneCreation'), value: job.sceneCreationTime },
+    { label: t('videos.processingDetails.transcription'), value: job.transcriptionTime },
+    { label: t('videos.processingDetails.textEmbedding'), value: job.textEmbeddingTime },
+    { label: t('videos.processingDetails.audioEmbedding'), value: job.audioEmbeddingTime },
+    { label: t('videos.processingDetails.visualEmbedding'), value: job.visualEmbeddingTime },
   ]
 
   if (job) {
@@ -29,13 +31,13 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
     return (
       <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-black overflow-hidden">
         <div className="px-8 py-6 border-b border-black/10 dark:border-white/10">
-          <h3 className="text-base font-semibold text-black dark:text-white">Processing Details</h3>
+          <h3 className="text-base font-semibold text-black dark:text-white">{t('videos.processingDetails.title')}</h3>
         </div>
 
         <div className="p-8 space-y-12">
           <div>
             <h4 className="text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider mb-6">
-              Processing Times
+              {t('videos.processingDetails.processingTimes')}
             </h4>
             <div className="grid grid-cols-2 gap-6">
               {processingTimes.map((item) => (
@@ -51,7 +53,7 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
           {frameAnalysisPlugins.length > 0 && (
             <div>
               <h4 className="text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider mb-6">
-                Video Frame Analysis Plugins
+                {t('videos.processingDetails.frameAnalysisPlugins')}
               </h4>
               <div className="space-y-1">
                 {frameAnalysisPlugins
@@ -66,7 +68,7 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
                           {plugin.name.replace('Plugin', '')}
                         </div>
                         <div className="text-xs text-black/50 dark:text-white/50">
-                          {plugin.frameProcessed.toLocaleString()} frames
+                          {t('videos.processingDetails.frames', { count: plugin.frameProcessed })}
                         </div>
                       </div>
                       <div className="text-base font-semibold text-black dark:text-white tabular-nums">
@@ -80,7 +82,7 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
           {frameAnalysisStages.length > 0 && (
             <div>
               <h4 className="text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider mb-6">
-                Video Frame Analysis Stages
+                {t('videos.processingDetails.frameAnalysisStages')}
               </h4>
               <div className="space-y-1">
                 {frameAnalysisStages
@@ -97,7 +99,7 @@ export function ProcessingJobDetails({ job }: ProcessingJobDetailsProps) {
                         </div>
                       </div>
                       <div className="text-base font-semibold text-black dark:text-white tabular-nums">
-                        {stage.duration <= 0.1 ? "≈1s" : humanizeSeconds(stage.duration)}
+                        {stage.duration <= 0.1 ? t('videos.processingDetails.approxOneSecond') : humanizeSeconds(stage.duration)}
                       </div>
                     </div>
                   ))}

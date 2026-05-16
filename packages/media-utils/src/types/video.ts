@@ -1,3 +1,5 @@
+import type { AppLanguage } from '@shared/types/language'
+
 export interface VideoMetadata {
   duration: number
   fps: number
@@ -55,12 +57,14 @@ export interface VideoIndexJobData {
   videoPath: string
   jobId: string
   forceReIndexing?: boolean
+  language?: AppLanguage
 }
 
 export interface VideoProcessingData {
   videoPath: string
   jobId: string
   forceReIndexing?: boolean
+  language?: AppLanguage
   analysisPath: string
   transcriptionPath: string
   scenesPath: string

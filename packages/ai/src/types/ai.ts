@@ -5,27 +5,34 @@ import { YearInReviewData } from '@shared/schemas/yearInReview'
 import { VideoWithScenes } from '@shared/types/video'
 import type { IntentData } from '@shared/types/chat'
 import { VideoAnalytics } from '@shared/types/analytics'
+import type { AppLanguage } from '@shared/types/language'
+
+export interface AIRequestOptions {
+  language?: AppLanguage
+  projectInstructions?: string
+}
 
 export interface AIModel {
   generateActionFromPrompt(
     query: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<{ data: VideoSearchParams; tokens: number; error?: string | undefined }>
   generateAssistantMessage(
     userPrompt: string,
     resultsCount: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<{ data: string; tokens: number; error?: string | undefined }>
   generateGeneralResponse(
     userPrompt: string,
-    chatHistory?: ChatMessage[]
+    chatHistory?: ChatMessage[],
+    options?: AIRequestOptions
   ): Promise<{ data: string; tokens: number; error?: string | undefined }>
   classifyIntent(
     prompt: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<{
     data: IntentData
     tokens: number
@@ -35,20 +42,20 @@ export interface AIModel {
     userPrompt: string,
     analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<{ data: string; tokens: number; error?: string | undefined }>
   generateCompilationResponse(
     userPrompt: string,
     resultsCount: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<{ data: string; tokens: number; error?: string | undefined }>
   cleanUp?(): Promise<void>
   generateYearInReviewResponse(
     stats: YearStats,
     videos: VideoWithScenes[],
     extraDetails: string,
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<{ data: YearInReviewData | null; tokens: number; error?: string | undefined }>
 }
 

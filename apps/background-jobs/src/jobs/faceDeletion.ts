@@ -12,6 +12,7 @@ import { getByVideoSource, updateMetadata } from '@vector/services/db'
 import { importVideoFromVectorDb } from '../utils/videos'
 import { suggestionCache } from '@search/services/suggestion'
 import { sceneToVectorFormat } from '@vector/utils/shared'
+import { AppSettingsModel } from '@db/index'
 
 async function processFaceDeletionJob(job: Job<FaceDeletionJobData>) {
   logger.debug({ jobId: job.id }, 'Starting Face Deletion job')
@@ -32,6 +33,7 @@ async function processFaceDeletionJob(job: Job<FaceDeletionJobData>) {
   try {
     const faceData = JSON.parse(await fs.readFile(jsonPath, 'utf8')) as UnknownFace
     const { face_id } = faceData
+    const language = await AppSettingsModel.getLanguage()
 
     // Update vector DB
     const video = await getByVideoSource(faceData.video_path)
@@ -52,7 +54,7 @@ async function processFaceDeletionJob(job: Job<FaceDeletionJobData>) {
           }
 
           // Update vector DB entries
-          const vector = await sceneToVectorFormat(scene)
+          const vector = await sceneToVectorFormat(scene, language)
           const embedding = await getEmbeddings([vector.text])
 
           await updateMetadata(vector, embedding)

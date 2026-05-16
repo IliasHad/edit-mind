@@ -14,6 +14,7 @@ import { suggestionCache } from '@search/services/suggestion'
 import { JobModel } from '@db/index'
 import { sceneToVectorFormat } from '@vector/utils/shared'
 import { getEmbeddings } from '@embedding-core/services/extractors'
+import { AppSettingsModel } from '@db/index'
 
 async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
   const { faces, name } = job.data
@@ -27,6 +28,7 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
   try {
     const updatedScene = new Map<string, string>()
     const processedVideos = new Set<string>()
+    const language = await AppSettingsModel.getLanguage()
 
     for (const face of faces) {
       try {
@@ -61,7 +63,7 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
             }
 
             // Update vector DB entries
-            const vector = await sceneToVectorFormat(scene)
+            const vector = await sceneToVectorFormat(scene, language)
             const embedding = await getEmbeddings([vector.text])
 
             await updateMetadata(vector, embedding)

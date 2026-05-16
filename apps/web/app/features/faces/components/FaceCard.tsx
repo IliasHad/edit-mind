@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { UnknownFace } from '@shared/types/unknownFace'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface FaceCardProps {
     face: UnknownFace
@@ -13,6 +14,7 @@ interface FaceCardProps {
 }
 
 export const FaceCard = ({ face, isSelected, onSelect, onDelete }: FaceCardProps) => {
+    const { t } = useTranslation()
     const [imageLoaded, setImageLoaded] = useState(false)
     const [imageError, setImageError] = useState(false)
     const [isHovered, setIsHovered] = useState(false)
@@ -45,12 +47,12 @@ export const FaceCard = ({ face, isSelected, onSelect, onDelete }: FaceCardProps
                     {imageError ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800">
                             <PhotoIcon className="w-12 h-12 text-zinc-400 dark:text-zinc-600 mb-2" />
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Preview unavailable</p>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('faces.grid.previewUnavailable')}</p>
                         </div>
                     ) : (
                         <img
                             src={`/unknown_faces/${face.image_file}`}
-                            alt={`Unknown face ${face.face_id}`}
+                            alt={t('faces.grid.unknownFaceAlt', { id: face.face_id })}
                             className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'
                                 }`}
                             loading="lazy"
@@ -84,7 +86,7 @@ export const FaceCard = ({ face, isSelected, onSelect, onDelete }: FaceCardProps
                             onDelete()
                         }}
                         className="absolute top-3 left-3 w-7 h-7 bg-black/60 dark:bg-white/10 backdrop-blur-sm rounded-full"
-                        title="Delete face"
+                        title={t('faces.grid.deleteFace')}
                     />
 
 
@@ -106,14 +108,14 @@ export const FaceCard = ({ face, isSelected, onSelect, onDelete }: FaceCardProps
                             <div className="flex items-center gap-2">
                                 <ClockIcon className="w-3 h-3 text-white/60 shrink-0" strokeWidth={2} />
                                 <p className="text-xs text-white/80">
-                                    {face.all_appearances[0]?.formatted_timestamp || 'Unknown time'}
+                                    {face.all_appearances[0]?.formatted_timestamp || t('faces.grid.unknownTime')}
                                 </p>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <EyeIcon className="w-3 h-3 text-white/60 shrink-0" strokeWidth={2} />
                                 <p className="text-xs text-white/80">
-                                    {face.total_appearances} appearance{face.total_appearances !== 1 ? 's' : ''}
+                                    {t('faces.grid.appearanceCount', { count: face.total_appearances })}
                                 </p>
                             </div>
                         </div>
