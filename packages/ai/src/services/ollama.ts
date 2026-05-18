@@ -46,14 +46,19 @@ class OllamaLLM {
     this.initPromise = null
   }
 
-  private async generate(prompt: string, _maxTokens = 512): Promise<ModelResponse<string>> {
+  private async generate(prompt: string, _maxTokens = 512, timeoutMs = 60_000): Promise<ModelResponse<string>> {
     await this.init()
     if (!this.client) throw new Error('Ollama client not initialized')
+
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Ollama generate timed out after ${timeoutMs}ms`)), timeoutMs)
+    )
+
     try {
-      const res = await this.client.generate({
-        prompt,
-        model: this.modelName,
-      })
+      const res = await Promise.race([
+        this.client.generate({ prompt, model: this.modelName }),
+        timeout,
+      ])
       const output = res.response?.trim() ?? ''
       const tokens =
         res.logprobs && res.logprobs[0] && res.logprobs[0].top_logprobs ? res.logprobs[0].top_logprobs[0].token : '0'
@@ -178,7 +183,8 @@ class OllamaLLM {
 
       return { data: parsed, tokens, error: undefined }
     } catch {
-      throw new Error("Failed to parse intent'")
+      logger.warn('Failed to parse intent classification JSON, falling back to general')
+      return { data: { type: 'general', needsVideoData: false }, tokens, error: undefined }
     }
   }
 

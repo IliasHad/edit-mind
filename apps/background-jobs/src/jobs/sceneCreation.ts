@@ -122,41 +122,35 @@ export const sceneCreationWorker = new Worker('scene-creation', processVideo, {
 const flowProducer = new FlowProducer({ connection })
 
 sceneCreationWorker.on('completed', async (job: Job<VideoProcessingData>) => {
+  // Sequential chain: text → visual → audio → finalization
+  // Each stage is a parent waiting for its child (the previous stage) to complete first.
   await flowProducer.add({
     name: 'video-finalization-flow',
     queueName: 'video-finalization',
     data: job.data,
-    opts: {
-      removeOnComplete: false,
-      removeOnFail: false,
-    },
+    opts: { removeOnComplete: false, removeOnFail: false },
     children: [
-      {
-        name: 'text-embedding',
-        queueName: 'text-embedding',
-        data: job.data,
-        opts: {
-          removeOnComplete: false,
-          removeOnFail: false,
-        },
-      },
       {
         name: 'audio-embedding',
         queueName: 'audio-embedding',
         data: job.data,
-        opts: {
-          removeOnComplete: false,
-          removeOnFail: false,
-        },
-      },
-      {
-        name: 'visual-embedding',
-        queueName: 'visual-embedding',
-        data: job.data,
-        opts: {
-          removeOnComplete: false,
-          removeOnFail: false,
-        },
+        opts: { removeOnComplete: false, removeOnFail: false },
+        children: [
+          {
+            name: 'visual-embedding',
+            queueName: 'visual-embedding',
+            data: job.data,
+            opts: { removeOnComplete: false, removeOnFail: false },
+            children: [
+              {
+                name: 'text-embedding',
+                queueName: 'text-embedding',
+                data: job.data,
+                opts: { removeOnComplete: false, removeOnFail: false },
+              },
+            ],
+          },
+        ],
       },
     ],
   })

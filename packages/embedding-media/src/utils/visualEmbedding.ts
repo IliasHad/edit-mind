@@ -7,16 +7,22 @@ import type { Scene } from '@shared/types'
 import { sceneToVectorFormat } from '@vector/utils/shared'
 import { embedVisuals } from '@embedding-media/services/embed'
 
-export const embedVisualScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
+export const embedVisualScenes = async (
+  scenes: Scene[],
+  videoFullPath: string,
+  onProgress?: (batchIndex: number, totalBatches: number) => Promise<void>
+): Promise<void> => {
   try {
     const { visual_collection } = await createVectorDbClient()
     if (!visual_collection) {
       throw new Error('Visual Collection not initialized')
     }
 
+    const totalBatches = Math.ceil(scenes.length / VISUAL_BATCH_SIZE)
     for (let i = 0; i < scenes.length; i += VISUAL_BATCH_SIZE) {
       const batch = scenes.slice(i, i + VISUAL_BATCH_SIZE)
-      logger.info(`Processing batch ${i / VISUAL_BATCH_SIZE + 1}, scenes ${i} to ${i + batch.length - 1}`)
+      const batchNumber = i / VISUAL_BATCH_SIZE + 1
+      logger.info(`Processing batch ${batchNumber}, scenes ${i} to ${i + batch.length - 1}`)
 
       const visualEmbeddingsPromise = batch.map(async (scene) => {
         try {
@@ -63,7 +69,11 @@ export const embedVisualScenes = async (scenes: Scene[], videoFullPath: string):
         }))
       )
 
-      logger.info(`Batch ${i / VISUAL_BATCH_SIZE + 1}/${Math.ceil(scenes.length / VISUAL_BATCH_SIZE)} complete`)
+      logger.info(`Batch ${batchNumber}/${totalBatches} complete`)
+
+      if (onProgress) {
+        await onProgress(batchNumber, totalBatches)
+      }
     }
   } catch (err) {
     logger.error(`Error in embedVisualScenes for ${videoFullPath}: ${err}`)

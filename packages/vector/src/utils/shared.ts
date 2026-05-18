@@ -325,8 +325,8 @@ export const metadataToScene = (metadata: Record<string, unknown> | null, id: st
   return {
     id: id,
     thumbnailUrl: metadata.thumbnailUrl?.toString() || '',
-    startTime: parseInt(metadata.startTime?.toString() || '0') || 0,
-    endTime: parseInt(metadata.endTime?.toString() || '0') || 0,
+    startTime: parseFloat(metadata.startTime?.toString() || '0') || 0,
+    endTime: parseFloat(metadata.endTime?.toString() || '0') || 0,
     faces,
     objects,
     transcription: metadata.transcription?.toString() || '',

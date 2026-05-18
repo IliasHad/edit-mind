@@ -7,8 +7,13 @@ import { sceneToVectorFormat } from '@vector/utils/shared'
 import { getEmbeddings } from '@embedding-core/services/extractors'
 import { embedTextDocuments, updateTextDocuments } from '@embedding-core/services/embed';
 
-export const embedScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
+export const embedScenes = async (
+  scenes: Scene[],
+  videoFullPath: string,
+  onProgress?: (batchIndex: number, totalBatches: number) => Promise<void>
+): Promise<void> => {
   try {
+    const totalBatches = Math.ceil(scenes.length / EMBEDDING_BATCH_SIZE)
     for (let i = 0; i < scenes.length; i += EMBEDDING_BATCH_SIZE) {
       const batch = scenes.slice(i, i + EMBEDDING_BATCH_SIZE)
 
@@ -36,7 +41,12 @@ export const embedScenes = async (scenes: Scene[], videoFullPath: string): Promi
         )
       }
 
-      logger.info(`Batch ${i / EMBEDDING_BATCH_SIZE + 1}/${Math.ceil(scenes.length / EMBEDDING_BATCH_SIZE)} complete: ` + `${embeddingInputs.length} text`)
+      const batchNumber = i / EMBEDDING_BATCH_SIZE + 1
+      logger.info(`Batch ${batchNumber}/${totalBatches} complete: ${embeddingInputs.length} text`)
+
+      if (onProgress) {
+        await onProgress(batchNumber, totalBatches)
+      }
     }
   } catch (err) {
     logger.error(`Error in embedScenes for ${videoFullPath}: ${err}`)

@@ -13,6 +13,7 @@ from services.analysis.plugins import PluginManager
 from services.analysis.result import VideoAnalysisResult, ResultBuilder
 from monitoring.metrics import PerformanceMetrics, StageTimer, StageMetricsCollector
 from services.logger import get_logger
+from utils.progress import ThrottledProgress
 import os
 import numpy as np
 import cv2
@@ -68,10 +69,12 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
             self.metrics_collector.record_execution(
                 "plugin_setup", time.time() - start_time)
 
+            throttled = ThrottledProgress(progress_callback) if progress_callback else None
+
             # Analyze frames
             frame_analyses = self._analyze_frames(
                 request,
-                progress_callback,
+                throttled,
                 cancel_flag
             )
             self.metrics_collector.record_execution(
@@ -110,7 +113,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
     def _analyze_frames(
         self,
         request: AnalysisRequest,
-        progress_callback: Optional[Callable],
+        progress_callback: Optional[ThrottledProgress],
         cancel_flag: Event
     ) -> List[FrameAnalysis]:
         """Analyze video frames with plugins."""
@@ -152,6 +155,15 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 if total_frames_estimate is None:
                     total_frames_estimate = frame_data.get('total_frames', 0)
 
+                # Send progress — throttled to avoid flooding the DB
+                if progress_callback and total_frames_estimate:
+                    self._send_progress(
+                        progress_callback.update,
+                        frame_data.get('sampled_frame_number', frame_idx + 1),
+                        total_frames_estimate,
+                        time.time() - timer.start_time
+                    )
+
                 batch.append(frame_data)
 
                 # Process batch when buffer is full
@@ -161,15 +173,6 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                     frame_analyses.extend(batch_results)
                     frames_processed += len(batch_results)
                     batch.clear()
-
-                    # Send progress update
-                    if progress_callback and total_frames_estimate:
-                        self._send_progress(
-                            progress_callback,
-                            frames_processed,
-                            total_frames_estimate,
-                            time.time() - timer.start_time
-                        )
 
                     # Memory cleanup
                     if self.memory_monitor:
@@ -187,17 +190,19 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 frame_analyses.extend(batch_results)
                 frames_processed += len(batch_results)
 
-                # Final progress update
-                if progress_callback and total_frames_estimate:
-                    self._send_progress(
-                        progress_callback,
-                        frames_processed,
-                        total_frames_estimate,
-                        time.time() - timer.start_time
-                    )
 
         self._record_stage_metric(timer, frames_processed=len(frame_analyses))
         self.plugin_manager.cleanup_plugins()
+        
+        # Final progress update
+        if progress_callback and total_frames_estimate:
+            self._send_progress(
+                progress_callback.force,
+                total_frames_estimate,
+                total_frames_estimate,
+                time.time() - timer.start_time
+            )
+
         logger.info(
             f"Completed analysis: {len(frame_analyses)} frames processed")
         return frame_analyses
@@ -280,12 +285,10 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 float(total_frames)
             )
 
-            # Log every 10%
-            if int(progress_percent) % 10 == 0:
-                logger.debug(
-                    f"Analysis progress: {progress_percent:.1f}% "
-                    f"({frames_processed}/{total_frames} frames, {elapsed:.1f}s elapsed)"
-                )
+            logger.debug(
+                f"Analysis progress: {progress_percent:.1f}% "
+                f"({frames_processed}/{total_frames} frames, {elapsed:.1f}s elapsed)"
+            )
 
         except Exception as e:
             logger.warning(f"Progress callback error: {e}")

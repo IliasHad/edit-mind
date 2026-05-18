@@ -25,7 +25,11 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     logger.debug({ jobId, videoPath, sceneCount: scenes.length }, 'Starting scene text embedding')
 
-    await embedScenes(scenes, videoPath)
+    await embedScenes(scenes, videoPath, async (batchIndex, totalBatches) => {
+      const progress = Math.round((batchIndex / totalBatches) * 100)
+      const overallProgress = 80 + Math.round((batchIndex / totalBatches) * 6)
+      await updateJob(job, { progress, overallProgress })
+    })
 
     const embeddingDuration = (Date.now() - embeddingStart) / 1000
 

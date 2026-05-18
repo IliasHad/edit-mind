@@ -81,21 +81,25 @@ async function processExportJob(job: Job<ExportProcessingJob>) {
         collectionId: collectionId,
       })
     } else if (chatMessageId) {
-      const text = "Here's your exports video zip file!"
+      try {
+        const text = "Here's your exports video zip file!"
 
-      await ChatMessageModel.update(chatMessageId, {
-        stage: 'compiling',
-        isThinking: false,
-        exportId,
-        text,
-      })
+       const message = await ChatMessageModel.update(chatMessageId, {
+          stage: 'compiling',
+          isThinking: false,
+          exportId,
+          text,
+        })
+        return {
+          filePath: zipPath,
+          messageId: message.id,
+        }
+      } catch (error) {
+        logger.error({ jobId: job.id, exportId, chatMessageId, error }, 'Failed to update chat message with export ID')
+      }
 
-      const message = await ChatMessageModel.update(chatMessageId, {
-        exportId,
-      })
       return {
         filePath: zipPath,
-        messageId: message.id,
       }
     }
     logger.info({ jobId: job.id, exportId }, 'Export job completed')
@@ -133,4 +137,8 @@ async function processExportJob(job: Job<ExportProcessingJob>) {
 export const exportWorker = new Worker('export-scenes', processExportJob, {
   connection,
   concurrency: 1,
+  lockDuration: 30 * 60 * 1000,
+  lockRenewTime: 30 * 1000,
+  stalledInterval: 30 * 1000,
+  maxStalledCount: 1,
 })

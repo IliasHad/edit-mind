@@ -12,6 +12,7 @@ from services.base_service import BaseProcessingService
 from services.transcription.model import WhisperModelManager
 from services.transcription.result import TranscriptionResult, Segment, Word
 from services.logger import get_logger
+from utils.progress import ThrottledProgress
 
 logger = get_logger(__name__)
 
@@ -57,18 +58,24 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
             # Get model (loads if needed)
             model = self.model_manager.get_model()
 
+            throttled = ThrottledProgress(progress_callback) if progress_callback else None
+
+            # Signal that processing has started before the first segment arrives
+            if throttled:
+                throttled.update(0, "00:00")
+
             # Transcribe
             result = self._transcribe_video(
                 model,
                 request.video_path,
-                progress_callback,
+                throttled.update if throttled else None,
                 cancel_flag
             )
 
-            # Final progress update
-            if progress_callback:
+            # Final progress update — always send
+            if throttled:
                 elapsed = time.time() - start_time
-                progress_callback(100, self._format_time(elapsed))
+                throttled.force(100, self._format_time(elapsed))
 
             logger.info(
                 f"Transcription completed in {time.time() - start_time:.1f}s")
@@ -138,15 +145,11 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                 result_segments.append(segment)
                 full_text += seg.text + " "
 
-                # Update progress
-                processed_duration += (seg.end - seg.start)
+                # Use seg.end as the audio position so that silences don't stall progress
+                processed_duration = seg.end
                 if progress_callback and total_duration > 0:
-                    percent = min(
-                        100, (processed_duration / total_duration) * 100)
-                    progress_callback(
-                        int(percent),
-                        self._format_time(processed_duration)
-                    )
+                    percent = min(100, (processed_duration / total_duration) * 100)
+                    progress_callback(int(percent), self._format_time(processed_duration))
 
             end = time.time()
             processing_time = end - start

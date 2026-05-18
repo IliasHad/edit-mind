@@ -29,6 +29,8 @@ export const getStatusColor = (status: Job['status']) => {
             return 'bg-green-500/10 text-green-500 border-green-500/20'
         case 'error':
             return 'bg-red-500/10 text-red-500 border-red-500/20'
+        case 'irrecoverable':
+            return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
         case 'pending':
             return 'bg-white/5 text-white/60 border-white/10'
         case 'processing':

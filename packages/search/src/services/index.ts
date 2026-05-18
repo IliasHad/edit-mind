@@ -6,7 +6,7 @@ import { logger } from '@shared/services/logger'
 import { createVectorDbClient } from '@vector/services/client'
 import { getEmbeddings, getAudioEmbeddingForText, getVisualEmbeddingForText } from '@embedding-core/services'
 
-import { getByVideoSource } from '@vector/services/db'
+import { getByVideoSources } from '@vector/services/db'
 import { applyFilters } from '@search/utils/filters'
 import { convertScenesToVideos } from '@vector/utils/videos'
 import { collectScenesFromQuery } from '@search/utils/query'
@@ -135,6 +135,12 @@ export async function searchScenes(
     const videos = convertScenesToVideos(finalScenes) as VideoWithScenesAndMatch[]
 
     const videosList: VideoWithScenesAndMatch[] = []
+
+    const allVideoSources = onlyMatchedScenes
+      ? []
+      : videos.map((v) => decodeURIComponent(v.source))
+    const videoSourceMap = allVideoSources.length > 0 ? await getByVideoSources(allVideoSources) : new Map()
+
     for (const video of videos) {
       const sceneMap = new Map<string, Scene & { matched: boolean }>()
 
@@ -150,7 +156,7 @@ export async function searchScenes(
         video.sceneCount = video.scenes.length
         videosList.push(video)
       } else {
-        const videoWithScenes = await getByVideoSource(decodeURIComponent(video.source))
+        const videoWithScenes = videoSourceMap.get(decodeURIComponent(video.source))
 
         if (videoWithScenes) {
           for (const scene of video.scenes) {

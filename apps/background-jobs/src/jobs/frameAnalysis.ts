@@ -21,6 +21,8 @@ async function processVideo(job: Job<VideoProcessingData>) {
   logger.debug({ jobId, videoPath }, 'Starting frame analysis job')
 
   try {
+    await updateJob(job, { stage: JobStage.frame_analysis, overallProgress: 40, progress: 0 })
+
     if (!pythonService.isServiceRunning()) {
       await pythonService.start()
     }
@@ -50,7 +52,6 @@ async function processVideo(job: Job<VideoProcessingData>) {
     if (forceReIndexing || !analysisExists) {
       logger.debug({ jobId, videoPath, analysisPath }, 'Starting frame analysis')
 
-      await updateJob(job, { stage: JobStage.frame_analysis, overallProgress: 40, progress: 0 })
 
       const result = await analyzeVideo(videoPath, analysisPath, jobId, async ({ progress, job_id }) => {
         if (job_id !== jobId) {
