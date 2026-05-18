@@ -5,6 +5,7 @@ FROM node:${NODE_VERSION}-bookworm-slim AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_HOME="/opt/corepack"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
@@ -12,7 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   ca-certificates \
   && corepack enable \
-  && corepack prepare pnpm@${PNPM_VERSION} --activate
+  && corepack prepare pnpm@${PNPM_VERSION} --activate \
+  && mkdir -p /opt/corepack /pnpm \
+  && chmod -R a+rx /opt/corepack /pnpm
 
 FROM base AS dependencies
 
@@ -91,6 +94,8 @@ COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder /app/apps/web/server.js ./apps/web/server.js
 
 RUN pnpm --filter prisma generate
+
+USER node
 
 EXPOSE ${PORT}
 

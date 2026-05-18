@@ -7,6 +7,7 @@ FROM node:${NODE_VERSION}-bookworm-slim AS base-cpu
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_HOME="/opt/corepack"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
@@ -15,13 +16,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libgomp1 \
   ca-certificates \
   && corepack enable \
-  && corepack prepare pnpm@${PNPM_VERSION} --activate
+  && corepack prepare pnpm@${PNPM_VERSION} --activate \
+  && mkdir -p /opt/corepack /pnpm \
+  && chmod -R a+rx /opt/corepack /pnpm
 
 
 FROM nvidia/cuda:${CUDA_VERSION}-cudnn-runtime-ubuntu22.04 AS base-gpu
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_HOME="/opt/corepack"
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -43,8 +47,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libnvinfer8 \
     && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
+    && groupadd --gid 1000 node \
+    && useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash node \
     && corepack enable \
     && corepack prepare pnpm@${PNPM_VERSION} --activate \
+    && mkdir -p /opt/corepack /pnpm \
+    && chmod -R a+rx /opt/corepack /pnpm \
     && rm -rf /var/lib/apt/lists/*
 
 FROM ${TARGET_BASE} AS runtime-base
@@ -146,6 +154,8 @@ COPY --from=builder /app/apps/background-jobs/server.js ./apps/background-jobs/s
 
 
 RUN pnpm --filter prisma generate
+
+USER node
 
 EXPOSE ${BACKGROUND_JOBS_PORT}
 
