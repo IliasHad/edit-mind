@@ -38,6 +38,10 @@ describe('sceneToVectorFormat localization', () => {
     const doc = await sceneToVectorFormat(scene, 'ru')
 
     expect(doc.text).toContain('Это сцена')
+    expect(doc.text).toContain('крупный план')
+    expect(doc.text).not.toContain('close-up')
+    expect(doc.text).toContain('собака')
+    expect(doc.text).toContain('счастливый')
     expect(doc.text).toContain('Canon 5D')
     expect(doc.text).toContain('SALE')
     expect(doc.metadata.shotType).toBe('close-up')

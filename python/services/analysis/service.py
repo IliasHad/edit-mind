@@ -64,7 +64,7 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
             # Setup plugins
             with StageTimer("plugin_setup") as timer:
                 self.plugin_manager.setup_plugins(
-                    request.video_path, request.job_id)
+                    request.video_path, request.job_id, request.language)
             self._record_stage_metric(timer)
             self.metrics_collector.record_execution(
                 "plugin_setup", time.time() - start_time)

@@ -20,12 +20,16 @@ class TextDetectionPlugin(AnalyzerPlugin):
         self.text_scale = 0.5
         self.min_confidence: float = 0.3
         self.use_gpu = self.config.get("device") != 'cpu'
+        self.language = 'en'
+
+    def _get_reader_languages(self) -> List[str]:
+        return ['ru', 'en'] if self.language == 'ru' else ['en']
 
     def load_models(self) -> None:
         """Initialize the EasyOCR reader."""
         try:
             self.reader = easyocr.Reader(
-                ['en'],
+                self._get_reader_languages(),
                 gpu=self.use_gpu,
                 verbose=False,
                 download_enabled=True
@@ -34,11 +38,18 @@ class TextDetectionPlugin(AnalyzerPlugin):
             logger.error(f"Failed to initialize EasyOCR reader: {e}")
             self.reader = None
             
-    def setup(self, video_path: str, job_id: str) -> None:
+    def setup(self, video_path: str, job_id: str, language: str = "en") -> None:
+        next_language = language if language in ('en', 'ru') else 'en'
+        if next_language != self.language:
+            self.language = next_language
+            self.reader = None
         return None
     
     def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
         """Detect text in a single frame with optimizations."""
+        if self.reader is None:
+            self.load_models()
+
         if self.reader is None:
             return frame_analysis
 

@@ -1,6 +1,7 @@
 import { Analysis, AnalysisProgress } from '../types/analysis'
 import { pythonService } from '../services/pythonService'
 import { logger } from '../services/logger'
+import { DEFAULT_LANGUAGE, type AppLanguage } from '../types/language'
 
 /**
  * Analyzes a video file using the persistent Python analysis service.
@@ -11,6 +12,7 @@ export function analyzeVideo(
   videoPath: string,
   jsonFilePath: string,
   jobId: string,
+  language: AppLanguage = DEFAULT_LANGUAGE,
   onProgress: (progress: AnalysisProgress) => void
 ): Promise<Analysis | undefined> {
   return new Promise((resolve, reject) => {
@@ -18,6 +20,7 @@ export function analyzeVideo(
       videoPath,
       jsonFilePath,
       jobId,
+      language,
       (progress) => {
         if (onProgress) {
           try {

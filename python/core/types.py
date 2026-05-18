@@ -92,6 +92,7 @@ class JobRequest:
 class AnalysisRequest(JobRequest):
     """Analysis job request."""
     settings: Dict[str, JsonValue]
+    language: str = "en"
 
 
 @dataclass(frozen=True)

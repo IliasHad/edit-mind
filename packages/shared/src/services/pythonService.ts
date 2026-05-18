@@ -110,6 +110,7 @@ class PythonService {
     videoPath: string,
     jsonFilePath: string,
     job_id: string,
+    language: AppLanguage = DEFAULT_LANGUAGE,
     onProgress: (progress: AnalysisProgress) => void,
     onComplete: (data: Analysis) => void,
     onError: (error: Error) => void
@@ -127,7 +128,7 @@ class PythonService {
 
     const message = {
       type: 'analyze',
-      payload: { video_path: encodeURI(videoPath), job_id, json_file_path: jsonFilePath },
+      payload: { video_path: encodeURI(videoPath), job_id, json_file_path: jsonFilePath, language },
     }
 
     try {

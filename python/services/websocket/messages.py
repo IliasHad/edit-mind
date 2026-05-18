@@ -122,6 +122,9 @@ class RequestParser:
             video_path = urllib.parse.unquote(str(payload['video_path']))
             json_file_path = str(payload['json_file_path'])
             job_id = str(payload['job_id'])
+            language = str(payload.get('language', 'en'))
+            if language not in ('en', 'ru'):
+                language = 'en'
             settings = payload.get('settings', {})
 
             if not isinstance(settings, dict):
@@ -138,7 +141,8 @@ class RequestParser:
                 video_path=video_path,
                 job_id=job_id,
                 json_file_path=json_file_path,
-                settings=settings
+                settings=settings,
+                language=language
             )
         except KeyError as e:
             raise InvalidRequestError(f"Missing required field: {e}")

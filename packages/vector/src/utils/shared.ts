@@ -15,15 +15,42 @@ const joinWithAnd = (values: string[], language: AppLanguage) => {
   return language === 'ru' ? `${rest} и ${last}` : `${rest}, and ${last}`
 }
 
+const RU_OBJECT_LABELS: Record<string, string> = {
+  dog: 'собака',
+  cat: 'кошка',
+  door: 'дверь',
+  person: 'человек',
+  trailer: 'трейлер',
+}
+
+const RU_SHOT_TYPES: Record<string, string> = {
+  'close-up': 'крупный план',
+  'medium-shot': 'средний план',
+  'long-shot': 'общий план',
+}
+
+const RU_EMOTIONS: Record<string, string> = {
+  happy: 'счастливый',
+  sad: 'грустный',
+  neutral: 'нейтральный',
+  angry: 'сердитый',
+  surprised: 'удивлённый',
+}
+
+const localizeRuValue = (value: string, dictionary: Record<string, string>) =>
+  dictionary[value.trim().toLocaleLowerCase('en-US')] ?? value
+
 const generateVectorDocumentText = async (scene: Scene, language: AppLanguage = DEFAULT_LANGUAGE) => {
   const faces = scene.faces?.join(', ') || ''
-  const objects = scene.objects?.join(', ') || ''
+  const objectList = scene.objects || []
+  const localizedObjectList = language === 'ru' ? objectList.map((object) => localizeRuValue(object, RU_OBJECT_LABELS)) : objectList
+  const objects = localizedObjectList.join(', ')
   const emotionsText =
     scene.emotions
       ?.map((face) =>
         face.emotion
           ? language === 'ru'
-            ? `${face.name}: ${face.emotion}, уверенность ${Math.ceil(face.confidence)}%`
+            ? `${face.name}: ${localizeRuValue(face.emotion, RU_EMOTIONS)}, уверенность ${Math.ceil(face.confidence)}%`
             : `${face.name} is ${face.emotion} with ${Math.ceil(face.confidence)}% confidence`
           : ''
       )
@@ -35,7 +62,7 @@ const generateVectorDocumentText = async (scene: Scene, language: AppLanguage = 
 
   if (language === 'ru') {
     if (scene.shotType) {
-      textParts.push(`Это сцена с типом кадра ${scene.shotType}`)
+      textParts.push(`Это сцена с типом кадра ${localizeRuValue(scene.shotType, RU_SHOT_TYPES)}`)
     } else {
       textParts.push('Это сцена видео')
     }
@@ -56,7 +83,6 @@ const generateVectorDocumentText = async (scene: Scene, language: AppLanguage = 
 
     facesWithDetails?.forEach((metadata) => textParts.push(metadata))
 
-    const objectList = scene.objects || []
     if (objects) {
       textParts.push(
         objectList.length === 1
