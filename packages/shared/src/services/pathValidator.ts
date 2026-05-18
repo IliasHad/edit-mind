@@ -81,11 +81,19 @@ export class PathValidator {
                 }
             }
 
-            // Remove leading slash for path.join to work correctly
-            sanitized = sanitized.replace(/^\/+/, '')
-
-            // Resolve the path against the first allowed base path
-            const resolvedPath = pathModule.resolve(this.allowedBasePath, sanitized)
+            // If the path is already an absolute path within the allowed base, just normalize it.
+            // Otherwise treat it as relative (strip any leading slash then resolve against base).
+            let resolvedPath: string
+            if (
+                pathModule.isAbsolute(sanitized) &&
+                (sanitized === this.allowedBasePath ||
+                    sanitized.startsWith(this.allowedBasePath + pathModule.sep))
+            ) {
+                resolvedPath = pathModule.normalize(sanitized)
+            } else {
+                const relative = sanitized.replace(/^\/+/, '')
+                resolvedPath = pathModule.resolve(this.allowedBasePath, relative)
+            }
 
             // Check if resolved path is within allowed base paths
             const isWithinAllowedPath = resolvedPath.startsWith(this.allowedBasePath)
@@ -114,7 +122,7 @@ export class PathValidator {
 
             return {
                 isValid: true,
-                sanitizedPath: inputPath,
+                sanitizedPath: resolvedPath,
             }
         } catch (error) {
             logger.error(`Path validation error: ${error}`)
