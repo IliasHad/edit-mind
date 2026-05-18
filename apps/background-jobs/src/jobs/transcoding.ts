@@ -31,7 +31,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
         const transcodingTime = (Date.now() - transcodingStartTime) / 1000
 
-        await updateJob(job, { status: 'done', progress: 100, stage: "transcoding", transcodingTime, overallProgress: 1000 })
+        await updateJob(job, { status: 'done', progress: 100, stage: "transcoding", transcodingTime, overallProgress: 10 })
 
         return transcodedVideoFile
 
@@ -58,3 +58,4 @@ export const videoTranscodingWorker = new Worker('transcoding-video', processVid
     stalledInterval: 30 * 1000,
     maxStalledCount: 3,
 })
+

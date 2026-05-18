@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 import { redirect } from 'react-router'
 import { UserModel } from '@db/index'
 
-export async function login(request: Request, values: z.infer<typeof LoginSchema>) {
+export async function login(request: Request, values: z.infer<typeof LoginSchema>, next?: string) {
   const user = await UserModel.findByEmail(values.email)
   if (!user) return { error: 'Invalid email or password' }
 
@@ -18,7 +18,8 @@ export async function login(request: Request, values: z.infer<typeof LoginSchema
   const headers = new Headers()
   headers.set('Set-Cookie', await commitSession(session))
 
-  return redirect('/app/home', { headers })
+  const redirectTo = next && /^https?:\/\//.test(next) ? next : '/app/home'
+  return redirect(redirectTo, { headers })
 }
 
 export async function register(request: Request, values: z.infer<typeof RegisterSchema>) {
