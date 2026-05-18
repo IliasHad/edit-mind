@@ -17,8 +17,8 @@ export class PathValidator {
 
         this.blockedPatterns = [
             /(^|[\\/])\.\.([\\/]|$)/, // Parent directory traversal
-            /~\//g, // Home directory
-            /\0/g, // Null bytes
+            /~\//, // Home directory
+            /\0/, // Null bytes
         ]
 
         // System and hidden directories to block
@@ -52,11 +52,11 @@ export class PathValidator {
                 }
             }
 
-            // Allow root slash
+            // Allow root slash — resolve it to the base so callers always get an absolute path
             if (sanitized === '/') {
                 return {
                     isValid: true,
-                    sanitizedPath: '/',
+                    sanitizedPath: this.allowedBasePath,
                 }
             }
 
@@ -144,9 +144,6 @@ export class PathValidator {
 
         if (validation.sanitizedPath.startsWith(this.allowedBasePath)) {
             return validation.sanitizedPath
-        }
-        if (validation.sanitizedPath === '/') {
-            return this.allowedBasePath
         }
         return null
     }
