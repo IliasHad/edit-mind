@@ -316,7 +316,7 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="flex gap-5 overflow-x-auto pb-2 scrollbar-none">
-              {knownFaces.map((face) => (
+              {knownFaces.slice(0, 10).map((face) => (
                 <Link
                   key={face.name}
                   to={`/app/faces/${encodeURIComponent(face.name)}`}
