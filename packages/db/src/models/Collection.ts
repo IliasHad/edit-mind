@@ -31,7 +31,12 @@ export class CollectionModel {
   static async findMany(options: Prisma.CollectionFindManyArgs) {
     return prisma.collection.findMany(options)
   }
-    static async findUnique(options: Prisma.CollectionFindUniqueArgs) {
+
+  static async count(options: Prisma.CollectionCountArgs) {
+    return prisma.collection.count(options)
+  }
+
+  static async findUnique(options: Prisma.CollectionFindUniqueArgs) {
     return prisma.collection.findUnique(options)
   }
 

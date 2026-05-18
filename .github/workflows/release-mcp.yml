@@ -1,0 +1,51 @@
+name: Release MCP Server
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 22.20.0
+
+jobs:
+  release-mcp:
+    name: Build and publish MCP server
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v6
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Bundle MCP server
+        run: pnpm --filter mcp bundle
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: edit-mind-mcp
+          path: apps/mcp/dist/index.js
+
+      - name: Publish to GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cp apps/mcp/dist/index.js edit-mind-mcp.js
+          gh release create "${{ github.ref_name }}" \
+            --title "Edit Mind ${{ github.ref_name }}" \
+            --generate-notes \
+            2>/dev/null || true
+          gh release upload "${{ github.ref_name }}" edit-mind-mcp.js --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

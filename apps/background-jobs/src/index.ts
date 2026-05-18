@@ -13,8 +13,10 @@ import indexerRoute from './routes/indexer'
 import immichRoute from './routes/immich'
 import jobsRoute from './routes/jobs'
 import mediaRoute from './routes/media'
+import apiRouter from './routes/api'
 import prisma from '@db/db'
 import { requireAuth } from './middleware/auth'
+import { requireAccessToken } from './middleware/accessTokenAuth'
 
 import {
   faceLabellingQueue,
@@ -59,12 +61,13 @@ import { shutdownWorkers } from './utils/workers'
 import { logger } from '@shared/services/logger'
 import { env } from '@background-jobs/utils/env'
 import { SMART_COLLECTION_CRON_PATTERN } from '@smart-collections/constants/collections'
-import { rateLimiter } from './middleware/rateLimiter'
+import { rateLimiter, apiRateLimiter } from './middleware/rateLimiter'
 import { checkServicesStatus } from './websockets'
 import { suggestionCache } from '@search/services/suggestion'
 import { loadAllEmbeddingModels } from '@embedding-core/services/extractors'
 
 const app = express()
+app.set('trust proxy', 1)
 const server = createServer(app)
 export const io = new Server(server, {
   cors: {
@@ -128,6 +131,8 @@ app.use('/internal/media', cors({
   origin: env.WEB_APP_URL,
   methods: ['GET'],
 }), mediaRoute)
+
+app.use('/api/v0', requireAccessToken, apiRateLimiter, apiRouter)
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }))
 

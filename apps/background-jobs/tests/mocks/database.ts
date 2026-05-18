@@ -4,13 +4,17 @@
  */
 import { faker } from '@faker-js/faker'
 import {
+  AccessToken,
+  AccessTokenScope,
   Chat,
   ChatMessage,
   Collection,
+  CollectionItem,
   Export,
   Folder,
   Job,
   User,
+  Video,
   UserRole,
   FolderStatus,
   JobStatus,
@@ -419,6 +423,155 @@ export const MockJobModel = {
 }
 
 /**
+ * Mock AccessToken model
+ */
+export const MockAccessTokenModel = {
+  data: new Map<string, AccessToken>(),
+
+  async findByHash(tokenHash: string): Promise<AccessToken | null> {
+    for (const token of this.data.values()) {
+      if (token.tokenHash === tokenHash) return token
+    }
+    return null
+  },
+
+  async updateLastUsed(id: string, ip: string, userAgent?: string): Promise<void> {
+    const token = this.data.get(id)
+    if (token) {
+      this.data.set(id, { ...token, lastUsedAt: new Date(), lastUsedIp: ip, lastUsedUserAgent: userAgent || null })
+    }
+  },
+
+  async create(data: Partial<AccessToken>): Promise<AccessToken> {
+    const token: AccessToken = {
+      id: data.id || nanoid(4),
+      name: data.name || 'Test Token',
+      description: data.description || null,
+      tokenHash: data.tokenHash || nanoid(32),
+      scopes: data.scopes || [],
+      expiresAt: data.expiresAt || null,
+      lastUsedAt: data.lastUsedAt || null,
+      lastUsedIp: data.lastUsedIp || null,
+      lastUsedUserAgent: data.lastUsedUserAgent || null,
+      allowedIps: data.allowedIps || ['*'],
+      userId: data.userId || nanoid(4),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    this.data.set(token.id, token)
+    return token
+  },
+
+  clear(): void {
+    this.data.clear()
+  },
+}
+
+/**
+ * Mock Video model
+ */
+export const MockVideoModel = {
+  data: new Map<string, Video>(),
+
+  async findById(id: string): Promise<Video | null> {
+    return this.data.get(id) || null
+  },
+
+  async findMany(options: Prisma.VideoFindManyArgs): Promise<Video[]> {
+    let results: Video[] = []
+    const where = (options.where || {}) as Record<string, unknown>
+
+    for (const video of this.data.values()) {
+      let matches = true
+
+      if (where.userId && video.userId !== where.userId) matches = false
+
+      if (where.aspectRatio && video.aspectRatio !== where.aspectRatio) matches = false
+
+      if (matches) results.push(video)
+    }
+
+    const skip = options.skip || 0
+    const take = options.take
+    results = results.slice(skip, take !== undefined ? skip + take : undefined)
+
+    return results
+  },
+
+  async create(data: Partial<Video>): Promise<Video> {
+    const video: Video = {
+      id: data.id || nanoid(4),
+      userId: data.userId || nanoid(4),
+      source: data.source || '/test/video.mp4',
+      name: data.name || 'Test Video',
+      duration: data.duration || BigInt(0),
+      importAt: data.importAt || new Date(),
+      updatedAt: new Date(),
+      shottedAt: data.shottedAt || new Date(),
+      thumbnailUrl: data.thumbnailUrl || '',
+      faces: data.faces || null,
+      emotions: data.emotions || null,
+      shotTypes: data.shotTypes || null,
+      objects: data.objects || null,
+      location: data.location || null,
+      labels: data.labels || null,
+      aspectRatio: data.aspectRatio || '16:9',
+      folderId: data.folderId || null,
+    }
+    this.data.set(video.id, video)
+    return video
+  },
+
+  clear(): void {
+    this.data.clear()
+  },
+}
+
+/**
+ * Mock CollectionItem model
+ */
+export const MockCollectionItemModel = {
+  data: new Map<string, CollectionItem>(),
+
+  async findManyAndVideos(collectionId: string): Promise<(CollectionItem & { video: Video })[]> {
+    const results: (CollectionItem & { video: Video })[] = []
+    for (const item of this.data.values()) {
+      if (item.collectionId === collectionId) {
+        const video = MockVideoModel.data.get(item.videoId)
+        if (video) {
+          results.push({ ...item, video })
+        }
+      }
+    }
+    return results
+  },
+
+  async create(data: Partial<CollectionItem>): Promise<CollectionItem> {
+    const item: CollectionItem = {
+      id: data.id || nanoid(4),
+      videoId: data.videoId || nanoid(4),
+      collectionId: data.collectionId || nanoid(4),
+      sceneIds: data.sceneIds || [],
+      confidence: data.confidence ?? 0.9,
+      matchType: data.matchType || 'embedding',
+      viewCount: data.viewCount || 0,
+      exportCount: data.exportCount || 0,
+      lastUsed: data.lastUsed || null,
+      isPinned: data.isPinned || false,
+      userNotes: data.userNotes || null,
+      addedAt: new Date(),
+      updatedAt: new Date(),
+    }
+    this.data.set(item.id, item)
+    return item
+  },
+
+  clear(): void {
+    this.data.clear()
+  },
+}
+
+/**
  * Clear all mock database models
  */
 export function clearAllMockModels(): void {
@@ -429,6 +582,9 @@ export function clearAllMockModels(): void {
   MockCollectionModel.clear()
   MockFolderModel.clear()
   MockJobModel.clear()
+  MockAccessTokenModel.clear()
+  MockVideoModel.clear()
+  MockCollectionItemModel.clear()
 }
 
 /**
@@ -442,4 +598,7 @@ export const mockDatabase = {
   Collection: MockCollectionModel,
   Folder: MockFolderModel,
   Job: MockJobModel,
+  AccessToken: MockAccessTokenModel,
+  Video: MockVideoModel,
+  CollectionItem: MockCollectionItemModel,
 }

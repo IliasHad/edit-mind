@@ -31,6 +31,7 @@ model User {
   projects    Project[]
   collections Collection[]
   exports     Export[]
+  accessTokens AccessToken[]
 }
 
 model Settings {
@@ -347,8 +348,47 @@ enum ExportStatus {
   failed
 }
 
+enum AccessTokenScope {
+  videos_read
+  collections_read
+  folders_read
+  jobs_read
+  media_read
+  chats_write
+  collections_write
+  folders_write
+  videos_write
+}
+
+model AccessToken {
+  id          String   @id
+
+  name        String
+  description String?
+
+  tokenHash   String   @unique
+
+  scopes      AccessTokenScope[] @default([])
+
+  expiresAt DateTime?
+
+  lastUsedAt        DateTime?
+  lastUsedIp        String?
+  lastUsedUserAgent String?
+
+  allowedIps String[] @default(["*"])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tokenHash])
+}
+
 model Export {
-  
+
   id String @id
 
   status ExportStatus @default(created)
