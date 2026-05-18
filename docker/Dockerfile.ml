@@ -122,6 +122,10 @@ COPY python ./python
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
 EXPOSE ${ML_PORT}
 
 CMD ["sh", "-c", "python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
@@ -137,6 +141,10 @@ ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE ${ML_PORT}
 

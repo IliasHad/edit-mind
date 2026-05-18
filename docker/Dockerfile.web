@@ -116,7 +116,11 @@ COPY tsconfig.json ./
 
 RUN pnpm --filter prisma generate
 
+RUN chown -R node:node /app
+
 ENV NODE_ENV=development
+
+USER node
 
 EXPOSE ${PORT}
 
