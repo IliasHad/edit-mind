@@ -120,25 +120,22 @@ export const extractSceneAudio = async (
     args.push('-y', audioPath)
 
     await new Promise<void>((resolve, reject) => {
-      spawnFFmpeg(args)
-        .then((ffmpeg) => {
-          let stderr = ''
+      const ffmpeg = spawnFFmpeg(args)
+      let stderr = ''
 
-          ffmpeg.stderr?.on('data', (data) => {
-            stderr += data.toString()
-          })
+      ffmpeg.stderr?.on('data', (data) => {
+        stderr += data.toString()
+      })
 
-          ffmpeg.on('close', (code) => {
-            if (code === 0 && existsSync(audioPath)) {
-              resolve()
-            } else {
-              reject(new Error(`FFmpeg failed with code ${code}: ${stderr}`))
-            }
-          })
+      ffmpeg.on('close', (code) => {
+        if (code === 0 && existsSync(audioPath)) {
+          resolve()
+        } else {
+          reject(new Error(`FFmpeg failed with code ${code}: ${stderr}`))
+        }
+      })
 
-          ffmpeg.on('error', reject)
-        })
-        .catch(reject)
+      ffmpeg.on('error', reject)
     })
 
     logger.info(`Extracted audio from scene (${startTime}s - ${endTime}s): ${audioPath}`)
@@ -185,37 +182,34 @@ export async function readAudio(audioPath: string, sampling_rate: number = 48000
       '-',
     ]
 
-    spawnFFmpeg(args)
-      .then((ffmpeg) => {
-        const chunks: Buffer[] = []
+    const ffmpeg = spawnFFmpeg(args)
+    const chunks: Buffer[] = []
 
-        ffmpeg.stdout?.on('data', (chunk) => {
-          chunks.push(chunk)
-        })
+    ffmpeg.stdout?.on('data', (chunk) => {
+      chunks.push(chunk)
+    })
 
-        ffmpeg.on('close', (code) => {
-          if (code !== 0) {
-            reject(new Error(`FFmpeg process exited with code ${code}`))
-            return
-          }
+    ffmpeg.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`FFmpeg process exited with code ${code}`))
+        return
+      }
 
-          try {
-            const buffer = Buffer.concat(chunks)
-            const audioData = new Float32Array(
-              buffer.buffer,
-              buffer.byteOffset,
-              buffer.length / Float32Array.BYTES_PER_ELEMENT
-            )
-            resolve(audioData)
-          } catch (error) {
-            reject(error)
-          }
-        })
+      try {
+        const buffer = Buffer.concat(chunks)
+        const audioData = new Float32Array(
+          buffer.buffer,
+          buffer.byteOffset,
+          buffer.length / Float32Array.BYTES_PER_ELEMENT
+        )
+        resolve(audioData)
+      } catch (error) {
+        reject(error)
+      }
+    })
 
-        ffmpeg.on('error', (error) => {
-          reject(new Error(`Failed to spawn ffmpeg: ${error.message}`))
-        })
-      })
-      .catch(reject)
+    ffmpeg.on('error', (error) => {
+      reject(new Error(`Failed to spawn ffmpeg: ${error.message}`))
+    })
   })
 }

@@ -95,6 +95,8 @@ COPY --from=builder /app/apps/web/server.js ./apps/web/server.js
 
 RUN pnpm --filter prisma generate
 
+RUN mkdir -p /ml-models/embedding-models && chown -R node:node /ml-models && chmod 777 /ml-models
+
 USER node
 
 EXPOSE ${PORT}
@@ -116,6 +118,7 @@ COPY tsconfig.json ./
 
 RUN pnpm --filter prisma generate
 
+RUN mkdir -p /ml-models/embedding-models && chown -R node:node /ml-models && chmod 777 /ml-models
 RUN chown -R node:node /app
 
 ENV NODE_ENV=development

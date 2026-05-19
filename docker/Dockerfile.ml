@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash appuser
 
 RUN mkdir -p /ml-models/ultralytics && mkdir -p /ml-models/whisper && \
-    chown -R appuser:appgroup /ml-models && chmod 755 /ml-models
+    chown -R appuser:appgroup /ml-models && chmod 777 /ml-models
 
 
 FROM nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu22.04 AS base-gpu
@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash appuser
 
 RUN mkdir -p /ml-models/ultralytics && mkdir -p /ml-models/whisper && \
-    chown -R appuser:appgroup /ml-models && chmod 755 /ml-models
+    chown -R appuser:appgroup /ml-models && chmod 777 /ml-models
 
 WORKDIR /app
 
