@@ -34,7 +34,7 @@ const envSchema = z.object({
   ENABLE_QUEUE_UI: z
     .string()
     .default('false')
-    .transform((val) => Boolean(val))
+    .transform((val) => val === 'true')
 })
 
 export const env = envSchema.parse(process.env)
