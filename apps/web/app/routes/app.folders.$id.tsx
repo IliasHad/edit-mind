@@ -12,12 +12,14 @@ import { useParams, useSearchParams, type MetaFunction } from 'react-router'
 import { Button } from '@ui/components/Button'
 import { useServices } from '~/features/services/hooks/useServices'
 import { Pagination } from '~/features/shared/components/Pagination'
+import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Folder Details Page | Edit Mind' }]
 }
 
 export default function FolderDetailsPage() {
+  const { t } = useTranslation()
   const { currentFolder, loading, rescanFolder, } = useCurrentFolder()
 
   const { status } = useServices()
@@ -58,7 +60,7 @@ export default function FolderDetailsPage() {
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     <span className="text-sm font-medium text-white/60">
-                      {total} {total === 1 ? 'Job' : 'Jobs'}
+                      {t('folders.jobCount', { count: total })}
                     </span>
                   </div>
                 )}
@@ -74,7 +76,7 @@ export default function FolderDetailsPage() {
                 disabled={!status?.backgroundJobsService || !status.mlService}
                 leftIcon={<ArrowPathIcon className="w-4 h-4" />}
               >
-                {loading ? 'Scanning...' : 'Rescan Folder'}
+                {loading ? t('folders.actions.scanning') : t('folders.actions.rescan')}
               </Button>
               {!isReady && (
                 <div
@@ -85,8 +87,8 @@ export default function FolderDetailsPage() {
                 >
                   <span>
                     {neitherReady
-                      ? "Services are starting up. Rescan will be available shortly."
-                      : "One service is still initializing. Please wait before rescanning."}
+                      ? t('folders.services.starting')
+                      : t('folders.services.initializing')}
                   </span>
                 </div>
               )}
@@ -103,7 +105,7 @@ export default function FolderDetailsPage() {
               {Object.entries(jobsStatus).map(([status, count]) => (
                 <div key={status} className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">{status}</span>
+                    <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t(`jobs.status.${status}`)}</span>
                     <JobStatusIcon status={status as Job['status']} />
                   </div>
                   <p className="text-2xl font-semibold text-white">{count}</p>
@@ -119,7 +121,7 @@ export default function FolderDetailsPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="space-y-3"
             >
-              <h2 className="text-lg font-semibold text-white mb-4">Processing Queue</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">{t('jobs.queue')}</h2>
               {jobs.map((job: Job) => (
                 <JobCard job={job} />
               ))}
@@ -134,9 +136,9 @@ export default function FolderDetailsPage() {
               <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
                 <CheckCircleIcon className="w-10 h-10 text-white/20" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No Active Jobs</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">{t('jobs.empty.title')}</h3>
               <p className="text-sm text-white/50 max-w-md mx-auto leading-relaxed">
-                Video indexing jobs will appear here when you add new videos to this folder.
+                {t('jobs.empty.folderDescription')}
               </p>
             </motion.div>
           )}

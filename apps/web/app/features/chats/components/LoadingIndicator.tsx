@@ -1,4 +1,5 @@
 import type { MessageStage } from '@prisma/client'
+import { useTranslation } from 'react-i18next'
 import type { Scene } from '@shared/types'
 
 interface LoadingIndicatorProps {
@@ -7,26 +8,28 @@ interface LoadingIndicatorProps {
 }
 
 export function LoadingIndicator({ stage, selectedScenes }: LoadingIndicatorProps) {
+  const { t } = useTranslation()
+
   const getStageText = (stage?: MessageStage | null) => {
     const count = selectedScenes?.length ?? 0
 
     switch (stage) {
       case 'understanding':
-        return 'Understanding your request…'
+        return t('chats.loading.understanding')
       case 'searching':
-        return 'Searching for relevant video scenes…'
+        return t('chats.loading.searching')
       case 'analyzing':
-        return 'Analyzing your video library…'
+        return t('chats.loading.analyzing')
       case 'compiling':
-        return `Compiling ${count} selected video scene${count === 1 ? '' : 's'}…`
+        return t(count === 1 ? 'chats.loading.compilingOne' : 'chats.loading.compilingOther', { count })
       case 'exporting_scenes':
-        return `Exporting ${count} selected video scene${count === 1 ? '' : 's'}…`
+        return t(count === 1 ? 'chats.loading.exportingOne' : 'chats.loading.exportingOther', { count })
       case 'refining':
-        return 'Refining video scene results…'
+        return t('chats.loading.refining')
       case 'stitching':
-        return `Stitching ${count} selected video scene${count === 1 ? '' : 's'}…`
+        return t(count === 1 ? 'chats.loading.stitchingOne' : 'chats.loading.stitchingOther', { count })
       default:
-        return 'processing'
+        return t('chats.loading.processing')
     }
   }
 

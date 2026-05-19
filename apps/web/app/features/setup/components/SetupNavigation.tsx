@@ -1,4 +1,5 @@
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface SetupNavigationProps {
     totalSteps: number
@@ -23,7 +24,8 @@ export function SetupNavigation({
     canAdvance,
     isLoading,
 }: SetupNavigationProps) {
-    const nextLabel = isLastStep ? 'Open Edit Mind' : 'Continue'
+    const { t } = useTranslation()
+    const nextLabel = isLastStep ? t('setup.navigation.openEditMind') : t('setup.navigation.continue')
 
     return (
         <div className="pb-10 px-6">
@@ -34,7 +36,7 @@ export function SetupNavigation({
                             key={index}
                             onClick={() => goToStep(index)}
                             className="p-1"
-                            aria-label={`Go to step ${index + 1}`}
+                            aria-label={t('setup.navigation.goToStep', { step: index + 1 })}
                         >
                             <div
                                 className={`h-1.5 rounded-full transition-all duration-200 ${index === currentStep
@@ -52,9 +54,9 @@ export function SetupNavigation({
                             onClick={handleBack}
                             variant="ghost"
                             className="text-[15px] text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white"
-                            aria-label="Back"
+                            aria-label={t('setup.navigation.back')}
                         >
-                            Back
+                            {t('setup.navigation.back')}
                         </Button>
                     )}
 
@@ -63,7 +65,7 @@ export function SetupNavigation({
                         disabled={!canAdvance || isLoading}
                         aria-label={nextLabel}
                     >
-                        {isLoading ? 'Opening…' : nextLabel}
+                        {isLoading ? t('setup.navigation.opening') : nextLabel}
                     </Button>
                 </div>
             </div>

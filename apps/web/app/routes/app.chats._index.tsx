@@ -1,5 +1,7 @@
 import { Link } from 'react-router'
 import type { MetaFunction } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import { translate } from '~/i18n/translate'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { ChatBubbleLeftIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { Sidebar } from '~/features/shared/components/Sidebar'
@@ -10,10 +12,11 @@ import { ChatItem } from '~/features/chats/components/ChatItem'
 import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Chats | Edit Mind' }]
+  return [{ title: translate('chats.meta.indexTitle') }]
 }
 
 export default function ChatsIndexPage() {
+  const { t } = useTranslation()
   const { chats, groupedChats } = useChats()
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -32,15 +35,15 @@ export default function ChatsIndexPage() {
               <ChatBubbleLeftIcon className="w-10 h-10 text-zinc-400 dark:text-zinc-500" />
             </div>
             <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white mb-2 text-center">
-              No conversations yet
+              {t('chats.empty.title')}
             </h1>
             <p className="text-zinc-600 dark:text-zinc-400 text-center max-w-md mb-8">
-              Start your first chat to search and interact with your video library using AI
+              {t('chats.empty.description')}
             </p>
             <Link to="/app/chats">
               <Button>
                 <PlusIcon className="w-4 h-4" />
-                Start new chat
+                {t('chats.empty.cta')}
               </Button>
             </Link>
           </div>
@@ -49,15 +52,15 @@ export default function ChatsIndexPage() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Chats</h1>
+                  <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">{t('chats.index.title')}</h1>
                   <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                    {chats.length} {chats.length === 1 ? 'conversation' : 'conversations'}
+                    {chats.length} {chats.length === 1 ? t('chats.index.conversation') : t('chats.index.conversations')}
                   </p>
                 </div>
                 <Link to="/app/chats/new">
                   <Button>
                     <PlusIcon className="w-4 h-4" />
-                    New chat
+                    {t('chats.index.newChat')}
                   </Button>
                 </Link>
               </div>
@@ -66,7 +69,7 @@ export default function ChatsIndexPage() {
                 <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
                 <input
                   type="text"
-                  placeholder="Search conversations..."
+                  placeholder={t('chats.index.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-transparent transition-shadow"
@@ -80,8 +83,8 @@ export default function ChatsIndexPage() {
                   <div className="w-16 h-16 mb-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                     <MagnifyingGlassIcon className="w-8 h-8 text-zinc-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-1">No results found</h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">Try searching with different keywords</p>
+                  <h3 className="text-lg font-medium text-zinc-900 dark:text-white mb-1">{t('chats.index.noResultsTitle')}</h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">{t('chats.index.noResultsDescription')}</p>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -92,11 +95,11 @@ export default function ChatsIndexPage() {
               )
             ) : (
               <div className="space-y-8">
-                <ChatGroup title="Today" chats={groupedChats.today} />
-                <ChatGroup title="Yesterday" chats={groupedChats.yesterday} />
-                <ChatGroup title="Previous 7 days" chats={groupedChats.lastWeek} />
-                <ChatGroup title="Previous 30 days" chats={groupedChats.lastMonth} />
-                <ChatGroup title="Older" chats={groupedChats.older} />
+                <ChatGroup title={t('chats.groups.today')} chats={groupedChats.today} />
+                <ChatGroup title={t('chats.groups.yesterday')} chats={groupedChats.yesterday} />
+                <ChatGroup title={t('chats.groups.previous7Days')} chats={groupedChats.lastWeek} />
+                <ChatGroup title={t('chats.groups.previous30Days')} chats={groupedChats.lastMonth} />
+                <ChatGroup title={t('chats.groups.older')} chats={groupedChats.older} />
               </div>
             )}
           </div>

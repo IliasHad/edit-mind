@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent, type DragEvent } from 'react'
 import { PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useSearchStore } from '~/features/search/stores'
 import { Button } from '@ui/components/Button';
+import { useTranslation } from 'react-i18next'
 
 interface ImageUploadProps {
   onUpload?: (file: File) => void
@@ -12,6 +13,7 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
 
   const { imagePreview, setImageSearch } = useSearchStore()
+  const { t } = useTranslation()
 
   const handleFileSelect = (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -69,7 +71,7 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
     return (
       <div className="relative group">
         <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-black/10 dark:border-white/10">
-          <img src={imagePreview} alt="Search image" className="w-full h-full object-cover" />
+          <img src={imagePreview} alt={t('search.imageUpload.searchImageAlt')} className="w-full h-full object-cover" />
 
           <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-black/20 opacity-1 hover:opacity-100 transition-opacity duration-200" />
 
@@ -79,11 +81,11 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
             variant="primary"
             size="icon-sm"
             leftIcon={<XMarkIcon className="size-4 text-black" />}
-            aria-label="Remove image"
+            aria-label={t('search.imageUpload.removeImage')}
           />
           <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <p className="text-xs text-white dark:text-black font-medium backdrop-blur-sm bg-black/40 dark:bg-white/40 px-3 py-2 rounded-lg">
-              Searching with this image
+              {t('search.imageUpload.searchingWithImage')}
             </p>
           </div>
         </div>
@@ -106,7 +108,7 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
         accept="image/*"
         onChange={handleChange}
         className="hidden"
-        aria-label="Upload search image"
+        aria-label={t('search.imageUpload.uploadAriaLabel')}
       />
 
       <div
@@ -124,9 +126,9 @@ export function ImageUpload({ onUpload }: ImageUploadProps) {
 
         <div className="text-center px-4">
           <p className="text-sm font-medium text-black dark:text-white mb-1">
-            {isDragging ? 'Drop image here' : 'Upload an image to search'}
+            {isDragging ? t('search.imageUpload.dropHere') : t('search.imageUpload.uploadPrompt')}
           </p>
-          <p className="text-xs text-black/50 dark:text-white/50">Click or drag and drop</p>
+          <p className="text-xs text-black/50 dark:text-white/50">{t('search.imageUpload.clickOrDrag')}</p>
         </div>
       </div>
     </div>

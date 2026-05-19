@@ -1,6 +1,7 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { VideoCard } from '~/features/search/components/VideoCard'
 import type { VideoWithScenesAndMatch } from '@shared/types/video'
+import { useTranslation } from 'react-i18next'
 
 interface SearchResultsProps {
   results: VideoWithScenesAndMatch[]
@@ -10,12 +11,14 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ results, total, loading, hasQuery }: SearchResultsProps) {
+  const { t } = useTranslation()
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-2">
         <div className="flex flex-col items-center gap-4">
           <div className="size-12 rounded-full border-2 border-black/10 dark:border-white/10 border-t-black dark:border-t-white animate-spin" />
-          <p className="text-sm text-black/60 dark:text-white/60">Searching scenes...</p>
+          <p className="text-sm text-black/60 dark:text-white/60">{t('search.results.searching')}</p>
         </div>
       </div>
     )
@@ -28,9 +31,9 @@ export function SearchResults({ results, total, loading, hasQuery }: SearchResul
           <div className="size-24 mx-auto mb-6 rounded-full flex items-center justify-center">
             <MagnifyingGlassIcon className="size-10 text-white" />
           </div>
-          <h4 className="text-xl font-semibold text-black dark:text-white mb-3">No scenes found</h4>
+          <h4 className="text-xl font-semibold text-black dark:text-white mb-3">{t('search.results.noScenesTitle')}</h4>
           <p className="text-black/60 dark:text-white/60 text-base leading-relaxed">
-            Try adjusting your search terms or filters
+            {t('search.results.noScenesDescription')}
           </p>
         </div>
       </div>
@@ -42,9 +45,9 @@ export function SearchResults({ results, total, loading, hasQuery }: SearchResul
       <div className="space-y-8 mx-auto">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-2xl font-semibold text-black dark:text-white">Search Results</h3>
+            <h3 className="text-2xl font-semibold text-black dark:text-white">{t('search.results.title')}</h3>
             <p className="text-sm text-black/50 dark:text-white/50 mt-1">
-              {total} {total === 1 ? 'video' : 'videos'} total
+              {t('search.results.total', { count: total })}
             </p>
           </div>
         </div>
@@ -78,7 +81,7 @@ export function SearchResults({ results, total, loading, hasQuery }: SearchResul
       <div className="size-24 mx-auto mb-6 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
         <MagnifyingGlassIcon className="size-10 text-black/20 dark:text-white/20" />
       </div>
-      <p className="text-black/40 dark:text-white/40 text-base">Start typing to search your video scenes</p>
+      <p className="text-black/40 dark:text-white/40 text-base">{t('search.results.startTyping')}</p>
     </div>
   )
 }

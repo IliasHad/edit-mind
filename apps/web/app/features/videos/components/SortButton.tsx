@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router'
 import type { SortOption, SortOptions, SortOrder } from '../types'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 interface SortOptionProps {
   sortOrder: SortOrder
@@ -12,6 +13,7 @@ interface SortOptionProps {
 }
 
 export function SortButton({ sortOrder, options, sortBy, onSort }: SortOptionProps) {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
@@ -107,7 +109,7 @@ export function SortButton({ sortOrder, options, sortBy, onSort }: SortOptionPro
                       border border-black/10 dark:border-white/10
                       hover:bg-black/5 dark:hover:bg-white/5
                       transition-all"
-        title={sortOrder === 'desc' ? 'Sort descending' : 'Sort ascending'}
+        title={sortOrder === 'desc' ? t('videos.sort.descending') : t('videos.sort.ascending')}
       >
         <svg
           className={`w-5 h-5 text-black dark:text-white transition-transform ${

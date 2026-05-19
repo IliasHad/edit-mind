@@ -4,8 +4,10 @@ import { RadioGroup } from '@headlessui/react'
 import { useFacesStore } from '../stores'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 export const LabelingForm: React.FC = () => {
+  const { t } = useTranslation()
   const {
     unknownFaces,
     knownFaces,
@@ -37,25 +39,25 @@ export const LabelingForm: React.FC = () => {
       <div className="p-8">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight text-white mb-2">Label Faces</h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-white mb-2">{t('faces.labeling.title')}</h2>
             <motion.p
               key={selectedFaces.size}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-sm text-gray-400 font-medium"
             >
-              {selectedFaces.size} of {unknownFaces.length} selected
+              {t('faces.labeling.selectedCount', { selected: selectedFaces.size, total: unknownFaces.length })}
             </motion.p>
           </div>
 
           <Button onClick={handleSelectAll} variant="ghost">
-            {selectedFaces.size === unknownFaces.length ? 'Deselect All' : 'Select All'}
+            {selectedFaces.size === unknownFaces.length ? t('faces.labeling.deselectAll') : t('faces.labeling.selectAll')}
           </Button>
         </div>
 
         <div className="space-y-8">
           <div>
-            <label className="text-sm font-semibold text-gray-400 mb-4  hidden tracking-wider">Method</label>
+            <label className="text-sm font-semibold text-gray-400 mb-4  hidden tracking-wider">{t('faces.labeling.method')}</label>
 
             <RadioGroup value={labelMode} onChange={setLabelMode}>
               <div className="relative inline-flex gap-2 p-0 w-full overflow-hidden">
@@ -67,7 +69,7 @@ export const LabelingForm: React.FC = () => {
                         checked ? 'text-black' : 'text-white/60 hover:text-white/80'
                       }`}
                     >
-                      <span className="relative z-10 flex items-center justify-center gap-2">Existing Person</span>
+                      <span className="relative z-10 flex items-center justify-center gap-2">{t('faces.labeling.existingPerson')}</span>
                     </Button>
                   )}
                 </RadioGroup.Option>
@@ -80,7 +82,7 @@ export const LabelingForm: React.FC = () => {
                         checked ? 'text-black' : 'text-white/60 hover:text-white/80'
                       }`}
                     >
-                      <span className="relative z-10 flex items-center justify-center gap-2">New Person</span>
+                      <span className="relative z-10 flex items-center justify-center gap-2">{t('faces.labeling.newPerson')}</span>
                     </Button>
                   )}
                 </RadioGroup.Option>
@@ -100,7 +102,7 @@ export const LabelingForm: React.FC = () => {
                   htmlFor="known-face-select"
                   className="block text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider"
                 >
-                  Select Person
+                  {t('faces.labeling.selectPerson')}
                 </label>
                 <div className="relative">
                   <div className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -120,7 +122,7 @@ export const LabelingForm: React.FC = () => {
                     className="w-full pl-18 pr-12 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all appearance-none cursor-pointer hover:bg-white/[0.07]"
                   >
                     <option value="" className="bg-zinc-900">
-                      Choose a person...
+                      {t('faces.labeling.choosePerson')}
                     </option>
                     {knownFaces.map((face) => (
                       <option key={face.name} value={face.name} className="bg-zinc-900">
@@ -147,7 +149,7 @@ export const LabelingForm: React.FC = () => {
                   htmlFor="new-face-name"
                   className="block text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider"
                 >
-                  Person's Name
+                  {t('faces.labeling.personName')}
                 </label>
                 <div className="relative">
                   <div className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -156,7 +158,7 @@ export const LabelingForm: React.FC = () => {
                   <input
                     id="new-face-name"
                     type="text"
-                    placeholder="Enter full name"
+                    placeholder={t('faces.labeling.namePlaceholder')}
                     value={newFaceName}
                     onChange={(e) => setNewFaceName(e.target.value)}
                     className="w-full pl-14 pr-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-medium placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all backdrop-blur-sm hover:bg-white/[0.07]"
@@ -173,7 +175,7 @@ export const LabelingForm: React.FC = () => {
             leftIcon={isLabeling ? <ArrowPathIcon className="w-5 h-5" /> : <CheckIcon className="w-5 h-5" />}
             className="w-full"
           >
-            Label {selectedFaces.size} Face{selectedFaces.size !== 1 ? 's' : ''}
+            {t('faces.labeling.labelFaces', { count: selectedFaces.size })}
           </Button>
         </div>
       </div>

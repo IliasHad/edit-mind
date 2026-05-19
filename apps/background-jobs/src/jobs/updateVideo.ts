@@ -5,6 +5,7 @@ import { LabelObject, UpdateSceneData } from '@shared/types/video';
 import { getScenesStreamBySource, updateVideoMetadata } from '@vector/services/db';
 import { updateScenes } from '@embedding-core/utils/textEmbedding';
 import { suggestionCache } from '@search/services/suggestion';
+import { AppSettingsModel } from '@db/index'
 
 async function processVideo(job: Job<UpdateSceneData>) {
     const { source, metadata } = job.data
@@ -22,13 +23,15 @@ async function processVideo(job: Job<UpdateSceneData>) {
 
         await updateVideoMetadata(source, updateFields)
 
+        const language = await AppSettingsModel.getLanguage()
+
         const sceneMetadata = "labels" in metadata
             ? { labels: Object.keys(updateFields).length ? [updateFields] : [] }
             : updateFields
 
 
         for await (const scene of getScenesStreamBySource(source)) {
-            await updateScenes([{ ...scene, ...sceneMetadata }], source)
+            await updateScenes([{ ...scene, ...sceneMetadata }], source, language)
 
         }
         await suggestionCache.refresh()

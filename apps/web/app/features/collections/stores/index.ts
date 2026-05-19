@@ -4,6 +4,7 @@ import { devtools, persist } from 'zustand/middleware'
 import type { CollectionWithItems } from '../types'
 import { apiClient } from '../services/api'
 import type { SortOption, SortOrder } from '~/features/videos/types'
+import { translate } from '~/i18n/translate'
 
 interface CollectionsState {
   collections: CollectionWithItems[]
@@ -48,7 +49,7 @@ export const useCollectionsStore = create<CollectionsState>()(
             set({ collections, totalDuration, totalVideos, isLoading: false })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('collections.errors.unknown'),
               isLoading: false,
             })
           }
@@ -62,7 +63,7 @@ export const useCollectionsStore = create<CollectionsState>()(
             set({ currentCollection: collection, isLoading: false, sortBy, sortOrder })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('collections.errors.unknown'),
               isLoading: false,
               currentCollection: null,
             })
@@ -77,7 +78,7 @@ export const useCollectionsStore = create<CollectionsState>()(
             set({ currentScenes: scenes, isLoading: false })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('collections.errors.unknown'),
               isLoading: false,
               currentScenes: [],
             })
@@ -91,7 +92,7 @@ export const useCollectionsStore = create<CollectionsState>()(
             set({ isLoading: false })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('collections.errors.unknown'),
               isLoading: false,
               currentScenes: [],
             })

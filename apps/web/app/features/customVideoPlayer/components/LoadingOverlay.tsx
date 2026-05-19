@@ -1,6 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion"
+import { useTranslation } from 'react-i18next'
 
 export function LoadingOverlay() {
+    const { t } = useTranslation()
+
     return (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-20">
             <div className="relative w-14 h-14 mb-5">
@@ -32,7 +35,7 @@ export function LoadingOverlay() {
                         transition={{ duration: 0.3 }}
                         className="text-white/80 text-sm font-medium tracking-wide text-center"
                     >
-                        Loading...
+                        {t('player.loading')}
                     </motion.p>
                 </AnimatePresence>
             </div>

@@ -11,6 +11,8 @@ interface ConfirmModalProps {
   resourceName?: string
   confirmText?: string
   cancelText?: string
+  processingText?: string
+  closeButtonAriaLabel?: string
 }
 
 export function ConfirmationModal({
@@ -22,6 +24,8 @@ export function ConfirmationModal({
   resourceName,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
+  processingText = 'Processing...',
+  closeButtonAriaLabel,
 }: ConfirmModalProps) {
   const [isConfirming, setIsConfirming] = useState(false)
 
@@ -38,7 +42,13 @@ export function ConfirmationModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} closeOnBackdrop={!isConfirming} showCloseButton={!isConfirming}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnBackdrop={!isConfirming}
+      showCloseButton={!isConfirming}
+      closeButtonAriaLabel={closeButtonAriaLabel}
+    >
       <div className="p-6">
         <h2 className="text-xl font-semibold text-white mb-2">{title}</h2>
 
@@ -55,7 +65,7 @@ export function ConfirmationModal({
             {cancelText}
           </Button>
           <Button variant="primary" onClick={handleConfirm} disabled={isConfirming} loading={isConfirming} fullWidth>
-            {isConfirming ? 'Processing...' : confirmText}
+            {isConfirming ? processingText : confirmText}
           </Button>
         </div>
       </div>

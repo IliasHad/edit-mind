@@ -8,15 +8,21 @@ export function collectScenesFromQuery(
   finalScenes: Scene[]
 ) {
   for (let i = 0; i < vectorQuery.metadatas.length; i++) {
-    const metadata = vectorQuery.metadatas[i][0]
-    const id = vectorQuery.ids[i][0]
-    const text = vectorQuery.documents[i][0]
+    const metadatas = vectorQuery.metadatas[i] ?? []
+    const ids = vectorQuery.ids[i] ?? []
+    const documents = vectorQuery.documents[i] ?? []
 
-    if (!metadata || !id || !text) continue
+    for (let j = 0; j < metadatas.length; j++) {
+      const metadata = metadatas[j]
+      const id = ids[j]
+      const text = documents[j]
 
-    const scene = metadataToScene(metadata, id, text)
-    if (scenesIds.has(scene.id)) return
-    scenesIds.add(scene.id)
-    finalScenes.push(scene)
+      if (!metadata || !id || !text) continue
+
+      const scene = metadataToScene(metadata, id, text)
+      if (scenesIds.has(scene.id)) continue
+      scenesIds.add(scene.id)
+      finalScenes.push(scene)
+    }
   }
 }

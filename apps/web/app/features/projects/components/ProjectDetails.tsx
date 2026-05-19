@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Input, Textarea } from '@headlessui/react'
 import { Link, useFetcher, useNavigate } from 'react-router'
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   XMarkIcon,
   MagnifyingGlassIcon,
@@ -28,6 +29,7 @@ interface ProjectDetailsProps {
 type ViewMode = 'grid' | 'list'
 
 export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
+  const { t } = useTranslation()
   const fetcher = useFetcher()
   const navigate = useNavigate()
   const { currentProject, createProject, updateProject, showSuccess } = useCurrentProject()
@@ -171,12 +173,12 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1 space-y-2">
                 <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white sm:text-3xl">
-                  {isEditing ? 'Edit Project' : 'New Project'}
+                  {isEditing ? t('projects.details.editTitle') : t('projects.details.newTitle')}
                 </h1>
                 <p className="text-sm text-black/60 dark:text-white/60">
                   {isEditing
-                    ? 'Update your project details and manage video collection'
-                    : 'Organize your videos into a cohesive project for better management'}
+                    ? t('projects.details.editDescription')
+                    : t('projects.details.newDescription')}
                 </p>
               </div>
 
@@ -184,7 +186,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                 <div className="flex shrink-0 items-center gap-2.5 rounded-full border border-green-200 bg-green-50 px-4 py-2.5 shadow-sm dark:border-green-800 dark:bg-green-950/50">
                   <CheckCircleIcon className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400" />
                   <span className="whitespace-nowrap text-sm font-semibold text-green-700 dark:text-green-300">
-                    Changes saved!
+                    {t('projects.details.changesSaved')}
                   </span>
                 </div>
               )}
@@ -197,7 +199,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
             <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-800 dark:bg-red-950/30">
               <ExclamationCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-red-800 dark:text-red-200">Failed to save project</p>
+                <p className="text-sm font-semibold text-red-800 dark:text-red-200">{t('projects.details.saveErrorTitle')}</p>
                 <p className="mt-1 wrap-break-word text-sm text-red-600 dark:text-red-400">{fetcher.data.error}</p>
               </div>
             </div>
@@ -208,7 +210,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
           <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
             <section>
               <label htmlFor="name" className="mb-3 block text-sm font-semibold text-black dark:text-white">
-                Project Name <span className="text-red-500">*</span>
+                {t('projects.details.projectName')} <span className="text-red-500">{t('projects.details.required')}</span>
               </label>
               <Controller
                 name="name"
@@ -217,7 +219,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                   <Input
                     {...field}
                     id="name"
-                    placeholder="e.g., Summer Vacation 2024"
+                    placeholder={t('projects.details.namePlaceholder')}
                     autoFocus={!isEditing}
                     className={`w-full rounded-xl border-2 bg-white px-4 py-3.5 text-base text-black outline-none transition-all duration-200 placeholder:text-black/40 dark:bg-black dark:text-white dark:placeholder:text-white/40 ${errors.name
                       ? 'border-red-300 focus:border-red-500 dark:border-red-800 dark:focus:border-red-600'
@@ -237,10 +239,10 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
             <section>
               <div className="mb-3 flex items-center gap-2">
                 <label htmlFor="instructions" className="text-sm font-semibold text-black dark:text-white">
-                  Project Context
+                  {t('projects.details.projectContext')}
                 </label>
                 <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-xs font-medium text-black/60 dark:bg-white/5 dark:text-white/60">
-                  Optional
+                  {t('projects.details.optional')}
                 </span>
               </div>
               <Controller
@@ -250,14 +252,14 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                   <Textarea
                     {...field}
                     id="instructions"
-                    placeholder="Describe your project context. Example: 'Tech conference recordings featuring keynote speakers and panel discussions about AI and machine learning.'"
+                    placeholder={t('projects.details.instructionsPlaceholder')}
                     rows={4}
                     className="w-full resize-none rounded-xl border-2 border-black/10 bg-white px-4 py-3.5 text-base text-black outline-none transition-all duration-200 placeholder:text-black/40 focus:border-black/30 dark:border-white/10 dark:bg-black dark:text-white dark:placeholder:text-white/40 dark:focus:border-white/30"
                   />
                 )}
               />
               <p className="mt-2 text-xs text-black/50 dark:text-white/50">
-                Provide context to help AI-powered features understand your project better
+                {t('projects.details.instructionsHelp')}
               </p>
             </section>
 
@@ -267,9 +269,9 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                   <VideoCameraIcon className="h-5 w-5 text-white dark:text-black" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-sm font-semibold text-black dark:text-white">Selected Videos</h2>
+                  <h2 className="text-sm font-semibold text-black dark:text-white">{t('projects.details.selectedVideosTitle')}</h2>
                   <p className="truncate text-xs text-black/60 dark:text-white/60">
-                    {selectedVideos.length} video{selectedVideos.length !== 1 ? 's' : ''} in this project
+                    {t(selectedVideos.length === 1 ? 'projects.details.selectedVideosCountOne' : 'projects.details.selectedVideosCountOther', { count: selectedVideos.length })}
                   </p>
                 </div>
               </div>
@@ -285,7 +287,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
               ) : (
                 <div className="py-8 text-center">
                   <p className="text-sm text-black/50 dark:text-white/50">
-                    No videos selected yet. Browse and select videos below.
+                    {t('projects.details.noSelectedVideos')}
                   </p>
                 </div>
               )}
@@ -293,21 +295,21 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
 
             <section>
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-sm font-semibold text-black dark:text-white">Video Library</h2>
+                <h2 className="text-sm font-semibold text-black dark:text-white">{t('projects.details.videoLibrary')}</h2>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
                     onClick={() => setViewMode('grid')}
                     variant={viewMode === 'grid' ? 'primary' : 'ghost'}
                     leftIcon={<Squares2X2Icon className="h-4 w-4" />}
-                    aria-label="Grid view"
+                    aria-label={t('projects.details.gridViewAria')}
                   />
                   <Button
                     type="button"
                     onClick={() => setViewMode('list')}
                     variant={viewMode === 'list' ? 'primary' : 'ghost'}
                     leftIcon={<ListBulletIcon className="h-4 w-4" />}
-                    aria-label="List view"
+                    aria-label={t('projects.details.listViewAria')}
                   />
                 </div>
               </div>
@@ -318,7 +320,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                     <MagnifyingGlassIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black/40 dark:text-white/40" />
                     <Input
                       type="text"
-                      placeholder="Search by name or folder path..."
+                      placeholder={t('projects.details.videoSearchPlaceholder')}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full rounded-xl border border-black/10 bg-white py-3 pl-12 pr-4 text-sm text-black outline-none transition-all duration-200 placeholder:text-black/40 focus:ring-2 focus:ring-black/20 dark:border-white/10 dark:bg-black dark:text-white dark:placeholder:text-white/40 dark:focus:ring-white/20"
@@ -333,10 +335,10 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                         <VideoCameraIcon className="h-8 w-8 text-black/20 dark:text-white/20" />
                       </div>
                       <p className="mb-1 text-sm font-semibold text-black dark:text-white">
-                        {searchQuery ? 'No videos found' : 'No videos available'}
+                        {searchQuery ? t('projects.details.noVideosFound') : t('projects.details.noVideosAvailable')}
                       </p>
                       <p className="text-xs text-black/60 dark:text-white/60">
-                        {searchQuery ? 'Try adjusting your search terms' : 'Import videos to add them to your project'}
+                        {searchQuery ? t('projects.details.adjustSearch') : t('projects.details.importVideos')}
                       </p>
                     </div>
                   ) : (
@@ -369,11 +371,11 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                         {videosLoading && (
                           <div className="flex items-center justify-center gap-2 text-black/60 dark:text-white/60">
                             <ArrowPathIcon className="h-5 w-5 animate-spin" />
-                            <span className="text-sm">Loading more videos...</span>
+                            <span className="text-sm">{t('projects.details.loadingMore')}</span>
                           </div>
                         )}
                         {!hasMore && availableVideos.length > 0 && (
-                          <p className="text-center text-sm text-black/40 dark:text-white/40">All videos loaded</p>
+                          <p className="text-center text-sm text-black/40 dark:text-white/40">{t('projects.details.allVideosLoaded')}</p>
                         )}
                       </div>
                     </>
@@ -388,7 +390,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
           <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
             <Link to="/app/projects">
               <Button type="button" disabled={isSubmitting} variant="ghost">
-                Cancel
+                {t('projects.details.cancel')}
               </Button>
             </Link>
 
@@ -397,7 +399,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                 <div className="flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 dark:border-orange-800 dark:bg-orange-950/30">
                   <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-orange-500" />
                   <span className="whitespace-nowrap text-xs font-medium text-orange-700 dark:text-orange-300">
-                    Unsaved changes
+                    {t('projects.details.unsavedChanges')}
                   </span>
                 </div>
               )}
@@ -407,7 +409,7 @@ export function ProjectDetails({ isEditing = false }: ProjectDetailsProps) {
                 loading={isSubmitting}
                 leftIcon={isSubmitting ? <ArrowPathIcon className="h-4 w-4 animate-spin" /> : null}
               >
-                {isEditing ? 'Save Changes' : 'Create Project'}
+                {isEditing ? t('projects.details.saveChanges') : t('projects.details.createProject')}
               </Button>
             </div>
           </div>

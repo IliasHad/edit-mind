@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router'
+import { useTranslation } from 'react-i18next'
 
 interface PaginationProps {
     total: number
@@ -7,6 +8,7 @@ interface PaginationProps {
 export function Pagination({ total, page }: PaginationProps) {
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
+    const { t } = useTranslation()
     return (
         <div>
             {total > 1 && (
@@ -26,10 +28,10 @@ export function Pagination({ total, page }: PaginationProps) {
                       transition-all
                       disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        Previous
+                        {t('shell.pagination.previous')}
                     </button>
                     <span className="text-sm text-black/60 dark:text-white/60 font-medium">
-                        Page {page} of {total}
+                        {t('shell.pagination.pageOf', { page, total })}
                     </span>
                     <button
                         disabled={page >= total}
@@ -46,7 +48,7 @@ export function Pagination({ total, page }: PaginationProps) {
                       transition-all
                       disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        Next
+                        {t('shell.pagination.next')}
                     </button>
                 </div>
             )}

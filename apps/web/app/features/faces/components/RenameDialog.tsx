@@ -8,8 +8,10 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { z } from 'zod'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () => void }) => {
+  const { t } = useTranslation()
   const { knownFaces } = useFaces()
   const { handleRenameKnownFace, newFaceName, setNewFaceName, loading } = useCurrentKnowFace()
   const navigate = useNavigate()
@@ -24,18 +26,18 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
       z
         .string()
         .trim()
-        .min(2, 'Name must be at least 2 characters')
-        .max(50, 'Name must be less than 50 characters')
-        .regex(/^[a-zA-Z\s'-]+$/, 'Only English letters, spaces, hyphens, and apostrophes allowed')
-        .refine((name) => !uniqueFacesNames.includes(name.toLowerCase()), 'This name already exists'),
-    [uniqueFacesNames]
+        .min(2, t('faces.renameDialog.validation.min'))
+        .max(50, t('faces.renameDialog.validation.max'))
+        .regex(/^[a-zA-Z\s'-]+$/, t('faces.renameDialog.validation.englishOnly'))
+        .refine((name) => !uniqueFacesNames.includes(name.toLowerCase()), t('faces.renameDialog.validation.duplicate')),
+    [t, uniqueFacesNames]
   )
 
   const validation = useMemo(() => {
     const trimmedName = newFaceName.trim()
 
     if (!trimmedName) {
-      return { isValid: false, message: 'Name cannot be empty' }
+      return { isValid: false, message: t('faces.renameDialog.validation.empty') }
     }
 
     const result = faceNameSchema.safeParse(trimmedName)
@@ -43,12 +45,12 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
     if (!result.success) {
       return {
         isValid: false,
-        message: z.prettifyError(result.error) || 'Invalid name',
+        message: result.error.issues[0]?.message || t('faces.renameDialog.validation.invalid'),
       }
     }
 
-    return { isValid: true, message: 'Name is valid' }
-  }, [newFaceName, faceNameSchema])
+    return { isValid: true, message: t('faces.renameDialog.validation.valid') }
+  }, [newFaceName, faceNameSchema, t])
 
   const handleRename = async () => {
     if (!validation.isValid) return
@@ -101,9 +103,9 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
         />
 
         <div className="mb-6">
-          <h3 className="text-2xl font-semibold text-white tracking-tight">Rename Person</h3>
+          <h3 className="text-2xl font-semibold text-white tracking-tight">{t('faces.renameDialog.title')}</h3>
           <p className="text-sm text-white/50 mt-2">
-            Current name: <span className="text-white/80 font-medium">{face.name}</span>
+            {t('faces.renameDialog.currentName', { name: face.name })}
           </p>
         </div>
 
@@ -112,7 +114,7 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
             htmlFor="new-face-name"
             className="block text-xs font-semibold text-white/50 mb-3 uppercase tracking-wider"
           >
-            New Name
+            {t('faces.renameDialog.newName')}
           </label>
           <div className="relative">
             <input
@@ -120,7 +122,7 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
               type="text"
               value={newFaceName}
               onChange={(e) => setNewFaceName(e.target.value)}
-              placeholder="Enter new name"
+              placeholder={t('faces.renameDialog.placeholder')}
               autoComplete="off"
               autoFocus
               className={`w-full px-4 py-3.5 bg-white/5 border rounded-2xl text-white placeholder-white/30 focus:outline-none focus:ring-2 transition-all ${
@@ -154,23 +156,23 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
         </div>
 
         <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
-          <p className="text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">Requirements</p>
+          <p className="text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">{t('faces.renameDialog.requirements')}</p>
           <ul className="space-y-1.5 text-xs text-white/60">
             <li className="flex items-start gap-2">
               <span className="text-white/40 mt-0.5">•</span>
-              <span>2-50 characters long</span>
+              <span>{t('faces.renameDialog.reqLength')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-white/40 mt-0.5">•</span>
-              <span>English letters only (A-Z, a-z)</span>
+              <span>{t('faces.renameDialog.reqEnglishOnly')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-white/40 mt-0.5">•</span>
-              <span>Spaces, hyphens (-), and apostrophes (') allowed</span>
+              <span>{t('faces.renameDialog.reqAllowedPunctuation')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-white/40 mt-0.5">•</span>
-              <span>Must be unique (not already used)</span>
+              <span>{t('faces.renameDialog.reqUnique')}</span>
             </li>
           </ul>
         </div>
@@ -181,7 +183,7 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
             variant="outline"
             className="flex-1"
           >
-            Cancel
+            {t('faces.renameDialog.cancel')}
           </Button>
           <Button
             onClick={handleRename}
@@ -190,7 +192,7 @@ export const RenameDialog = ({ face, onClose }: { face: KnownFace; onClose: () =
             leftIcon={loading ? <ArrowPathIcon className="w-4 h-4" /> : null}
             className="flex-1"
           >
-            Rename
+            {t('faces.renameDialog.rename')}
           </Button>
         </div>
       </motion.div>

@@ -4,6 +4,7 @@ import type { GroupedSuggestions, Suggestion, VideoSearchParams } from '@shared/
 import type { ShotType } from '@shared/types'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
 import { getScenesStream } from '@vector/services/db'
+import { localizeCanonicalSuggestion } from '@search/utils/localizedQuery'
 
 interface CacheStats {
   isInitialized: boolean
@@ -19,6 +20,28 @@ interface CacheStats {
   textTermsCount: number
 }
 
+const DEFAULT_MIN_PREFIX_LENGTH = 2
+const DEFAULT_MAX_PREFIX_LENGTH = 10
+
+export function cleanSuggestionWord(word: string): string {
+  return word.normalize('NFKC').replace(/[^\p{L}\p{N}]/gu, '').toLowerCase()
+}
+
+export function getSuggestionPrefixes(
+  word: string,
+  minPrefixLength = DEFAULT_MIN_PREFIX_LENGTH,
+  maxPrefixLength = DEFAULT_MAX_PREFIX_LENGTH
+): string[] {
+  const cleanWord = cleanSuggestionWord(word)
+  const prefixes: string[] = []
+
+  for (let i = minPrefixLength; i <= Math.min(cleanWord.length, maxPrefixLength); i++) {
+    prefixes.push(cleanWord.substring(0, i))
+  }
+
+  return prefixes
+}
+
 class SearchSuggestionCache {
   private isInitialized = false
   private initializationPromise: Promise<void> | null = null
@@ -26,7 +49,7 @@ class SearchSuggestionCache {
   private readonly CACHE_PREFIX = 'search:suggestions:v1:'
   private readonly STATS_KEY = 'search:suggestions:stats:v1'
   private readonly POPULAR_KEY = 'search:suggestions:popular:v1'
-  private readonly MIN_PREFIX_LENGTH = 2
+  private readonly MIN_PREFIX_LENGTH = DEFAULT_MIN_PREFIX_LENGTH
   private readonly REDIS_KEY_TTL = 7 * 24 * 60 * 60 // 7 days
   private readonly BATCH_SIZE = 100 // Process scenes in batches
   private readonly MIN_OCCURRENCE_THRESHOLD = 2 // Minimum scenes for a term to be indexed
@@ -237,24 +260,29 @@ class SearchSuggestionCache {
       const lengthBonus = Math.min(term.length / 20, 1)
       const popularityBoost = Math.log10(count + 1) * 10
       const score = frequency * 100 + popularityBoost + lengthBonus * 5
+      const suggestion: Suggestion = {
+        text: term,
+        type,
+        count: score,
+        sceneCount: count,
+      }
+      const localizedSuggestion = localizeCanonicalSuggestion(suggestion, 'ru')
+      const indexedTerms = new Set([term])
 
-      const words = term.split(/[\s,]+/)
-      words.forEach((word) => {
-        const cleanWord = word.replace(/[^a-zA-Z0-9]/g, '')
-        for (let i = this.MIN_PREFIX_LENGTH; i <= Math.min(cleanWord.length, 10); i++) {
-          const prefix = cleanWord.substring(0, i).toLowerCase()
+      if (localizedSuggestion.displayText) indexedTerms.add(localizedSuggestion.displayText)
+      if (localizedSuggestion.text !== term) indexedTerms.add(localizedSuggestion.text)
 
-          if (!allPrefixSuggestions.has(prefix)) {
-            allPrefixSuggestions.set(prefix, [])
-          }
+      indexedTerms.forEach((indexedTerm) => {
+        const words = indexedTerm.split(/[\s,]+/)
+        words.forEach((word) => {
+          getSuggestionPrefixes(word, this.MIN_PREFIX_LENGTH).forEach((prefix) => {
+            if (!allPrefixSuggestions.has(prefix)) {
+              allPrefixSuggestions.set(prefix, [])
+            }
 
-          allPrefixSuggestions.get(prefix)!.push({
-            text: term,
-            type,
-            count: score,
-            sceneCount: count,
+            allPrefixSuggestions.get(prefix)!.push(localizedSuggestion.value ? localizedSuggestion : suggestion)
           })
-        }
+        })
       })
     }
   }
@@ -374,9 +402,7 @@ class SearchSuggestionCache {
     terms.forEach(({ term, count, score }) => {
       const words = term.split(/[\s,]+/)
       words.forEach((word) => {
-        const cleanWord = word.replace(/[^a-zA-Z0-9]/g, '')
-        for (let i = this.MIN_PREFIX_LENGTH; i <= Math.min(cleanWord.length, 10); i++) {
-          const prefix = cleanWord.substring(0, i).toLowerCase()
+        getSuggestionPrefixes(word, this.MIN_PREFIX_LENGTH).forEach((prefix) => {
           if (!prefixMap.has(prefix)) prefixMap.set(prefix, [])
 
           prefixMap.get(prefix)!.push({
@@ -385,7 +411,7 @@ class SearchSuggestionCache {
             count: score,
             sceneCount: count,
           })
-        }
+        })
       })
     })
 
@@ -421,41 +447,43 @@ class SearchSuggestionCache {
     shotTypes: Map<string, number>
   }): Promise<void> {
     const popular = {
-      face: this.getTopTerms(data.faces, 20),
-      object: this.getTopTerms(data.objects, 20),
-      emotion: this.getTopTerms(data.emotions, 15),
-      camera: this.getTopTerms(data.cameras, 10),
-      shotType: this.getTopTerms(data.shotTypes, 10),
+      face: this.getTopTerms(data.faces, 'face', 20),
+      object: this.getTopTerms(data.objects, 'object', 20),
+      emotion: this.getTopTerms(data.emotions, 'emotion', 15),
+      camera: this.getTopTerms(data.cameras, 'camera', 10),
+      shotType: this.getTopTerms(data.shotTypes, 'shotType', 10),
     }
 
     await setCache(this.POPULAR_KEY, popular, this.REDIS_KEY_TTL)
   }
 
-  private getTopTerms(counts: Map<string, number>, limit: number): Suggestion[] {
+  private getTopTerms(counts: Map<string, number>, type: Suggestion['type'], limit: number): Suggestion[] {
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
       .map(([text, count]) => ({
         text,
-        type: 'face' as const,
+        type,
         count,
         sceneCount: count,
       }))
   }
 
   async getSuggestions(query: string, limit = 10, type?: Suggestion['type']): Promise<Suggestion[]> {
-    if (query.length < this.MIN_PREFIX_LENGTH) {
+    const normalized = cleanSuggestionWord(query.trim())
+
+    if (normalized.length < this.MIN_PREFIX_LENGTH) {
       return []
     }
 
-    const normalized = query.toLowerCase().trim()
-    const key = type ? `${this.CACHE_PREFIX}${normalized}:${type}` : `${this.CACHE_PREFIX}${normalized}`
+    const key = `${this.CACHE_PREFIX}${normalized}`
+    const filterByType = (suggestions: Suggestion[]) => type ? suggestions.filter((suggestion) => suggestion.type === type) : suggestions
 
-    let results = (await getCache<Suggestion[]>(key)) || []
+    let results = filterByType((await getCache<Suggestion[]>(key)) || [])
 
     // Fuzzy matching for better results
-    if (results.length < limit && normalized.length >= this.MIN_PREFIX_LENGTH) {
-      const fuzzyResults = await this.getFuzzyMatches(normalized, limit - results.length)
+    if (results.length < limit) {
+      const fuzzyResults = await this.getFuzzyMatches(normalized, limit - results.length, type)
       results = [...results, ...fuzzyResults]
     }
 
@@ -464,10 +492,11 @@ class SearchSuggestionCache {
     const suggestions: Suggestion[] = []
 
     for (const s of results) {
-      const key = `${s.type}:${s.text}`
+      const localizedSuggestion = localizeCanonicalSuggestion(s, 'ru')
+      const key = `${localizedSuggestion.type}:${localizedSuggestion.value ?? localizedSuggestion.text}`
       if (!seen.has(key)) {
         seen.add(key)
-        suggestions.push(s)
+        suggestions.push(localizedSuggestion)
         if (suggestions.length >= limit) break
       }
     }
@@ -475,16 +504,18 @@ class SearchSuggestionCache {
     return suggestions
   }
 
-  private async getFuzzyMatches(query: string, limit: number): Promise<Suggestion[]> {
+  private async getFuzzyMatches(query: string, limit: number, type?: Suggestion['type']): Promise<Suggestion[]> {
     const results: Suggestion[] = []
 
     const variations = [query.slice(0, -1), query.slice(1), query]
 
     for (const variation of variations) {
-      if (variation.length >= this.MIN_PREFIX_LENGTH) {
-        const key = `${this.CACHE_PREFIX}${variation}`
+      const normalizedVariation = cleanSuggestionWord(variation)
+
+      if (normalizedVariation.length >= this.MIN_PREFIX_LENGTH) {
+        const key = `${this.CACHE_PREFIX}${normalizedVariation}`
         const matches = (await getCache<Suggestion[]>(key)) || []
-        results.push(...matches.filter((m) => m.text.toLowerCase().includes(query)))
+        results.push(...matches.filter((m) => (!type || m.type === type) && cleanSuggestionWord(m.text).includes(query)))
       }
     }
 
@@ -591,6 +622,13 @@ export async function refreshSuggestionCache(): Promise<void> {
   await suggestionCache.refresh()
 }
 
+function splitSuggestionValues(value: string): string[] {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
 export function buildSearchQueryFromSuggestions(
   suggestions: Record<string, string | null | undefined>
 ): VideoSearchParams {
@@ -618,11 +656,11 @@ export function buildSearchQueryFromSuggestions(
       case 'emotions':
       case 'objects':
       case 'locations':
-        searchQuery[field] = [value]
+        searchQuery[field] = splitSuggestionValues(value)
         break
 
       case 'shotType':
-        searchQuery[field] = value as ShotType
+        searchQuery[field] = splitSuggestionValues(value)[0] as ShotType
         break
 
       case 'camera':

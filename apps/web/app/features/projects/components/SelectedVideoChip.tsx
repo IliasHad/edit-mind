@@ -2,8 +2,12 @@ import { XMarkIcon } from "@heroicons/react/24/solid";
 import type { Video } from "@prisma/client";
 import { Button } from "@ui/components/Button";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 
-export const SelectedVideoChip = memo(({ video, onRemove }: { video: Partial<Video>; onRemove: (id: string) => void }) => (
+export const SelectedVideoChip = memo(({ video, onRemove }: { video: Partial<Video>; onRemove: (id: string) => void }) => {
+  const { t } = useTranslation()
+
+  return (
   <div
     className="inline-flex items-center gap-2.5 pl-3 pr-2 py-2
                bg-white dark:bg-black
@@ -23,11 +27,12 @@ export const SelectedVideoChip = memo(({ video, onRemove }: { video: Partial<Vid
       className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30
                  text-black/40 hover:text-red-600 dark:text-white/40 dark:hover:text-red-400
                  transition-all duration-200"
-      aria-label={`Remove ${video.name}`}
+      aria-label={t('projects.selectedVideoChip.removeAria', { name: video.name })}
     >
       <XMarkIcon className="w-4 h-4" />
     </Button>
   </div>
-))
+  )
+})
 
 SelectedVideoChip.displayName = 'SelectedVideoChip'

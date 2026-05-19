@@ -32,7 +32,7 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
     def load_models(self) -> None:
         self.face_recognizer = FaceRecognizer()
 
-    def setup(self, video_path: str, job_id: str) -> None:
+    def setup(self, video_path: str, job_id: str, language: str = "en") -> None:
         self.current_video_path = video_path
         self.current_job_id = job_id
         if self.face_recognizer:

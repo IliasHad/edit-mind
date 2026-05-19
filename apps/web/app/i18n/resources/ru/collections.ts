@@ -1,0 +1,68 @@
+const collections = {
+  meta: {
+    indexTitle: 'Коллекции | Edit Mind',
+    detailsTitle: 'Детали коллекции | Edit Mind',
+    scenesTitle: 'Сцены коллекции | Edit Mind',
+  },
+  types: {
+    visual_style: 'Визуальный стиль',
+    subject_matter: 'Тема',
+    emotional_tone: 'Эмоциональный тон',
+    aspect_ratio: 'Соотношение сторон',
+    time_of_day: 'Время суток',
+    use_case: 'Сценарий использования',
+    people: 'Люди',
+    location: 'Место',
+    custom: 'Пользовательская',
+    geographic_location: 'Геолокация',
+    person: 'Персона',
+    b_roll: 'B-Roll',
+    audio: 'Аудио',
+  },
+  index: {
+    title: 'Коллекции',
+    description: 'Умные коллекции на базе ИИ. Находите материалы, организованные по стилю, настроению и содержанию.',
+    collectionsStat: 'Коллекции',
+    videosStat: 'Видео',
+    durationStat: 'Длительность',
+    allFilter: 'Все',
+    emptyTitle: 'Пока нет коллекций',
+    emptyDescription: 'Загрузите первые видео, чтобы автоматически создать умные коллекции с помощью ИИ.',
+  },
+  details: {
+    errorTitle: 'Ошибка загрузки коллекции',
+    backToCollections: 'Назад к коллекциям',
+    notFoundTitle: 'Коллекция не найдена',
+    notFoundDescription: 'Коллекция, которую вы ищете, не существует.',
+    videos: 'видео',
+    duration: 'длительность',
+    updated: 'Обновлено {{date}}',
+    matchedScenes: 'Подходящие сцены',
+    sortShotDate: 'Дата съёмки',
+    sortImportDate: 'Дата импорта',
+    sortLastUpdated: 'Последнее обновление',
+    sortDuration: 'Длительность',
+    match: 'совпадение',
+    noVideosTitle: 'Видео не найдены',
+    noVideosDescription: 'В этой коллекции пока нет видео.',
+  },
+  card: {
+    videos: 'Видео',
+  },
+  scenes: {
+    selectedSceneOne: 'Выбрана {{count}} сцена',
+    selectedSceneOther: 'Выбрано {{count}} сцен',
+    clear: 'Очистить',
+    emptyTitle: 'Сцены не найдены',
+    selected: 'Выбрано: {{count}}',
+    exportScenes: 'Экспортировать сцены',
+  },
+  validation: {
+    sceneRequired: 'Выберите хотя бы одну сцену',
+  },
+  errors: {
+    unknown: 'Произошла неизвестная ошибка',
+  },
+} as const
+
+export default collections

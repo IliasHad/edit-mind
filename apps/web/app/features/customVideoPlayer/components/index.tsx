@@ -20,6 +20,7 @@ import { CaptionsButton } from './CaptionsButton'
 import { FitButton } from './FitButton'
 import { TranscodingOverlay } from './TranscodingOverlay'
 import { LoadingOverlay } from './LoadingOverlay'
+import { useTranslation } from 'react-i18next'
 
 interface ExtendedCustomVideoPlayerProps extends CustomVideoPlayerProps {
   objectFit?: ObjectFit
@@ -33,6 +34,7 @@ export function CustomVideoPlayer({
   onTimeUpdate,
   objectFit = 'contain',
 }: ExtendedCustomVideoPlayerProps) {
+  const { t } = useTranslation()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const overlayRef = useRef<HTMLDivElement | null>(null)
@@ -214,7 +216,7 @@ export function CustomVideoPlayer({
 
       {transcodeStatus === 'ready' && (
         <div className="absolute top-0 right-0 px-2 py-0.5 text-xs font-mono font-bold tracking-widest z-10 bg-yellow-500 text-black">
-          Transcoded Playback
+          {t('player.transcoding.badge')}
         </div>
       )}
 

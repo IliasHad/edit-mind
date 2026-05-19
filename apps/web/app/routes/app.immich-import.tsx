@@ -1,6 +1,8 @@
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { type MetaFunction } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import { translate } from '~/i18n/translate'
 
 import { useImmichIntegration } from '~/features/immich/hooks/useImmichIntegration'
 import { useImmichImportStatus } from '~/features/immich/hooks/useImmichImportStatus'
@@ -10,9 +12,10 @@ import { ImportProgress } from '~/features/immich/components/ImportProgress'
 import { useModal } from '~/features/shared/hooks/useModal'
 import { DeleteModal } from '@ui/components/DeleteModal'
 
-export const meta: MetaFunction = () => [{ title: 'Immich Integration | Edit Mind' }]
+export const meta: MetaFunction = () => [{ title: translate('immich.meta.title') }]
 
 export default function ImmichIntegrationPage() {
+  const { t } = useTranslation()
   const {  setShowApiKeyForm, deleteIntegration } = useImmichIntegration()
   const { importStatus, isImporting } = useImmichImportStatus()
 
@@ -26,9 +29,9 @@ export default function ImmichIntegrationPage() {
     <DashboardLayout sidebar={<Sidebar />}>
       <main className="max-w-7xl px-6 py-12">
         <header className="mb-8">
-          <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">Immich Integration</h1>
+          <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">{t('immich.page.title')}</h1>
           <p className="text-white/60">
-            Import face labels from Immich to help with labelling your faces in the videos
+            {t('immich.page.description')}
           </p>
         </header>
 
@@ -39,10 +42,13 @@ export default function ImmichIntegrationPage() {
         <DeleteModal
           isOpen={isOpen}
           onClose={closeModal}
-          title="Delete Immich Integration"
-          description="Removing this Immich integration will be delete only the API configuration. This action cannot be undone."
+          title={t('immich.page.deleteTitle')}
+          description={t('immich.page.deleteDescription')}
           resourceName={''}
-          confirmText="Delete"
+          confirmText={t('immich.page.deleteConfirm')}
+          cancelText={t('ui.deleteModal.cancelText')}
+          deletingText={t('ui.deleteModal.deletingText')}
+          closeButtonAriaLabel={t('ui.modal.closeAria')}
           onConfirm={onDeleteIntegration}
         />
 

@@ -7,12 +7,13 @@ import { MessageList } from '~/features/chats/components/MessageList'
 import { LoadingIndicator } from '~/features/chats/components/LoadingIndicator'
 import { ChatInput } from '~/features/chats/components/ChatInput'
 import { useState } from 'react'
+import { translate } from '~/i18n/translate'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { useCurrentChat } from '~/features/chats/hooks/useCurrentChat'
 import { useChatSuggestions } from '~/features/chats/hooks/useChatSuggestions'
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Prompt | Edit Mind' }]
+  return [{ title: translate('chats.meta.promptTitle') }]
 }
 
 export default function ChatPage() {

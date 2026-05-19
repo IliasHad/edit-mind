@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { UserIcon as User, CubeIcon as Package, PhotoIcon as ImageOff } from '@heroicons/react/24/outline'
 import { formatDate } from 'date-fns'
@@ -26,7 +27,9 @@ interface VideoCardProps {
 export function VideoCard({ thumbnailUrl, duration, createdAt, metadata, aspectRatio, name, id }: VideoCardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const { t } = useTranslation()
 
+  const displayName = name || t('shell.videoCard.untitledVideo')
   const isPortrait = aspectRatio === '9:16' ? true : false
   return (
     <Link
@@ -48,16 +51,18 @@ export function VideoCard({ thumbnailUrl, duration, createdAt, metadata, aspectR
       style={{
         transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
       }}
+      aria-label={t('shell.videoCard.view', { name: displayName })}
     >
       {imageError ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800">
           <ImageOff className="w-12 h-12 text-zinc-400 dark:text-zinc-600 mb-2" />
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Preview unavailable</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('shell.videoCard.previewUnavailable')}</p>
         </div>
       ) : (
         <img
           src={thumbnailUrl ? `/thumbnails/${encodeURIComponent(thumbnailUrl)}` : ''}
           onError={() => setImageError(true)}
+          alt={t('shell.videoCard.thumbnailAlt', { name: displayName })}
           className="
             object-cover w-full h-full
             transition-all duration-300 ease-out
@@ -79,6 +84,7 @@ export function VideoCard({ thumbnailUrl, duration, createdAt, metadata, aspectR
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
               className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs"
+              aria-label={t('shell.videoCard.facesDetected', { count: metadata.faces.length })}
             >
               <User className="w-3 h-3" />
               <span>{metadata.faces.length}</span>
@@ -89,6 +95,7 @@ export function VideoCard({ thumbnailUrl, duration, createdAt, metadata, aspectR
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
               className="flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-full text-white text-xs"
+              aria-label={t('shell.videoCard.objectsDetected', { count: metadata.objects.length })}
             >
               <Package className="w-3 h-3" />
               <span>{metadata.objects.length}</span>
@@ -107,7 +114,7 @@ export function VideoCard({ thumbnailUrl, duration, createdAt, metadata, aspectR
           transition={{ duration: 0.2 }}
           className="absolute bottom-0 left-0 right-0 p-4 text-white"
         >
-          <h3 className="font-semibold text-sm mb-1 truncate">{name || 'Untitled Video'}</h3>
+          <h3 className="font-semibold text-sm mb-1 truncate">{displayName}</h3>
           <div className="flex items-center justify-between text-xs text-white/80">
             <span>{createdAt && formatDate(createdAt, 'MMM d, yyyy')}</span>
             <span>{humanizeSeconds(duration)}</span>

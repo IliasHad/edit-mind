@@ -8,7 +8,7 @@ import { VideoProcessingData } from '@shared/types/video'
 import { updateJob } from '../services/videoIndexer'
 
 async function processVideo(job: Job<VideoProcessingData>) {
-  const { videoPath, jobId, scenesPath } = job.data
+  const { videoPath, jobId, scenesPath, language } = job.data
 
   try {
     const embeddingStart = Date.now()
@@ -25,7 +25,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
 
     logger.debug({ jobId, videoPath, sceneCount: scenes.length }, 'Starting scene text embedding')
 
-    await embedScenes(scenes, videoPath, async (batchIndex, totalBatches) => {
+    await embedScenes(scenes, videoPath, language, async (batchIndex, totalBatches) => {
       const progress = Math.round((batchIndex / totalBatches) * 100)
       const overallProgress = 80 + Math.round((batchIndex / totalBatches) * 6)
       await updateJob(job, { progress, overallProgress })

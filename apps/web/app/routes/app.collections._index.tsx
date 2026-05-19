@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { translate } from '~/i18n/translate'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { MetaFunction } from 'react-router'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
@@ -6,16 +8,17 @@ import { Sidebar } from '~/features/shared/components/Sidebar'
 import { FolderIcon } from '@heroicons/react/24/outline'
 
 import { humanizeSeconds } from '~/features/shared/utils/duration'
-import { TYPE_LABELS } from '~/features/collections/constants'
+import { TYPE_LABEL_KEYS } from '~/features/collections/constants'
 import { CollectionCard } from '~/features/collections/components/CollectionCard'
 import { useCollections } from '~/features/collections/hooks/useCollections'
 import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Collections | Edit Mind' }]
+  return [{ title: translate('collections.meta.indexTitle') }]
 }
 
 export default function Collections() {
+  const { t } = useTranslation()
   const { collections, totalDuration, totalVideos } = useCollections()
   const [selectedType, setSelectedType] = useState<string>('all')
 
@@ -32,7 +35,7 @@ export default function Collections() {
               transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               className="mb-4 text-7xl font-semibold tracking-tight text-white"
             >
-              Collections
+{t('collections.index.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -40,7 +43,7 @@ export default function Collections() {
               transition={{ duration: 0.6, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
               className="mx-auto max-w-2xl text-lg leading-relaxed text-white/60"
             >
-              Intelligent collections powered by AI. Discover your footage organized by style, mood, and content.
+              {t('collections.index.description')}
             </motion.p>
           </div>
 
@@ -56,19 +59,19 @@ export default function Collections() {
                   <div className="mb-1 text-5xl font-semibold tracking-tight text-white">
                     {collections.length}
                   </div>
-                  <div className="text-sm font-medium tracking-wide text-white/50">Collections</div>
+                  <div className="text-sm font-medium tracking-wide text-white/50">{t('collections.index.collectionsStat')}</div>
                 </div>
                 <div className="text-center">
                   <div className="mb-1 text-5xl font-semibold tracking-tight text-white">
                     {totalVideos}
                   </div>
-                  <div className="text-sm font-medium tracking-wide text-white/50">Videos</div>
+                  <div className="text-sm font-medium tracking-wide text-white/50">{t('collections.index.videosStat')}</div>
                 </div>
                 <div className="text-center">
                   <div className="mb-1 text-5xl font-semibold tracking-tight text-white">
                     {humanizeSeconds(totalDuration)}
                   </div>
-                  <div className="text-sm font-medium tracking-wide text-white/50">Duration</div>
+                  <div className="text-sm font-medium tracking-wide text-white/50">{t('collections.index.durationStat')}</div>
                 </div>
               </motion.div>
 
@@ -95,9 +98,9 @@ export default function Collections() {
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
-                    <span className="relative">All</span>
+                    <span className="relative">{t('collections.index.allFilter')}</span>
                   </Button>
-                  {Object.entries(TYPE_LABELS).map(([type, label]) => {
+                  {Object.entries(TYPE_LABEL_KEYS).map(([type, labelKey]) => {
                     const count = collections.filter((c) => c.type === type).length
                     if (count === 0) return null
                     return (
@@ -118,7 +121,7 @@ export default function Collections() {
                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                           />
                         )}
-                        <span className="relative">{label}</span>
+                        <span className="relative">{t(labelKey)}</span>
                       </Button>
                     )
                   })}
@@ -160,9 +163,9 @@ export default function Collections() {
               <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white/5 border border-white/10">
                 <FolderIcon className="h-12 w-12 text-white/30" />
               </div>
-              <h3 className="mb-2 text-2xl font-semibold text-white">No collections yet</h3>
+              <h3 className="mb-2 text-2xl font-semibold text-white">{t('collections.index.emptyTitle')}</h3>
               <p className="max-w-md text-center text-base text-white/60">
-                Upload your first videos to automatically generate intelligent collections organized by AI.
+                {t('collections.index.emptyDescription')}
               </p>
             </motion.div>
           )}

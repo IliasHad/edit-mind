@@ -7,9 +7,10 @@ import { ChatInput } from '~/features/chats/components/ChatInput'
 import { useCurrentChat } from '~/features/chats/hooks/useCurrentChat'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { useEffect } from 'react'
+import { translate } from '~/i18n/translate'
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Prompt | Edit Mind' }]
+  return [{ title: translate('chats.meta.promptTitle') }]
 }
 
 export default function ChatPage() {

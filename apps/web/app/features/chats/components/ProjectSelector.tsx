@@ -1,6 +1,7 @@
 import { FolderOpenIcon } from '@heroicons/react/24/solid'
 import { CheckIcon } from '@heroicons/react/24/outline'
 import type { Project } from '@prisma/client'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@ui/components/Button'
 
 interface ProjectSelectorProps {
@@ -10,6 +11,8 @@ interface ProjectSelectorProps {
 }
 
 export function ProjectSelector({ projects, selectedProject, onSelectProject }: ProjectSelectorProps) {
+  const { t } = useTranslation()
+
   return (
     <div
       className="absolute bottom-full left-0 mb-2 w-72 max-h-72 overflow-auto
@@ -19,7 +22,7 @@ export function ProjectSelector({ projects, selectedProject, onSelectProject }: 
                             py-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
     >
       <div className="px-3 py-2 border-b border-black/5 dark:border-white/10">
-        <p className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wide">Select Project</p>
+        <p className="text-xs font-semibold text-black/50 dark:text-white/50 uppercase tracking-wide">{t('chats.projectSelector.title')}</p>
       </div>
 
       <Button
@@ -33,7 +36,7 @@ export function ProjectSelector({ projects, selectedProject, onSelectProject }: 
         }
         rightIcon={!selectedProject && <CheckIcon className="w-4 h-4 text-black dark:text-white shrink-0" />}
       >
-        <span className="text-zinc-500 dark:text-zinc-400">All projects</span>
+        <span className="text-zinc-500 dark:text-zinc-400">{t('chats.projectSelector.allProjects')}</span>
       </Button>
 
       <div className="h-px bg-black/5 dark:bg-white/10 my-1" />

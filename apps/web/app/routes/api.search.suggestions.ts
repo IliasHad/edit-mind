@@ -1,6 +1,8 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import { getUser } from '~/services/user.server'
-import { getGroupedSearchSuggestions } from '@search/services/suggestion';
+import { getGroupedSearchSuggestions } from '@search/services/suggestion'
+import { localizeCanonicalSuggestion } from '@search/utils/localizedQuery'
+import { AppSettingsModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -19,9 +21,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
       return { suggestions: [] }
     }
 
+    const language = await AppSettingsModel.getLanguage()
     const suggestions = await getGroupedSearchSuggestions(query, limitPerGroup, totalLimit)
+    const localizedSuggestions = Object.fromEntries(
+      Object.entries(suggestions).map(([type, items]) => [
+        type,
+        items.map((item) => localizeCanonicalSuggestion(item, language)),
+      ])
+    )
 
-    return { suggestions }
+    return { suggestions: localizedSuggestions }
   } catch (error) {
     logger.error('Error fetching suggestions: ' + error)
     return new Response(JSON.stringify({ error: 'Failed to fetch suggestions' }), { status: 500 })

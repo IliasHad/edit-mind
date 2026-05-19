@@ -10,12 +10,14 @@ import { JobCard } from '~/features/jobs/components/JobCard'
 import { useEffect, useMemo } from 'react'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { Pagination } from '~/features/shared/components/Pagination'
+import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Jobs | Edit Mind' }]
 }
 
 export default function JobsPage() {
+  const { t } = useTranslation()
   const { jobs, total, jobsStatus, fetchJobs, loading, retryAllFailedJobs, refreshJobs, totalPages, page } = useJobs()
 
   const [searchParams] = useSearchParams()
@@ -45,13 +47,13 @@ export default function JobsPage() {
         >
           <div className="flex justify-between items-start mb-12">
             <div>
-              <h1 className="text-4xl font-semibold tracking-tight text-white mb-3">Al Jobs</h1>
+              <h1 className="text-4xl font-semibold tracking-tight text-white mb-3">{t('jobs.title')}</h1>
               <div className="flex items-center gap-4">
                 {total > 0 && (
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     <span className="text-sm font-medium text-white/60">
-                      {total} {total === 1 ? 'Job' : 'Jobs'}
+                      {t('jobs.jobCount', { count: total })}
                     </span>
                   </div>
                 )}
@@ -65,7 +67,7 @@ export default function JobsPage() {
                   className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-black hover:bg-white/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/10"
                 >
                   <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  {loading ? 'Retrying...' : 'Retry Failed Jobs'}
+                  {loading ? t('jobs.retrying') : t('jobs.retryFailed')}
                 </button>
               </div>
             )}
@@ -81,7 +83,7 @@ export default function JobsPage() {
               {Object.entries(jobsStatus).map(([status, count]) => (
                 <div key={status} className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">{status}</span>
+                    <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t(`jobs.status.${status}`)}</span>
                     <JobStatusIcon status={status as Job['status']} />
                   </div>
                   <p className="text-2xl font-semibold text-white">{count}</p>
@@ -97,7 +99,7 @@ export default function JobsPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="space-y-3"
             >
-              <h2 className="text-lg font-semibold text-white mb-4">Processing Queue</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">{t('jobs.queue')}</h2>
               {jobs.map((job) => (
                 <JobCard job={job} />
               ))}
@@ -112,9 +114,9 @@ export default function JobsPage() {
               <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
                 <CheckCircleIcon className="w-10 h-10 text-white/20" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No Active Jobs</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">{t('jobs.empty.title')}</h3>
               <p className="text-sm text-white/50 max-w-md mx-auto leading-relaxed">
-                Video indexing jobs will appear here when you add new videos to this
+                {t('jobs.empty.description')}
               </p>
             </motion.div>
           )}
