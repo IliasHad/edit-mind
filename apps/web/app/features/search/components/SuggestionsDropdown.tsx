@@ -3,6 +3,7 @@ import type { GroupedSuggestions } from '@shared/types/search'
 import { SUGGESTION_CONFIG } from '../constants'
 import { SuggestionSection } from './SearchSuggestions'
 import type { SearchFiltersType } from '../types'
+import { useTranslation } from 'react-i18next'
 
 interface SuggestionsDropdownProps {
   suggestions: GroupedSuggestions
@@ -11,6 +12,7 @@ interface SuggestionsDropdownProps {
 
 export const SuggestionsDropdown = forwardRef<HTMLDivElement, SuggestionsDropdownProps>(
   ({ suggestions, show }, ref) => {
+    const { t } = useTranslation()
     const hasSuggestions = Object.keys(suggestions).some((key) => suggestions[key]?.length > 0)
 
     if (!show || !hasSuggestions) {
@@ -44,7 +46,7 @@ export const SuggestionsDropdown = forwardRef<HTMLDivElement, SuggestionsDropdow
             return (
               <SuggestionSection
                 key={type}
-                title={config.label}
+                title={t(config.labelKey)}
                 icon={config.icon}
                 items={items}
                 type={type}

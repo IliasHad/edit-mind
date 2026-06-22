@@ -1,6 +1,7 @@
 import { Button } from '@ui/components/Button'
 import { FormProvider, useForm } from 'react-hook-form';
 import { FormInput } from '~/features/auth/components/FormInput';
+import { useTranslation } from 'react-i18next'
 
 interface UpdateLocationProps {
     id: string
@@ -14,6 +15,7 @@ type FormValues = {
 }
 
 export function UpdateLocation({ updateVideoLocation, id, defaultLocation, loading, refresh }: UpdateLocationProps) {
+    const { t } = useTranslation()
     const form = useForm<FormValues>({
         defaultValues: {
             location: defaultLocation
@@ -37,7 +39,7 @@ export function UpdateLocation({ updateVideoLocation, id, defaultLocation, loadi
             <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                     <div>
-                        <h3 className="text-sm font-medium text-black dark:text-white">Update Location</h3>
+                        <h3 className="text-sm font-medium text-black dark:text-white">{t('videos.location.title')}</h3>
                     </div>
                 </div>
 
@@ -47,7 +49,7 @@ export function UpdateLocation({ updateVideoLocation, id, defaultLocation, loadi
                             <FormInput
                                 name="location"
                                 type="text"
-                                placeholder="e.g. New York, Central Park"
+                                placeholder={t('videos.location.placeholder')}
                                 disabled={loading}
                             />
 
@@ -60,9 +62,9 @@ export function UpdateLocation({ updateVideoLocation, id, defaultLocation, loadi
                             >
                                 {loading ? (
                                     <>
-                                        Updating...
+                                        {t('videos.location.updating')}
                                     </>
-                                ) : 'Update location'}
+                                ) : t('videos.location.update')}
                             </Button>
                         </div>
                     </form>

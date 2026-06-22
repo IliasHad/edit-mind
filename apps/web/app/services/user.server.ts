@@ -47,3 +47,13 @@ export async function requireUser(request: Request) {
 
   return user
 }
+
+export async function requireAdmin(request: Request) {
+  const user = await requireUser(request)
+
+  if (user.role !== 'admin') {
+    throw new Error('User is not authorized')
+  }
+
+  return user
+}

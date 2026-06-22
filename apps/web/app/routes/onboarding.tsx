@@ -1,5 +1,6 @@
 import { AnimatePresence } from 'framer-motion'
 import type { MetaFunction } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { OnboardingNavigation } from '~/features/onboarding/components/OnboardingNavigation'
 import { OnboardingStep } from '~/features/onboarding/components/OnboardingStep'
 import { SkipButton } from '~/features/onboarding/components/SkipButton'
@@ -11,6 +12,7 @@ export const meta: MetaFunction = () => {
 
 export default function Onboarding() {
   const { currentStep, handleNext, handleSkip, goToStep, onboardingSteps, isLastStep, totalSteps } = useOnboarding()
+  const { t } = useTranslation()
 
   const activeStep = onboardingSteps[currentStep]
 
@@ -23,8 +25,8 @@ export default function Onboarding() {
           <AnimatePresence mode="wait">
             <OnboardingStep
               key={currentStep}
-              title={activeStep.title}
-              description={activeStep.description}
+              title={t(activeStep.titleKey)}
+              description={t(activeStep.descriptionKey)}
               image={activeStep.image}
             />
           </AnimatePresence>

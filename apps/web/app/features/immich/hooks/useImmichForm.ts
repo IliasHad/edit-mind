@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { translate } from '~/i18n/translate'
 import { useImmichStore } from '../stores'
 import type { ImmichConnectionStatus } from '../types'
 import { type ImmichConfig } from '@immich/types/immich'
@@ -21,7 +22,7 @@ export function useImmichForm() {
     } catch (error) {
       setConnectionStatus({
         success: false,
-        message: error instanceof Error ? error.message : 'Connection test failed',
+        message: error instanceof Error ? error.message : translate('immich.errors.connectionTestFailed'),
       })
     } finally {
       setIsTestingConnection(false)

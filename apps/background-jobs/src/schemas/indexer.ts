@@ -1,3 +1,4 @@
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@shared/types/language'
 import { z } from 'zod'
 
 export const VideoReIndexingSchema = z.object({
@@ -5,6 +6,7 @@ export const VideoReIndexingSchema = z.object({
   forceReIndexing: z.boolean().default(false),
   priority: z.number().min(0).default(0),
   jobId: z.string().min(1, 'jobId cannot be empty'),
+  language: z.enum(SUPPORTED_LANGUAGES).default(DEFAULT_LANGUAGE),
 })
 
 export const VideoUpdateSchema = z.object({

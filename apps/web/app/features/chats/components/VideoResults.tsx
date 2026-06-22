@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Scene } from '@shared/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SceneCard } from './SceneCard'
@@ -17,6 +18,7 @@ export const VideoResults: React.FC<VideoResultsProps> = ({
   handleSelectScene,
   resetSelectedScenes,
 }) => {
+  const { t } = useTranslation()
   const [previewScene, setPreviewScene] = useState<Scene | null>(null)
   const [focusedIndex, setFocusedIndex] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -125,22 +127,22 @@ export const VideoResults: React.FC<VideoResultsProps> = ({
       </AnimatePresence>
 
       <div className="mt-4 text-center text-sm text-black/50 dark:text-white/50">
-        Use{' '}
+        {t('chats.videoResults.shortcuts.use')}{' '}
         <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 rounded border border-black/10 dark:border-white/10 font-medium">
           ←
         </kbd>
         <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 rounded border border-black/10 dark:border-white/10 font-medium">
           →
         </kbd>{' '}
-        to navigate,{' '}
+        {t('chats.videoResults.shortcuts.navigate')},{' '}
         <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 rounded border border-black/10 dark:border-white/10 font-medium">
           Click
         </kbd>{' '}
-        to preview,{' '}
+        {t('chats.videoResults.shortcuts.preview')},{' '}
         <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 rounded border border-black/10 dark:border-white/10 font-medium">
           ○
         </kbd>{' '}
-        to select
+        {t('chats.videoResults.shortcuts.select')}
       </div>
     </>
   )

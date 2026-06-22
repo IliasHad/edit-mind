@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { ProjectCreateInput, ProjectUpdateInput } from '../schemas'
 import type { ProjectWithVideosIds } from '../types';
+import { translate } from '~/i18n/translate'
 import { apiClient } from '../services/api'
 
 interface ProjectsState {
@@ -38,7 +39,7 @@ export const useProjectsStore = create<ProjectsState>()(
             const response = await fetch('/api/projects')
 
             if (!response.ok) {
-              throw new Error(`Failed to fetch projects: ${response.statusText}`)
+              throw new Error(`${translate('projects.errors.fetchProjects')}: ${response.statusText}`)
             }
 
             const { projects } = await response.json()
@@ -46,7 +47,7 @@ export const useProjectsStore = create<ProjectsState>()(
             set({ projects, isLoading: false })
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('projects.errors.unknown'),
               isLoading: false,
             })
           }
@@ -64,7 +65,7 @@ export const useProjectsStore = create<ProjectsState>()(
             return project
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('projects.errors.unknown'),
               isLoading: false,
               currentProject: null,
             })
@@ -84,7 +85,7 @@ export const useProjectsStore = create<ProjectsState>()(
             }))
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('projects.errors.unknown'),
               isLoading: false,
               currentProject: null,
             })
@@ -105,7 +106,7 @@ export const useProjectsStore = create<ProjectsState>()(
             return project
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('projects.errors.unknown'),
               isLoading: false,
             })
             return null
@@ -130,7 +131,7 @@ export const useProjectsStore = create<ProjectsState>()(
             return project
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Unknown error occurred',
+              error: error instanceof Error ? error.message : translate('projects.errors.unknown'),
               isLoading: false,
             })
             return null

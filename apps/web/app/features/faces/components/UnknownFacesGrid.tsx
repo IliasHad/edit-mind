@@ -4,8 +4,10 @@ import { Pagination } from './Pagination'
 import { motion } from 'framer-motion'
 import { useFaces } from '../hooks/useFaces'
 import { FaceCard } from './FaceCard';
+import { useTranslation } from 'react-i18next'
 
 export const UnknownFacesGrid = () => {
+  const { t } = useTranslation()
   const {
     unknownFaces,
     selectedFaces,
@@ -26,7 +28,7 @@ export const UnknownFacesGrid = () => {
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-black/40 dark:bg-white/40" />
                   <span className="text-sm font-medium text-black/60 dark:text-white/60">
-                    {unknownFaces.length} Unknown Faces
+                    {t('faces.grid.unknownFaces', { count: unknownFaces.length })}
                   </span>
                 </div>
                 {selectedFaces.size > 0 && (
@@ -37,7 +39,7 @@ export const UnknownFacesGrid = () => {
                   >
                     <CheckIcon className="w-3.5 h-3.5 text-black dark:text-white" />
                     <span className="text-sm font-medium text-black dark:text-white">
-                      {selectedFaces.size} Selected
+                      {t('faces.grid.selected', { count: selectedFaces.size })}
                     </span>
                   </motion.div>
                 )}
@@ -55,8 +57,8 @@ export const UnknownFacesGrid = () => {
                   <div className="absolute inset-0 rounded-full border-2 border-t-black dark:border-t-white border-r-black/60 dark:border-r-white/60 border-b-black/20 dark:border-b-white/20 border-l-transparent animate-spin" />
                 </div>
                 <div className="text-center">
-                  <p className="text-base font-semibold text-black/90 dark:text-white/90">Loading faces</p>
-                  <p className="text-sm text-black/40 dark:text-white/40 mt-1">Please wait...</p>
+                  <p className="text-base font-semibold text-black/90 dark:text-white/90">{t('faces.loading.faces')}</p>
+                  <p className="text-sm text-black/40 dark:text-white/40 mt-1">{t('faces.loading.pleaseWait')}</p>
                 </div>
               </div>
             </div>
@@ -66,9 +68,9 @@ export const UnknownFacesGrid = () => {
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
                   <EyeIcon className="w-10 h-10 text-black/20 dark:text-white/20" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-lg font-semibold text-black/90 dark:text-white/90 mb-2">No Unknown Faces</h3>
+                <h3 className="text-lg font-semibold text-black/90 dark:text-white/90 mb-2">{t('faces.empty.noUnknownFaces')}</h3>
                 <p className="text-sm text-black/40 dark:text-white/40 leading-relaxed">
-                  All faces have been identified or no faces have been detected yet.
+                  {t('faces.empty.noUnknownFacesDescription')}
                 </p>
               </div>
             </div>

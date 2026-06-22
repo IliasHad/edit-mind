@@ -1,4 +1,6 @@
 import { type MetaFunction } from 'react-router';
+import { useTranslation } from 'react-i18next'
+import { translate } from '~/i18n/translate'
 import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import type { Scene } from '@shared/types/scene'
@@ -11,10 +13,11 @@ import { ArrowDownTrayIcon } from '@heroicons/react/24/solid'
 import { Button } from '@ui/components/Button'
 
 export const meta: MetaFunction = () => {
-  return [{ title: 'Collection Scenes | Edit Mind' }]
+  return [{ title: translate('collections.meta.scenesTitle') }]
 }
 
 export default function CollectionScenes() {
+  const { t } = useTranslation()
   const { currentScenes, loading, exportCollectionSelectedScenes, id } = useCurrentCollectionScenes()
 
   const [selectedScenes, setSelectedScenes] = useState<Set<string>>(new Set())
@@ -55,13 +58,13 @@ export default function CollectionScenes() {
                   className="flex items-center gap-3"
                 >
                   <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                    {selectedScenes.size} scene{selectedScenes.size > 1 ? 's' : ''} selected
+                    {t(selectedScenes.size === 1 ? 'collections.scenes.selectedSceneOne' : 'collections.scenes.selectedSceneOther', { count: selectedScenes.size })}
                   </span>
                   <Button
                     variant="ghost"
                     onClick={() => setSelectedScenes(new Set())}
                   >
-                    Clear
+                    {t('collections.scenes.clear')}
                   </Button>
                 </motion.div>
               )}
@@ -87,7 +90,7 @@ export default function CollectionScenes() {
               transition={{ duration: 0.6 }}
               className="flex flex-col items-center justify-center py-24 text-center"
             >
-              <h3 className="mb-2 text-xl font-semibold tracking-tight text-black dark:text-white">No scenes found</h3>
+              <h3 className="mb-2 text-xl font-semibold tracking-tight text-black dark:text-white">{t('collections.scenes.emptyTitle')}</h3>
             </motion.div>
           )}
         </motion.div>
@@ -106,7 +109,7 @@ export default function CollectionScenes() {
             >
               <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl px-6 py-4">
                 <span className="text-sm font-semibold text-zinc-900 dark:text-white">
-                  {selectedScenes.size} selected
+                  {t('collections.scenes.selected', { count: selectedScenes.size })}
                 </span>
                 <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
                 {Array.from(selectedScenes).map((sceneId) => (
@@ -117,7 +120,7 @@ export default function CollectionScenes() {
                   onClick={handleExport}
                   leftIcon={<ArrowDownTrayIcon className="w-4 h-4" />}
                 >
-                  Export Scenes
+                  {t('collections.scenes.exportScenes')}
                 </Button>
               </div>
             </motion.div>

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Scene } from '@shared/types'
 import { CheckIcon, PlayIcon, PauseIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { motion } from 'framer-motion'
@@ -12,6 +13,7 @@ interface PreviewModalProps {
 }
 
 export const PreviewModal: React.FC<PreviewModalProps> = ({ scene, isSelected, onClose, onToggleSelect }) => {
+  const { t } = useTranslation()
   const [isPlaying, setIsPlaying] = useState(true)
   const [currentTime, setCurrentTime] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -136,6 +138,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ scene, isSelected, o
           variant="ghost"
           size="icon-md"
           leftIcon={<XMarkIcon className="w-5 h-5 text-white dark:text-black" />}
+          aria-label={t('chats.preview.close')}
         />
 
         <div className="relative aspect-video bg-black group">
@@ -145,7 +148,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ scene, isSelected, o
             className="w-full h-full"
             playsInline
           >
-            Your browser does not support the video tag.
+            {t('chats.preview.unsupported')}
           </video>
 
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -177,7 +180,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ scene, isSelected, o
               <span className="text-xs text-white/90 font-mono tabular-nums">{formatTime(duration)}</span>
             </div>
             <div className="text-xs text-white/60">
-              Scene: {formatTime(startTime)} - {formatTime(endTime)}
+              {t('chats.preview.sceneLabel')}: {formatTime(startTime)} - {formatTime(endTime)}
             </div>
           </div>
         </div>
@@ -199,17 +202,17 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ scene, isSelected, o
             >
               {isSelected ? (
                 <span className="flex items-center justify-center gap-2">
-                  Selected
+{t('chats.preview.selected')}
                 </span>
               ) : (
-                'Select Scene'
+                t('chats.preview.selectScene')
               )}
             </Button>
             <Button
               onClick={onClose}
               variant="outline"
             >
-              Close
+{t('chats.preview.close')}
             </Button>
           </div>
 
@@ -217,19 +220,19 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({ scene, isSelected, o
             <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 rounded border border-black/10 dark:border-white/10 font-medium">
               Space
             </kbd>{' '}
-            play/pause •{' '}
+            {t('chats.preview.shortcuts.playPause')} •{' '}
             <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 rounded border border-black/10 dark:border-white/10 font-medium">
               R
             </kbd>{' '}
-            restart •{' '}
+            {t('chats.preview.shortcuts.restart')} •{' '}
             <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 rounded border border-black/10 dark:border-white/10 font-medium">
               Enter
             </kbd>{' '}
-            select •{' '}
+            {t('chats.preview.shortcuts.select')} •{' '}
             <kbd className="px-2 py-1 bg-black/5 dark:bg-white/5 text-black/50 dark:text-white/50 rounded border border-black/10 dark:border-white/10 font-medium">
               Esc
             </kbd>{' '}
-            close
+{t('chats.preview.shortcuts.close')}
           </div>
         </div>
       </motion.div>

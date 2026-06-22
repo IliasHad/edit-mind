@@ -11,42 +11,42 @@ import {
 
 export const SUGGESTION_CONFIG = {
   face: {
-    label: 'Faces',
+    labelKey: 'search.suggestions.face',
     icon: UserIcon,
     color: 'blue',
   },
   object: {
-    label: 'Objects',
+    labelKey: 'search.suggestions.object',
     icon: CubeIcon,
     color: 'green',
   },
   emotion: {
-    label: 'Emotions',
+    labelKey: 'search.suggestions.emotion',
     icon: FaceSmileIcon,
     color: 'yellow',
   },
   camera: {
-    label: 'Cameras',
+    labelKey: 'search.suggestions.camera',
     icon: CameraIcon,
     color: 'purple',
   },
   shotType: {
-    label: 'Shot Types',
+    labelKey: 'search.suggestions.shotType',
     icon: VideoCameraIcon,
     color: 'pink',
   },
   transcription: {
-    label: 'Transcript',
+    labelKey: 'search.suggestions.transcription',
     icon: DocumentTextIcon,
     color: 'indigo',
   },
   text: {
-    label: 'Detected Text',
+    labelKey: 'search.suggestions.text',
     icon: SparklesIcon,
     color: 'orange',
   },
   location: {
-    label: 'Locations',
+    labelKey: 'search.suggestions.location',
     icon: MapPinIcon,
     color: 'red',
   },

@@ -4,6 +4,7 @@ import { SubmitButton } from '~/features/auth/components/SubmitButton'
 import { LoginSchema } from '~/features/auth/schemas/auth'
 import { AuthHeader } from '~/features/auth/components/AuthHeader'
 import { Link, useActionData, useNavigation, type ActionFunctionArgs, type MetaFunction } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { login } from '~/services/auth.server'
 
 export const meta: MetaFunction = () => {
@@ -22,40 +23,51 @@ export async function action({ request }: ActionFunctionArgs) {
   return login(request, result.data)
 }
 
+const authErrorKeyByMessage: Record<string, string> = {
+  'Invalid form data': 'auth.errors.invalidFormData',
+  'Invalid email or password': 'auth.errors.invalidCredentials',
+  'Invalid email address': 'auth.errors.invalidEmail',
+  'Password must be at least 4 characters': 'auth.errors.passwordMin',
+}
+
 export default function Login() {
   const actionData = useActionData<{ error: string, fieldErrors: { password?: string[], email?: string[] } }>()
   const navigation = useNavigation()
+  const { t } = useTranslation()
 
   const loading = navigation.state === 'submitting'
+  const translateAuthError = (message?: string) => message ? t(authErrorKeyByMessage[message] ?? message) : undefined
 
   return (
     <>
-      <AuthHeader title="Welcome back" subtitle="Sign in to access your video library" />
+      <AuthHeader title={t('auth.login.title')} subtitle={t('auth.login.subtitle')} />
       <AuthForm>
-        {actionData?.error && <div className="text-red-500 text-sm mt-2">{actionData.error}</div>}
+        {actionData?.error && <div className="text-red-500 text-sm mt-2">{translateAuthError(actionData.error)}</div>}
         <FormInput
           name="email"
           type="email"
-          placeholder="Email"
-          defaultError={actionData?.fieldErrors?.email?.[0]}
+          placeholder={t('auth.fields.email')}
+          label={t('auth.fields.email')}
+          defaultError={translateAuthError(actionData?.fieldErrors?.email?.[0])}
         />
 
         <FormInput
           name="password"
           type="password"
-          placeholder="Password"
-          defaultError={actionData?.fieldErrors?.password?.[0]}
+          placeholder={t('auth.fields.password')}
+          label={t('auth.fields.password')}
+          defaultError={translateAuthError(actionData?.fieldErrors?.password?.[0])}
         />
         <p className="mt-4 text-center text-sm text-gray-500 dark:text-zinc-500">
-          Don't have an account?{' '}
+          {t('auth.login.noAccount')}{' '}
           <Link
             to="/auth/register"
             className="text-black dark:text-white font-medium hover:underline underline-offset-4"
           >
-            Sign up
+            {t('auth.login.signUp')}
           </Link>
         </p>
-        <SubmitButton loading={loading} text="Sign in" loadingText="Signing in..." />
+        <SubmitButton loading={loading} text={t('auth.login.submit')} loadingText={t('auth.login.submitting')} />
       </AuthForm>
     </>
   )

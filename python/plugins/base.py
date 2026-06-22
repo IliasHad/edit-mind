@@ -53,7 +53,7 @@ class AnalyzerPlugin(ABC):
         pass
     
     @abstractmethod
-    def setup(self, video_path: str, job_id: str) -> None:
+    def setup(self, video_path: str, job_id: str, language: str = "en") -> None:
         """
         Perform one-time initialization per job.
         Called once before frame processing begins.

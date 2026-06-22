@@ -61,6 +61,8 @@ export interface SearchStats {
 
 export interface Suggestion {
   text: string
+  value?: string
+  displayText?: string
   type: 'face' | 'object' | 'emotion' | 'camera' | 'shotType' | 'location' | 'transcription' | 'text'
   count: number
   sceneCount: number

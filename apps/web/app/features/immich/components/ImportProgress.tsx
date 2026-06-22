@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import type { ImmichImportStatus } from '@immich/types/immich'
 
@@ -8,6 +9,8 @@ interface ImportProgressProps {
 }
 
 export function ImportProgress({ importStatus, onRetry }: ImportProgressProps) {
+  const { t } = useTranslation()
+
   const getStatusConfig = () => {
     switch (importStatus.status) {
       case 'importing':
@@ -16,7 +19,7 @@ export function ImportProgress({ importStatus, onRetry }: ImportProgressProps) {
           borderColor: 'border-blue-500/30',
           textColor: 'text-blue-400',
           progressColor: 'bg-blue-400',
-          title: 'Importing faces...',
+          title: t('immich.importProgress.importing'),
         }
       case 'completed':
         return {
@@ -24,7 +27,7 @@ export function ImportProgress({ importStatus, onRetry }: ImportProgressProps) {
           borderColor: 'border-green-500/30',
           textColor: 'text-green-400',
           progressColor: 'bg-green-400',
-          title: 'Import completed',
+          title: t('immich.importProgress.completed'),
         }
       case 'failed':
         return {
@@ -32,7 +35,7 @@ export function ImportProgress({ importStatus, onRetry }: ImportProgressProps) {
           borderColor: 'border-red-500/30',
           textColor: 'text-red-400',
           progressColor: 'bg-red-400',
-          title: 'Import failed',
+          title: t('immich.importProgress.failed'),
         }
       default:
         return {
@@ -40,7 +43,7 @@ export function ImportProgress({ importStatus, onRetry }: ImportProgressProps) {
           borderColor: 'border-white/10',
           textColor: 'text-white/60',
           progressColor: 'bg-white/20',
-          title: 'Ready to import',
+          title: t('immich.importProgress.ready'),
         }
     }
   }
@@ -77,10 +80,10 @@ export function ImportProgress({ importStatus, onRetry }: ImportProgressProps) {
 
           <div className="flex items-center justify-between text-xs">
             <span className={`${config.textColor}/80`}>
-              {importStatus.processedFaces.toLocaleString()} faces processed
+              {t('immich.importProgress.facesProcessed', { count: importStatus.processedFaces.toLocaleString() })}
             </span>
 
-            {importStatus.status === 'completed' && <span className="text-green-400/80">All done! 🎉</span>}
+            {importStatus.status === 'completed' && <span className="text-green-400/80">{t('immich.importProgress.allDone')}</span>}
           </div>
 
           {importStatus.status === 'failed' && importStatus.error && (
@@ -97,7 +100,7 @@ export function ImportProgress({ importStatus, onRetry }: ImportProgressProps) {
                   className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all"
                 >
                   <ArrowPathIcon className="w-3.5 h-3.5" />
-                  Retry Import
+                  {t('immich.importProgress.retry')}
                 </button>
               )}
             </motion.div>

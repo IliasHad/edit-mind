@@ -27,6 +27,9 @@ vi.mock('@shared/services/logger', () => ({
 }))
 
 vi.mock('@db/index', () => ({
+  AppSettingsModel: {
+    getLanguage: vi.fn().mockResolvedValue('en'),
+  },
   FolderModel: mockDatabase.Folder,
   JobModel: mockDatabase.Job,
 }))

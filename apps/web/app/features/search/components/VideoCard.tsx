@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
 import type { SceneAndMatch } from '@shared/types/video'
 import { ProgressBar } from './ProgressBar'
+import { useTranslation } from 'react-i18next'
 
 interface VideoMetadata {
   faces?: string[]
@@ -39,10 +40,11 @@ export function VideoCard({
   scenes,
 }: VideoCardProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const { t } = useTranslation()
 
   const [imageError, setImageError] = useState(false)
 
-  const fileName = source.split('/').pop() || 'Untitled Video'
+  const fileName = source.split('/').pop() || t('search.videoCard.untitledVideo')
   const isPortrait = aspectRatio === '9:16'
 
   const hasPartialMatches = scenes.filter((scene) => scene.matched).length > 0
@@ -66,20 +68,20 @@ export function VideoCard({
         dark:hover:ring-white/20 dark:hover:shadow-black/30
         ${isPortrait ? 'row-span-3' : 'row-span-2'}
       `}
-      aria-label={`View ${fileName}`}
+      aria-label={t('search.videoCard.view', { name: fileName })}
       onMouseLeave={() => setIsHovered(false)}
       onMouseEnter={() => setIsHovered(false)}
     >
       {imageError ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800">
           <PhotoIcon className="mb-2 h-12 w-12 text-zinc-400 dark:text-zinc-600" />
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Preview unavailable</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{t('search.videoCard.previewUnavailable')}</p>
         </div>
       ) : (
         <>
           <img
             src={thumbnailSrc}
-            alt={`${fileName} thumbnail`}
+            alt={t('search.videoCard.thumbnailAlt', { name: fileName })}
             onError={handleImageError}
             className="h-full w-full object-cover transition-all duration-300 ease-out"
           />
@@ -111,7 +113,7 @@ export function VideoCard({
               }}
               transition={{ duration: HOVER_ANIMATION_DURATION }}
               className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white backdrop-blur-sm"
-              aria-label={`${metadata.faces.length} faces detected`}
+              aria-label={t('search.videoCard.facesDetected', { count: metadata.faces.length })}
             >
               <UserIcon className="h-3 w-3" />
               <span>{metadata.faces.length}</span>
@@ -126,7 +128,7 @@ export function VideoCard({
               }}
               transition={{ duration: HOVER_ANIMATION_DURATION }}
               className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white backdrop-blur-sm"
-              aria-label={`${metadata.objects.length} objects detected`}
+              aria-label={t('search.videoCard.objectsDetected', { count: metadata.objects.length })}
             >
               <CubeIcon className="h-3 w-3" />
               <span>{metadata.objects.length}</span>
@@ -135,7 +137,7 @@ export function VideoCard({
         </div>
       )}
 
-      <Link to={videoUrl} aria-label={`View ${fileName} details`}>
+      <Link to={videoUrl} aria-label={t('search.videoCard.viewDetails', { name: fileName })}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{

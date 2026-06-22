@@ -4,8 +4,10 @@ import { FaceSmileIcon } from '@heroicons/react/24/outline'
 import { Link } from 'react-router'
 import { motion } from 'framer-motion'
 import { useFaces } from '../hooks/useFaces'
+import { useTranslation } from 'react-i18next'
 
 export const KnownFacesGrid: React.FC = () => {
+  const { t } = useTranslation()
   const { knownFaces, loading, knownPagination, handleKnownPageChange } = useFaces()
 
   return (
@@ -16,8 +18,8 @@ export const KnownFacesGrid: React.FC = () => {
             <div className="max-w-7xl mx-auto">
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-base text-white/60">
                 {loading
-                  ? 'Loading...'
-                  : `${knownPagination.total} ${knownPagination.total === 1 ? 'person' : 'people'}`}
+                  ? t('faces.loading.people')
+                  : t('faces.grid.peopleCount', { count: knownPagination.total })}
               </motion.p>
             </div>
           </div>
@@ -32,7 +34,7 @@ export const KnownFacesGrid: React.FC = () => {
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     />
-                    <p className="text-sm text-white/60">Loading people...</p>
+                    <p className="text-sm text-white/60">{t('faces.loading.people')}</p>
                   </div>
                 </div>
               ) : knownFaces.length === 0 ? (
@@ -41,9 +43,9 @@ export const KnownFacesGrid: React.FC = () => {
                     <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
                       <FaceSmileIcon className="w-12 h-12 text-white/30" strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-3">No People</h3>
+                    <h3 className="text-xl font-semibold text-white mb-3">{t('faces.empty.noPeople')}</h3>
                     <p className="text-sm text-white/50 leading-relaxed">
-                      People you name will appear here. Start labeling faces to organize your photos by who's in them.
+                      {t('faces.empty.noPeopleDescription')}
                     </p>
                   </div>
                 </div>
@@ -88,7 +90,7 @@ export const KnownFacesGrid: React.FC = () => {
                                   {face.name}
                                 </p>
 
-                                <p className="text-xs text-white/50 mt-1">{face.images.length} Images</p>
+                                <p className="text-xs text-white/50 mt-1">{t('faces.detail.imageCount', { count: face.images.length })}</p>
                               </div>
                             </Link>
                           </motion.div>

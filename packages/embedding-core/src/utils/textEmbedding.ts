@@ -3,6 +3,7 @@ import { createVectorDbClient } from '@vector/services/client'
 
 import { EMBEDDING_BATCH_SIZE } from '@shared/constants/embedding'
 import { logger } from '@shared/services/logger'
+import { DEFAULT_LANGUAGE, type AppLanguage } from '@shared/types/language'
 import { sceneToVectorFormat } from '@vector/utils/shared'
 import { getEmbeddings } from '@embedding-core/services/extractors'
 import { embedTextDocuments, updateTextDocuments } from '@embedding-core/services/embed';
@@ -10,6 +11,7 @@ import { embedTextDocuments, updateTextDocuments } from '@embedding-core/service
 export const embedScenes = async (
   scenes: Scene[],
   videoFullPath: string,
+  language: AppLanguage = DEFAULT_LANGUAGE,
   onProgress?: (batchIndex: number, totalBatches: number) => Promise<void>
 ): Promise<void> => {
   try {
@@ -18,7 +20,7 @@ export const embedScenes = async (
       const batch = scenes.slice(i, i + EMBEDDING_BATCH_SIZE)
 
       const embeddingInputsPromise = batch.map(async (scene) => {
-        return await sceneToVectorFormat(scene)
+        return await sceneToVectorFormat(scene, language)
       })
       const embeddingInputs = await Promise.all(embeddingInputsPromise)
 
@@ -54,13 +56,17 @@ export const embedScenes = async (
   }
 }
 
-export const updateScenes = async (scenes: Scene[], videoFullPath: string): Promise<void> => {
+export const updateScenes = async (
+  scenes: Scene[],
+  videoFullPath: string,
+  language: AppLanguage = DEFAULT_LANGUAGE
+): Promise<void> => {
   try {
     for (let i = 0; i < scenes.length; i += EMBEDDING_BATCH_SIZE) {
       const batch = scenes.slice(i, i + EMBEDDING_BATCH_SIZE)
 
       const embeddingInputsPromise = batch.map(async (scene) => {
-        return await sceneToVectorFormat(scene)
+        return await sceneToVectorFormat(scene, language)
       })
       const embeddingInputs = await Promise.all(embeddingInputsPromise)
 

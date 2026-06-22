@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
 import { requireUser, requireUserId } from '~/services/user.server'
 import { logger } from '@shared/services/logger'
-import { ChatMessageModel, ChatModel } from '@db/index'
+import { AppSettingsModel, ChatMessageModel, ChatModel } from '@db/index'
 import { backgroundJobsFetch } from '~/services/background.server'
 import { ChatCreateSchema } from '~/features/chats/schemas'
 
@@ -20,6 +20,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const user = await requireUser(request)
 
     const { projectId, prompt } = data
+    const language = await AppSettingsModel.getLanguage()
 
     const chat = await ChatModel.create({
       userId: user.id,
@@ -34,7 +35,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       isThinking: false,
     })
 
-    await backgroundJobsFetch(`/internal/chats/${chat.id}/messages`, { prompt }, user)
+    await backgroundJobsFetch(`/internal/chats/${chat.id}/messages`, { prompt, language }, user)
     return {
       chat,
       message: {

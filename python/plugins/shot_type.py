@@ -14,7 +14,7 @@ class ShotTypePlugin(AnalyzerPlugin):
         self.medium_shot_threshold = 0.1
         self.ratio_window: deque = deque(maxlen=5)
 
-    def setup(self, video_path: str, job_id: str) -> None:
+    def setup(self, video_path: str, job_id: str, language: str = "en") -> None:
         self.ratio_window.clear()
 
     def load_models(self) -> None:

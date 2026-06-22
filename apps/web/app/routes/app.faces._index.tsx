@@ -9,12 +9,14 @@ import { DashboardLayout } from '~/layouts/DashboardLayout'
 import { Sidebar } from '~/features/shared/components/Sidebar'
 import { useFaces } from '~/features/faces/hooks/useFaces'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Face Training | Edit Mind' }]
 }
 
 const FaceTraining: React.FC = () => {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { unknownFaces, knownFaces, loading, unknownPagination, knownPagination, setActiveTab } = useFaces()
 
@@ -35,7 +37,7 @@ const FaceTraining: React.FC = () => {
       <div className="flex items-center justify-center h-screen bg-black">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-white" />
-          <span className="text-sm font-medium text-gray-400">Loading faces...</span>
+          <span className="text-sm font-medium text-gray-400">{t('faces.loading.faces')}</span>
         </div>
       </div>
     )
@@ -46,7 +48,7 @@ const FaceTraining: React.FC = () => {
       <div className="min-h-screen bg-black text-white">
         <div className="px-8 pt-16 pb-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-semibold tracking-tight mb-4">My People</h1>
+            <h1 className="text-5xl md:text-6xl font-semibold tracking-tight mb-4">{t('faces.title')}</h1>
           </div>
         </div>
 
@@ -57,10 +59,10 @@ const FaceTraining: React.FC = () => {
                 onClick={() => handleTabChange('known')}
                 variant={activeTab === 'known' ? 'primary' : 'ghost'}
                 size="lg"
-                aria-label="Known faces tab"
+                aria-label={t('faces.tabs.knownAria')}
                 className="rounded-full rounded-r-none"
               >
-                Known
+                {t('faces.tabs.known')}
                 {knownFaces.length > 0 && (
                   <span
                     className={`ml-2 px-2 py-0.5 text-xs rounded-full transition-all duration-300 ${activeTab === 'known' ? 'bg-black/10 text-black' : 'bg-zinc-800 text-white'
@@ -74,10 +76,10 @@ const FaceTraining: React.FC = () => {
                 onClick={() => handleTabChange('unknown')}
                 variant={activeTab === 'unknown' ? 'primary' : 'ghost'}
                 size="lg"
-                aria-label="Unknown faces tab"
+                aria-label={t('faces.tabs.unknownAria')}
                 className="rounded-full rounded-l-none"
               >
-                Unknown
+                {t('faces.tabs.unknown')}
                 {unknownPagination.total > 0 && (
                   <span
                     className={`ml-2 px-2 py-0.5 text-xs rounded-full transition-all duration-300 ${activeTab === 'unknown' ? 'bg-black/10 text-black' : 'bg-zinc-800 text-white'
@@ -100,8 +102,8 @@ const FaceTraining: React.FC = () => {
                     <div className="w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center mb-6">
                       <CheckBadgeIcon />
                     </div>
-                    <h3 className="text-2xl font-semibold mb-2">All faces labeled</h3>
-                    <p className="text-gray-500">Your library is fully trained</p>
+                    <h3 className="text-2xl font-semibold mb-2">{t('faces.empty.allFacesLabeled')}</h3>
+                    <p className="text-gray-500">{t('faces.empty.libraryTrained')}</p>
                   </div>
                 ) : (
                   <>
@@ -126,8 +128,8 @@ const FaceTraining: React.FC = () => {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-semibold mb-2">No faces yet</h3>
-                    <p className="text-gray-500">Start labeling to build your library</p>
+                    <h3 className="text-2xl font-semibold mb-2">{t('faces.empty.noFacesYet')}</h3>
+                    <p className="text-gray-500">{t('faces.empty.startLabeling')}</p>
                   </div>
                 ) : (
                   <KnownFacesGrid />

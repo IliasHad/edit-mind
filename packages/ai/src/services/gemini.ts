@@ -14,6 +14,7 @@ import {
   VIDEO_COMPILATION_MESSAGE_PROMPT,
   SEARCH_PROMPT,
   YEAR_IN_REVIEW,
+  buildPromptInstructions,
 } from '@ai/constants/prompts'
 import type { ChatMessage } from '@prisma/client'
 import type { VideoSearchParams } from '@shared/types/search'
@@ -22,7 +23,7 @@ import { YearStats } from '@shared/types/stats'
 import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import { VideoWithScenes } from '@shared/types/video'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
-import { ModelResponse } from '@ai/types/ai'
+import { ModelResponse, type AIRequestOptions } from '@ai/types/ai'
 import { formatHistory } from '@ai/utils'
 import { VideoAnalytics } from '@shared/types/analytics'
 
@@ -53,13 +54,13 @@ export const GeminiModel = {
   async generateActionFromPrompt(
     query: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<VideoSearchParams>> {
     const fallback: VideoSearchParams = VideoSearchParamsSchema.parse({})
 
     try {
       const history = formatHistory(chatHistory)
-      const prompt = SEARCH_PROMPT(query, history, projectInstructions)
+      const prompt = SEARCH_PROMPT(query, history, buildPromptInstructions(options))
 
       const { totalTokens } = await model.countTokens(prompt)
 
@@ -88,13 +89,7 @@ export const GeminiModel = {
       try {
         const parsed = JSON.parse(json)
         return {
-          data: VideoSearchParamsSchema.parse({
-            ...parsed,
-            semanticQuery: null,
-            locations: [],
-            camera: null,
-            detectedText: null,
-          }),
+          data: VideoSearchParamsSchema.parse(parsed),
           tokens: totalTokens,
           error: undefined,
         }
@@ -112,13 +107,13 @@ export const GeminiModel = {
     userPrompt: string,
     count: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     try {
       const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
       const res = await generateAndCountTokens(
-        ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions)
+        ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history, buildPromptInstructions(options))
       )
       return res
     } catch (error) {
@@ -130,10 +125,10 @@ export const GeminiModel = {
     stats: YearStats,
     videos: VideoWithScenes[],
     extraDetails: string,
-    projectInstructions: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<YearInReviewData | null>> {
     try {
-      const content = YEAR_IN_REVIEW(stats, videos, extraDetails, projectInstructions)
+      const content = YEAR_IN_REVIEW(stats, videos, extraDetails, buildPromptInstructions(options))
       const { totalTokens } = await model.countTokens(content)
 
       if (totalTokens > CONTEXT_WINDOW_LIMIT) {
@@ -163,12 +158,12 @@ export const GeminiModel = {
   async generateGeneralResponse(
     userPrompt: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     const history = formatHistory(chatHistory)
 
     try {
-      const res = await generateAndCountTokens(GENERAL_RESPONSE_PROMPT(userPrompt, history, projectInstructions))
+      const res = await generateAndCountTokens(GENERAL_RESPONSE_PROMPT(userPrompt, history, buildPromptInstructions(options)))
       return res
     } catch (err) {
       logger.error('Gemini general response error:' + err)
@@ -179,13 +174,13 @@ export const GeminiModel = {
   async classifyIntent(
     prompt: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<
     ModelResponse<{ type?: 'general' | 'compilation' | 'analytics' | undefined; needsVideoData?: boolean | undefined }>
   > {
     try {
       const history = formatHistory(chatHistory)
-      const content = CLASSIFY_INTENT_PROMPT(prompt, history, projectInstructions)
+      const content = CLASSIFY_INTENT_PROMPT(prompt, history, buildPromptInstructions(options))
       const { totalTokens } = await model.countTokens(content)
 
       if (totalTokens > CONTEXT_WINDOW_LIMIT) {
@@ -212,12 +207,12 @@ export const GeminiModel = {
     userPrompt: string,
     count: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     try {
       const history = formatHistory(chatHistory)
       const res = await generateAndCountTokens(
-        VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions)
+        VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history, buildPromptInstructions(options))
       )
       return res
     } catch (error) {
@@ -229,12 +224,12 @@ export const GeminiModel = {
     userPrompt: string,
     analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     try {
       const history = formatHistory(chatHistory)
       const res = await generateAndCountTokens(
-        ANALYTICS_RESPONSE_PROMPT(userPrompt, analytics, history, projectInstructions)
+        ANALYTICS_RESPONSE_PROMPT(userPrompt, analytics, history, buildPromptInstructions(options))
       )
       return res
     } catch (error) {

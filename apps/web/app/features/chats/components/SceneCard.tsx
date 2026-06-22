@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Scene } from '@shared/types'
 import { CheckIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -22,6 +23,7 @@ export const SceneCard: React.FC<SceneCardProps> = ({
   onPreview,
   onFocus,
 }) => {
+  const { t } = useTranslation()
   const [isHovered, setIsHovered] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -138,7 +140,7 @@ export const SceneCard: React.FC<SceneCardProps> = ({
 
         <button
           onClick={(e) => { e.stopPropagation(); onSelect() }}
-          aria-label={isSelected ? 'Deselect scene' : 'Select scene'}
+          aria-label={isSelected ? t('chats.sceneCard.deselectAria') : t('chats.sceneCard.selectAria')}
           className={`absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center z-20 transition-all duration-200
             ${isSelected
               ? 'bg-white shadow-lg scale-100'
@@ -154,13 +156,13 @@ export const SceneCard: React.FC<SceneCardProps> = ({
           variant="ghost"
           size="icon-sm"
           leftIcon={<PlayIcon className="w-4 h-4" fill="currentColor" />}
-          aria-label="Preview video"
+          aria-label={t('chats.sceneCard.previewAria')}
         />
 
         <div className="relative w-full aspect-video min-h-[200px]">
           <img
             src={scene.thumbnailUrl ? `/thumbnails/${scene.thumbnailUrl}` : undefined}
-            alt={`Scene from ${scene.id}`}
+            alt={t('chats.sceneCard.alt', { id: scene.id })}
             loading="lazy"
             onError={() => setImageError(true)}
             className={`
@@ -205,7 +207,7 @@ export const SceneCard: React.FC<SceneCardProps> = ({
 
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white pointer-events-none z-10">
           <span className="font-medium text-base leading-tight truncate drop-shadow-sm block">
-            {humanizeFileName(scene.source) || 'Untitled Scene'}
+            {humanizeFileName(scene.source) || t('chats.sceneCard.untitled')}
           </span>
         </div>
       </div>

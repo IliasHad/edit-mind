@@ -2,6 +2,7 @@ import type { Project } from '@prisma/client'
 import { ArrowPathIcon, PaperAirplaneIcon, FolderOpenIcon } from '@heroicons/react/24/solid'
 import type { RefObject } from 'react'
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin'
@@ -28,6 +29,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
+  const { t } = useTranslation()
   const { projects } = useProjects()
   const { loading, chat } = useCurrentChat()
 
@@ -115,8 +117,8 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
   }
 
   const getPlaceholder = () => {
-    if (selectedProject) return `Search in ${selectedProject.name}...`
-    return 'Ask me anything about your videos... Use @ for faces'
+    if (selectedProject) return t('chats.input.projectPlaceholder', { projectName: selectedProject.name })
+    return t('chats.input.defaultPlaceholder')
   }
 
   return (
@@ -147,8 +149,8 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
                     </div>
                   )
                 }
-                aria-label={selectedProject ? `Project: ${selectedProject.name}` : 'Select project'}
-                title={selectedProject ? selectedProject.name : 'Select a project'}
+                aria-label={selectedProject ? t('chats.input.selectedProjectAria', { projectName: selectedProject.name }) : t('chats.input.selectProjectAria')}
+                title={selectedProject ? selectedProject.name : t('chats.input.selectProjectTitle')}
               />
 
               {showProjectDropdown && (
@@ -196,7 +198,7 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
                 </LexicalComposer>
               </div>
               <Button
-                aria-label="Send message"
+                aria-label={t('chats.input.sendMessageAria')}
                 onClick={handleSend}
                 disabled={!input.trim() || loading || chat?.isLocked}
                 loading={loading}
@@ -218,7 +220,7 @@ export function ChatInput({ sendMessage, selectedSuggestion }: ChatInputProps) {
             <div className="flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 rounded-full">
               <div className="w-4 h-4 rounded-full bg-linear-to-br from-purple-500 to-indigo-500" />
               <span className="text-[13px] text-black/60 dark:text-white/60 font-medium">
-                Searching in {selectedProject.name}
+                {t('chats.input.searchingIn', { projectName: selectedProject.name })}
               </span>
             </div>
           </div>

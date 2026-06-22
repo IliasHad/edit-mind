@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion'
 import { humanizeSeconds } from '~/features/shared/utils/duration'
-import { getStageLabel, getStatusColor } from '~/features/jobs/utils'
+import { getStatusColor } from '~/features/jobs/utils'
 import { JobStageIcon } from '~/features/jobs/components/JobStageIcon'
 import { JobStatusIcon } from '~/features/jobs/components/JobStatusIcon'
 import type { Job } from '@prisma/client'
@@ -18,6 +18,7 @@ import { ArrowsRightLeftIcon } from '@heroicons/react/24/solid'
 import { JOB_STAGE_CANCELLABLE } from "@shared/constants/jobs"
 import { Button } from '@ui/components/Button'
 import { useJob } from '../hooks/useCurrentJob'
+import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Jobs | Edit Mind' }]
@@ -30,6 +31,7 @@ interface JobCardProps {
 
 
 export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
+  const { t } = useTranslation()
   const isIrrecoverable = job.status === 'irrecoverable'
   const canCancel = JOB_STAGE_CANCELLABLE.includes(job.stage) && job.status !== "cancelled" && job.status !== "error" && !isIrrecoverable
   const canRetry = (job.status === 'error' || job.status === 'cancelled') && !isIrrecoverable
@@ -64,7 +66,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
             {job.status === 'processing' && (
               <div className="flex items-center gap-2 text-xs text-white/60">
                 <JobStageIcon stage={job.stage} />
-                <span>{getStageLabel(job.stage)}</span>
+                <span>{t(`jobs.stage.${job.stage}`)}</span>
                 <span className="text-white/40">•</span>
                 <span>{job.progress}%</span>
               </div>
@@ -79,25 +81,25 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
           {canRetry && (
             <Button
               variant="secondary"
-              title="Retry job"
+              title={t('jobs.actions.retryJob')}
               size="sm"
               onClick={handleRetry}
               disabled={loading}
             >
               <ArrowPathIcon className="w-3.5 h-3.5" />
-              <span>Retry</span>
+              <span>{t('jobs.actions.retry')}</span>
             </Button>
           )}
           {canCancel && (
             <Button
               variant="destructive"
-              title="Cancel job"
+              title={t('jobs.actions.cancelJob')}
               size="sm"
               onClick={handleCancel}
               disabled={loading}
             >
               <XMarkIcon className="w-3.5 h-3.5" />
-              <span>Cancel</span>
+              <span>{t('jobs.actions.cancel')}</span>
             </Button>
           )}
 
@@ -106,7 +108,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
               job.status
             )} uppercase tracking-wider whitespace-nowrap`}
           >
-            {job.status === 'irrecoverable' ? 'Unsupported' : job.status}
+            {t(`jobs.status.${job.status}`)}
           </span>
         </div>
       </div>
@@ -129,7 +131,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
           <div className="px-5 pb-5 pt-3 border-t border-white/5">
             <div className="flex items-start gap-2.5">
               <div className="min-w-0">
-                <p className="text-xs font-medium text-white/80 mb-0.5">Cannot be processed</p>
+                <p className="text-xs font-medium text-white/80 mb-0.5">{t('jobs.details.cannotProcess')}</p>
                 {job.failureReason && (
                   <p className="text-xs text-white/50 leading-relaxed">{job.failureReason}</p>
                 )}
@@ -146,43 +148,43 @@ export const JobCard: React.FC<JobCardProps> = ({ job, }) => {
               {(job.transcodingTime || job.transcodingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <ArrowsRightLeftIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Transcoding: {humanizeSeconds(job.transcodingTime)}</span>
+                  <span className="text-white/60">{t('jobs.details.transcoding', { duration: humanizeSeconds(job.transcodingTime) })}</span>
                 </div>
               )}
               {(job.transcriptionTime || job.transcriptionTime === 0) && (
                 <div className="flex items-center gap-2">
                   <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Transcription: {humanizeSeconds(job.transcriptionTime)}</span>
+                  <span className="text-white/60">{t('jobs.details.transcription', { duration: humanizeSeconds(job.transcriptionTime) })}</span>
                 </div>
               )}
               {(job.frameAnalysisTime || job.frameAnalysisTime === 0) && (
                 <div className="flex items-center gap-2">
                   <VideoCameraIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Frame Analysis: {humanizeSeconds(job.frameAnalysisTime)}</span>
+                  <span className="text-white/60">{t('jobs.details.frameAnalysis', { duration: humanizeSeconds(job.frameAnalysisTime) })}</span>
                 </div>
               )}
               {(job.sceneCreationTime || job.sceneCreationTime === 0) && (
                 <div className="flex items-center gap-2">
                   <CubeIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Scene Creation: {humanizeSeconds(job.sceneCreationTime)}</span>
+                  <span className="text-white/60">{t('jobs.details.sceneCreation', { duration: humanizeSeconds(job.sceneCreationTime) })}</span>
                 </div>
               )}
               {(job.textEmbeddingTime || job.textEmbeddingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <LanguageIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Text Embedding: {humanizeSeconds(job.textEmbeddingTime)}</span>
+                  <span className="text-white/60">{t('jobs.details.textEmbedding', { duration: humanizeSeconds(job.textEmbeddingTime) })}</span>
                 </div>
               )}
               {(job.visualEmbeddingTime || job.visualEmbeddingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <PhotoIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Visual Embedding: {humanizeSeconds(job.visualEmbeddingTime)}</span>
+                  <span className="text-white/60">{t('jobs.details.visualEmbedding', { duration: humanizeSeconds(job.visualEmbeddingTime) })}</span>
                 </div>
               )}
               {(job.audioEmbeddingTime || job.audioEmbeddingTime === 0) && (
                 <div className="flex items-center gap-2">
                   <SpeakerWaveIcon className="w-3.5 h-3.5 text-white/40" />
-                  <span className="text-white/60">Audio Embedding: {humanizeSeconds(job.audioEmbeddingTime)}</span>
+                  <span className="text-white/60">{t('jobs.details.audioEmbedding', { duration: humanizeSeconds(job.audioEmbeddingTime) })}</span>
                 </div>
               )}
             </div>

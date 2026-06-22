@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 interface OnboardingStepProps {
   image: string
@@ -7,6 +8,8 @@ interface OnboardingStepProps {
 }
 
 export function OnboardingStep({ image, title, description }: OnboardingStepProps) {
+  const { t } = useTranslation()
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -27,7 +30,7 @@ export function OnboardingStep({ image, title, description }: OnboardingStepProp
         </h1>
         <p
           className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed"
-          aria-label="Step Content"
+          aria-label={t('onboarding.navigation.stepContent')}
         >
           {description}
         </p>

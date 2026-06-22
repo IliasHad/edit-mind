@@ -23,6 +23,9 @@ vi.mock('@shared/services/logger', () => ({
 }))
 
 vi.mock('@db/index', () => ({
+  AppSettingsModel: {
+    getLanguage: vi.fn().mockResolvedValue('en'),
+  },
   FolderModel: mockDatabase.Folder,
   JobModel: mockDatabase.Job,
 }))
@@ -96,6 +99,37 @@ describe('Indexer API Routes', () => {
           videoPath: '/test/video.mp4',
           jobId: job.id,
           forceReIndexing: false,
+          language: 'en',
+        },
+        0
+      )
+    })
+
+    it('should queue video reindexing job with requested language', async () => {
+      const job = await mockDatabase.Job.create({
+        userId: testUser.id,
+        videoPath: '/test/video.mp4',
+        status: 'done',
+      })
+
+      vi.mocked(addVideoIndexingJob).mockResolvedValue(undefined)
+
+      const response = await request(app)
+        .post('/indexer/reindex')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          jobId: job.id,
+          videoPath: '/test/video.mp4',
+          language: 'ru',
+        })
+
+      expect(response.status).toBe(200)
+      expect(addVideoIndexingJob).toHaveBeenCalledWith(
+        {
+          videoPath: '/test/video.mp4',
+          jobId: job.id,
+          forceReIndexing: false,
+          language: 'ru',
         },
         0
       )
@@ -134,6 +168,7 @@ describe('Indexer API Routes', () => {
           videoPath: '/test/video.mp4',
           jobId: job.id,
           forceReIndexing: true,
+          language: 'en',
         },
         0
       )
@@ -163,6 +198,7 @@ describe('Indexer API Routes', () => {
           videoPath: '/test/video.mp4',
           jobId: job.id,
           forceReIndexing: false,
+          language: 'en',
         },
         10
       )
@@ -262,6 +298,7 @@ describe('Indexer API Routes', () => {
           videoPath: '/test/video.mp4',
           jobId: job.id,
           forceReIndexing: true,
+          language: 'en',
         },
         5
       )

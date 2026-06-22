@@ -14,7 +14,7 @@ import { env } from '@background-jobs/utils/env'
 import { JobModel } from 'db'
 
 async function processVideo(job: Job<VideoProcessingData>) {
-  const { videoPath, jobId, forceReIndexing = false, transcriptionPath } = job.data
+  const { videoPath, jobId, forceReIndexing = false, transcriptionPath, language } = job.data
 
   logger.debug(
     {
@@ -53,7 +53,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     if (forceReIndexing || !transcriptionExists) {
       logger.debug({ jobId, transcriptionPath }, 'Starting audio transcription')
 
-      const result = await transcribeAudio(videoPath, transcriptionPath, jobId, async ({ progress, job_id }) => {
+      const result = await transcribeAudio(videoPath, transcriptionPath, jobId, language, async ({ progress, job_id }) => {
         if (job_id !== jobId) {
           logger.warn({ jobId, receivedJobId: job_id }, 'Received callback for different job')
           return

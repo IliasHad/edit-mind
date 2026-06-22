@@ -5,6 +5,7 @@ import { Button } from '@ui/components/Button'
 import { Modal } from '@ui/components/Modal'
 import { useMediaBrowser } from '~/features/folders/hooks/useMediaBrowser'
 import { ChevronRightIcon } from '@heroicons/react/24/solid'
+import { useTranslation } from 'react-i18next'
 
 interface RelinkVideoProps {
   isOpen: boolean
@@ -15,6 +16,7 @@ interface RelinkVideoProps {
 }
 
 export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSuccess }: RelinkVideoProps) {
+  const { t } = useTranslation()
   const { currentPath, folders, files, isLoading, error, selectedPath, setSelectedPath, navigateToFolder, reset } =
     useMediaBrowser()
 
@@ -55,10 +57,10 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
   }
 
   const getBreadcrumbs = () => {
-    if (currentPath === '/') return [{ name: 'Root', path: '/' }]
+    if (currentPath === '/') return [{ name: t('videos.relink.root'), path: '/' }]
     const parts = currentPath.split('/').filter(Boolean)
     return [
-      { name: 'Root', path: '/' },
+      { name: t('videos.relink.root'), path: '/' },
       ...parts.map((part, idx) => ({
         name: part,
         path: '/' + parts.slice(0, idx + 1).join('/'),
@@ -78,9 +80,9 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
     <Modal isOpen={isOpen} onClose={onClose} maxWidth="2xl">
       <div className="px-6 py-5 border-b border-black/10 dark:border-white/10 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">Relink Video</h2>
-          <p className="text-sm text-white/60 mt-1">Select a new video file to replace the missing source</p>
-          {oldSource && <p className="text-xs text-white/40 mt-2 font-mono truncate">Previous: {oldSource}</p>}
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">{t('videos.relink.title')}</h2>
+          <p className="text-sm text-white/60 mt-1">{t('videos.relink.description')}</p>
+          {oldSource && <p className="text-xs text-white/40 mt-2 font-mono truncate">{t('videos.relink.previous', { source: oldSource })}</p>}
         </div>
       </div>
       {error && (
@@ -106,7 +108,7 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
           <input
             type="text"
-            placeholder="Search files and folders..."
+            placeholder={t('videos.relink.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 text-sm"
@@ -126,7 +128,7 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
         ) : filteredFolders.length === 0 && filteredFiles.length === 0 ? (
           <div className="text-center py-16 text-white/40">
             <FolderIcon className="w-10 h-10 mx-auto mb-3" />
-            <p className="text-sm">No files or folders found</p>
+            <p className="text-sm">{t('videos.relink.empty')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -138,7 +140,7 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
                   exit={{ opacity: 0 }}
                   className="space-y-1"
                 >
-                  <h3 className="text-xs font-medium text-white/40 px-3 mb-2">Folders</h3>
+                  <h3 className="text-xs font-medium text-white/40 px-3 mb-2">{t('videos.relink.folders')}</h3>
                   {filteredFolders.map((folder) => (
                     <motion.button
                       key={folder.path}
@@ -164,7 +166,7 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
                   exit={{ opacity: 0 }}
                   className="space-y-1"
                 >
-                  <h3 className="text-xs font-medium text-white/40 px-3 mb-2">Video Files</h3>
+                  <h3 className="text-xs font-medium text-white/40 px-3 mb-2">{t('videos.relink.videoFiles')}</h3>
                   {filteredFiles.map((file) => (
                     <motion.button
                       key={file.path}
@@ -181,7 +183,7 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
                       </div>
                       {selectedPath === file.path && (
                         <div className="px-2.5 py-1 bg-white text-black rounded-md text-xs font-medium shrink-0">
-                          Selected
+                          {t('videos.relink.selected')}
                         </div>
                       )}
                     </motion.button>
@@ -195,17 +197,17 @@ export function RelinkVideo({ isOpen, oldSource, onClose, onRelink, relinkSucces
 
       {selectedPath && (
         <div className="px-6 py-3 border-t border-white/10">
-          <p className="text-xs text-white/40 mb-1">New source:</p>
+          <p className="text-xs text-white/40 mb-1">{t('videos.relink.newSource')}</p>
           <p className="text-sm font-mono text-white truncate">{selectedPath}</p>
         </div>
       )}
 
       <div className="px-6 py-4 border-t border-white/10 flex justify-end gap-3">
         <Button onClick={onClose} disabled={isRelinking} variant="ghost">
-          Cancel
+          {t('videos.relink.cancel')}
         </Button>
         <Button onClick={handleRelink} disabled={!selectedPath || isRelinking} loading={isRelinking} variant="primary">
-          Relink Video
+          {t('videos.relink.submit')}
         </Button>
       </div>
     </Modal>

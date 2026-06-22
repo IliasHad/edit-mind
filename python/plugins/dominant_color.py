@@ -56,7 +56,7 @@ class DominantColorPlugin(AnalyzerPlugin):
     def load_models(self) -> None:
         return None
     
-    def setup(self, video_path, job_id) -> None:
+    def setup(self, video_path, job_id, language: str = "en") -> None:
         """Initialize the plugin for a new video."""
         self.frame_colors = []
 

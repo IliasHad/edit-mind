@@ -1,4 +1,5 @@
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface CaptionsButtonProps {
   active: boolean
@@ -7,6 +8,8 @@ interface CaptionsButtonProps {
 }
 
 export function CaptionsButton({ active, onToggle }: CaptionsButtonProps) {
+  const { t } = useTranslation()
+
   return (
     <Button
       onClick={onToggle}
@@ -16,7 +19,7 @@ export function CaptionsButton({ active, onToggle }: CaptionsButtonProps) {
         p-2 rounded-lg transition-all flex items-center justify-center
         ${active ? 'text-white bg-white/20' : 'text-white/80 hover:text-white hover:bg-white/10'}
       `}
-      title={active ? 'Disable Captions' : 'Enable Captions'}
+      title={active ? t('player.controls.captions.disable') : t('player.controls.captions.enable')}
       leftIcon={
         <svg className="w-5 h-5" fill={active ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
           <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2" />

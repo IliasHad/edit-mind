@@ -2,7 +2,7 @@ import { getVideoWithScenesBySceneIds } from '@vector/services/db'
 import type { ActionFunction, LoaderFunctionArgs } from 'react-router'
 import { logger } from '@shared/services/logger'
 import { requireUser, requireUserId } from '~/services/user.server'
-import { ChatMessageModel, ChatModel } from '@db/index'
+import { AppSettingsModel, ChatMessageModel, ChatModel } from '@db/index'
 import { backgroundJobsFetch } from '~/services/background.server'
 import { ChatMessageCreateSchema } from '~/features/chats/schemas'
 import { MAX_MESSAGES_PER_CHAT } from '@shared/constants'
@@ -80,6 +80,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     const user = await requireUser(request)
 
     const { prompt } = data
+    const language = await AppSettingsModel.getLanguage()
 
     const chat = await ChatModel.findFirst({ where: { id, userId: user.id } })
 
@@ -112,7 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
         isThinking: false,
       })
 
-      await backgroundJobsFetch(`/internal/chats/${chat.id}/messages`, { prompt }, user)
+      await backgroundJobsFetch(`/internal/chats/${chat.id}/messages`, { prompt, language }, user)
       return {
         message: {
           ...message,

@@ -14,6 +14,7 @@ import { FaceRenamingJobData } from '@shared/types/face'
 import { suggestionCache } from '@search/services/suggestion'
 import { sceneToVectorFormat } from '@vector/utils/shared'
 import { getEmbeddings } from '@embedding-core/services/extractors'
+import { AppSettingsModel } from '@db/index'
 
 async function processFaceRenamingJob(job: Job<FaceRenamingJobData>) {
   const { oldName, newName } = job.data
@@ -23,6 +24,7 @@ async function processFaceRenamingJob(job: Job<FaceRenamingJobData>) {
   try {
     const updatedScene = new Set<string>()
     const processedVideos = new Set<string>()
+    const language = await AppSettingsModel.getLanguage()
 
     const videos = await searchScenes(
       VideoSearchParamsSchema.parse({
@@ -52,7 +54,7 @@ async function processFaceRenamingJob(job: Job<FaceRenamingJobData>) {
       }
 
       // Update vector DB entries
-      const vector = await sceneToVectorFormat(scene)
+      const vector = await sceneToVectorFormat(scene, language)
       const embedding = await getEmbeddings([vector.text])
       
       await updateMetadata(vector, embedding)

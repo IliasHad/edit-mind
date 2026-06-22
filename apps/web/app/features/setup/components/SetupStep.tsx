@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import type { SetupStepConfig } from '../types';
 import { ServicesPanel } from './ServicesPanel'
 import { FolderPanel } from './FolderPanel'
@@ -14,6 +15,8 @@ const variants = {
 }
 
 export function SetupStep({ step }: SetupStepProps) {
+    const { t } = useTranslation()
+
     const renderPanel = () => {
         switch (step.id) {
             case 'welcome':
@@ -49,10 +52,10 @@ export function SetupStep({ step }: SetupStepProps) {
             }
             <div className="order-1 md:order-2 space-y-5">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-black dark:text-white tracking-tight leading-[1.1] whitespace-pre-line">
-                    {step.title}
+                    {t(step.titleKey)}
                 </h1>
                 <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {step.description}
+                    {t(step.descriptionKey)}
                 </p>
             </div>
         </motion.div>

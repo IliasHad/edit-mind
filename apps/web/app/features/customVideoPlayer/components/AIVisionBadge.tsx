@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { UserIcon as User, TagIcon as Tag, LanguageIcon as Type } from '@heroicons/react/24/outline'
 import type { Scene } from '@shared/types/scene'
 import { BADGE_COLORS } from '../constants/styles'
+import { useTranslation } from 'react-i18next'
 
 interface AIVisionBadgeProps {
   currentScene: Scene | null
@@ -10,6 +11,8 @@ interface AIVisionBadgeProps {
 }
 
 export function AIVisionBadge({ currentScene, showOverlays, showControls }: AIVisionBadgeProps) {
+  const { t } = useTranslation()
+
   if (!showOverlays || !currentScene) return null
 
   const hasAnyDetections =
@@ -27,7 +30,7 @@ export function AIVisionBadge({ currentScene, showOverlays, showControls }: AIVi
       >
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs font-bold text-white uppercase tracking-wider">AI Vision Active</span>
+          <span className="text-xs font-bold text-white uppercase tracking-wider">{t('player.overlays.aiVisionActive')}</span>
         </div>
         <div className="w-px h-5 bg-white/20" />
 

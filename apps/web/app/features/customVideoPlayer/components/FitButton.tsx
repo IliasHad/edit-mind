@@ -1,6 +1,9 @@
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 export function FitButton({ currentObjectFit, onToggle }: { currentObjectFit: string; onToggle: () => void }) {
+  const { t } = useTranslation()
+
   return (
     <Button
       variant="outline"
@@ -18,7 +21,7 @@ export function FitButton({ currentObjectFit, onToggle }: { currentObjectFit: st
         </svg>
       }
       onClick={onToggle}
-      title={`Switch to ${currentObjectFit === 'contain' ? 'cover' : 'contain'} mode (Press O)`}
+      title={currentObjectFit === 'contain' ? t('player.controls.fit.switchToCover') : t('player.controls.fit.switchToContain')}
     ></Button>
   )
 }

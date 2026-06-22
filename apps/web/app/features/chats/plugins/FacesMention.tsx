@@ -1,4 +1,5 @@
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@ui/components/Button'
 import { useState, useRef, useEffect } from 'react'
 import { useFacesStore } from '~/features/faces/stores'
@@ -20,6 +21,7 @@ interface FacesMentionProps {
 }
 
 export function FacesMention({ input, setInput }: FacesMentionProps) {
+  const { t } = useTranslation()
   const [showFaceMentions, setShowFaceMentions] = useState(false)
   const [mentionQuery, setMentionQuery] = useState('')
   const [mentionStartIndex, setMentionStartIndex] = useState(0)
@@ -238,7 +240,7 @@ export function FacesMention({ input, setInput }: FacesMentionProps) {
           ) : filteredFaces.length > 0 ? (
             <>
               <div className="px-4 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
-                Select a face
+                {t('chats.facesMention.title')}
               </div>
               {filteredFaces.map((face) => {
                 const isSelected = faceMentions.some((m) => m.face.name === face.name)
@@ -267,7 +269,7 @@ export function FacesMention({ input, setInput }: FacesMentionProps) {
                     )}
                     <span className="font-medium text-gray-900 dark:text-white">{face.name}</span>
                     {isSelected && (
-                      <span className="ml-auto text-xs text-purple-600 dark:text-purple-400">Selected</span>
+                      <span className="ml-auto text-xs text-purple-600 dark:text-purple-400">{t('chats.facesMention.selected')}</span>
                     )}
                   </Button>
                 )
@@ -275,7 +277,7 @@ export function FacesMention({ input, setInput }: FacesMentionProps) {
             </>
           ) : (
             <div className="px-4 py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              No faces found matching "{mentionQuery}"
+              {t('chats.facesMention.noFacesFound', { query: mentionQuery })}
             </div>
           )}
         </div>

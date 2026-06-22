@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { formatTime } from '~/features/customVideoPlayer/utils/formatting'
+import { useTranslation } from 'react-i18next'
 
 export default function ScenesList({
   scenes,
@@ -13,6 +14,7 @@ export default function ScenesList({
   activeScene?: Scene
   onSceneClick: (scene: Scene) => void
 }) {
+  const { t } = useTranslation()
   const parentRef = useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
@@ -87,7 +89,7 @@ export default function ScenesList({
                   <div className="relative shrink-0">
                     <img
                       src={'/thumbnails/' + scene.thumbnailUrl}
-                      alt={`Scene ${virtualRow.index + 1}`}
+                      alt={t('videos.scenes.imageAlt', { number: virtualRow.index + 1 })}
                       className="w-32 h-full object-cover rounded-lg"
                     />
                     <div className="absolute top-2 left-2">

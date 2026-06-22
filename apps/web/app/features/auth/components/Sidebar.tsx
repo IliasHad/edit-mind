@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export function Sidebar() {
+  const { t } = useTranslation()
+
   return (
     <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
 
@@ -24,17 +27,17 @@ export function Sidebar() {
           <div className="space-y-5">
 
             <h2 className="text-[2.6rem] font-semibold leading-[1.15] tracking-tight text-white/90">
-              Organize your
+              {t('auth.sidebar.titleLine1')}
               <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-white via-white/90 to-white/50">
-                video library
+                {t('auth.sidebar.titleHighlight')}
               </span>
               <br />
-              with AI
+              {t('auth.sidebar.titleLine3')}
             </h2>
 
             <p className="text-md text-white/40 max-w-xs leading-relaxed font-light">
-              Deep indexing, natural language search, and automatic rough cuts — all processed locally on your machine.
+              {t('auth.sidebar.description')}
             </p>
           </div>
         </motion.div>

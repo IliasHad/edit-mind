@@ -72,6 +72,7 @@ interface SearchState {
 
 const SUGGESTIONS_CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 const MIN_QUERY_LENGTH = 2
+const MULTI_VALUE_FILTERS = new Set<keyof SearchFilters>(['face', 'object', 'emotion', 'camera', 'shotType', 'location'])
 
 const initialState = {
   query: '',
@@ -215,14 +216,17 @@ export const useSearchStore = create<SearchState>()(
           set((state) => {
             const currentValues = state.filters[type]
 
-            if (Array.isArray(currentValues)) {
-              if (currentValues.includes(value)) {
+            if (MULTI_VALUE_FILTERS.has(type)) {
+              const values = Array.isArray(currentValues) ? currentValues : (currentValues ? [currentValues] : [])
+
+              if (values.includes(value)) {
                 return state
               }
+
               return {
                 filters: {
                   ...state.filters,
-                  [type]: [...currentValues, value],
+                  [type]: [...values, value],
                 },
               }
             }
@@ -246,18 +250,16 @@ export const useSearchStore = create<SearchState>()(
               if (filtered.length === 0) {
                 delete newFilters[type]
               } else {
-                if (Array.isArray(currentValues)) {
-                  if (currentValues.includes(value)) return state
-                  newFilters[type] = [...currentValues, value] as string[] & string
-                } else {
-                  newFilters[type] = value as string[] & string
-                }
+                newFilters[type] = filtered as string[] & string
               }
 
               return { filters: newFilters }
             }
 
-            delete newFilters[type]
+            if (currentValues === value) {
+              delete newFilters[type]
+            }
+
             return { filters: newFilters }
           }),
 

@@ -1,4 +1,5 @@
 import { CalendarIcon, FilmIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 import { smartFormatDate } from '@shared/utils/duration'
 import clsx from 'clsx'
 import { Link } from 'react-router'
@@ -19,6 +20,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ id, name, _count, createdAt, className }: ProjectCardProps) {
+  const { t } = useTranslation()
   const { isOpen, openModal, closeModal } = useModal()
 
   const { deleteProject } = useCurrentProject()
@@ -29,7 +31,7 @@ export function ProjectCard({ id, name, _count, createdAt, className }: ProjectC
   }
   return (
     <>
-      <Link to={`/app/projects/${id}`} aria-label={`View ${name} project`} className="block group">
+      <Link to={`/app/projects/${id}`} aria-label={t('projects.card.viewProjectAria', { name })} className="block group">
         <div
           className={clsx(
             'relative bg-white dark:bg-black',
@@ -49,7 +51,7 @@ export function ProjectCard({ id, name, _count, createdAt, className }: ProjectC
               <div className="flex items-center gap-2 text-sm text-black/60 dark:text-white/60">
                 <FilmIcon className="w-4 h-4" />
                 <span>
-                  {_count?.videos || 0} {_count?.videos === 1 ? 'video' : 'videos'}
+                  {_count?.videos || 0} {_count?.videos === 1 ? t('projects.card.video') : t('projects.card.videos')}
                 </span>
               </div>
             </div>
@@ -68,10 +70,10 @@ export function ProjectCard({ id, name, _count, createdAt, className }: ProjectC
                   e.preventDefault()
                   openModal()
                 }}
-                aria-label="Delete project"
+                aria-label={t('projects.card.deleteAria')}
                 leftIcon={<TrashIcon className="size-4" />}
               >
-                Delete
+{t('projects.card.deleteButton')}
               </Button>
             </div>
           </div>
@@ -84,10 +86,13 @@ export function ProjectCard({ id, name, _count, createdAt, className }: ProjectC
         isOpen={isOpen}
         onClose={closeModal}
         onConfirm={handleDelete}
-        title="Delete project"
-        description="Are you sure you want to delete this project? This action cannot be undone."
-        resourceName={name || 'Untitled project'}
-        confirmText="Confirm"
+        title={t('projects.card.deleteTitle')}
+        description={t('projects.card.deleteDescription')}
+        resourceName={name || t('projects.card.untitled')}
+        confirmText={t('projects.card.confirm')}
+        cancelText={t('ui.deleteModal.cancelText')}
+        deletingText={t('ui.deleteModal.deletingText')}
+        closeButtonAriaLabel={t('ui.modal.closeAria')}
       />
     </>
   )

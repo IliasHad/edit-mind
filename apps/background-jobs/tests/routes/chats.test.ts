@@ -101,6 +101,30 @@ describe('Chat API Routes', () => {
         chatId: testChat.id,
         prompt: 'Test prompt',
         projectId: 'project-123',
+        language: 'en',
+      })
+    })
+
+    it('should queue a chat message job with requested language', async () => {
+      const mockJob = createMockJob('job-123', 'chat-message', {})
+
+      vi.mocked(chatQueue.add).mockResolvedValue(mockJob)
+
+      const response = await request(app)
+        .post(`/chats/${testChat.id}/messages`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          prompt: 'Test prompt',
+          projectId: 'project-123',
+          language: 'ru',
+        })
+
+      expect(response.status).toBe(200)
+      expect(chatQueue.add).toHaveBeenCalledWith('process-chat-message', {
+        chatId: testChat.id,
+        prompt: 'Test prompt',
+        projectId: 'project-123',
+        language: 'ru',
       })
     })
 
@@ -183,6 +207,7 @@ describe('Chat API Routes', () => {
         chatId: undefined,
         prompt: 'Test prompt',
         projectId: 'project-123',
+        language: 'en',
       })
     })
   })

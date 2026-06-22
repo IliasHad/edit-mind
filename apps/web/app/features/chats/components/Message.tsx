@@ -1,5 +1,6 @@
 import type { ChatMessage } from '@prisma/client'
 import type { Scene } from '@shared/types'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { ClockIcon, BoltIcon } from '@heroicons/react/24/solid'
 import { StitchedVideo } from './StitchedVideo'
@@ -27,6 +28,7 @@ export function Message({
   exportId,
   chatId,
 }: MessageProps) {
+  const { t } = useTranslation()
   const isUser = sender === 'user'
   const { error, messages } = useCurrentChat()
 
@@ -147,7 +149,7 @@ export function Message({
                   <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
                     {tokensUsed.toLocaleString()}
                   </span>
-                  <span className="text-xs text-purple-600/60 dark:text-purple-400/60">tokens</span>
+                  <span className="text-xs text-purple-600/60 dark:text-purple-400/60">{t('chats.message.tokens')}</span>
                 </div>
               )}
             </motion.div>

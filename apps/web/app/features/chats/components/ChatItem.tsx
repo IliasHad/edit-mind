@@ -1,5 +1,6 @@
 import { ClockIcon, EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 import { Link, useParams } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { smartFormatDate } from '@shared/utils/duration'
 import type { Chat } from '@prisma/client'
 import { useChats } from '../hooks/useChats'
@@ -10,6 +11,7 @@ import { useModal } from '~/features/shared/hooks/useModal'
 import { Button } from '@ui/components/Button'
 
 export function ChatItem({ chat }: { chat: Chat }) {
+  const { t } = useTranslation()
   const { chatId } = useParams()
   const isActive = chatId === chat.id
   const { deleteChat } = useChats()
@@ -50,7 +52,7 @@ export function ChatItem({ chat }: { chat: Chat }) {
                     : 'text-black/70 dark:text-white/70 group-hover:text-black dark:group-hover:text-white'
                 }`}
               >
-                {chat.title || 'Untitled conversation'}
+                {chat.title || t('chats.item.untitled')}
               </h3>
               <div className="flex items-center gap-1.5 mt-1">
                 <ClockIcon
@@ -101,7 +103,7 @@ export function ChatItem({ chat }: { chat: Chat }) {
                 variant="destructive"
                 className="w-full text-center"
               >
-                Delete conversation
+{t('chats.item.deleteAction')}
               </Button>
             </motion.div>
           )}
@@ -112,10 +114,13 @@ export function ChatItem({ chat }: { chat: Chat }) {
         isOpen={isOpen}
         onClose={closeModal}
         onConfirm={handleDelete}
-        title="Delete conversation"
-        description="Are you sure you want to delete this conversation? This action cannot be undone and all messages will be permanently removed."
-        resourceName={chat.title || 'Untitled conversation'}
-        confirmText="Delete conversation"
+        title={t('chats.item.deleteTitle')}
+        description={t('chats.item.deleteDescription')}
+        resourceName={chat.title || t('chats.item.untitled')}
+        confirmText={t('chats.item.deleteConfirm')}
+        cancelText={t('ui.deleteModal.cancelText')}
+        deletingText={t('ui.deleteModal.deletingText')}
+        closeButtonAriaLabel={t('ui.modal.closeAria')}
       />
     </>
   )

@@ -4,6 +4,7 @@ import type { OverlayMode } from '../types'
 import { OVERLAY_MODE_COLORS } from '../constants/styles'
 import { useEffect } from 'react'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface OverlayControlsProps {
   showOverlays: boolean
@@ -22,6 +23,8 @@ export function OverlayControls({
   onToggleOverlays,
   onChangeMode,
 }: OverlayControlsProps) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'v') {
@@ -57,7 +60,7 @@ export function OverlayControls({
         ) : (
           <EyeOff className="w-4 h-4" strokeWidth={2.5} />
         )}
-        <span className="text-xs font-bold uppercase tracking-wide">{showOverlays ? 'Hide' : 'Show'} AI</span>
+        <span className="text-xs font-bold uppercase tracking-wide">{showOverlays ? t('player.overlays.hideAi') : t('player.overlays.showAi')}</span>
       </motion.button>
 
       {showOverlays && (
@@ -77,7 +80,7 @@ export function OverlayControls({
                   overlayMode === mode ? OVERLAY_MODE_COLORS[mode] : 'text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
               >
-                {mode}
+                {t(`player.overlays.modes.${mode}`)}
               </Button>
             ))}
           </motion.div>

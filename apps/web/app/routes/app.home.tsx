@@ -18,6 +18,7 @@ import { useJobs } from '~/features/jobs/hooks/useJobs';
 import { motion } from 'framer-motion'
 import { JobCard } from '~/features/jobs/components/JobCard';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Dashboard | Edit Mind' }]
@@ -66,6 +67,7 @@ export default function Dashboard() {
   const { importDemoVideos, importVideoSuccess, loading } = useVideos()
   const { jobs, fetchJobs } = useJobs()
   const { revalidate } = useRevalidator()
+  const { t } = useTranslation()
 
   const totalPages = Math.ceil(total / limit)
 
@@ -89,14 +91,14 @@ export default function Dashboard() {
       <main className="w-full px-8 py-20">
         <div className="text-center mb-16">
           <h1 className="text-6xl font-semibold text-black dark:text-white tracking-tight mb-6 leading-tight">
-            My videos gallery's
+            {t('home.hero.titleLine1')}
             <br />
-            second brain.
+            {t('home.hero.titleLine2')}
           </h1>
           <p className="text-lg text-black/60 dark:text-white/60 max-w-2xl mx-auto leading-relaxed">
-            Organize your video library locally and search with natural language.
+            {t('home.hero.descriptionLine1')}
             <br />
-            All processing happens securely on your device.
+            {t('home.hero.descriptionLine2')}
           </p>
         </div>
 
@@ -104,11 +106,10 @@ export default function Dashboard() {
           {videos.length === 0 && folders.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center py-8">
               <div className="rounded-3xl border border-dashed border-black/10 dark:border-white/10 bg-black/2 dark:bg-white/2 p-12 max-w-lg">
-                <img src="/illustrations/empty-folder.svg" alt="No videos" className="w-full h-56 mx-auto mb-8" />
-                <h4 className="text-xl font-semibold text-black dark:text-white mb-3">No videos indexed yet</h4>
+                <img src="/illustrations/empty-folder.svg" alt={t('home.empty.imageAlt')} className="w-full h-56 mx-auto mb-8" />
+                <h4 className="text-xl font-semibold text-black dark:text-white mb-3">{t('home.empty.noVideosTitle')}</h4>
                 <p className="text-black/60 dark:text-white/60 text-base mb-8 leading-relaxed">
-                  Start by adding your video folders in settings. We'll automatically scan and index your videos
-                  locally.
+                  {t('home.empty.noVideosDescription')}
                 </p>
                 <div className="flex justify-center items-center gap-4">
                   <Link
@@ -118,7 +119,7 @@ export default function Dashboard() {
                   hover:opacity-90 active:scale-[0.98] transition-all shadow-sm"
                   >
                     <PlusIcon className="size-4" />
-                    Add folders to start
+                    {t('home.empty.addFolders')}
                   </Link>
                   <Button
                     disabled={loading}
@@ -132,21 +133,21 @@ export default function Dashboard() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        Importing…
+                        {t('home.empty.importing')}
                       </>
                     ) : importVideoSuccess ? (
                       <>
                         <svg className="size-4 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
-                        Demo videos ready
+                        {t('home.empty.demoReady')}
                       </>
                     ) : (
                       <>
                         <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                         </svg>
-                        Import our demo videos
+                        {t('home.empty.importDemo')}
                       </>
                     )}
                   </Button>
@@ -157,10 +158,9 @@ export default function Dashboard() {
             <div className="flex flex-col items-center justify-center text-center py-8">
               <div className="max-w-lg">
 
-                <h4 className="text-xl font-semibold text-black dark:text-white mb-3">  {jobs.length > 0 ? "Indexing your videos ..." : "Scan your folders first"}</h4>
+                <h4 className="text-xl font-semibold text-black dark:text-white mb-3">  {jobs.length > 0 ? t('home.empty.indexing') : t('home.empty.scanFirst')}</h4>
                 <p className="text-black/60 dark:text-white/60 text-base mb-8 leading-relaxed">
-                  Your {folders.length === 1 ? 'folder is' : `${folders.length} folders are`} connected. Edit Mind is
-                  scanning and analyzing your videos in the background.
+                  {t('home.empty.foldersConnected', { count: folders.length })}
                 </p>
                 <Button
                   disabled={loading}
@@ -181,7 +181,7 @@ export default function Dashboard() {
                       <svg className="size-4 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
-                      Demo videos imported
+                      {t('home.empty.demoImported')}
                     </>
                   ) : (
                     <>
@@ -199,9 +199,9 @@ export default function Dashboard() {
               <div className="space-y-8 mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h3 className="text-2xl font-semibold text-black dark:text-white">My Videos</h3>
+                    <h3 className="text-2xl font-semibold text-black dark:text-white">{t('home.videos.title')}</h3>
                     <p className="text-sm text-black/50 dark:text-white/50 mt-1">
-                      {total} {total === 1 ? 'video' : 'videos'} total
+                      {t('home.videos.total', { count: total })}
                     </p>
                   </div>
 
@@ -210,10 +210,10 @@ export default function Dashboard() {
                       sortBy={sortBy}
                       sortOrder={sortOrder}
                       options={[
-                        { value: 'shottedAt', label: 'Shot Date' },
-                        { value: 'importAt', label: 'Import Date' },
-                        { value: 'updatedAt', label: 'Last Updated' },
-                        { value: 'duration', label: 'Duration' },
+                        { value: 'shottedAt', label: t('home.videos.sort.shotDate') },
+                        { value: 'importAt', label: t('home.videos.sort.importDate') },
+                        { value: 'updatedAt', label: t('home.videos.sort.lastUpdated') },
+                        { value: 'duration', label: t('home.videos.sort.duration') },
                       ]}
                     />
                   </div>
@@ -252,7 +252,7 @@ export default function Dashboard() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="space-y-3 max-w-7xl"
             >
-              <h2 className="text-lg font-semibold text-white mb-4">Processing queue</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">{t('home.queue.title')}</h2>
               {jobs.map((job) => (
                 <JobCard job={job} />
               ))}

@@ -1,8 +1,10 @@
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 import { useApp } from '~/features/shared/hooks/useApp'
 
 export function Version() {
   const { app } = useApp()
+  const { t } = useTranslation()
 
   if (!app?.version) return null
 
@@ -15,7 +17,7 @@ export function Version() {
           <span className="text-xs text-white/50">v{app.version}</span>
           {hasUpdate && (
             <span className="text-[10px] text-amber-400 font-medium">
-              v{app.latestVersion} available
+              {t('shell.version.available', { version: app.latestVersion })}
             </span>
           )}
         </div>
@@ -25,7 +27,7 @@ export function Version() {
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200"
-          title="View releases"
+          title={t('shell.version.viewReleases')}
         >
           <ArrowTopRightOnSquareIcon className="w-4 h-4" />
         </a>

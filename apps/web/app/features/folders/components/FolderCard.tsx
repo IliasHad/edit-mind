@@ -5,6 +5,7 @@ import { getStatusInfo } from '../utils'
 import type { FolderWithJobs } from '../types'
 import { smartFormatDate } from '~/features/shared/utils/duration'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface FolderCardProps {
   folder: FolderWithJobs
@@ -13,6 +14,7 @@ interface FolderCardProps {
 
 export const FolderCard: React.FC<FolderCardProps> = ({ folder, onDelete }) => {
   const folderName = folder.path.split('/').pop() || folder.path
+  const { t } = useTranslation()
 
   const statusInfo = getStatusInfo(folder.status)
 
@@ -40,10 +42,10 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, onDelete }) => {
               onDelete(folder)
             }}
             disabled={folder.status === "scanning"}
-            aria-label={`Delete folder ${folderName}`}
+            aria-label={t('folders.card.deleteFolder', { name: folderName })}
             leftIcon={<TrashIcon className="size-4" />}
           >
-            Delete
+            {t('folders.card.delete')}
           </Button>
         </div>
       </div>
@@ -51,7 +53,7 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, onDelete }) => {
       <div className="px-5 pb-5 pt-3 border-t border-white/5">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
           <div className={`flex items-center gap-2 font-medium ${statusInfo.color}`}>
-            <span>{statusInfo.text}</span>
+            <span>{t(statusInfo.textKey)}</span>
           </div>
 
           <span className="text-white/40" aria-hidden="true">
@@ -60,7 +62,7 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, onDelete }) => {
 
           <div className="text-white/60">
             <span className="font-semibold text-white">{folder.videoCount || 0}</span>{' '}
-            {folder.videoCount === 1 ? 'video' : 'videos'}
+            {t('folders.card.videoCount', { count: folder.videoCount || 0 })}
           </div>
 
           {folder.lastScanned && (
@@ -69,7 +71,7 @@ export const FolderCard: React.FC<FolderCardProps> = ({ folder, onDelete }) => {
                 •
               </span>
               <div className="text-white/60">
-                Last scan: <span className="font-semibold text-white">{smartFormatDate(folder.lastScanned)}</span>
+                {t('folders.card.lastScan')} <span className="font-semibold text-white">{smartFormatDate(folder.lastScanned)}</span>
               </div>
             </>
           )}

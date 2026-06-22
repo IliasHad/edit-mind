@@ -4,6 +4,7 @@ import { ML_HOST, ML_PORT } from '../constants'
 import { logger } from './logger'
 import { Analysis, AnalysisProgress } from '@shared/types/analysis'
 import { Transcription, TranscriptionProgress } from '@shared/types/transcription'
+import { DEFAULT_LANGUAGE, type AppLanguage } from '@shared/types/language'
 
 interface JobCallbacks<T = Analysis | Transcription> {
   onProgress?: (progress: TranscriptionProgress | AnalysisProgress) => void
@@ -109,6 +110,7 @@ class PythonService {
     videoPath: string,
     jsonFilePath: string,
     job_id: string,
+    language: AppLanguage = DEFAULT_LANGUAGE,
     onProgress: (progress: AnalysisProgress) => void,
     onComplete: (data: Analysis) => void,
     onError: (error: Error) => void
@@ -126,7 +128,7 @@ class PythonService {
 
     const message = {
       type: 'analyze',
-      payload: { video_path: encodeURI(videoPath), job_id, json_file_path: jsonFilePath },
+      payload: { video_path: encodeURI(videoPath), job_id, json_file_path: jsonFilePath, language },
     }
 
     try {
@@ -141,6 +143,7 @@ class PythonService {
     videoPath: string,
     jsonFilePath: string,
     job_id: string,
+    language: AppLanguage = DEFAULT_LANGUAGE,
     onProgress: (progress: TranscriptionProgress) => void,
     onComplete: (data: Transcription) => void,
     onError: (error: Error) => void
@@ -159,7 +162,7 @@ class PythonService {
 
     const message = {
       type: 'transcribe',
-      payload: { video_path: encodeURI(videoPath), json_file_path: jsonFilePath, job_id },
+      payload: { video_path: encodeURI(videoPath), json_file_path: jsonFilePath, job_id, language },
     }
 
     try {

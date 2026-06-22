@@ -19,6 +19,10 @@ import { useEffect } from 'react'
 import { logger } from '@shared/services/logger'
 import { getLatestReleaseVersion } from './services/github.server'
 import semver from 'semver'
+import { AppSettingsModel } from '@db/index'
+import { DEFAULT_LANGUAGE } from '@shared/types/language'
+import { I18nProvider } from './i18n/I18nProvider'
+import { i18next, resolveLanguage } from './i18n'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -33,7 +37,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
         ? semver.gte(currentVersion, latestVersion)
         : true
 
+    let language = DEFAULT_LANGUAGE
+    try {
+      language = await AppSettingsModel.getLanguage()
+    } catch (settingsError) {
+      logger.error(settingsError)
+    }
+
     return {
+      language,
       session: {
         isAuthenticated: !!user,
         user: { email: user?.email },
@@ -47,6 +59,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch (error) {
     logger.error(error)
     return {
+      language: DEFAULT_LANGUAGE,
       session: undefined,
       app: undefined,
     }
@@ -82,8 +95,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }
   }, [setApp, data])
 
+  const language = resolveLanguage(data?.language)
+
   return (
-    <html lang="en" className="dark">
+    <html lang={language} className="dark">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -91,9 +106,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <MotionConfig reducedMotion="user">
-          <SessionProvider initialSession={data?.session}>{children}</SessionProvider>
-        </MotionConfig>
+        <I18nProvider language={language}>
+          <MotionConfig reducedMotion="user">
+            <SessionProvider initialSession={data?.session}>{children}</SessionProvider>
+          </MotionConfig>
+        </I18nProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -107,20 +124,21 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError()
-  let message = 'Oops!'
-  let details = 'An unexpected error occurred.'
+  const language = resolveLanguage(i18next.resolvedLanguage || i18next.language)
+  let message = i18next.t('root.errors.title')
+  let details = i18next.t('root.errors.genericDetails')
   let stack: string | undefined
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error'
-    details = error.status === 404 ? 'The requested page could not be found.' : error.statusText || details
+    message = error.status === 404 ? i18next.t('root.errors.notFoundTitle') : i18next.t('root.errors.genericTitle')
+    details = error.status === 404 ? i18next.t('root.errors.notFoundDetails') : error.statusText || details
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message
     stack = error.stack
   }
 
   return (
-    <html lang="en">
+    <html lang={language}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

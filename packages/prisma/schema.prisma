@@ -13,6 +13,18 @@ enum UserRole {
   user
 }
 
+enum AppLanguage {
+  en
+  ru
+}
+
+model AppSettings {
+  id        String      @id
+  language  AppLanguage @default(en)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
 model User {
   id          String       @id
   email       String       @unique

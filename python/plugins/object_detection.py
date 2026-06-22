@@ -40,7 +40,7 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
         self.yolo_model.fuse()
 
     
-    def setup(self, video_path, job_id) -> None:
+    def setup(self, video_path, job_id, language: str = "en") -> None:
         return None
 
     def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:

@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
 import { deleteByVideoSource, getByVideoSource } from '@vector/services/db'
 import { existsSync, statSync } from 'fs'
-import { JobModel, VideoModel } from '@db/index'
+import { AppSettingsModel, JobModel, VideoModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import { RelinkVideoSchema } from '~/features/videos/schemas'
 import { backgroundJobsFetch } from '~/services/background.server'
@@ -135,6 +135,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         throw new Response('Video not found', { status: 404 })
       }
       const stats = statSync(video.source)
+      const language = await AppSettingsModel.getLanguage()
       const job = await JobModel.create({
         videoPath: video.source,
         userId: user.id,
@@ -149,6 +150,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
           videoPath: video.source,
           priority: 2,
           forceReIndexing: true,
+          language,
         },
         user
       )

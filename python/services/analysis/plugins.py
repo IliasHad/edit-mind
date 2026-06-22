@@ -73,11 +73,11 @@ class PluginManager:
 
         logger.info(f"Loaded {len(self.plugins)} plugins")
 
-    def setup_plugins(self, video_path: str, job_id: str) -> None:
+    def setup_plugins(self, video_path: str, job_id: str, language: str = "en") -> None:
         """Initialize all plugins."""
         for plugin in self.plugins:
             try:
-                plugin.setup(video_path, job_id)
+                plugin.setup(video_path, job_id, language)
             except Exception as e:
                 logger.error(
                     f"Failed to setup {plugin.__class__.__name__}: {e}")

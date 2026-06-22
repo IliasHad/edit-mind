@@ -69,7 +69,8 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
                 model,
                 request.video_path,
                 throttled.update if throttled else None,
-                cancel_flag
+                cancel_flag,
+                request.language
             )
 
             # Final progress update — always send
@@ -95,16 +96,20 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
         model,
         video_path: str,
         progress_callback: Optional[Callable],
-        cancel_flag: Event
+        cancel_flag: Event,
+        language: str = "en"
     ) -> TranscriptionResult:
         """Transcribe video with progress updates."""
         try:
             start = time.time()
 
+            transcription_language = language if language in ("en", "ru") else None
+
             segments, info = model.transcribe(
                 video_path,
                 beam_size=self.config.beam_size,
                 word_timestamps=True,
+                language=transcription_language,
                 vad_filter=self.config.vad_filter,
                 log_progress=False,
                 vad_parameters={

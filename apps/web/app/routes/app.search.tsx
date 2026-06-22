@@ -11,6 +11,7 @@ import { SearchModeTabs } from '~/features/search/components/SearchModeTabs'
 import { useSearchResults } from '~/features/search/hooks/useSearchResults'
 import { useSearchSuggestions } from '~/features/search/hooks/useSearchSuggestions'
 import { useClickOutside } from '~/features/search/hooks/useClickOutside'
+import { useTranslation } from 'react-i18next'
 
 export const meta: MetaFunction = () => {
   return [
@@ -24,6 +25,7 @@ export const meta: MetaFunction = () => {
 
 export default function SearchPage() {
   const { results, total, loading, hasQuery, showSuggestions, setShowSuggestions, searchMode } = useSearchResults()
+  const { t } = useTranslation()
 
   const { suggestions, hasSuggestions } = useSearchSuggestions(showSuggestions)
 
@@ -50,10 +52,10 @@ export default function SearchPage() {
         <div className="max-w-4xl mx-auto mb-16" ref={searchContainerRef}>
           <div className="text-center mb-8">
             <h1 className="text-6xl font-semibold text-black dark:text-white tracking-tight mb-4 leading-tight">
-              Search
+              {t('search.page.title')}
             </h1>
             <p className="text-lg text-black/60 dark:text-white/60 leading-relaxed">
-              Find scenes by text, image, faces, objects, and emotions
+              {t('search.page.description')}
             </p>
           </div>
 

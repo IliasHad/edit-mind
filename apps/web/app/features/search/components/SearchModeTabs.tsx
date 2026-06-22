@@ -2,24 +2,26 @@ import { MagnifyingGlassIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { Button } from '@ui/components/Button'
 import { useSearchResults } from '../hooks/useSearchResults'
 import clsx from 'clsx'
+import { useTranslation } from 'react-i18next'
 
 const SEARCH_MODES = [
   {
     id: 'text' as const,
-    label: 'Text',
+    labelKey: 'search.modes.text.label',
     icon: MagnifyingGlassIcon,
-    description: 'Search by keywords',
+    descriptionKey: 'search.modes.text.description',
   },
   {
     id: 'image' as const,
-    label: 'Image',
+    labelKey: 'search.modes.image.label',
     icon: PhotoIcon,
-    description: 'Search by image and text',
+    descriptionKey: 'search.modes.image.description',
   },
 ] as const
 
 export function SearchModeTabs() {
   const { searchMode, setSearchMode, loading, clearSearch } = useSearchResults()
+  const { t } = useTranslation()
 
   return (
     <div className="flex items-center gap-2 p-1.5">
@@ -43,9 +45,9 @@ export function SearchModeTabs() {
               isActive ? 'primary' : 'text-black dark:text-white'
             )}
             leftIcon={<Icon className="size-4" />}
-            title={mode.description}
+            title={t(mode.descriptionKey)}
           >
-            <span>{mode.label}</span>
+            <span>{t(mode.labelKey)}</span>
           </Button>
         )
       })}

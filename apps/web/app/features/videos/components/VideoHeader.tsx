@@ -5,6 +5,7 @@ import { smartFormatDate } from '@shared/utils/duration'
 import { motion } from 'framer-motion'
 import type { CollectionItemsWithNameAndId, ProjectWithIdAndName } from '../types'
 import { Button } from '@ui/components/Button'
+import { useTranslation } from 'react-i18next'
 
 interface VideoHeaderProps {
   fileName: string
@@ -32,6 +33,8 @@ export function VideoHeader({
   shottedAt,
   updatedAt
 }: VideoHeaderProps) {
+  const { t } = useTranslation()
+
   return (
     <motion.section
       initial={{ opacity: 0, y: -10 }}
@@ -47,21 +50,21 @@ export function VideoHeader({
             <div className="flex flex-wrap items-center gap-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                 <FilmIcon className="h-4 w-4 text-white/60" />
-                <span className="text-sm font-medium text-white/70">{sceneCount} scenes</span>
+                <span className="text-sm font-medium text-white/70">{t('videos.header.sceneCount', { count: sceneCount })}</span>
               </div>
 
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                 <CalendarIcon className="h-4 w-4 text-white/60" />
-                <span className="text-sm font-medium text-white/70">Imported {smartFormatDate(importAt)}</span>
+                <span className="text-sm font-medium text-white/70">{t('videos.header.imported', { date: smartFormatDate(importAt) })}</span>
               </div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                 <CalendarIcon className="h-4 w-4 text-white/60" />
-                <span className="text-sm font-medium text-white/70">Updated {smartFormatDate(updatedAt)}</span>
+                <span className="text-sm font-medium text-white/70">{t('videos.header.updated', { date: smartFormatDate(updatedAt) })}</span>
               </div>
               {shottedAt && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
                   <VideoCameraIcon className="h-4 w-4 text-white/60" />
-                  <span className="text-sm font-medium text-white/70">Shot {smartFormatDate(shottedAt)}</span>
+                  <span className="text-sm font-medium text-white/70">{t('videos.header.shot', { date: smartFormatDate(shottedAt) })}</span>
                 </div>
               )}
             </div>
@@ -79,7 +82,7 @@ export function VideoHeader({
                 />
               }
             >
-              {disabled ? 'Reindexing...' : 'Reindex'}
+              {disabled ? t('videos.actions.reindexing') : t('videos.actions.reindex')}
             </Button>
 
             <Button
@@ -88,7 +91,7 @@ export function VideoHeader({
               leftIcon={<TrashIcon className="h-4 w-4 group-hover:scale-110 transition-transform" />}
               variant="destructive"
             >
-              Delete
+              {t('videos.actions.delete')}
             </Button>
           </div>
         </div>
@@ -102,7 +105,7 @@ export function VideoHeader({
           className="px-6 py-4 border-t border-white/5"
         >
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">Collections</h3>
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('videos.header.collections')}</h3>
             <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-white/60">
               {collectionItems.length}
             </span>
@@ -131,7 +134,7 @@ export function VideoHeader({
           className="px-6 py-4 border-t border-white/5"
         >
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">Projects</h3>
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider">{t('videos.header.projects')}</h3>
             <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-white/60">
               {projects.length}
             </span>

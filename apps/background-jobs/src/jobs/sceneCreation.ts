@@ -12,7 +12,7 @@ import { deleteByVideoSource } from '@vector/services/db'
 import { VideoModel } from '@db/index'
 
 async function processVideo(job: Job<VideoProcessingData>) {
-  const { videoPath, jobId, transcriptionPath, analysisPath, scenesPath } = job.data
+  const { videoPath, jobId, transcriptionPath, analysisPath, scenesPath, language } = job.data
 
   logger.info({ jobId, videoPath }, 'Starting scene creation')
 
@@ -77,7 +77,7 @@ async function processVideo(job: Job<VideoProcessingData>) {
     }
     await updateJob(job, { stage: JobStage.creating_scenes, overallProgress: 70, progress: 0 })
 
-    const scenes = await createScenes(analysisData, transcriptionData, videoPath)
+    const scenes = await createScenes(analysisData, transcriptionData, videoPath, language)
     await fs.writeFile(scenesPath, JSON.stringify(scenes, null, 2))
 
     const scenesDuration = (Date.now() - scenesStart) / 1000

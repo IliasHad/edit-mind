@@ -92,12 +92,13 @@ class JobRequest:
 class AnalysisRequest(JobRequest):
     """Analysis job request."""
     settings: Dict[str, JsonValue]
+    language: str = "en"
 
 
 @dataclass(frozen=True)
 class TranscriptionRequest(JobRequest):
     """Transcription job request."""
-    pass
+    language: str = "en"
 class AnalysisCancelledError(Exception):
     """Raised when an analysis job is cancelled."""
     pass

@@ -1,4 +1,5 @@
 import type { ChatSuggestion } from '@shared/types/chat'
+import { useTranslation } from 'react-i18next'
 import { useChatSuggestions } from '../hooks/useChatSuggestions'
 import { Button } from '@ui/components/Button'
 
@@ -8,26 +9,27 @@ interface WelcomeProps {
 }
 
 export function Welcome({ onSuggestionClick, suggestions }: WelcomeProps) {
+  const { t } = useTranslation()
   const { loading } = useChatSuggestions()
   return (
     <div className="flex flex-col items-center justify-center h-full text-center space-y-12">
       <div className="space-y-6">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-full border border-purple-200/50 dark:border-purple-800/50">
           <span className="text-md font-medium text-purple-700 dark:text-purple-300">
-            My videos gallery's second brain
+            {t('chats.welcome.badge')}
           </span>
         </div>
 
         <h2 className="text-4xl sm:text-6xl font-bold tracking-tight leading-[1.1] text-gray-900 dark:text-white">
-          What videos are you
+          {t('chats.welcome.titlePrefix')}
           <br className="hidden sm:block" />
           <span className="bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             {' '}
-            looking for?
+            {t('chats.welcome.titleHighlight')}
           </span>
         </h2>
         <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-          Describe what you want to see and I'll find the perfect clips for you
+          {t('chats.welcome.description')}
         </p>
       </div>
 
@@ -71,7 +73,7 @@ export function Welcome({ onSuggestionClick, suggestions }: WelcomeProps) {
       {!loading && (
         <p className="text-md text-gray-500 dark:text-gray-500 pt-2 flex items-center gap-2">
           <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-          Try to be specific about what you're looking for
+          {t('chats.welcome.hint')}
         </p>
       )}
     </div>

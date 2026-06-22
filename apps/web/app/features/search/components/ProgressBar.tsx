@@ -1,5 +1,6 @@
 import type { SceneAndMatch } from '@shared/types/video'
 import { useMemo, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface ProgressBarProps {
   scenes: SceneAndMatch[]
@@ -38,6 +39,7 @@ function bucketScenes(scenes: SceneAndMatch[], duration: number, buckets = 200):
 
 export function ProgressBar({ scenes, duration }: ProgressBarProps) {
   const [hoveredBucket, setHoveredBucket] = useState<number | null>(null)
+  const { t } = useTranslation()
   const [mouseX, setMouseX] = useState(0)
 
   const buckets = useMemo(() => bucketScenes(scenes, duration, 200), [scenes, duration])
@@ -94,7 +96,7 @@ export function ProgressBar({ scenes, duration }: ProgressBarProps) {
           <div className="relative rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/20 bg-black">
             <img
               src={`/thumbnails/${encodeURIComponent(hoveredThumbnail)}`}
-              alt="Scene preview"
+              alt={t('search.videoCard.scenePreviewAlt')}
               className="w-full h-27 object-cover"
               loading="eager"
             />

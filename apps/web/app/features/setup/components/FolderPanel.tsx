@@ -6,6 +6,7 @@ import { Button } from '@ui/components/Button'
 import { AddFolder } from '~/features/folders/components/AddFolder'
 import { useCurrentFolder } from '~/features/folders/hooks/useCurrentFolder'
 import { useSetup } from '../hooks/useSetup'
+import { useTranslation } from 'react-i18next'
 
 
 
@@ -15,12 +16,13 @@ export function FolderPanel() {
     const { createFolder, error } = useFolders()
     const { setCurrentFolder, currentFolder } = useCurrentFolder()
     const { handleNext } = useSetup()
+    const { t } = useTranslation()
 
     const handleAddFolder = async (path: string): Promise<boolean> => {
         try {
             const { success, data } = FolderCreateSchema.safeParse({ path })
             if (!success) {
-                throw new Error('Invalid folder form data')
+                throw new Error(t('setup.folder.invalidFormData'))
             }
             const folder = await createFolder(data)
             if (folder) {
@@ -30,7 +32,7 @@ export function FolderPanel() {
             }
             return true
         } catch (error) {
-            console.error('Failed to add folder:', error)
+            console.error(t('setup.folder.addFailed'), error)
             return false
         }
     }
@@ -40,7 +42,7 @@ export function FolderPanel() {
 
             {currentFolder?.path}
             <Button onClick={openAddModal} leftIcon={<PlusIcon className="size-4" />}>
-                Select your first folder
+                {t('setup.folder.selectFirst')}
             </Button>
             <AddFolder isOpen={isAddModalOpen} onClose={closeAddModal} onAdd={handleAddFolder} error={error} />
         </div>

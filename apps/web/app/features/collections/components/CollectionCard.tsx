@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 
 import { humanizeSeconds } from '~/features/shared/utils/duration'
-import { ICON_MAP, TYPE_LABELS } from '~/features/collections/constants'
+import { ICON_MAP, TYPE_LABEL_KEYS } from '~/features/collections/constants'
 import type { CollectionWithItems } from '../types'
 
 interface CollectionCardProps {
@@ -11,6 +12,7 @@ interface CollectionCardProps {
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
+  const { t } = useTranslation()
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
 
@@ -69,7 +71,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
               >
                 <Icon className="h-3.5 w-3.5 text-white/90" />
                 <span className="text-[11px] font-semibold tracking-wide text-white/90 uppercase">
-                  {TYPE_LABELS[collection.type]}
+                  {t(TYPE_LABEL_KEYS[collection.type])}
                 </span>
               </motion.div>
 
@@ -103,7 +105,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
                 </p>
               )}
               <div className="flex items-center gap-3 text-xs font-medium text-white/60">
-                <span>{collection.itemCount} Videos</span>
+                <span>{collection.itemCount} {t('collections.card.videos')}</span>
                 <span className="h-1 w-1 rounded-full bg-white/40" />
                 <span>{humanizeSeconds(parseInt(collection.totalDuration))}</span>
               </div>

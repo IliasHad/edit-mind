@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { translate } from '~/i18n/translate'
 import { useImmichStore } from '../stores'
 
 export function useImmichImportStatus() {
@@ -21,7 +22,7 @@ export function useImmichImportStatus() {
       setImportStatus({
         isImporting: false,
         status: 'failed',
-        error: 'Connection to import status lost',
+        error: translate('immich.errors.importStatusLost'),
       })
     }
 

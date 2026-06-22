@@ -9,6 +9,7 @@ import { JobModel } from '@db/index'
 import { getVideoMetadata } from '@media-utils/utils/videos'
 import { createHash } from 'crypto'
 import { TRANSCODE_REQUIRED_EXTENSIONS } from '@shared/constants/video'
+import { DEFAULT_LANGUAGE } from '@shared/types/language'
 
 export async function updateJob(
   job: Job<VideoIndexJobData>,
@@ -96,6 +97,7 @@ export async function addVideoIndexingJob(jobData: VideoIndexJobData, priority: 
 
   const videoData: VideoProcessingData = {
     ...jobData,
+    language: jobData.language ?? DEFAULT_LANGUAGE,
     analysisPath,
     transcriptionPath,
     scenesPath,

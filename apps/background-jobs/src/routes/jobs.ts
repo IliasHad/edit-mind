@@ -1,6 +1,6 @@
 import express from 'express'
 import { logger } from '@shared/services/logger'
-import { JobModel } from 'db'
+import { AppSettingsModel, JobModel } from 'db'
 import { addVideoIndexingJob } from '@background-jobs/services/videoIndexer'
 import { pythonService } from '@shared/services/pythonService'
 import { removeFailedJobs } from '@background-jobs/utils/jobs'
@@ -27,10 +27,12 @@ router.post('/:id/retry', async (req, res) => {
         const job = await JobModel.update(id, {
             status: 'pending'
         })
+        const language = await AppSettingsModel.getLanguage()
 
         await addVideoIndexingJob({
             jobId: job.id,
-            videoPath: job.videoPath
+            videoPath: job.videoPath,
+            language,
         })
 
         return res.status(200).json({

@@ -8,12 +8,13 @@ import {
   GENERAL_RESPONSE_PROMPT,
   CLASSIFY_INTENT_PROMPT,
   ANALYTICS_RESPONSE_PROMPT,
+  buildPromptInstructions,
 } from '../constants/prompts'
 import { VideoSearchParamsSchema } from '@shared/schemas/search'
 import { YearInReviewData, YearInReviewDataSchema } from '@shared/schemas/yearInReview'
 import type { VideoWithScenes } from '@shared/types/video'
 import type { YearStats } from '@shared/types/stats'
-import { ModelResponse } from '@ai/types/ai'
+import { ModelResponse, type AIRequestOptions } from '@ai/types/ai'
 import { logger } from '@shared/services/logger'
 import { VideoSearchParams } from '@shared/types/search'
 import { OLLAMA_HOST, OLLAMA_MODEL, OLLAMA_PORT } from '@ai/constants'
@@ -72,7 +73,7 @@ class OllamaLLM {
   async generateActionFromPrompt(
     query: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<VideoSearchParams>> {
     const fallback = VideoSearchParamsSchema.parse({})
 
@@ -80,7 +81,7 @@ class OllamaLLM {
 
     const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
-    const { data: raw, tokens, error } = await this.generate(SEARCH_PROMPT(query, history, projectInstructions), 1024)
+    const { data: raw, tokens, error } = await this.generate(SEARCH_PROMPT(query, history, buildPromptInstructions(options)), 1024)
 
     if (error || !raw) throw new Error('Error processing your ollama request')
     try {
@@ -100,37 +101,37 @@ class OllamaLLM {
     userPrompt: string,
     count: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
-    return this.generate(ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions))
+    return this.generate(ASSISTANT_MESSAGE_PROMPT(userPrompt, count, history, buildPromptInstructions(options)))
   }
 
   async generateCompilationResponse(
     userPrompt: string,
     count: number,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
-    return this.generate(VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history, projectInstructions))
+    return this.generate(VIDEO_COMPILATION_MESSAGE_PROMPT(userPrompt, count, history, buildPromptInstructions(options)))
   }
 
   async generateYearInReviewResponse(
     stats: YearStats,
     videos: VideoWithScenes[],
     extraDetails: string,
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<YearInReviewData | null>> {
     try {
-      let prompt = YEAR_IN_REVIEW(stats, videos, extraDetails, projectInstructions)
+      let prompt = YEAR_IN_REVIEW(stats, videos, extraDetails, buildPromptInstructions(options))
       let estimatedTokens = Math.ceil(prompt.length / 4)
 
       while (estimatedTokens > 2048 && videos.length > 1) {
         videos = videos.slice(0, Math.floor(videos.length / 2))
-        prompt = YEAR_IN_REVIEW(stats, videos, extraDetails)
+        prompt = YEAR_IN_REVIEW(stats, videos, extraDetails, buildPromptInstructions(options))
         estimatedTokens = Math.ceil(prompt.length / 4)
         logger.warn(`Prompt too long, truncating videos to ${videos.length} items`)
       }
@@ -156,17 +157,17 @@ class OllamaLLM {
   async generateGeneralResponse(
     prompt: string,
     history?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     const context = history?.length ? history.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
-    return this.generate(GENERAL_RESPONSE_PROMPT(prompt, context, projectInstructions))
+    return this.generate(GENERAL_RESPONSE_PROMPT(prompt, context, buildPromptInstructions(options)))
   }
 
   async classifyIntent(
     prompt: string,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<{ type?: 'general' | 'compilation' | 'analytics'; needsVideoData?: boolean }>> {
     const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
@@ -174,7 +175,7 @@ class OllamaLLM {
       data: raw,
       tokens,
       error,
-    } = await this.generate(CLASSIFY_INTENT_PROMPT(prompt, history, projectInstructions))
+    } = await this.generate(CLASSIFY_INTENT_PROMPT(prompt, history, buildPromptInstructions(options)))
 
     if (error || !raw) return { data: { type: 'general', needsVideoData: false }, tokens: 0, error }
 
@@ -192,11 +193,11 @@ class OllamaLLM {
     prompt: string,
     analytics: VideoAnalytics,
     chatHistory?: ChatMessage[],
-    projectInstructions?: string
+    options?: AIRequestOptions
   ): Promise<ModelResponse<string>> {
     const history = chatHistory?.length ? chatHistory.map((h) => `${h.sender}: ${h.text}`).join('\n') : ''
 
-    return this.generate(ANALYTICS_RESPONSE_PROMPT(prompt, analytics, history, projectInstructions))
+    return this.generate(ANALYTICS_RESPONSE_PROMPT(prompt, analytics, history, buildPromptInstructions(options)))
   }
 }
 

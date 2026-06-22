@@ -6,6 +6,8 @@ import { fileStorage } from '~/services/image.server'
 import { buildSearchQueryFromSuggestions } from '@search/services/suggestion'
 import { searchScenes } from '@search/services'
 import { combineResults } from '@search/services/hybridSearch'
+import { normalizeLocalizedSearchQuery } from '@search/utils/localizedQuery'
+import { AppSettingsModel } from '@db/index'
 import { SearchTextSchema } from '~/features/search/schemas'
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -51,8 +53,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return new Response(JSON.stringify({ error: 'No image provided' }), { status: 500 })
   }
 
-  const page = parseInt(url.searchParams.get('page') || '1', 10)
-  const limit = parseInt(url.searchParams.get('limit') || '40', 10)
+  const page = parseInt(formData.get('page')?.toString() || url.searchParams.get('page') || '1', 10)
+  const limit = parseInt(formData.get('limit')?.toString() || url.searchParams.get('limit') || '40', 10)
   const offset = (page - 1) * limit
 
   try {
@@ -64,14 +66,18 @@ export async function action({ request }: ActionFunctionArgs) {
       return new Response(JSON.stringify({ error: 'Search input invalid' }), { status: 400 })
     }
 
-    const searchParams = buildSearchQueryFromSuggestions(data)
+    const language = await AppSettingsModel.getLanguage()
+    const searchParams = normalizeLocalizedSearchQuery(
+      { ...buildSearchQueryFromSuggestions(data), semanticQuery: data.query ?? null },
+      language
+    )
 
     const [imageResults, textResults] = await Promise.all([
       searchByImage(buffer, undefined).catch((error) => {
         logger.error('Image search failed: ' + error)
         return []
       }),
-      searchScenes({ ...searchParams, semanticQuery: data.query ?? null }, undefined, true).catch((error) => {
+      searchScenes(searchParams, undefined, true).catch((error) => {
         logger.error('Text search failed: ' + error)
         return []
       }),

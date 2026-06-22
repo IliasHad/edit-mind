@@ -2,6 +2,7 @@ import fetch from 'node-fetch'
 import * as fs from 'fs/promises'
 import { CACHE_FILE, CACHE_DURATION } from '../constants'
 import { logger } from '../services/logger'
+import { DEFAULT_LANGUAGE, isSupportedLanguage, type AppLanguage } from '../types/language'
 
 interface LocationCache {
   [key: string]: {
@@ -90,7 +91,8 @@ interface NominatimResponse {
   }
 }
 
-export async function getLocationName(location: string): Promise<string> {
+export async function getLocationName(location: string, locale: AppLanguage = DEFAULT_LANGUAGE): Promise<string> {
+  const resolvedLocale = isSupportedLanguage(locale) ? locale : DEFAULT_LANGUAGE
   const locationData = parseLocation(location)
 
   if (!locationData || !locationData.lat || !locationData.lon) {
@@ -104,7 +106,7 @@ export async function getLocationName(location: string): Promise<string> {
     return location
   }
 
-  const cacheKey = `${lat.toFixed(6)},${lon.toFixed(6)}`
+  const cacheKey = `${lat.toFixed(6)},${lon.toFixed(6)}:${resolvedLocale}`
 
   const cache = await loadCache()
   if (cache[cacheKey]) {
@@ -115,11 +117,12 @@ export async function getLocationName(location: string): Promise<string> {
     }
   }
 
-  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&accept-language=en`
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&accept-language=${resolvedLocale}`
 
   const response = await fetch(url, {
     headers: {
       'User-Agent': 'EditMind-VideoEditor/1.0',
+      'Accept-Language': resolvedLocale,
     },
   })
 
@@ -158,7 +161,10 @@ export async function getLocationName(location: string): Promise<string> {
   return locationName
 }
 
-export async function normalizeLocation(location?: string): Promise<string | undefined> {
+export async function normalizeLocation(
+  location?: string,
+  locale: AppLanguage = DEFAULT_LANGUAGE
+): Promise<string | undefined> {
   if (!location) return undefined
 
   const normalized = location?.trim()
@@ -172,7 +178,7 @@ export async function normalizeLocation(location?: string): Promise<string | und
   const match = location.match(/([\d.]+)\s*°?\s*([NS]),?\s*([\d.]+)\s*°?\s*([EW])/i)
 
   if (match) {
-    const locationName = await getLocationName(location)
+    const locationName = await getLocationName(location, locale)
     return locationName
   }
   if (parts.length >= 2) {

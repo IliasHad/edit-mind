@@ -1,20 +1,22 @@
 import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import type { TranscodeStatus } from "../types"
+import { useTranslation } from 'react-i18next'
 
-const TRANSCODING_MESSAGES = [
-    'Transcoding in progress…',
-    'Preparing video for playback…',
-    'Almost there…',
+const TRANSCODING_MESSAGE_KEYS = [
+    'player.transcoding.messages.inProgress',
+    'player.transcoding.messages.preparing',
+    'player.transcoding.messages.almostThere',
 ]
 
 export function TranscodingOverlay({ status }: { status: TranscodeStatus }) {
+    const { t } = useTranslation()
     const [messageIndex, setMessageIndex] = useState(0)
 
     useEffect(() => {
         if (status !== 'transcoding') return
         const interval = setInterval(() => {
-            setMessageIndex((i) => (i + 1) % TRANSCODING_MESSAGES.length)
+            setMessageIndex((i) => (i + 1) % TRANSCODING_MESSAGE_KEYS.length)
         }, 3500)
         return () => clearInterval(interval)
     }, [status])
@@ -49,13 +51,13 @@ export function TranscodingOverlay({ status }: { status: TranscodeStatus }) {
                         transition={{ duration: 0.3 }}
                         className="text-white/80 text-sm font-medium tracking-wide text-center"
                     >
-                        {TRANSCODING_MESSAGES[messageIndex]}
+                        {t(TRANSCODING_MESSAGE_KEYS[messageIndex])}
                     </motion.p>
                 </AnimatePresence>
             </div>
 
             <p className="mt-2 text-white/40 text-xs">
-                Incompatible codec — creating browser-compatible proxy
+                {t('player.transcoding.description')}
             </p>
         </div>
     )

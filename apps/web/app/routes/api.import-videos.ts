@@ -1,3 +1,4 @@
+import { AppSettingsModel } from '@db/index'
 import { logger } from '@shared/services/logger'
 import { requireUser } from '~/services/user.server';
 import type { ActionFunctionArgs } from 'react-router'
@@ -7,8 +8,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     try {
         const user = await requireUser(request)
+        const language = await AppSettingsModel.getLanguage()
 
-        await backgroundJobsFetch(`/internal/indexer/import-videos`, undefined, user, 'POST')
+        await backgroundJobsFetch(`/internal/indexer/import-videos`, { language }, user, 'POST')
 
         return {
             success: true,

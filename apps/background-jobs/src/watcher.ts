@@ -1,7 +1,7 @@
 import chokidar from 'chokidar'
 import path from 'path'
 import { addVideoIndexingJob } from './services/videoIndexer'
-import { FolderModel, JobModel } from '@db/index'
+import { AppSettingsModel, FolderModel, JobModel } from '@db/index'
 import { stat } from 'fs/promises'
 import { logger } from '@shared/services/logger'
 import { existsSync } from 'fs'
@@ -45,9 +45,11 @@ export function watchFolder(folderPath: string) {
         folderId: folder.id,
         fileSize: BigInt(stats.size),
       })
+      const language = await AppSettingsModel.getLanguage()
       await addVideoIndexingJob({
         videoPath: filePath,
         jobId: job.id,
+        language,
       })
     } catch (error) {
       logger.error('Error adding new video file while watching for new folder changes: ' + error)

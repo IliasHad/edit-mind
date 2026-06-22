@@ -23,6 +23,8 @@ export const VideoSearchParamsSchema = z.object({
 
 export const searchSuggestionSchema = z.object({
   text: z.string(),
+  value: z.string().optional(),
+  displayText: z.string().optional(),
   icon: z.string(),
   border: z.string(),
   category: z.union([

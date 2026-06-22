@@ -1,0 +1,68 @@
+const collections = {
+  meta: {
+    indexTitle: 'Collections | Edit Mind',
+    detailsTitle: 'Collection Details | Edit Mind',
+    scenesTitle: 'Collection Scenes | Edit Mind',
+  },
+  types: {
+    visual_style: 'Visual Style',
+    subject_matter: 'Subject',
+    emotional_tone: 'Emotional Tone',
+    aspect_ratio: 'Aspect Ratio',
+    time_of_day: 'Time of Day',
+    use_case: 'Use Case',
+    people: 'People',
+    location: 'Location',
+    custom: 'Custom',
+    geographic_location: 'Geographic Location',
+    person: 'Person',
+    b_roll: 'B-Roll',
+    audio: 'Audio',
+  },
+  index: {
+    title: 'Collections',
+    description: 'Intelligent collections powered by AI. Discover your footage organized by style, mood, and content.',
+    collectionsStat: 'Collections',
+    videosStat: 'Videos',
+    durationStat: 'Duration',
+    allFilter: 'All',
+    emptyTitle: 'No collections yet',
+    emptyDescription: 'Upload your first videos to automatically generate intelligent collections organized by AI.',
+  },
+  details: {
+    errorTitle: 'Error Loading Collection',
+    backToCollections: 'Back to Collections',
+    notFoundTitle: 'Collection Not Found',
+    notFoundDescription: "The collection you're looking for doesn't exist.",
+    videos: 'videos',
+    duration: 'duration',
+    updated: 'Updated {{date}}',
+    matchedScenes: 'Matched Scenes',
+    sortShotDate: 'Shot Date',
+    sortImportDate: 'Import Date',
+    sortLastUpdated: 'Last Updated',
+    sortDuration: 'Duration',
+    match: 'match',
+    noVideosTitle: 'No videos found',
+    noVideosDescription: "This collection doesn't have any videos yet.",
+  },
+  card: {
+    videos: 'Videos',
+  },
+  scenes: {
+    selectedSceneOne: '{{count}} scene selected',
+    selectedSceneOther: '{{count}} scenes selected',
+    clear: 'Clear',
+    emptyTitle: 'No scenes found',
+    selected: '{{count}} selected',
+    exportScenes: 'Export Scenes',
+  },
+  validation: {
+    sceneRequired: 'At least one scene id is required',
+  },
+  errors: {
+    unknown: 'Unknown error occurred',
+  },
+} as const
+
+export default collections

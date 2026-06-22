@@ -1,12 +1,15 @@
 import compression from 'compression'
 import express from 'express'
 import morgan from 'morgan'
+import { createProxyMiddleware } from 'http-proxy-middleware'
 
 const DEVELOPMENT = process.env.NODE_ENV === 'development'
 const PORT = Number.parseInt(process.env.PORT || '3745', 10)
 const BUILD_PATH = './build/server/index.js'
+const BACKGROUND_JOBS_URL = process.env.BACKGROUND_JOBS_URL
 
 const app = express()
+let socketProxy
 
 app.use(compression())
 app.disable('x-powered-by')
@@ -46,11 +49,28 @@ if (DEVELOPMENT) {
   app.use(morgan('tiny'))
   app.use(express.static('build/client', { maxAge: '1h' }))
 
+  if (!BACKGROUND_JOBS_URL) {
+    throw new Error('BACKGROUND_JOBS_URL is required')
+  }
+
+  socketProxy = createProxyMiddleware({
+    pathFilter: '/socket.io',
+    target: BACKGROUND_JOBS_URL,
+    changeOrigin: true,
+    ws: true,
+  })
+
+  app.use(socketProxy)
+
   const { app: requestHandler } = await import(BUILD_PATH)
 
   app.use(requestHandler)
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is listening on 0.0.0.0:${PORT}`)
 })
+
+if (socketProxy) {
+  server.on('upgrade', socketProxy.upgrade)
+}

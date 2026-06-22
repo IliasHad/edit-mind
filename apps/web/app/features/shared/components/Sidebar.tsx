@@ -8,6 +8,7 @@ import {
   FolderIcon,
   FilmIcon,
 } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 import { Link } from './Link'
 import { useSession } from '~/features/auth/hooks/useSession'
 import type { JSX } from 'react'
@@ -26,6 +27,7 @@ interface SidebarProps {
 export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: SidebarProps) {
   const { session } = useSession()
   const { handleLogout: logout } = useAuth()
+  const { t } = useTranslation()
 
   const handleLogout = async () => {
     await logout()
@@ -72,37 +74,37 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
       </div>
 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/30">
-        <Link isCollapsed={isCollapsed} icon={<HomeIcon className="w-5 h-5" />} to="/app/home" label="Dashboard" />
+        <Link isCollapsed={isCollapsed} icon={<HomeIcon className="w-5 h-5" />} to="/app/home" label={t('shell.navigation.dashboard')} />
         <Link
           isCollapsed={isCollapsed}
           icon={<MagnifyingGlassIcon className="w-5 h-5" />}
           to="/app/search"
-          label="Search"
+          label={t('shell.navigation.search')}
         />
         <Link
           isCollapsed={isCollapsed}
           icon={<ChatBubbleLeftIcon className="w-5 h-5" />}
           to="/app/chats/new"
-          label="New Chat"
+          label={t('shell.navigation.newChat')}
         />
         <Link
           isCollapsed={isCollapsed}
           icon={<FolderIcon className="w-5 h-5" />}
           to="/app/collections"
-          label="Collections"
+          label={t('shell.navigation.collections')}
         />
-        <Link isCollapsed={isCollapsed} icon={<FilmIcon className="w-5 h-5" />} to="/app/projects" label="Projects" />
+        <Link isCollapsed={isCollapsed} icon={<FilmIcon className="w-5 h-5" />} to="/app/projects" label={t('shell.navigation.projects')} />
         <Link
           isCollapsed={isCollapsed}
           icon={<UsersIcon className="w-5 h-5" />}
           to="/app/faces"
-          label="Face Training"
+          label={t('shell.navigation.faceTraining')}
         />
         <Link
           isCollapsed={isCollapsed}
           icon={<BriefcaseIcon className="w-5 h-5" />}
           to="/app/jobs"
-          label="Jobs"
+          label={t('shell.navigation.jobs')}
         />
         {children}
       </nav>
@@ -116,17 +118,17 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
           isCollapsed={isCollapsed}
           icon={<Cog6ToothIcon className="w-5 h-5" />}
           to="/app/settings"
-          label="Settings"
+          label={t('shell.navigation.settings')}
         />
         <Button
           variant="link"
           onClick={handleLogout}
           size="sm"
-          title={isCollapsed ? 'Logout' : undefined}
+          title={isCollapsed ? t('shell.navigation.logout') : undefined}
           leftIcon={<ArrowRightCircleIcon className="w-5 h-5" />}
           className="hover:bg-white/50 dark:hover:bg-white/10 rounded-lg transition-all"
         >
-          {!isCollapsed && <span className="text-sm ml-2 font-medium">Logout</span>}
+          {!isCollapsed && <span className="text-sm ml-2 font-medium">{t('shell.navigation.logout')}</span>}
         </Button>
       </div>
 
@@ -146,7 +148,7 @@ export function Sidebar({ isCollapsed = false, setIsCollapsed, children }: Sideb
                 </svg>
               }
               to="https://github.com/iliashad/edit-mind"
-              label="Star us on GitHub"
+              label={t('shell.navigation.github')}
             />
           </div>
         ) : (

@@ -2,7 +2,7 @@ export type SetupStepId = 'welcome' | 'services' | 'folder' | 'scanning'
 
 export interface SetupStepConfig {
   id: SetupStepId
-  title: string
-  description: string
+  titleKey: string
+  descriptionKey: string
   skippable?: boolean
 }

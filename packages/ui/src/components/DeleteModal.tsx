@@ -11,6 +11,8 @@ interface DeleteModalProps {
   resourceName: string
   confirmText?: string
   cancelText?: string
+  deletingText?: string
+  closeButtonAriaLabel?: string
 }
 
 export function DeleteModal({
@@ -22,6 +24,8 @@ export function DeleteModal({
   resourceName,
   confirmText = 'Delete',
   cancelText = 'Cancel',
+  deletingText = 'Deleting...',
+  closeButtonAriaLabel,
 }: DeleteModalProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -38,7 +42,13 @@ export function DeleteModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} closeOnBackdrop={!isDeleting} showCloseButton={!isDeleting}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnBackdrop={!isDeleting}
+      showCloseButton={!isDeleting}
+      closeButtonAriaLabel={closeButtonAriaLabel}
+    >
       <div className="p-6">
         <h2 className="text-xl font-semibold text-white mb-2">{title}</h2>
 
@@ -55,7 +65,7 @@ export function DeleteModal({
             {cancelText}
           </Button>
           <Button variant="destructive" onClick={handleConfirm} disabled={isDeleting} loading={isDeleting} fullWidth>
-            {isDeleting ? 'Deleting...' : confirmText}
+            {isDeleting ? deletingText : confirmText}
           </Button>
         </div>
       </div>

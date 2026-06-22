@@ -1,4 +1,5 @@
 import { Switch } from '@headlessui/react'
+import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx';
 
 interface ToggleProps {
@@ -8,6 +9,7 @@ interface ToggleProps {
 }
 
 export function Toggle({ enabled, onChange, size = 'medium' }: ToggleProps) {
+  const { t } = useTranslation()
   const switchClass = clsx(
     enabled ? 'bg-black dark:bg-white' : 'bg-gray-200 dark:bg-gray-700',
     'relative inline-flex flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2',
@@ -31,7 +33,7 @@ export function Toggle({ enabled, onChange, size = 'medium' }: ToggleProps) {
 
   return (
     <Switch checked={enabled} onChange={onChange} className={switchClass}>
-      <span className="sr-only">Use setting</span>
+      <span className="sr-only">{t('shell.toggle.useSetting')}</span>
       <span aria-hidden="true" className={spanClass} />
     </Switch>
   )

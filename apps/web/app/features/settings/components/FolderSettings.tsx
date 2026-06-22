@@ -12,9 +12,11 @@ import { FolderCreateSchema } from '~/features/folders/schemas/folder'
 import { AddFolder } from '~/features/folders/components/AddFolder'
 import { DeleteModal } from '@ui/components/DeleteModal'
 import { StatCard } from './StatsCard'
+import { useTranslation } from 'react-i18next'
 
 export const FolderSettings = () => {
     const { folders, createFolder, totalVideos, totalDuration, error } = useFolders()
+    const { t } = useTranslation()
     const { deleteFolder, setCurrentFolder, currentFolder } = useCurrentFolder()
 
     const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
@@ -25,23 +27,23 @@ export const FolderSettings = () => {
             {
                 id: 'folders',
                 icon: <FolderIcon className="size-5 text-black/60 dark:text-white/60" />,
-                label: 'Total Folders',
+                label: t('folders.stats.totalFolders'),
                 value: folders.length.toString(),
             },
             {
                 id: 'videos',
                 icon: <CheckCircleIcon className="size-5 text-black/60 dark:text-white/60" />,
-                label: 'Videos Scanned',
+                label: t('folders.stats.videosScanned'),
                 value: totalVideos.toString(),
             },
             {
                 id: 'duration',
                 icon: <ArrowUpTrayIcon className="size-5 text-black/60 dark:text-white/60" />,
-                label: 'Total Processed Duration',
+                label: t('folders.stats.totalProcessedDuration'),
                 value: humanizeSeconds(totalDuration),
             },
         ],
-        [folders.length, totalVideos, totalDuration]
+        [folders.length, t, totalVideos, totalDuration]
     )
 
     const handleOpenDeleteModal = (folder: Folder) => {
@@ -53,7 +55,7 @@ export const FolderSettings = () => {
         try {
             const { success, data } = FolderCreateSchema.safeParse({ path })
             if (!success) {
-                throw new Error('Invalid folder form data')
+                throw new Error(t('folders.errors.invalidFormData'))
             }
             const folder = await createFolder(data)
             if (folder) {
@@ -61,7 +63,7 @@ export const FolderSettings = () => {
             }
             return true
         } catch (error) {
-            console.error('Failed to add folder:', error)
+            console.error(t('folders.errors.addFailed'), error)
             return false
         }
     }
@@ -74,7 +76,7 @@ export const FolderSettings = () => {
             setCurrentFolder(null)
             closeDeleteModal()
         } catch (error) {
-            console.error('Failed to delete folder:', error)
+            console.error(t('folders.errors.deleteFailed'), error)
         }
     }
 
@@ -90,13 +92,13 @@ export const FolderSettings = () => {
             </section>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h2 className="text-xl font-semibold text-black dark:text-white">Video Folders</h2>
+                    <h2 className="text-xl font-semibold text-black dark:text-white">{t('folders.settings.title')}</h2>
                     <p className="text-sm text-black/50 dark:text-white/50">
-                        Add folders to automatically scan and index videos.
+                        {t('folders.settings.description')}
                     </p>
                 </div>
                 <Button onClick={openAddModal} leftIcon={<PlusIcon className="size-4" />}>
-                    Add Folder
+                    {t('folders.settings.addFolder')}
                 </Button>
             </div>
 
@@ -104,9 +106,9 @@ export const FolderSettings = () => {
                 {!hasFolders ? (
                     <div className="text-center py-20 px-6 bg-white dark:bg-black border border-black/10 dark:border-white/10 rounded-2xl">
                         <FolderIcon className="size-12 mx-auto text-black/20 dark:text-white/20 mb-4" />
-                        <h3 className="text-lg font-medium text-black dark:text-white">No folders added yet</h3>
+                        <h3 className="text-lg font-medium text-black dark:text-white">{t('folders.settings.emptyTitle')}</h3>
                         <p className="text-sm text-black/50 dark:text-white/50 mt-1">
-                            Add your first folder to start indexing videos.
+                            {t('folders.settings.emptyDescription')}
                         </p>
                     </div>
                 ) : (
@@ -123,14 +125,14 @@ export const FolderSettings = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={closeDeleteModal}
                 onConfirm={handleDeleteFolder}
-                title="Delete folder"
-                description="Removing this folder will stop indexing new videos. Existing videos in your system will remain intact."
-                resourceName={currentFolder?.path || 'Untitled folder'}
-                confirmText="Delete folder"
+                title={t('folders.settings.deleteTitle')}
+                description={t('folders.settings.deleteDescription')}
+                resourceName={currentFolder?.path || t('folders.settings.untitledFolder')}
+                confirmText={t('folders.settings.deleteTitle')}
             />
 
             <p className="text-sm text-black/50 dark:text-white/50 text-center mt-10">
-                Videos are indexed automatically when folders are added or modified.
+                {t('folders.settings.footer')}
             </p>
         </section>
     )

@@ -1,4 +1,5 @@
 import { Button } from '@ui/components/Button';
+import { useTranslation } from 'react-i18next'
 
 interface OnboardingNavigationProps {
   totalSteps: number
@@ -15,6 +16,9 @@ export function OnboardingNavigation({
   handleNext,
   isLastStep,
 }: OnboardingNavigationProps) {
+  const { t } = useTranslation()
+  const nextLabel = isLastStep ? t('onboarding.navigation.getStarted') : t('onboarding.navigation.continue')
+
   return (
     <div className="pb-10 px-6">
       <div className="max-w-4xl mx-auto">
@@ -24,7 +28,7 @@ export function OnboardingNavigation({
               key={index}
               onClick={() => goToStep(index)}
               className="p-1"
-              aria-label={`Go to step ${index + 1}`}
+              aria-label={t('onboarding.navigation.goToStep', { step: index + 1 })}
             >
               <div
                 className={`h-1.5 rounded-full transition-all duration-200 ${index === currentStep ? 'w-7 bg-black dark:bg-white' : 'w-1.5 bg-gray-300 dark:bg-gray-700'
@@ -37,9 +41,9 @@ export function OnboardingNavigation({
         <div className="flex justify-center">
           <Button
             onClick={handleNext}
-            aria-label={isLastStep ? 'Get Started' : 'Continue'}
+            aria-label={nextLabel}
           >
-            {isLastStep ? 'Get Started' : 'Continue'}
+            {nextLabel}
           </Button>
         </div>
       </div>
