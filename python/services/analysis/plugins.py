@@ -52,6 +52,8 @@ class PluginManager:
             ("DominantColorPlugin", "dominant_color"),
             ("DescriptorPlugin", "descriptor"),
             ("TextDetectionPlugin", "text_detection"),
+            # Opt-in: only does anything when TWELVELABS_API_KEY is set.
+            ("TwelveLabsPlugin", "twelvelabs"),
         ]
 
         for plugin_name, module_stem in plugin_definitions:

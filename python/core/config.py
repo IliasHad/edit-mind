@@ -20,6 +20,13 @@ class AnalysisConfig:
         'ShotTypePlugin': 1,
         "DescriptorPlugin": 1
     })
+    # Opt-in TwelveLabs plugin (Pegasus analysis + Marengo embeddings).
+    # No-op unless twelvelabs_api_key or the TWELVELABS_API_KEY env var is set.
+    twelvelabs_api_key: Optional[str] = field(
+        default_factory=lambda: os.getenv("TWELVELABS_API_KEY")
+    )
+    twelvelabs_prompt: Optional[str] = None
+    twelvelabs_embedding: bool = True
     thumbnail_dir: str = field(
         default_factory=lambda: os.getenv(
             "THUMBNAILS_PATH",

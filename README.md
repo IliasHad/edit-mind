@@ -174,6 +174,24 @@ openssl rand -base64 32
 openssl rand -hex 32
 ```
 
+#### Optional: TwelveLabs video understanding
+
+The ML service ships an **opt-in** TwelveLabs analyzer plugin. When you set a
+`TWELVELABS_API_KEY`, every analyzed video also gets:
+
+- a rich whole-video description from **Pegasus**, which flows into the existing
+  semantic-search pipeline alongside the local BLIP captions, and
+- a 512-dim multimodal **Marengo** embedding, exposed in the plugin results for
+  vector indexing.
+
+```ini
+# Optional, opt-in. Leave blank to keep analysis fully local.
+TWELVELABS_API_KEY="your-twelvelabs-api-key"
+```
+
+Without the key the plugin is a no-op and nothing changes. Grab a free key at
+[twelvelabs.io](https://twelvelabs.io) — there's a generous free tier.
+
 
 ### 4. Start the Services
 

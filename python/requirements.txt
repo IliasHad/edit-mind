@@ -39,3 +39,7 @@ tf-keras
 ultralytics>=8.0.0
 transformers>=4.35.0
 --index-url https://pypi.org/simple
+
+# TwelveLabs (optional, opt-in cloud video understanding plugin)
+# Only imported when TWELVELABS_API_KEY is set; safe to remove if unused.
+twelvelabs>=1.2.8
