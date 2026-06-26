@@ -60,7 +60,7 @@ class DominantColorPlugin(AnalyzerPlugin):
         """Initialize the plugin for a new video."""
         self.frame_colors = []
 
-    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
+    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str, original_frame: np.ndarray) -> FrameAnalysis:
         """Extract dominant colors and color properties from a frame."""
         try:
             dominant_color_objects = self._extract_dominant_colors(

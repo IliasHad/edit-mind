@@ -43,7 +43,7 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
     def setup(self, video_path, job_id) -> None:
         return None
 
-    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
+    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str, original_frame: np.ndarray) -> FrameAnalysis:
         detections_results = self._run_object_detection([frame])
 
         scale_factor = float(frame_analysis.get('scale_factor', 1.0))

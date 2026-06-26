@@ -66,6 +66,7 @@ class AnalyzerPlugin(ABC):
         frame: np.ndarray,
         frame_analysis: FrameAnalysis,
         video_path: str,
+        original_frame: np.ndarray,
     ) -> FrameAnalysis:
         """
         Analyze a single video frame.

@@ -24,7 +24,8 @@ class ShotTypePlugin(AnalyzerPlugin):
         self,
         frame: np.ndarray,
         frame_analysis: FrameAnalysis,
-        video_path: str
+        video_path: str,
+        original_frame: np.ndarray
     ) -> FrameAnalysis:
         height, width = frame.shape[:2]
         faces = frame_analysis.get("faces", [])

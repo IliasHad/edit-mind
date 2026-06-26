@@ -48,7 +48,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         self,
         frame: np.ndarray,
         frame_analysis: FrameAnalysis,
-        video_path: str
+        video_path: str,
+        original_frame: np.ndarray
     ) -> FrameAnalysis:
         if not self.face_recognizer:
             logger.warning("Face recognizer not initialized")
@@ -78,7 +79,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
             if face['name'].startswith("Unknown_"):
                 saved = self._track_unknown_face(
                     frame, timestamp_ms, frame_idx, face,
-                    video_path, frame_analysis["job_id"], scale_factor
+                    video_path, frame_analysis["job_id"], scale_factor,
+                    original_frame
                 )
                 if saved:
                     self.all_faces.append({
@@ -149,7 +151,8 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         face: Dict,
         video_path: str,
         job_id: str,
-        scale_factor: float
+        scale_factor: float,
+        original_frame: np.ndarray,
     ) -> None:
         """" Track unknown face  and check by face name, if we save it before or it's the first time to save json and image file for user to label after the video is indexed """
         face_id = face['name']
@@ -164,14 +167,14 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         # Case 1: the face is "Unknown_001" and we don't have in saved_unknown_faces yet
         # Step 1: Build the appearance data including the timestamps, the face coordinates, job_id (most important to use later on for user face labelling)
         # Step 2: Because we scaled down to video frame, we need to get face coordinates and face image in the original to train the DeepFace model with high quality
-        # face images, we use the scale_factor that we pass when we scale down the frame, revert back to original frame and save it the image using _load_original_frame and opencv
+        # face images, we use the scale_factor that we pass when we scale down the frame, revert back to original frame and save it the image using original_frame and opencv
         # save a json file that we can keep track of the face data, so later on the user can label the face once per video and we'll get all scenes where the face recognized
         # over FaceRecognizer._recognize_or_cluster, we're recognize the face or cluster the unknown using the embedding
          
         if face_id not in self.saved_unknown_faces:
             result = self._save_first_occurrence(
-                frame, timestamp_ms, frame_idx, face, video_path,
-                appearance_data, job_id, scale_factor
+                frame, frame_idx, face, video_path,
+                appearance_data, job_id, scale_factor, original_frame
             )
         else:
             json_path = self.saved_unknown_faces[face_id]["json_path"]
@@ -180,28 +183,27 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
             else:
                 # JSON file was deleted, treat as first occurrence
                 result = self._save_first_occurrence(
-                    frame, timestamp_ms, frame_idx, face, video_path,
-                    appearance_data, job_id, scale_factor
+                    frame, frame_idx, face, video_path,
+                    appearance_data, job_id, scale_factor, original_frame
                 )
         return result
     
     def _save_first_occurrence(
         self,
         frame: np.ndarray,
-        timestamp_ms: int,
         frame_idx: int,
         face: Dict,
         video_path: str,
         appearance_data: Dict,
         job_id: str,
-        scale_factor: float
+        scale_factor: float,
+        original_frame: np.ndarray
     ) -> None:
         face_id = face['name']
         top, right, bottom, left = face['location']
 
         # Load original frame
-        original_frame = self._load_original_frame(
-            frame, video_path, timestamp_ms)
+
         if original_frame is None:
             logger.warning(
                 f"Using scaled frame for {face_id} - original frame unavailable")
@@ -301,25 +303,6 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         except Exception as e:
             logger.error(f"Failed to update appearances for {face_id}: {e}")
             return False
-
-    def _load_original_frame(self, frame: np.ndarray, video_path: str, timestamp_ms: int) -> Optional[np.ndarray]:
-        """" Load original frame to save the unknown face image with high resolution """
-        try:
-            cap = cv2.VideoCapture(video_path)
-            cap.set(cv2.CAP_PROP_POS_MSEC, timestamp_ms)
-            ret, original_frame = cap.read()
-            cap.release()
-
-            if not ret or original_frame is None:
-                logger.warning(
-                    f"Could not read original frame at {timestamp_ms}ms")
-                original_frame = frame
-            else:
-                return original_frame
-        except Exception as e:
-            logger.error(f"Error reading original frame: {e}")
-            original_frame = frame
-            return original_frame
 
     def _cleanup_previous_run(self) -> None:
         """" Clean previous unknown faces using previous job_id, if the video processing job failed and re-run, delete previous jobs unknown saved faces"""

@@ -51,7 +51,7 @@ class DescriptorPlugin(AnalyzerPlugin):
     def setup(self, video_path, job_id) -> None:
         return None
 
-    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
+    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str, original_frame: np.ndarray) -> FrameAnalysis:
         """Caption each frame to understand its environment."""
         if self.processor is None or self.model is None:
             return frame_analysis

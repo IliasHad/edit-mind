@@ -37,7 +37,7 @@ class TextDetectionPlugin(AnalyzerPlugin):
     def setup(self, video_path: str, job_id: str) -> None:
         return None
     
-    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str) -> FrameAnalysis:
+    def analyze_frame(self, frame: np.ndarray, frame_analysis: FrameAnalysis, video_path: str, original_frame: np.ndarray) -> FrameAnalysis:
         """Detect text in a single frame with optimizations."""
         if self.reader is None:
             return frame_analysis
