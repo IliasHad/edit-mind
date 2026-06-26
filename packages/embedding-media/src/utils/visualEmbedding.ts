@@ -24,34 +24,41 @@ export const embedVisualScenes = async (
       const batchNumber = i / VISUAL_BATCH_SIZE + 1
       logger.info(`Processing batch ${batchNumber}, scenes ${i} to ${i + batch.length - 1}`)
 
-      const visualEmbeddingsPromise = batch.map(async (scene) => {
+      // Step 1: extract frames for all scenes concurrently (I/O-bound ffmpeg)
+      const extractionStart = Date.now()
+      const keyframesBatch = await Promise.all(
+        batch.map(async (scene) => {
+          try {
+            return await extractSceneFrames(scene.source, scene.startTime, scene.endTime, {
+              framesPerScene: 2,
+              format: 'jpg',
+              quality: 2,
+              maxWidth: 640,
+            })
+          } catch (error) {
+            logger.error(`Failed to extract frames for scene ${scene.id}: ${error}`)
+            return []
+          }
+        })
+      )
+      logger.info(`Frames extracted in ${(Date.now() - extractionStart) / 1000}s`)
+
+      // Step 2: embed sequentially — prevents competing GPU kernel launches across scenes
+      const visualEmbeddingsResults = []
+      for (let j = 0; j < batch.length; j++) {
+        const scene = batch[j]
+        const keyframes = keyframesBatch[j]
         try {
-          const startTime = Date.now()
-          const keyframes = await extractSceneFrames(scene.source, scene.startTime, scene.endTime, {
-            framesPerScene: 5,
-            format: 'jpg',
-            quality: 2,
-            maxWidth: 640,
-          })
-
-          const endTime = Date.now()
-
-          logger.info(`Frames extracted in ${(endTime - startTime) / 1000}s`)
-
           const { metadata, id } = await sceneToVectorFormat(scene)
-
-          const embedding = await embedSceneFrames(keyframes)
-
+          const embedding = keyframes.length > 0 ? await embedSceneFrames(keyframes) : null
           await cleanupFrames(keyframes)
-
-          return { id, embedding, metadata, success: true }
+          visualEmbeddingsResults.push({ id, embedding, metadata, success: true })
         } catch (error) {
           logger.error(`Failed to process visual embedding for scene ${scene.id}: ${error}`)
-          return { id: scene.id, embedding: null, metadata: {}, success: false }
+          await cleanupFrames(keyframesBatch[j]).catch(() => {})
+          visualEmbeddingsResults.push({ id: scene.id, embedding: null, metadata: {}, success: false })
         }
-      })
-
-      const visualEmbeddingsResults = await Promise.all(visualEmbeddingsPromise)
+      }
 
       const validVisualEmbeddings = visualEmbeddingsResults.filter((r) => r.success && r.embedding)
 

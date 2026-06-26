@@ -34,42 +34,41 @@ export const embedAudioScenes = async (
 
       logger.info(`Processing ${batch.length} scenes for audio embeddings`)
 
-      const audioEmbeddingsPromise = batch.map(async (scene) => {
-        try {
-          const startTime = Date.now()
-
-          const audioPath = await extractSceneAudio(scene.source, scene.startTime, scene.endTime, {
-            format: 'wav',
-            sampleRate: 48000,
-            channels: 1,
-          })
-
-          const endTime = Date.now()
-
-          logger.info(`Audio extracted in ${(endTime - startTime) / 1000}s`)
-
-          if (!audioPath) {
-            throw new Error('No audio extracted, possibly due to absence of audio stream in source')
+      // Step 1: extract audio for all scenes concurrently (I/O-bound ffmpeg)
+      const extractionStart = Date.now()
+      const audioPaths = await Promise.all(
+        batch.map(async (scene) => {
+          try {
+            return await extractSceneAudio(scene.source, scene.startTime, scene.endTime, {
+              format: 'wav',
+              sampleRate: 48000,
+              channels: 1,
+            })
+          } catch (error) {
+            logger.error(`Failed to extract audio for scene ${scene.id}: ${error}`)
+            return undefined
           }
+        })
+      )
+      logger.info(`Audio extracted in ${(Date.now() - extractionStart) / 1000}s`)
 
+      // Step 2: embed sequentially — prevents competing GPU kernel launches
+      const audioEmbeddingsResults = []
+      for (let j = 0; j < batch.length; j++) {
+        const scene = batch[j]
+        const audioPath = audioPaths[j]
+        try {
+          if (!audioPath) throw new Error('No audio extracted')
           const embedding = await embedSceneAudio(audioPath)
           await cleanupAudio(audioPath)
-
           const { metadata, id } = await sceneToVectorFormat(scene)
-
-          return {
-            id,
-            embedding,
-            metadata,
-            success: true,
-          }
+          audioEmbeddingsResults.push({ id, embedding, metadata, success: true })
         } catch (error) {
           logger.error(`Failed to process audio embedding for ${scene.id}: ${error}`)
-          return { id: scene.id, embedding: null, metadata: {}, success: false }
+          if (audioPaths[j]) await cleanupAudio(audioPaths[j]!).catch(() => {})
+          audioEmbeddingsResults.push({ id: scene.id, embedding: null, metadata: {}, success: false })
         }
-      })
-
-      const audioEmbeddingsResults = await Promise.all(audioEmbeddingsPromise)
+      }
 
       const validAudioEmbeddings = audioEmbeddingsResults.filter((r) => r.success && r.embedding)
 

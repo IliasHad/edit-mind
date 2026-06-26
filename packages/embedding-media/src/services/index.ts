@@ -8,39 +8,54 @@ import { RawImage } from '@huggingface/transformers'
 
 export async function embedSceneFrames(frames: string[]): Promise<number[] | null> {
   const { processor, model } = await getFrameExtractor()
-  const frameEmbeddings: number[][] = []
 
-  for (const frame of frames) {
-    try {
-      if (!existsSync(frame)) {
-        throw new Error(`Image file not found: ${frame}`)
-      }
-      const buffer = readFileSync(frame)
-      const image = await RawImage.fromBlob(new Blob([buffer]))
+  // Load all valid images in parallel, skip failures
+  const images = (
+    await Promise.all(
+      frames.map(async (frame) => {
+        try {
+          if (!existsSync(frame)) return null
+          const buffer = readFileSync(frame)
+          return await RawImage.fromBlob(new Blob([buffer]))
+        } catch (e) {
+          logger.debug(`Error loading frame ${frame}: ${e}`)
+          return null
+        }
+      })
+    )
+  ).filter((img): img is RawImage => img !== null)
 
-      const image_inputs = await processor(image)
-      const { image_embeds } = await withTimeout<{ image_embeds: { data: Float32Array } }>(
-        model(image_inputs),
-        EMBEDDING_TIMEOUT,
-        `Visual embedding timed out after ${EMBEDDING_TIMEOUT}ms`
-      )
+  if (images.length === 0) return null
 
-      const vec = Array.from(image_embeds.data)
+  try {
+    // Single batched forward pass for all frames — avoids per-frame GPU kernel launches
+    const image_inputs = await processor(images)
+    const { image_embeds } = await withTimeout<{ image_embeds: { data: Float32Array; dims: number[] } }>(
+      model(image_inputs),
+      EMBEDDING_TIMEOUT,
+      `Visual embedding timed out after ${EMBEDDING_TIMEOUT}ms`
+    )
+
+    const embedDim = image_embeds.dims[image_embeds.dims.length - 1]
+    const frameEmbeddings: number[][] = []
+
+    for (let i = 0; i < images.length; i++) {
+      const vec = Array.from(image_embeds.data.slice(i * embedDim, (i + 1) * embedDim))
       const norm = Math.sqrt(vec.reduce((s, v) => s + v * v, 0))
-      frameEmbeddings.push(vec.map((v) => v / norm))
-    } catch (e) {
-      logger.debug(`Error getting visual embedding for ${frame}: ${e}`)
+      if (norm > 0) frameEmbeddings.push(vec.map((v) => v / norm))
     }
+
+    if (frameEmbeddings.length === 0) return null
+
+    const meanVec = frameEmbeddings[0].map(
+      (_, i) => frameEmbeddings.reduce((sum, v) => sum + v[i], 0) / frameEmbeddings.length
+    )
+    const norm = Math.sqrt(meanVec.reduce((s, v) => s + v * v, 0))
+    return norm > 0 ? meanVec.map((v) => v / norm) : null
+  } catch (e) {
+    logger.debug(`Error getting visual embedding for frames batch: ${e}`)
+    return null
   }
-
-  if (!frameEmbeddings.length) return null
-
-  const meanVec = frameEmbeddings[0].map(
-    (_, i) => frameEmbeddings.reduce((sum, v) => sum + v[i], 0) / frameEmbeddings.length
-  )
-
-  const norm = Math.sqrt(meanVec.reduce((s, v) => s + v * v, 0))
-  return meanVec.map((v) => v / norm)
 }
 
 export async function embedSceneAudio(audioPath: string): Promise<number[]> {
