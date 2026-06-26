@@ -97,7 +97,8 @@ class PluginManager:
         frame_analysis: FrameAnalysis,
         frame_idx: int,
         video_path: str,
-        cancel_flag: Optional[Event] = None 
+        original_frame: np.ndarray,
+        cancel_flag: Optional[Event] = None,
     ) -> FrameAnalysis:
         """Process frame through all applicable plugins."""
         for plugin in self.plugins:
@@ -111,7 +112,7 @@ class PluginManager:
 
             try:
                 result = self._execute_plugin(
-                    plugin, frame, frame_analysis, video_path)
+                    plugin, frame, frame_analysis, video_path, original_frame)
                 if result:
                     frame_analysis.update(result)
             except Exception as e:
@@ -147,14 +148,15 @@ class PluginManager:
         plugin: AnalyzerPlugin,
         frame: np.ndarray,
         frame_analysis: FrameAnalysis,
-        video_path: str
+        video_path: str,
+        original_frame: np.ndarray,
     ) -> FrameAnalysis:
         """Execute plugin with timing."""
         plugin_name = plugin.__class__.__name__
         start_time = time.time()
 
         try:
-            result = plugin.analyze_frame(frame, frame_analysis, video_path)
+            result = plugin.analyze_frame(frame, frame_analysis, video_path, original_frame)
             duration_ms = (time.time() - start_time) * 1000
             self.metrics_collector.record_execution(plugin_name, duration_ms)
             return result

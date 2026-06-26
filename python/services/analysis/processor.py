@@ -160,6 +160,7 @@ class FrameProcessor:
                     start_decode = time.time()
                     img = frame.to_ndarray(format="bgr24")
                     original_h, original_w = img.shape[:2]
+                    original_frame = img
 
                     if original_h > self.config.target_resolution_height:
                         target_h = self.config.target_resolution_height
@@ -186,7 +187,8 @@ class FrameProcessor:
                         'total_video_frames': total_video_frames,
                         'fps': fps,
                         'sample_interval': sample_interval,
-                        'sampled_frame_number': sampled_frame_number
+                        'sampled_frame_number': sampled_frame_number,
+                        'original_frame': original_frame
                     }
 
             else:

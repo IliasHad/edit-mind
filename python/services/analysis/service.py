@@ -241,7 +241,8 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
                 frame_data['frame'],
                 analysis,
                 frame_data['frame_idx'],
-                video_path
+                video_path,
+                frame_data['original_frame'],
             )
             start_thumb = time.time()
             self.save_frame(thumbnail_path, frame_data['frame'])
