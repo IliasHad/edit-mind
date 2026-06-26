@@ -26,12 +26,6 @@ class AnalysisConfig:
             "/app/data/.thumbnails/"
         )
     )
-    detector_backend: str = field(
-        default_factory=lambda: os.getenv(
-            "FACE_DETECTOR_BACKEND",
-            "retinaface"
-        )
-    )
     def __post_init__(self) -> None:
         """Post-initialization adjustments."""
         self._adjust_for_memory()

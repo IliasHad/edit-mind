@@ -35,7 +35,10 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
             model="VGG-Face",
             min_face_confidence=0.70,
             unknown_clustering_threshold=0.45,
-            detector_backend=self.config.detector_backend
+            detector_backend=os.getenv(
+                    "FACE_DETECTOR_BACKEND",
+                    "retinaface"
+        )
         )
 
     def setup(self, video_path: str, job_id: str) -> None:
