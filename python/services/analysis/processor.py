@@ -160,7 +160,7 @@ class FrameProcessor:
                     start_decode = time.time()
                     img = frame.to_ndarray(format="bgr24")
                     original_h, original_w = img.shape[:2]
-                    original_frame = img
+                    original_frame = img.copy()
 
                     if original_h > self.config.target_resolution_height:
                         target_h = self.config.target_resolution_height
@@ -230,7 +230,7 @@ class FrameProcessor:
                             start_decode = time.time()
                             img = frame.to_ndarray(format="bgr24")
                             original_h, original_w = img.shape[:2]
-                            original_frame = img
+                            original_frame = img.copy()
 
                             if original_h > self.config.target_resolution_height:
                                 target_h = self.config.target_resolution_height
