@@ -30,7 +30,13 @@ class FaceRecognitionPlugin(AnalyzerPlugin):
         self.current_job_id: str = ""
 
     def load_models(self) -> None:
-        self.face_recognizer = FaceRecognizer()
+        self.face_recognizer = FaceRecognizer(
+            tolerance=0.45,
+            model="VGG-Face",
+            min_face_confidence=0.70,
+            unknown_clustering_threshold=0.45,
+            detector_backend=self.config.detector_backend
+        )
 
     def setup(self, video_path: str, job_id: str) -> None:
         self.current_video_path = video_path
