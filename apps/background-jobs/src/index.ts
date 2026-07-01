@@ -17,6 +17,7 @@ import apiRouter from './routes/api'
 import prisma from '@db/db'
 import { requireAuth } from './middleware/auth'
 import { requireAccessToken } from './middleware/accessTokenAuth'
+import { requireQueueAuth } from './middleware/queueAuth'
 
 import {
   faceLabellingQueue,
@@ -107,7 +108,7 @@ if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
     serverAdapter,
   })
 
-  app.use('/', serverAdapter.getRouter())
+  app.use('/', requireQueueAuth, serverAdapter.getRouter())
 }
 
 // API endpoints that will be used only from the web app to handle background jobs

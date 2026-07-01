@@ -40,11 +40,11 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
           continue
         }
 
-        const job = await JobModel.findById(faceData.job_id)
+        const dbJob = await JobModel.findById(faceData.job_id)
 
-        if (!job) throw new Error('Job not found')
+        if (!dbJob) throw new Error('Job not found')
 
-        const video = await getByVideoSource(job?.videoPath)
+        const video = await getByVideoSource(dbJob?.videoPath)
 
         if (video) {
           for (const scene of video.scenes) {
@@ -113,6 +113,7 @@ async function processFaceLabellingJob(job: Job<FaceLabellingJobData>) {
     }
   } catch (error) {
     logger.error(error)
+    throw error
   }
 }
 

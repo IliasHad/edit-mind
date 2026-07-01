@@ -3,11 +3,16 @@ import { FormInput } from '~/features/auth/components/FormInput'
 import { SubmitButton } from '~/features/auth/components/SubmitButton'
 import { LoginSchema } from '~/features/auth/schemas/auth'
 import { AuthHeader } from '~/features/auth/components/AuthHeader'
-import { Link, useActionData, useNavigation, type ActionFunctionArgs, type MetaFunction } from 'react-router'
+import { Link, useActionData, useLoaderData, useNavigation, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from 'react-router'
 import { login } from '~/services/auth.server'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Login | Edit Mind' }]
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const next = new URL(request.url).searchParams.get('next')
+  return { next }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -19,10 +24,12 @@ export async function action({ request }: ActionFunctionArgs) {
     return { error: 'Invalid form data', fieldErrors: result.error.flatten().fieldErrors }
   }
 
-  return login(request, result.data)
+  const next = typeof values.next === 'string' ? values.next : undefined
+  return login(request, result.data, next)
 }
 
 export default function Login() {
+  const { next } = useLoaderData<typeof loader>()
   const actionData = useActionData<{ error: string, fieldErrors: { password?: string[], email?: string[] } }>()
   const navigation = useNavigation()
 
@@ -32,6 +39,7 @@ export default function Login() {
     <>
       <AuthHeader title="Welcome back" subtitle="Sign in to access your video library" />
       <AuthForm>
+        {next && <input type="hidden" name="next" value={next} />}
         {actionData?.error && <div className="text-red-500 text-sm mt-2">{actionData.error}</div>}
         <FormInput
           name="email"
