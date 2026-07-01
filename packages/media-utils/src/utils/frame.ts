@@ -63,17 +63,14 @@ export const extractSceneFrames = async (
 
   try {
     await new Promise<void>((resolve, reject) => {
-      spawnFFmpeg(args)
-        .then((ffmpeg) => {
-          let stderr = ''
-          ffmpeg.stderr?.on('data', (data) => (stderr += data.toString()))
-          ffmpeg.on('close', (code) => {
-            if (code === 0) resolve()
-            else reject(new Error(`FFmpeg failed with code ${code}: ${stderr}`))
-          })
-          ffmpeg.on('error', reject)
-        })
-        .catch(reject)
+      const ffmpeg = spawnFFmpeg(args)
+      let stderr = ''
+      ffmpeg.stderr?.on('data', (data) => (stderr += data.toString()))
+      ffmpeg.on('close', (code) => {
+        if (code === 0) resolve()
+        else reject(new Error(`FFmpeg failed with code ${code}: ${stderr}`))
+      })
+      ffmpeg.on('error', reject)
     })
 
     // Read generated frame paths
