@@ -1,0 +1,6 @@
+Edit Mind has been installed.
+
+If you are using the default NodePort service, open:
+  http://localhost:30080
+
+For Kind clusters created with scripts/kind-deploy.sh, the script maps host port 3745 to that NodePort.

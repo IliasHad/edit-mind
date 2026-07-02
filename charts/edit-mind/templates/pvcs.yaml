@@ -1,0 +1,15 @@
+{{- range $name, $cfg := .Values.persistence }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "edit-mind.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "edit-mind.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $cfg.size }}
+---
+{{- end }}

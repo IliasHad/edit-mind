@@ -1,0 +1,147 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-chroma
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+    app.kubernetes.io/component: chroma
+spec:
+  serviceName: {{ include "edit-mind.fullname" . }}-chroma
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "edit-mind.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: chroma
+  template:
+    metadata:
+      labels:
+        {{- include "edit-mind.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: chroma
+    spec:
+      containers:
+        - name: chroma
+          image: "{{ .Values.chroma.image.repository }}:{{ .Values.chroma.image.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.chroma.port }}
+          env:
+            - name: IS_PERSISTENT
+              value: "TRUE"
+            - name: CHROMA_CORS_ALLOW_ORIGINS
+              value: {{ .Values.chroma.corsAllowOrigins | quote }}
+          volumeMounts:
+            - name: chroma
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: chroma
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-chroma
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-redis
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  serviceName: {{ include "edit-mind.fullname" . }}-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "edit-mind.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis
+  template:
+    metadata:
+      labels:
+        {{- include "edit-mind.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: redis
+              containerPort: {{ .Values.redis.port }}
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 5
+          volumeMounts:
+            - name: redis
+              mountPath: /data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: redis
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-redis
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-postgres
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  serviceName: {{ include "edit-mind.fullname" . }}-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "edit-mind.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "edit-mind.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: {{ .Values.postgres.port }}
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "edit-mind.fullname" . }}-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "edit-mind.fullname" . }}-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "edit-mind.secretName" . }}
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "edit-mind.fullname" . }}-config
+                  key: PGDATA
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            periodSeconds: 5
+          volumeMounts:
+            - name: postgres
+              mountPath: /var/lib/postgresql/data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: postgres
+          persistentVolumeClaim:
+            claimName: {{ include "edit-mind.fullname" . }}-postgres

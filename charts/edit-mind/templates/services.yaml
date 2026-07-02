@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-web
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.web.service.type }}
+  selector:
+    {{- include "edit-mind.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+  ports:
+    - name: http
+      port: {{ .Values.web.port }}
+      targetPort: http
+      {{- if and (eq .Values.web.service.type "NodePort") .Values.web.service.nodePort }}
+      nodePort: {{ .Values.web.service.nodePort }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-background-jobs
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.backgroundJobs.service.type }}
+  selector:
+    {{- include "edit-mind.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: background-jobs
+  ports:
+    - name: http
+      port: {{ .Values.backgroundJobs.port }}
+      targetPort: http
+      {{- if and (eq .Values.backgroundJobs.service.type "NodePort") .Values.backgroundJobs.service.nodePort }}
+      nodePort: {{ .Values.backgroundJobs.service.nodePort }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-ml
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "edit-mind.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ml
+  ports:
+    - name: http
+      port: {{ .Values.ml.port }}
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-chroma
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "edit-mind.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: chroma
+  ports:
+    - name: http
+      port: {{ .Values.chroma.port }}
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-redis
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "edit-mind.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+  ports:
+    - name: redis
+      port: {{ .Values.redis.port }}
+      targetPort: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edit-mind.fullname" . }}-postgres
+  labels:
+    {{- include "edit-mind.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "edit-mind.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.postgres.port }}
+      targetPort: postgres
