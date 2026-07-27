@@ -91,6 +91,21 @@ class PluginManager:
                 logger.error(
                     f"Failed to load {plugin.__class__.__name__} models: {e}")
                 
+    def prepare_batch(
+        self,
+        frames: List[np.ndarray],
+        frame_indices: List[int],
+    ) -> None:
+        """Give each plugin a chance to pre-compute the batch in one shot."""
+        for plugin in self.plugins:
+            try:
+                plugin.prepare_batch(frames, frame_indices)
+            except Exception as e:
+                # Non-fatal: analyze_frame still computes per frame.
+                logger.warning(
+                    f"Plugin {plugin.__class__.__name__} batch prepare failed: {e}"
+                )
+
     def process_frame(
         self,
         frame: np.ndarray,

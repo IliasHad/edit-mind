@@ -29,8 +29,9 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         self.config = config or AnalysisConfig()
 
         super().__init__(
-            max_workers=self.config.max_workers // 2,
-            enable_memory_monitoring=True
+            max_workers=self.config.max_workers,
+            enable_memory_monitoring=True,
+            enable_aggressive_gc=self.config.enable_aggressive_gc
         )
 
         self.frame_processor = FrameProcessor(self.config)
@@ -216,6 +217,14 @@ class AnalysisService(BaseProcessingService[AnalysisRequest, VideoAnalysisResult
         """Process a batch of frames through plugins."""
         results: List[FrameAnalysis] = []
         video_hash = hashlib.md5(video_path.encode('utf-8')).hexdigest()
+
+        # Let batch-capable plugins (e.g. BLIP captioning) run their model once
+        # over the whole batch instead of once per frame — the per-frame calls
+        # below then just read the cached result.
+        self.plugin_manager.prepare_batch(
+            [fd['frame'] for fd in batch],
+            [fd['frame_idx'] for fd in batch],
+        )
 
         for frame_data in batch:
             if cancel_flag and cancel_flag.is_set():

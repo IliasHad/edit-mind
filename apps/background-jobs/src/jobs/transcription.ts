@@ -109,7 +109,9 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const audioTranscriptionWorker = new Worker('transcription', processVideo, {
   connection,
   concurrency: env.MAX_CONCURRENT_TRANSCRIPTIONS,
-  lockDuration: 6 * 60 * 60 * 1000, // 6 hours
+  // See frameAnalysis.ts — a 6 hour lock left orphaned jobs stranded in
+  // "active" far beyond any useful stalled-job recovery window.
+  lockDuration: 10 * 60 * 1000,
   stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,
   lockRenewTime: 30 * 1000,

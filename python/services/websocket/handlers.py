@@ -86,11 +86,30 @@ class MessageHandlers:
             async def run():
                       try:
                             success = False
+                            timeout = self.analysis_service.config.processing_timeout_seconds
                             # Process
-                            result = await self.analysis_service.process_async(
-                                request,
-                                progress_callback
-                            )
+                            try:
+                                result = await asyncio.wait_for(
+                                    self.analysis_service.process_async(
+                                        request,
+                                        progress_callback
+                                    ),
+                                    timeout=timeout
+                                )
+                            except asyncio.TimeoutError:
+                                logger.critical(
+                                    f"Frame analysis job {request.job_id} exceeded "
+                                    f"{timeout}s timeout ({request.video_path}). The "
+                                    f"worker thread is likely stuck on blocking I/O and "
+                                    f"will stay leaked until the ml service is restarted."
+                                )
+                                await self.connection_manager.send_message(
+                                    websocket,
+                                    MessageType.ANALYSIS_ERROR,
+                                    {"message": f"Analysis timed out after {int(timeout)}s"},
+                                    job_id=request.job_id
+                                )
+                                return
 
                             # Send result
                             if result.error:
@@ -125,14 +144,26 @@ class MessageHandlers:
                                 
                       except AnalysisCancelledError:
                             logger.info(f"Frame Analysis job {request.job_id} was cancelled")
+                      except (ConnectionClosedOK, ConnectionClosedError):
+                            logger.warning(
+                                f"Could not deliver analysis result for job {request.job_id}: "
+                                f"WebSocket connection closed. The job will hang on the caller's "
+                                f"side until it is retried."
+                            )
                       except Exception as e:
                                 logger.exception(f"Analysis error: {e}")
-                                await self.connection_manager.send_message(
-                                    websocket,
-                                    MessageType.ANALYSIS_ERROR,
-                                    {"message": str(e)},
-                                    job_id=request.job_id
-                                )
+                                try:
+                                    await self.connection_manager.send_message(
+                                        websocket,
+                                        MessageType.ANALYSIS_ERROR,
+                                        {"message": str(e)},
+                                        job_id=request.job_id
+                                    )
+                                except (ConnectionClosedOK, ConnectionClosedError):
+                                    logger.warning(
+                                        f"Could not deliver analysis error for job {request.job_id}: "
+                                        f"WebSocket connection closed."
+                                    )
                                 success = False
                       finally:
                             self.service_state.finish_analysis(request.video_path, success)
@@ -196,11 +227,34 @@ class MessageHandlers:
                     try:
 
                         success = False
+                        timeout = self.transcription_service.config.processing_timeout_seconds
                         # Process
-                        result = await self.transcription_service.process_async(
-                            request,
-                            progress_callback
-                        )
+                        try:
+                            result = await asyncio.wait_for(
+                                self.transcription_service.process_async(
+                                    request,
+                                    progress_callback
+                                ),
+                                timeout=timeout
+                            )
+                        except asyncio.TimeoutError:
+                            logger.critical(
+                                f"Transcription job {request.job_id} exceeded "
+                                f"{timeout}s timeout ({request.video_path}). The "
+                                f"worker thread is likely stuck (deadlocked model "
+                                f"call or blocking I/O) and will stay leaked until "
+                                f"the ml service is restarted."
+                            )
+                            await self.connection_manager.send_message(
+                                websocket,
+                                MessageType.TRANSCRIPTION_ERROR,
+                                {
+                                    "message": f"Transcription timed out after {int(timeout)}s",
+                                    "video_path": request.video_path
+                                },
+                                job_id=request.job_id
+                            )
+                            return
 
                         if self.use_external_host:
                             logger.warning(
@@ -227,17 +281,29 @@ class MessageHandlers:
                         
                     except TranscriptionCancelledError:
                             logger.info(f"Transcription job {request.job_id} was cancelled")
+                    except (ConnectionClosedOK, ConnectionClosedError):
+                        logger.warning(
+                            f"Could not deliver transcription result for job {request.job_id}: "
+                            f"WebSocket connection closed. The job will hang on the caller's "
+                            f"side until it is retried."
+                        )
                     except Exception as e:
                         logger.exception(f"Transcription error: {e}")
-                        await self.connection_manager.send_message(
-                            websocket,
-                            MessageType.TRANSCRIPTION_ERROR,
-                            {
-                                "message": str(e),
-                                "video_path": request.video_path
-                            },
-                            job_id=request.job_id
-                        )
+                        try:
+                            await self.connection_manager.send_message(
+                                websocket,
+                                MessageType.TRANSCRIPTION_ERROR,
+                                {
+                                    "message": str(e),
+                                    "video_path": request.video_path
+                                },
+                                job_id=request.job_id
+                            )
+                        except (ConnectionClosedOK, ConnectionClosedError):
+                            logger.warning(
+                                f"Could not deliver transcription error for job {request.job_id}: "
+                                f"WebSocket connection closed."
+                            )
                         success = False
                     finally:
                         self.service_state.finish_transcription(

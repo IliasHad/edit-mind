@@ -2,7 +2,7 @@
 import json
 import time
 from pathlib import Path
-from threading import Event
+from threading import Event, Lock
 from typing import Optional, Callable
 
 from core.types import TranscriptionRequest, TranscriptionCancelledError
@@ -24,13 +24,19 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
         self.config = config or TranscriptionConfig()
 
         super().__init__(
-            max_workers=2,  # Transcription is GPU-intensive
-            enable_memory_monitoring=True
+            max_workers=self.config.max_workers,
+            enable_memory_monitoring=True,
+            enable_aggressive_gc=self.config.enable_aggressive_gc
         )
 
         self.model_manager = WhisperModelManager(self.config)
         self.model_manager.download_model()
         self._cancel_flags: dict[str, Event] = {}
+        # faster-whisper/ctranslate2 is not safe for concurrent inference calls
+        # against the same loaded model instance — serialize actual model use
+        # even if max_workers > 1 (concurrent .transcribe() calls on one
+        # WhisperModel have been observed to deadlock inside find_alignment).
+        self._model_lock = Lock()
 
     def cancel(self, job_id: str) -> None:
         """Signal a running transcription job to stop."""
@@ -101,55 +107,60 @@ class TranscriptionService(BaseProcessingService[TranscriptionRequest, Transcrip
         try:
             start = time.time()
 
-            segments, info = model.transcribe(
-                video_path,
-                beam_size=self.config.beam_size,
-                word_timestamps=True,
-                vad_filter=self.config.vad_filter,
-                log_progress=False,
-                vad_parameters={
-                    "threshold": self.config.vad_threshold,
-                    "min_speech_duration_ms": self.config.min_speech_duration_ms,
-                    "min_silence_duration_ms": self.config.min_silence_duration_ms
-                }
-            )
-
-            # Process segments
-            result_segments = []
-            full_text = ""
-            processed_duration = 0.0
-            total_duration = info.duration if info else 0.0
-
-            for seg in segments:
-                if cancel_flag.is_set():
-                    raise TranscriptionCancelledError()
-
-                # Create segment
-                segment = Segment(
-                    id=seg.id,
-                    start=seg.start,
-                    end=seg.end,
-                    text=seg.text.strip(),
-                    confidence=getattr(seg, 'avg_logprob', None),
-                    words=[
-                        Word(
-                            start=w.start,
-                            end=w.end,
-                            word=w.word,
-                            confidence=getattr(w, 'probability', None)
-                        )
-                        for w in (seg.words or [])
-                    ]
+            # Everything below touches the shared ctranslate2 model instance
+            # (model.transcribe() is a lazy generator — decoding happens while
+            # iterating, not just on the call). Concurrent calls into the same
+            # WhisperModel from multiple threads are not safe, so serialize.
+            with self._model_lock:
+                segments, info = model.transcribe(
+                    video_path,
+                    beam_size=self.config.beam_size,
+                    word_timestamps=True,
+                    vad_filter=self.config.vad_filter,
+                    log_progress=False,
+                    vad_parameters={
+                        "threshold": self.config.vad_threshold,
+                        "min_speech_duration_ms": self.config.min_speech_duration_ms,
+                        "min_silence_duration_ms": self.config.min_silence_duration_ms
+                    }
                 )
 
-                result_segments.append(segment)
-                full_text += seg.text + " "
+                # Process segments
+                result_segments = []
+                full_text = ""
+                processed_duration = 0.0
+                total_duration = info.duration if info else 0.0
 
-                # Use seg.end as the audio position so that silences don't stall progress
-                processed_duration = seg.end
-                if progress_callback and total_duration > 0:
-                    percent = min(100, (processed_duration / total_duration) * 100)
-                    progress_callback(int(percent), self._format_time(processed_duration))
+                for seg in segments:
+                    if cancel_flag.is_set():
+                        raise TranscriptionCancelledError()
+
+                    # Create segment
+                    segment = Segment(
+                        id=seg.id,
+                        start=seg.start,
+                        end=seg.end,
+                        text=seg.text.strip(),
+                        confidence=getattr(seg, 'avg_logprob', None),
+                        words=[
+                            Word(
+                                start=w.start,
+                                end=w.end,
+                                word=w.word,
+                                confidence=getattr(w, 'probability', None)
+                            )
+                            for w in (seg.words or [])
+                        ]
+                    )
+
+                    result_segments.append(segment)
+                    full_text += seg.text + " "
+
+                    # Use seg.end as the audio position so that silences don't stall progress
+                    processed_duration = seg.end
+                    if progress_callback and total_duration > 0:
+                        percent = min(100, (processed_duration / total_duration) * 100)
+                        progress_callback(int(percent), self._format_time(processed_duration))
 
             end = time.time()
             processing_time = end - start

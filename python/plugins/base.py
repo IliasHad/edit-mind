@@ -60,6 +60,26 @@ class AnalyzerPlugin(ABC):
         """
         pass
 
+    def prepare_batch(
+        self,
+        frames: List[np.ndarray],
+        frame_indices: List[int],
+    ) -> None:
+        """
+        Optional hook: pre-compute results for a whole batch of frames at once.
+
+        Plugins running GPU models benefit heavily from batched inference —
+        BLIP captioning measured 178ms/frame at batch=1 vs 43ms/frame at
+        batch=4, since a single frame leaves the GPU mostly idle. Implement
+        this to cache per-frame results keyed by frame index; analyze_frame
+        should then read from that cache and fall back to computing a single
+        frame if there is no entry.
+
+        Called once per batch, before analyze_frame runs for those frames.
+        Default is a no-op, so plugins that don't batch need no changes.
+        """
+        pass
+
     @abstractmethod
     def analyze_frame(
         self,

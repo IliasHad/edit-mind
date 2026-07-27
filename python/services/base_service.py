@@ -22,10 +22,17 @@ class BaseProcessingService(ABC, Generic[TRequest, TResult]):
     def __init__(
         self,
         max_workers: int,
-        enable_memory_monitoring: bool = True
+        enable_memory_monitoring: bool = True,
+        enable_aggressive_gc: bool = False
     ):
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
-        self.memory_monitor = MemoryMonitor() if enable_memory_monitoring else None
+        # Separate from self.executor on purpose: post-job cleanup must never
+        # queue behind another job's processing, which with max_workers=1 would
+        # delay the finished job's response by a whole video.
+        self._cleanup_executor = ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix='mem-cleanup')
+        self.memory_monitor = MemoryMonitor(
+            enable_aggressive_gc=enable_aggressive_gc) if enable_memory_monitoring else None
         self._active_jobs: set[str] = set()
 
     def is_processing(self, job_id: str) -> bool:
@@ -78,7 +85,13 @@ class BaseProcessingService(ABC, Generic[TRequest, TResult]):
         finally:
             self._active_jobs.discard(request.job_id)
             if self.memory_monitor:
-                self.memory_monitor.force_cleanup()
+                # gc.collect()/torch.cuda.empty_cache() can take real time
+                # (seconds) on a large frame/tensor heap. Running them
+                # directly on the event loop blocks WS ping/pong keepalive
+                # and any concurrent message handling — offload to a thread.
+                await asyncio.get_running_loop().run_in_executor(
+                    self._cleanup_executor, self.memory_monitor.force_cleanup
+                )
 
     def _validate_request(self, request: TRequest) -> None:
         """Validate processing request."""
@@ -121,3 +134,4 @@ class BaseProcessingService(ABC, Generic[TRequest, TResult]):
     def cleanup(self) -> None:
         """Cleanup resources."""
         self.executor.shutdown(wait=True)
+        self._cleanup_executor.shutdown(wait=True)

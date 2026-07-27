@@ -177,12 +177,17 @@ class FaceRecognizer:
         if self._validate_faces_folder():
             try:
                 logger.info(f"Finding the face name across the faces folder...")
+                # face_img is already a cropped+aligned face from extract_faces,
+                # so re-running the full detector here just re-detects a face
+                # inside a face — measured at ~140-200ms per face. "skip" matches
+                # what _generate_embedding/_analyze_emotion already do with the
+                # same image (and requires the same uint8 conversion they do).
                 dfs = DeepFace.find(
-                    img_path=face_img,
+                    img_path=self._to_uint8(face_img),
                     db_path=self.known_faces_folder,
                     model_name=self.model,
                     enforce_detection=False,
-                    detector_backend=self.detector_backend,
+                    detector_backend="skip",
                     distance_metric="cosine",
                     silent=True
                 )
@@ -247,13 +252,16 @@ class FaceRecognizer:
             logger.error(f"Unknown face clustering error: {e}")
             return self._create_new_unknown(), 0.0, False
 
+    @staticmethod
+    def _to_uint8(face_img: np.ndarray) -> np.ndarray:
+        """Normalize an extracted face crop (float 0-1 or uint8) to uint8."""
+        if face_img.max() <= 1.0:
+            return (face_img * 255).astype(np.uint8)
+        return face_img.astype(np.uint8)
+
     def _generate_embedding(self, face_img: np.ndarray) -> Optional[np.ndarray]:
         try:
-            face_img_uint8 = (
-                (face_img * 255).astype(np.uint8)
-                if face_img.max() <= 1.0
-                else face_img.astype(np.uint8)
-            )
+            face_img_uint8 = self._to_uint8(face_img)
 
             embedding_objs = DeepFace.represent(
                 img_path=face_img_uint8,
@@ -286,11 +294,7 @@ class FaceRecognizer:
 
     def _analyze_emotion(self, face_img: np.ndarray) -> Optional[Dict]:
         try:
-            face_img_uint8 = (
-                (face_img * 255).astype(np.uint8)
-                if face_img.max() <= 1.0
-                else face_img.astype(np.uint8)
-            )
+            face_img_uint8 = self._to_uint8(face_img)
 
             emotion = DeepFace.analyze(
                 img_path=face_img_uint8,
