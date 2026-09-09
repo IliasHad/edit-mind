@@ -112,5 +112,46 @@ Enhancement suggestions are tracked as [GitHub issues](/issues).
 
 
 
+### Your First Code Contribution
+
+#### Setting up the development environment
+
+The project ships a [Nix flake](https://nixos.wiki/wiki/Flakes) that provides all host-level tooling (Node.js, pnpm, Python, ffmpeg, etc.) without needing to manage versions manually.
+
+**Prerequisites:** [Nix](https://nixos.org/download) with flakes enabled, and [direnv](https://direnv.net/).
+
+```bash
+# Allow direnv to activate the dev shell automatically
+direnv allow
+```
+
+direnv will download and cache the environment on first use. After that, every `cd` into the project directory activates it instantly.
+
+**What's included:**
+
+| Tool | Purpose |
+|------|---------|
+| Node.js 22 | JS runtime |
+| pnpm | Package manager |
+| Python 3.11 | ML service development |
+| uv | Python venv / package management |
+| ffmpeg | Video processing (background-jobs) |
+| openssl | Required by Prisma |
+| pkg-config | Native Node module compilation |
+
+**Python venv** (only needed if working on the `python/` service directly — otherwise it runs in Docker):
+
+```bash
+uv venv python/.venv
+uv pip install -r python/requirements.txt
+```
+
+**Running the stack** uses Docker Compose:
+
+```bash
+cd docker
+docker compose -f docker-compose.dev.yml up
+```
+
 ## Attribution
 This guide is based on the **contributing.md**. [Make your own](https://contributing.md/)!

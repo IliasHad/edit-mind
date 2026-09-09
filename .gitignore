@@ -1,3 +1,4 @@
+.direnv
 node_modules
 dist
 out
