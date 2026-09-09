@@ -30,6 +30,9 @@ if (DEVELOPMENT) {
       next(error)
     }
   })
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is listening on 0.0.0.0:${PORT}`)
+  })
 } else {
   console.log('Starting production server')
 
@@ -46,11 +49,15 @@ if (DEVELOPMENT) {
   app.use(morgan('tiny'))
   app.use(express.static('build/client', { maxAge: '1h' }))
 
-  const { app: requestHandler } = await import(BUILD_PATH)
+  const { app: requestHandler, wsProxy } = await import(BUILD_PATH)
 
   app.use(requestHandler)
-}
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is listening on 0.0.0.0:${PORT}`)
-})
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is listening on 0.0.0.0:${PORT}`)
+  })
+
+  // http-proxy-middleware needs the raw HTTP server's 'upgrade' event
+  // wired up manually to proxy the background-jobs WebSocket connection.
+  server.on('upgrade', wsProxy.upgrade)
+}

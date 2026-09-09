@@ -17,6 +17,11 @@ export default defineConfig(({ isSsrBuild }) => {
           target: process.env.BACKGROUND_JOBS_URL,
           changeOrigin: true,
         },
+        '/socket.io': {
+          target: process.env.BACKGROUND_JOBS_URL,
+          changeOrigin: true,
+          ws: true,
+        },
       },
     },
     resolve: {
