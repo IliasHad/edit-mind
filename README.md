@@ -237,10 +237,16 @@ cd docker
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
-## Featured Videos
+## Community Presentations and Videos
 
-[![Edit Mind at Twelve Labs](https://img.youtube.com/vi/9O0lQBEPL2U/maxresdefault.jpg)](https://www.youtube.com/watch?v=9O0lQBEPL2U&t=2483s)  
+[![Edit Mind at Syntax.fm](https://img.youtube.com/vi/9O0lQBEPL2U/maxresdefault.jpg)](https://www.youtube.com/watch?v=9O0lQBEPL2U&t=2483s)  
 *Watch the Edit Mind featured at Syntax.fm (starts at 41:21)*
+
+---
+
+[![Edit Mind at Twelve Labs](https://img.youtube.com/vi/k_aesDa3sFw/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_aesDa3sFw&t=1272s)  
+
+*Watch the Edit Mind presentation at Twelve Labs (starts at 21:12)*
 
 
 ---
