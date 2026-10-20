@@ -1,6 +1,16 @@
 import sys
+import os
 import asyncio
 import argparse
+
+# Must be set before tensorflow is ever imported anywhere in the process
+# (it's imported lazily by DeepFace/RetinaFace inside FaceRecognitionPlugin).
+# TF otherwise grabs nearly all GPU memory upfront on first use and never
+# releases it, competing with PyTorch's (YOLO/Whisper) own separate CUDA
+# allocator on the same card — confirmed via nvidia-smi showing VRAM pinned
+# at ~96% during GPU inference. This makes TF grow its allocation on demand
+# instead.
+os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
 
 from core.config import ServerConfig, AnalysisConfig, TranscriptionConfig
 from services.websocket.server import WebSocketServer

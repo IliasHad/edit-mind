@@ -103,7 +103,13 @@ async function processVideo(job: Job<VideoProcessingData>) {
 export const frameAnalysisWorker = new Worker('frame-analysis', processVideo, {
   connection,
   concurrency: env.MAX_CONCURRENT_ANALYSES,
-  lockDuration: 6 * 60 * 60 * 1000, // 6 hours
+  // A live worker renews this lock every lockRenewTime (30s), so the duration
+  // only matters once a worker dies or its promise is abandoned. At 6 hours,
+  // an orphaned job sat in "active" — invisible to stalled-job recovery and
+  // never re-queued — for up to 6 hours, which looked like the whole pipeline
+  // hanging indefinitely. 10 minutes still tolerates event-loop hiccups while
+  // letting orphans be reclaimed promptly.
+  lockDuration: 10 * 60 * 1000,
   stalledInterval: 2 * 60 * 1000,
   maxStalledCount: 3,
   lockRenewTime: 30 * 1000,

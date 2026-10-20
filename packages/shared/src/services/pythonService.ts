@@ -297,6 +297,24 @@ class PythonService {
         this.client = null
         this.isRunning = false
         logger.warn('WebSocket connection closed')
+
+        // Any job whose request was already in flight when the connection
+        // dropped will never receive a response on this (now-dead) socket.
+        // Reconnecting fixes new requests but does nothing for these — reject
+        // them now so the caller's promise resolves and the job can fail/retry
+        // instead of hanging forever.
+        for (const [job_id, callbacks] of this.analysisCallbacks) {
+          logger.warn(`Rejecting in-flight analysis job ${job_id}: WebSocket connection lost`)
+          callbacks.onError?.(new Error('WebSocket connection lost'))
+        }
+        this.analysisCallbacks.clear()
+
+        for (const [job_id, callbacks] of this.transcriptionCallbacks) {
+          logger.warn(`Rejecting in-flight transcription job ${job_id}: WebSocket connection lost`)
+          callbacks.onError?.(new Error('WebSocket connection lost'))
+        }
+        this.transcriptionCallbacks.clear()
+
         // Try again to reconnect to the websocket
         this.start()
       })
