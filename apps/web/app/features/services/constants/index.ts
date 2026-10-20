@@ -1,1 +1,0 @@
-export const BACKGROUND_JOBS_URL = import.meta.env.VITE_BACKGROUND_JOBS_URL || 'http://localhost:4000'
