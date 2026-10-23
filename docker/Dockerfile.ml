@@ -12,10 +12,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsm6 \
     libxext6 \
     libxrender1 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1001 appgroup \
+    && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash appuser
 
 RUN mkdir -p /ml-models/ultralytics && mkdir -p /ml-models/whisper && \
-    chmod -R 777 /ml-models
+    chown -R appuser:appgroup /ml-models && chmod 777 /ml-models
 
 
 FROM nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu22.04 AS base-gpu
@@ -30,11 +32,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsm6 \
     libxext6 \
     libxrender1 \
-    && rm -rf /var/lib/apt/lists/*
-    
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1001 appgroup \
+    && useradd --uid 1001 --gid 1001 --create-home --shell /bin/bash appuser
 
 RUN mkdir -p /ml-models/ultralytics && mkdir -p /ml-models/whisper && \
-    chmod -R 777 /ml-models
+    chown -R appuser:appgroup /ml-models && chmod 777 /ml-models
 
 WORKDIR /app
 
@@ -80,6 +83,10 @@ COPY python ./python
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
 EXPOSE ${ML_PORT}
 
 CMD ["sh", "-c", "python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
@@ -97,6 +104,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
 EXPOSE ${ML_PORT}
 
 CMD ["sh", "-c", "python /app/python/main.py --host 0.0.0.0 --port ${ML_PORT}"]
@@ -110,6 +121,10 @@ COPY python ./python
 
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
+
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE ${ML_PORT}
 
@@ -126,6 +141,10 @@ ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE ${ML_PORT}
 

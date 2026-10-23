@@ -5,6 +5,7 @@ FROM node:${NODE_VERSION}-bookworm-slim AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_HOME="/opt/corepack"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
@@ -12,7 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   ca-certificates \
   && corepack enable \
-  && corepack prepare pnpm@${PNPM_VERSION} --activate
+  && corepack prepare pnpm@${PNPM_VERSION} --activate \
+  && mkdir -p /opt/corepack /pnpm \
+  && chmod -R a+rx /opt/corepack /pnpm
 
 FROM base AS dependencies
 
@@ -92,6 +95,10 @@ COPY --from=builder /app/apps/web/server.js ./apps/web/server.js
 
 RUN pnpm --filter prisma generate
 
+RUN mkdir -p /ml-models/embedding-models && chown -R node:node /ml-models && chmod 777 /ml-models
+
+USER node
+
 EXPOSE ${PORT}
 
 CMD ["sh", "-c", "\
@@ -111,7 +118,12 @@ COPY tsconfig.json ./
 
 RUN pnpm --filter prisma generate
 
+RUN mkdir -p /ml-models/embedding-models && chown -R node:node /ml-models && chmod 777 /ml-models
+RUN chown -R node:node /app
+
 ENV NODE_ENV=development
+
+USER node
 
 EXPOSE ${PORT}
 
