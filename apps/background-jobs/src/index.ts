@@ -15,6 +15,7 @@ import jobsRoute from './routes/jobs'
 import mediaRoute from './routes/media'
 import apiRouter from './routes/api'
 import prisma from '@db/db'
+import { UserModel } from '@db/models/User'
 import { requireAuth } from './middleware/auth'
 import { requireAccessToken } from './middleware/accessTokenAuth'
 
@@ -65,6 +66,7 @@ import { rateLimiter, apiRateLimiter } from './middleware/rateLimiter'
 import { checkServicesStatus } from './websockets'
 import { suggestionCache } from '@search/services/suggestion'
 import { loadAllEmbeddingModels } from '@embedding-core/services/extractors'
+import { createJWTService } from '@shared/services/jwt'
 
 const app = express()
 app.set('trust proxy', 1)
@@ -75,6 +77,30 @@ export const io = new Server(server, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
+})
+
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token
+    if (typeof token !== 'string') {
+      next(new Error('Unauthorized'))
+      return
+    }
+
+    const jwt = createJWTService(env.SESSION_SECRET)
+    const decoded = jwt.verify(token)
+    const user = await UserModel.findUnique({ where: { id: decoded.userId } })
+
+    if (!user) {
+      next(new Error('Unauthorized'))
+      return
+    }
+
+    socket.data.userId = user.id
+    next()
+  } catch {
+    next(new Error('Unauthorized'))
+  }
 })
 
 app.use(cors())

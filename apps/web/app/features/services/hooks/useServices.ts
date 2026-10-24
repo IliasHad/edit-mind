@@ -13,24 +13,50 @@ export function useServices() {
         // configuration. See the previous VITE_BACKGROUND_JOBS_URL approach,
         // which only ever worked when the browser and Docker host were the
         // same machine, since it's a build-time value baked into the bundle.
-        const socketInstance = io({
-            transports: ['websocket', 'polling'],
-        })
+        let socketInstance: ReturnType<typeof io> | null = null
+        let disposed = false
 
-        socketInstance.on('connect', () => {
-            socketInstance.emit('request-status')
-        })
+        const connect = async () => {
+            try {
+                const response = await fetch('/api/socket-token', {
+                    credentials: 'same-origin',
+                })
 
-        socketInstance.on('service-status', (data: ServiceStatus) => {
-            setStatus(data)
-        })
+                if (!response.ok) {
+                    throw new Error('Unable to authenticate service status connection')
+                }
 
-        socketInstance.on('connect_error', (error) => {
-            console.error('WebSocket connection error:', error)
-        })
+                const { token } = (await response.json()) as { token: string }
+                if (disposed) return
+
+                socketInstance = io({
+                    auth: { token },
+                    // Start with polling so deployments that cannot upgrade a
+                    // WebSocket can still receive status updates.
+                    transports: ['polling', 'websocket'],
+                })
+
+                socketInstance.on('connect', () => {
+                    socketInstance?.emit('request-status')
+                })
+
+                socketInstance.on('service-status', (data: ServiceStatus) => {
+                    setStatus(data)
+                })
+
+                socketInstance.on('connect_error', (error) => {
+                    console.error('WebSocket connection error:', error)
+                })
+            } catch (error) {
+                console.error('Service status connection error:', error)
+            }
+        }
+
+        void connect()
 
         return () => {
-            socketInstance.disconnect()
+            disposed = true
+            socketInstance?.disconnect()
         }
     }, [])
 

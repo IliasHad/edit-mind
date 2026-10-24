@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import pathModule from 'path'
 import { logger } from './logger'
 
@@ -18,12 +19,20 @@ export interface PathValidatorOptions {
 
 export class PathValidator {
     private allowedBasePath: string
+    private canonicalBasePath: string
     private blockedPatterns: RegExp[]
     private blockedDirs: Set<string>
     private allowedTopLevelFolders: Set<string> | null
 
     constructor(allowedBasePath: string, options: PathValidatorOptions = {}) {
-        this.allowedBasePath = allowedBasePath
+        this.allowedBasePath = pathModule.resolve(allowedBasePath)
+        try {
+            this.canonicalBasePath = fs.realpathSync(this.allowedBasePath)
+        } catch {
+            // The media root can be created after the application starts. Keep
+            // using the configured path until a canonical target is available.
+            this.canonicalBasePath = this.allowedBasePath
+        }
 
         this.blockedPatterns = [
             /(^|[\\/])\.\.([\\/]|$)/, // Parent directory traversal
@@ -56,6 +65,15 @@ export class PathValidator {
         if (this.allowedTopLevelFolders.size === 0) {
             this.allowedTopLevelFolders = null
         }
+    }
+
+    private getMatchingBasePath(candidatePath: string): string | null {
+        for (const basePath of new Set([this.allowedBasePath, this.canonicalBasePath])) {
+            if (candidatePath === basePath || candidatePath.startsWith(basePath + pathModule.sep)) {
+                return basePath
+            }
+        }
+        return null
     }
 
     validatePath(inputPath: string): PathValidationResult {
@@ -105,11 +123,7 @@ export class PathValidator {
             // Absolute paths outside the base are rejected — never re-anchored into it.
             // Relative paths resolve against the base.
             let resolvedPath: string
-            if (
-                pathModule.isAbsolute(sanitized) &&
-                (sanitized === this.allowedBasePath ||
-                    sanitized.startsWith(this.allowedBasePath + pathModule.sep))
-            ) {
+            if (pathModule.isAbsolute(sanitized) && this.getMatchingBasePath(sanitized)) {
                 resolvedPath = pathModule.normalize(sanitized)
             } else if (pathModule.isAbsolute(sanitized)) {
                 logger.warn(`Access denied - absolute path outside allowed directory: ${sanitized}`)
@@ -125,11 +139,9 @@ export class PathValidator {
 
             // Check if resolved path is within allowed base paths (prefix must end on a separator
             // so sibling directories such as `base2` never pass a base of `base`)
-            const isWithinAllowedPath =
-                resolvedPath === this.allowedBasePath ||
-                resolvedPath.startsWith(this.allowedBasePath + pathModule.sep)
+            const matchingBasePath = this.getMatchingBasePath(resolvedPath)
 
-            if (!isWithinAllowedPath) {
+            if (!matchingBasePath) {
                 logger.warn(`Access denied - path outside allowed directory: ${resolvedPath}`)
                 return {
                     isValid: false,
@@ -140,7 +152,7 @@ export class PathValidator {
 
             // Components belonging to the allowed base itself are exempt from the
             // per-component checks below (e.g. a base like /app/data/.thumbnails)
-            const exemptedParts = this.allowedBasePath
+            const exemptedParts = matchingBasePath
                 .split(pathModule.sep)
                 .filter((part) => part !== '')
 
@@ -169,7 +181,7 @@ export class PathValidator {
 
             // Enforce the top-level folder allowlist when one is configured
             if (this.allowedTopLevelFolders) {
-                const relativeToBase = resolvedPath.slice(this.allowedBasePath.length + pathModule.sep.length)
+                const relativeToBase = resolvedPath.slice(matchingBasePath.length + pathModule.sep.length)
                 const topLevel = relativeToBase.split(pathModule.sep)[0] || ''
                 const isCaseMatch =
                     topLevel &&
@@ -212,10 +224,7 @@ export class PathValidator {
         const validation = this.validatePath(fullPath)
         if (!validation.isValid) return null
 
-        if (
-            validation.sanitizedPath === this.allowedBasePath ||
-            validation.sanitizedPath.startsWith(this.allowedBasePath + pathModule.sep)
-        ) {
+        if (this.getMatchingBasePath(validation.sanitizedPath)) {
             return validation.sanitizedPath
         }
         return null

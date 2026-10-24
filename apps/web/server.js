@@ -64,5 +64,13 @@ if (DEVELOPMENT) {
 
   // http-proxy-middleware needs the raw HTTP server's 'upgrade' event
   // wired up manually to proxy the background-jobs WebSocket connection.
-  server.on('upgrade', wsProxy.upgrade)
+  server.on('upgrade', (request, socket, head) => {
+    const pathname = new URL(request.url || '/', 'http://localhost').pathname
+    if (pathname !== '/socket.io' && !pathname.startsWith('/socket.io/')) {
+      socket.destroy()
+      return
+    }
+
+    wsProxy.upgrade(request, socket, head)
+  })
 }

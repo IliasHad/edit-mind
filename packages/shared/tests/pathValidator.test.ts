@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import os from 'node:os'
 import { describe, it, expect, beforeEach } from 'vitest'
 import path from 'path'
 import { createPathValidator, PathValidator } from '@shared/services/pathValidator'
@@ -251,6 +253,26 @@ describe('PathValidator', () => {
 
     it('should not enforce an allowlist when none is configured', () => {
       expect(validator.validatePath('/media/videos/Takeout/file.mp4').isValid).toBe(true)
+    })
+  })
+
+  describe('Security: symlinked allowed roots', () => {
+    it('should accept both configured and canonical paths below a symlinked root', () => {
+      const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'path-validator-'))
+      const targetDirectory = path.join(temporaryRoot, 'target')
+      const symlinkDirectory = path.join(temporaryRoot, 'media-link')
+
+      try {
+        fs.mkdirSync(targetDirectory)
+        fs.symlinkSync(targetDirectory, symlinkDirectory, 'dir')
+
+        const symlinkValidator = createPathValidator(symlinkDirectory)
+        expect(symlinkValidator.validatePath(path.join(symlinkDirectory, 'clip.mp4')).isValid).toBe(true)
+        const canonicalTarget = fs.realpathSync(targetDirectory)
+        expect(symlinkValidator.validatePath(path.join(canonicalTarget, 'clip.mp4')).isValid).toBe(true)
+      } finally {
+        fs.rmSync(temporaryRoot, { recursive: true, force: true })
+      }
     })
   })
 })
