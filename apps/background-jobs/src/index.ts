@@ -157,7 +157,21 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
     }
   )
 
-  await loadAllEmbeddingModels()
+  // Loading the text, visual, and audio embedding models together creates a
+  // large transient memory spike. In the development Docker stack that can
+  // OOM-kill this process while its `tsx` watcher remains alive, leaving the
+  // container up but without its HTTP/WebSocket listener. Keep production's
+  // warm-up behavior, while development loads each model only when its first
+  // embedding job needs it. Set PRELOAD_EMBEDDING_MODELS=true to opt in.
+  const shouldPreloadEmbeddingModels =
+    process.env.PRELOAD_EMBEDDING_MODELS === 'true' || process.env.NODE_ENV !== 'development'
+
+  if (shouldPreloadEmbeddingModels) {
+    await loadAllEmbeddingModels()
+  } else {
+    logger.info('Deferring embedding model loading until the first embedding job')
+  }
+
   logger.debug(`Background jobs server running on port ${env.BACKGROUND_JOBS_PORT}`)
   if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
     logger.warn(`Bull Board UI available at http://localhost:${env.BACKGROUND_JOBS_PORT}`)

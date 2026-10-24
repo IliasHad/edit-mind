@@ -7,12 +7,22 @@ export interface PathValidationResult {
     error?: string
 }
 
+export interface PathValidatorOptions {
+    /**
+     * When non-empty, only paths that resolve inside the base plus one of these
+     * top-level folder names are accepted. The base itself stays accessible so
+     * the root listing can be driven from a separate allowlist.
+     */
+    allowedTopLevelFolders?: string[]
+}
+
 export class PathValidator {
     private allowedBasePath: string
     private blockedPatterns: RegExp[]
     private blockedDirs: Set<string>
+    private allowedTopLevelFolders: Set<string> | null
 
-    constructor(allowedBasePath: string) {
+    constructor(allowedBasePath: string, options: PathValidatorOptions = {}) {
         this.allowedBasePath = allowedBasePath
 
         this.blockedPatterns = [
@@ -36,6 +46,16 @@ export class PathValidator {
             '.TemporaryItems',
             '.DocumentRevisions-V100',
         ])
+
+        // Allowlist entries must be plain folder names; anything else is ignored
+        this.allowedTopLevelFolders = new Set(
+            (options.allowedTopLevelFolders ?? [])
+                .map((folder) => folder.trim())
+                .filter((folder) => folder && !folder.includes('/') && !folder.includes('\\'))
+        )
+        if (this.allowedTopLevelFolders.size === 0) {
+            this.allowedTopLevelFolders = null
+        }
     }
 
     validatePath(inputPath: string): PathValidationResult {
@@ -82,7 +102,8 @@ export class PathValidator {
             }
 
             // If the path is already an absolute path within the allowed base, just normalize it.
-            // Otherwise treat it as relative (strip any leading slash then resolve against base).
+            // Absolute paths outside the base are rejected — never re-anchored into it.
+            // Relative paths resolve against the base.
             let resolvedPath: string
             if (
                 pathModule.isAbsolute(sanitized) &&
@@ -90,13 +111,23 @@ export class PathValidator {
                     sanitized.startsWith(this.allowedBasePath + pathModule.sep))
             ) {
                 resolvedPath = pathModule.normalize(sanitized)
+            } else if (pathModule.isAbsolute(sanitized)) {
+                logger.warn(`Access denied - absolute path outside allowed directory: ${sanitized}`)
+                return {
+                    isValid: false,
+                    sanitizedPath: '',
+                    error: 'Access denied: path outside allowed directory',
+                }
             } else {
                 const relative = sanitized.replace(/^\/+/, '')
                 resolvedPath = pathModule.resolve(this.allowedBasePath, relative)
             }
 
-            // Check if resolved path is within allowed base paths
-            const isWithinAllowedPath = resolvedPath.startsWith(this.allowedBasePath)
+            // Check if resolved path is within allowed base paths (prefix must end on a separator
+            // so sibling directories such as `base2` never pass a base of `base`)
+            const isWithinAllowedPath =
+                resolvedPath === this.allowedBasePath ||
+                resolvedPath.startsWith(this.allowedBasePath + pathModule.sep)
 
             if (!isWithinAllowedPath) {
                 logger.warn(`Access denied - path outside allowed directory: ${resolvedPath}`)
@@ -107,15 +138,54 @@ export class PathValidator {
                 }
             }
 
-            // Check for blocked directories in the path
-            const pathParts = resolvedPath.split(pathModule.sep)
-            for (const part of pathParts) {
+            // Components belonging to the allowed base itself are exempt from the
+            // per-component checks below (e.g. a base like /app/data/.thumbnails)
+            const exemptedParts = this.allowedBasePath
+                .split(pathModule.sep)
+                .filter((part) => part !== '')
+
+            // Check each component below the base: reject hidden (dot) components,
+            // such as .env / .claude / .DS_Store files and folders
+            const pathParts = resolvedPath.split(pathModule.sep).filter((part) => part !== '')
+            for (let i = exemptedParts.length; i < pathParts.length; i++) {
+                const part = pathParts[i]
                 if (this.blockedDirs.has(part)) {
                     logger.warn(`Access denied - blocked directory in path: ${part}`)
                     return {
                         isValid: false,
                         sanitizedPath: '',
                         error: `Access denied: path contains blocked directory '${part}'`,
+                    }
+                }
+                if (part.startsWith('.')) {
+                    logger.warn(`Access denied - hidden path component: ${part}`)
+                    return {
+                        isValid: false,
+                        sanitizedPath: '',
+                        error: `Access denied: path contains hidden component '${part}'`,
+                    }
+                }
+            }
+
+            // Enforce the top-level folder allowlist when one is configured
+            if (this.allowedTopLevelFolders) {
+                const relativeToBase = resolvedPath.slice(this.allowedBasePath.length + pathModule.sep.length)
+                const topLevel = relativeToBase.split(pathModule.sep)[0] || ''
+                const isCaseMatch =
+                    topLevel &&
+                    [...this.allowedTopLevelFolders].some(
+                        (folder) => folder.toLowerCase() === topLevel.toLowerCase()
+                    )
+                if (!relativeToBase && !topLevel) {
+                    // The base itself is always allowed so root listings still resolve
+                } else if (!isCaseMatch) {
+                    logger.warn(
+                        `Access denied - folder not in allowlist: ${topLevel || resolvedPath}`
+                    )
+                    return {
+                        isValid: false,
+                        sanitizedPath: '',
+                        error: `Access denied: '${topLevel}' is not an allowed media folder`,
                     }
                 }
             }
@@ -142,11 +212,17 @@ export class PathValidator {
         const validation = this.validatePath(fullPath)
         if (!validation.isValid) return null
 
-        if (validation.sanitizedPath.startsWith(this.allowedBasePath)) {
+        if (
+            validation.sanitizedPath === this.allowedBasePath ||
+            validation.sanitizedPath.startsWith(this.allowedBasePath + pathModule.sep)
+        ) {
             return validation.sanitizedPath
         }
         return null
     }
 }
 
-export const createPathValidator = (allowedBasePath: string) => new PathValidator(allowedBasePath)
+export const createPathValidator = (
+    allowedBasePath: string,
+    options: PathValidatorOptions = {}
+) => new PathValidator(allowedBasePath, options)

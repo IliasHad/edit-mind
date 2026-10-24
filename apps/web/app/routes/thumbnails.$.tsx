@@ -14,7 +14,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     await requireUser(request)
+  } catch {
+    throw new Response('Unauthorized', { status: 401 })
+  }
 
+  try {
     const pathValidator = createPathValidator(THUMBNAILS_DIR)
 
     const decodedPath = path.normalize(decodeURIComponent(filePath))
@@ -22,27 +26,41 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const validation = pathValidator.validatePath(decodedPath)
 
     if (!validation.isValid) {
-      logger.warn(`Path validation failed: ${path} - ${validation.error}`)
+      logger.warn(`Path validation failed: ${decodedPath} - ${validation.error}`)
       throw new Response('Access denied', { status: 403 })
     }
 
-    if (!fs.existsSync(decodedPath)) {
+    // Resolve symlinks and make sure the target still lives inside the thumbnails root
+    let realPath = validation.sanitizedPath
+    try {
+      realPath = fs.realpathSync(realPath)
+    } catch {
       throw new Response('File not found', { status: 404 })
     }
 
-    const stats = fs.statSync(decodedPath)
+    const realpathValidation = pathValidator.validatePath(realPath)
+    if (!realpathValidation.isValid) {
+      logger.warn(`Symlink resolves outside thumbnails root: ${realPath}`)
+      throw new Response('Access denied', { status: 403 })
+    }
+
+    if (!fs.existsSync(realPath)) {
+      throw new Response('File not found', { status: 404 })
+    }
+
+    const stats = fs.statSync(realPath)
     if (!stats.isFile()) throw new Response('Not a file', { status: 400 })
 
-    const contentType = getContentType(decodedPath)
+    const contentType = getContentType(realPath)
 
-    const etag = generateEtag(decodedPath, stats)
+    const etag = generateEtag(realPath, stats)
 
     const ifNoneMatch = request.headers.get('If-None-Match')
     if (ifNoneMatch === etag) {
       return new Response(null, { status: 304 })
     }
 
-    const stream = fs.createReadStream(decodedPath)
+    const stream = fs.createReadStream(realPath)
 
     return new Response(stream as unknown as ReadableStream, {
       status: 200,
@@ -52,7 +70,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         ETag: etag,
       },
     })
-  } catch {
+  } catch (error) {
+    // Propagate thrown responses (401/403/404) as-is; only wrap unexpected failures
+    if (error instanceof Response) throw error
+    logger.warn(error)
     throw new Response('File not found', { status: 404 })
   }
 }

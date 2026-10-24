@@ -1,6 +1,7 @@
 import compression from 'compression'
 import express from 'express'
 import morgan from 'morgan'
+import { createServer } from 'node:http'
 
 const DEVELOPMENT = process.env.NODE_ENV === 'development'
 const PORT = Number.parseInt(process.env.PORT || '3745', 10)
@@ -13,9 +14,13 @@ app.disable('x-powered-by')
 
 if (DEVELOPMENT) {
   console.log('Starting development server')
+  // Vite runs in middleware mode, so it does not create an HTTP server of its
+  // own. Give it this server so its `/socket.io` proxy can register the raw
+  // WebSocket `upgrade` handler as well as the HTTP polling middleware.
+  const server = createServer(app)
   const viteDevServer = await import('vite').then((vite) =>
     vite.createServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: { server } },
     })
   )
   app.use(viteDevServer.middlewares)
@@ -30,7 +35,7 @@ if (DEVELOPMENT) {
       next(error)
     }
   })
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is listening on 0.0.0.0:${PORT}`)
   })
 } else {

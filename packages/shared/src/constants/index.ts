@@ -15,6 +15,13 @@ export const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379')
 
 export const MEDIA_BASE_PATH = '/media/videos'
 
+// Optional allowlist of top-level folder names that media routes are allowed
+// to list and serve. Empty means every non-hidden folder under MEDIA_BASE_PATH
+export const MEDIA_VISIBLE_FOLDERS = (process.env.MEDIA_VISIBLE_FOLDERS ?? '')
+  .split(',')
+  .map((folder) => folder.trim())
+  .filter(Boolean)
+
 export const HOST_MEDIA_PATH = process.env.HOST_MEDIA_PATH
 
 export const STITCHED_VIDEOS_DIR = process.env.STITCHED_VIDEOS_DIR
