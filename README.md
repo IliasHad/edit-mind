@@ -1,9 +1,8 @@
-### Edit Mind: Local Video Knowledge Base
+### Orcah Studio: Local Video Knowledge Base
 
-Edit Mind lets you index your videos **(including transcription, frame analysis, and multi-model embedding)**, and you can search your videos (or specific video scenes) using natural language.
+**Orcah Studio** (formerly **Edit Mind**) is a self-hosted video knowledge base. It indexes your videos — including transcription, frame analysis, and multi-model embedding — then lets you search videos or individual scenes with natural language.
 
-> **Development Status:** Edit Mind is currently in **active development** and **not yet production-ready**.
-> Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
+> **Development Status:** Edit Mind is currently in **active development** and **not yet production-ready**. Expect incomplete features and occasional bugs. We welcome contributors to help us reach **v1.0**!
 
 ---
 
@@ -12,10 +11,7 @@ Edit Mind lets you index your videos **(including transcription, frame analysis,
 [![Docker](https://img.shields.io/badge/Containerized-Docker-blue.svg)](https://www.docker.com/)
 [![Featured on Syntax.fm](https://img.shields.io/badge/Featured%20on-Syntax.fm-f39c12.svg)](https://www.youtube.com/watch?v=9O0lQBEPL2U&t=2483s)
 
-> Prefer a one-click install? [Desktop app available →](#desktop-app)
-
----
-Note: (Edit Mind name is coming from Video Editor Mind, so this will be the editor's second brain and companion in the future)
+> **Note on the name:** Orcah Studio was previously called Edit Mind. The repository, package names, and some historical material still use the former name while the rename is rolled out.
 
 ## Sponsors of this project 
 
@@ -25,12 +21,13 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be the edit
 
 ## Showcase Video
 
-[![Edit Mind Demo](https://img.youtube.com/vi/YrVaJ33qmtg/maxresdefault.jpg)](https://www.youtube.com/watch?v=YrVaJ33qmtg)  
-*Click to watch a walkthrough of Edit Mind's core features.*
+[![Orcah Studio Demo](https://img.youtube.com/vi/YrVaJ33qmtg/maxresdefault.jpg)](https://www.youtube.com/watch?v=YrVaJ33qmtg)<br>
+*Click to watch a walkthrough of Orcah Studio's core features.*
 
 ---
 
-## Why Edit Mind?
+## Why Orcah Studio?
+
 - Search videos by spoken words, objects, faces, etc...
 - Runs fully **locally**, respecting privacy.
 - Works on **any computer or server with Docker installed**.
@@ -60,31 +57,29 @@ Note: (Edit Mind name is coming from Video Editor Mind, so this will be the edit
 
 ## Getting Started
 
-Edit Mind uses Docker Compose to run everything in containers.
-
-### Desktop App
-
-**Want Edit Mind without Docker or any terminal setup?** The commercial desktop app packages everything into a one-click installer for macOS and Windows with the same features (plus Davinci Resolve and Final Cut Pro direct integration). This will help us support the development of the community's version.
-
-I built the self-hosted version because a lot of people asked for it. I built the desktop app because I got couple of emails and calls people doesn't wanna run this as server. The self hosted version, It's free. It's not going anywhere. The desktop app is for the people who want it to just work on their Mac or Windows or the ones with Apple chips and wanna utilize Apple GPU because using Docker, we cannot utilize that.
- 
-> **[Preorder the Desktop App →](https://buy.polar.sh/polar_cl_mZRh64wC3HUFLZpzdJqdVOJkf6PyhhQWGE1EN1joFH5)**
->
-> Early bird pricing · Lifetime license · one year of updates included · 14-day refund guarantee (starting when the app ships)
-> The desktop app will be delivered by email when the app ships.
-
-
+The self-hosted Orcah Studio edition uses Docker Compose to run everything in containers.
 
 ## Setup Video
 
-[![Edit Setup Guide](https://img.youtube.com/vi/WVNuP8ic3uY/maxresdefault.jpg)](https://www.youtube.com/watch?v=WVNuP8ic3uY)  
-*Click to watch a walkthrough of Edit Mind's setup guide.*
+[![Orcah Studio self-hosted setup guide](https://img.youtube.com/vi/WVNuP8ic3uY/maxresdefault.jpg)](https://www.youtube.com/watch?v=WVNuP8ic3uY)<br>
+*Click to watch a walkthrough of the self-hosted setup guide.*
 
 ### Prerequisites
 
 *   [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 *   That's it! Everything else runs in containers.
 
+### Quick install (recommended)
+
+With Docker Desktop open, paste this command into Terminal (macOS/Linux) or Git Bash/WSL (Windows):
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/IliasHad/edit-mind/main/install.sh)
+```
+
+The installer asks where your videos are stored and whether to use local Ollama, Gemini, or skip AI setup for now. It creates the required configuration, then starts Orcah Studio. Your library remains on your computer; the installer only gives Docker access to the folder you choose.
+
+Prefer to configure every setting by hand? Follow the manual setup steps below.
 
 ### 1. Project Setup
 ```bash
@@ -106,7 +101,8 @@ cd edit-mind
 
 ### 3. Configure Environment Variables
 
-Edit Mind uses a **two-file environment configuration**:
+The self-hosted edition uses a **two-file environment configuration**:
+
 - **`.env`** - Your personal configuration (required)
 - **`.env.system`** - System defaults (required)
 
@@ -148,6 +144,10 @@ OLLAMA_MODEL="qwen2.5:7b-instruct"
 # Option B: Use Gemini API (requires API key)
 USE_GEMINI="true"
 GEMINI_API_KEY="your-gemini-api-key-from-google-ai-studio"
+
+# Option C: Skip AI setup for now (AI-powered features remain unavailable)
+USE_OLLAMA_MODEL="false"
+USE_GEMINI="false"
 
 # 3. GENERATE SECURITY KEYS (REQUIRED)
 # Generate with: openssl rand -base64 32
@@ -228,16 +228,20 @@ cd docker
 docker-compose -f docker-compose.dev.yml up --build
 ```
 
+## macOS App
+
+This repository is the self-hosted edition. If you prefer a native macOS app, see [orcah.app](https://orcah.app). GitHub users can use code **`GITHUB`** for **5% off** at checkout.
+
 ## Community Presentations and Videos
 
-[![Edit Mind at Syntax.fm](https://img.youtube.com/vi/9O0lQBEPL2U/maxresdefault.jpg)](https://www.youtube.com/watch?v=9O0lQBEPL2U&t=2483s)  
-*Watch the Edit Mind featured at Syntax.fm (starts at 41:21)*
+[![Orcah Studio (formerly Edit Mind) at Syntax.fm](https://img.youtube.com/vi/9O0lQBEPL2U/maxresdefault.jpg)](https://www.youtube.com/watch?v=9O0lQBEPL2U&t=2483s)<br>
+*Watch Orcah Studio, then known as Edit Mind, featured at Syntax.fm (starts at 41:21)*
 
 ---
 
-[![Edit Mind at Twelve Labs](https://img.youtube.com/vi/k_aesDa3sFw/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_aesDa3sFw&t=1272s)  
+[![Orcah Studio (formerly Edit Mind) at Twelve Labs](https://img.youtube.com/vi/k_aesDa3sFw/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_aesDa3sFw&t=1272s)<br>
 
-*Watch the Edit Mind presentation at Twelve Labs (starts at 21:12)*
+*Watch Orcah Studio, then known as Edit Mind, presented at Twelve Labs (starts at 21:12)*
 
 
 ---

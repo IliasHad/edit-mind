@@ -3,11 +3,11 @@
 # https://github.com/IliasHad/edit-mind
 set -euo pipefail
 
-REPO="https://raw.githubusercontent.com/IliasHad/edit-mind/refs/heads/main"
+REPO="https://raw.githubusercontent.com/IliasHad/edit-mind/main"
 DEFAULT_INSTALL_DIR="$HOME/edit-mind"
 OLLAMA_MODEL="qwen2.5:7b-instruct"
 
-trap 'printf "\nsetup failed (line %s)\n" "$LINENO" >&2' ERR
+trap 'printf "\nSetup stopped at line %s. Review the message above and run the installer again when ready.\n" "$LINENO" >&2' ERR
 
 # --- output ----------------------------------------------------------------
 if [[ -t 1 ]]; then
@@ -21,6 +21,34 @@ log()  { printf '%s\n' "$*"; }
 ok()   { printf '%s\n' "${green}$*${reset}"; }
 warn() { printf '%s\n' "${yellow}$*${reset}" >&2; }
 die()  { printf '%s\n' "${red}error: $*${reset}" >&2; exit 1; }
+
+show_help() {
+  cat <<'EOF'
+Orcah Studio self-hosted setup
+
+This installer asks where to keep the app configuration, where your videos
+live, and which AI provider to use. It then starts the app with Docker.
+
+Before starting, install and open Docker Desktop:
+  https://www.docker.com/products/docker-desktop/
+
+Run:
+  ./install.sh
+
+EOF
+}
+
+case "${1:-}" in
+  -h|--help)
+    show_help
+    exit 0
+    ;;
+  "")
+    ;;
+  *)
+    die "Unknown option: $1. Run with --help for usage."
+    ;;
+esac
 
 ask() {  # ask "label" "default" -> echoes user's answer or default
   local label=$1 default=${2-} reply
@@ -50,6 +78,16 @@ esac
 command -v curl   >/dev/null || die "curl is required."
 command -v docker >/dev/null || die "Docker is not installed. Install Docker Desktop: https://www.docker.com/products/docker-desktop/"
 
+# Docker Desktop installs the Compose v2 plugin. Some Linux distributions
+# still provide the older `docker-compose` command, so support both.
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE=(docker-compose)
+else
+  die "Docker Compose is not available. Update Docker Desktop, then try again."
+fi
+
 # 'docker info' can hang while Docker Desktop is starting. Cap it.
 docker_running() {
   if   command -v timeout  >/dev/null; then timeout  10 docker info >/dev/null 2>&1
@@ -75,9 +113,18 @@ log "${bold}Edit Mind setup${reset} ${dim}— local AI video knowledge base${res
 log
 
 # --- install location ------------------------------------------------------
-INSTALL_DIR=$(ask "Install directory" "$DEFAULT_INSTALL_DIR")
-INSTALL_DIR=${INSTALL_DIR/#\~/$HOME}
-mkdir -p "$INSTALL_DIR"
+log "Choose a folder you own. A folder inside $HOME is recommended."
+while :; do
+  INSTALL_DIR=$(ask "Install directory" "$DEFAULT_INSTALL_DIR")
+  INSTALL_DIR=${INSTALL_DIR/#\~/$HOME}
+
+  if mkdir -p "$INSTALL_DIR" 2>/dev/null && [[ -d "$INSTALL_DIR" && -w "$INSTALL_DIR" ]]; then
+    break
+  fi
+
+  warn "Cannot create or write to '$INSTALL_DIR'."
+  warn "Choose a folder inside your home directory, for example: $HOME/edit-mind"
+done
 cd "$INSTALL_DIR"
 
 # Never silently overwrite existing secrets.
@@ -118,7 +165,8 @@ log
 log "${bold}AI provider${reset}"
 log "  1) Ollama   runs on this machine, no API key"
 log "  2) Gemini   Google cloud, fast, free key at https://aistudio.google.com/apikey"
-provider=$(ask "Choose 1 or 2" "1")
+log "  3) Skip for now   configure an AI provider later"
+provider=$(ask "Choose 1, 2, or 3" "3")
 
 USE_OLLAMA=false
 USE_GEMINI=false
@@ -129,10 +177,11 @@ case "$provider" in
   2)
     USE_GEMINI=true
     while [[ -z "$GEMINI_API_KEY" ]]; do
-      read -rp "Gemini API key: " GEMINI_API_KEY
+      read -rsp "Gemini API key: " GEMINI_API_KEY
+      printf '\n'
     done
     ;;
-  *)
+  1)
     USE_OLLAMA=true
     # Bridge address Docker containers use to reach the host's Ollama.
     case "$OS" in
@@ -149,6 +198,12 @@ case "$provider" in
       log  "    OLLAMA_HOST=0.0.0.0 ollama serve"
       log  "    ollama pull $OLLAMA_MODEL"
     fi
+    ;;
+  3|"")
+    log "AI setup skipped. AI-powered features will be available after you configure Ollama or Gemini later."
+    ;;
+  *)
+    die "Please choose 1 (Ollama), 2 (Gemini), or 3 (skip)."
     ;;
 esac
 
@@ -172,11 +227,19 @@ gen_key() {  # gen_key <bytes> <base64|hex>
 ENCRYPTION_KEY=$(gen_key 32 base64)
 SESSION_SECRET=$(gen_key 32 hex)
 
-# --- .env ------------------------------------------------------------------
+# --- configuration templates ----------------------------------------------
+# A re-run should be safe: preserve an existing system configuration rather
+# than replacing any custom database or networking values someone may have
+# added after their first install.
+if [[ -f .env.system ]]; then
+  warn "Keeping existing .env.system"
+else
+  curl -fsSL "$REPO/.env.system.example" -o .env.system
+fi
+
 # Pull the upstream template, drop any keys we own, then append our values.
 # This avoids fragile in-place edits and guarantees a single definition per key.
-curl -fsSL "$REPO/.env.example"        -o .env.tmpl
-curl -fsSL "$REPO/.env.system.example" -o .env.system
+curl -fsSL "$REPO/.env.example" -o .env.tmpl
 
 owned='^(HOST_MEDIA_PATH|ENCRYPTION_KEY|SESSION_SECRET|USE_OLLAMA_MODEL|USE_GEMINI|OLLAMA_HOST|OLLAMA_PORT|OLLAMA_MODEL|GEMINI_API_KEY)='
 grep -Ev "$owned" .env.tmpl > .env || true
@@ -184,7 +247,7 @@ rm -f .env.tmpl
 
 {
   echo
-  echo "# --- generated by setup.sh ---"
+  echo "# --- generated by install.sh ---"
   echo "HOST_MEDIA_PATH=\"$MEDIA_PATH\""
   echo "ENCRYPTION_KEY=\"$ENCRYPTION_KEY\""
   echo "SESSION_SECRET=\"$SESSION_SECRET\""
@@ -216,22 +279,27 @@ log
 ok "Setup complete."
 log
 log "  cd \"$INSTALL_DIR\""
-log "  docker compose up"
+log "  ${COMPOSE[*]} up -d"
 log "  open http://localhost:3745"
 log
 log "If this is useful: ${bold}https://github.com/IliasHad/edit-mind${reset}"
 log
 
-confirm "Start Edit Mind now?" || exit 0
+confirm "Start Orcah Studio now?" || exit 0
 
 # Open the browser once the stack has had time to come up. Detached so it
 # won't keep us alive past the docker compose process.
 ( sleep 12
   case "$OS" in
     mac)     open      "http://localhost:3745" ;;
-    windows) start     "http://localhost:3745" ;;
+    windows) cmd.exe /c start "" "http://localhost:3745" ;;
     *)       xdg-open  "http://localhost:3745" ;;
   esac >/dev/null 2>&1 || true
 ) & disown
 
-exec docker compose up
+"${COMPOSE[@]}" up -d
+
+log
+ok "Orcah Studio is starting. The first launch can take a few minutes while Docker downloads its images."
+log "Open http://localhost:3745 when it is ready."
+log "To see progress later: cd \"$INSTALL_DIR\" && ${COMPOSE[*]} logs -f"
