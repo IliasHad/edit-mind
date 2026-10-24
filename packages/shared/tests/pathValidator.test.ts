@@ -254,6 +254,16 @@ describe('PathValidator', () => {
     it('should not enforce an allowlist when none is configured', () => {
       expect(validator.validatePath('/media/videos/Takeout/file.mp4').isValid).toBe(true)
     })
+
+    it('should fail closed when every configured allowlist entry is invalid', () => {
+      const invalidAllowlistValidator = createPathValidator(MEDIA_BASE_PATH, {
+        allowedTopLevelFolders: ['OGV/Archive', '   '],
+      })
+
+      expect(invalidAllowlistValidator.validatePath('/media/videos/Takeout/file.mp4').isValid).toBe(false)
+      expect(invalidAllowlistValidator.validatePath('/media/videos/OGV/file.mp4').isValid).toBe(false)
+      expect(invalidAllowlistValidator.validatePath('/').isValid).toBe(true)
+    })
   })
 
   describe('Security: symlinked allowed roots', () => {

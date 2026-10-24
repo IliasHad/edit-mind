@@ -56,14 +56,21 @@ export class PathValidator {
             '.DocumentRevisions-V100',
         ])
 
-        // Allowlist entries must be plain folder names; anything else is ignored
-        this.allowedTopLevelFolders = new Set(
-            (options.allowedTopLevelFolders ?? [])
-                .map((folder) => folder.trim())
-                .filter((folder) => folder && !folder.includes('/') && !folder.includes('\\'))
-        )
-        if (this.allowedTopLevelFolders.size === 0) {
+        // Allowlist entries must be plain folder names. An explicitly supplied
+        // but invalid list remains empty so it cannot accidentally grant access
+        // to every top-level directory.
+        if (!options.allowedTopLevelFolders || options.allowedTopLevelFolders.length === 0) {
             this.allowedTopLevelFolders = null
+        } else {
+            this.allowedTopLevelFolders = new Set()
+            for (const entry of options.allowedTopLevelFolders) {
+                const folder = entry.trim()
+                if (!folder || folder.includes('/') || folder.includes('\\')) {
+                    logger.warn(`Ignoring invalid allowedTopLevelFolders entry: ${entry}`)
+                    continue
+                }
+                this.allowedTopLevelFolders.add(folder)
+            }
         }
     }
 

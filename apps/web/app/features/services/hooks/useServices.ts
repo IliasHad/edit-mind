@@ -15,6 +15,7 @@ export function useServices() {
         // same machine, since it's a build-time value baked into the bundle.
         let socketInstance: ReturnType<typeof io> | null = null
         let disposed = false
+        let hasRefreshedAuthentication = false
 
         const connect = async () => {
             try {
@@ -45,6 +46,20 @@ export function useServices() {
                 })
 
                 socketInstance.on('connect_error', (error) => {
+                    if (
+                        error.message === 'Unauthorized' &&
+                        !hasRefreshedAuthentication &&
+                        !disposed
+                    ) {
+                        // Socket.IO does not retry connections rejected by
+                        // middleware. Refresh once so an expired status token
+                        // can recover without reloading the page.
+                        hasRefreshedAuthentication = true
+                        socketInstance?.disconnect()
+                        void connect()
+                        return
+                    }
+
                     console.error('WebSocket connection error:', error)
                 })
             } catch (error) {

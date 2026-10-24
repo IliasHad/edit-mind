@@ -89,6 +89,10 @@ io.use(async (socket, next) => {
 
     const jwt = createJWTService(env.SESSION_SECRET)
     const decoded = jwt.verify(token)
+    if (typeof decoded.userId !== 'string' || decoded.userId.trim().length === 0) {
+      next(new Error('Unauthorized'))
+      return
+    }
     const user = await UserModel.findUnique({ where: { id: decoded.userId } })
 
     if (!user) {
