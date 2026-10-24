@@ -8,7 +8,9 @@ export function getContentType(filePath: string): string {
         '.jpeg': 'image/jpeg',
         '.webp': 'image/webp',
         '.gif': 'image/gif',
-        '.svg': 'image/svg+xml',
+        // SVG deliberately absent: inline-served SVG can execute scripts in
+        // the app's origin, it now falls back to application/octet-stream so
+        // the browser downloads it instead of rendering it.
         '.mp4': 'video/mp4',
         '.webm': 'video/webm',
         '.ogg': 'video/ogg',

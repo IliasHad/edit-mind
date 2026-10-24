@@ -59,7 +59,8 @@ export const useMediaBrowserStore = create<MediaBrowserState>()(
           )
 
           if (!response.ok) {
-            throw new Error('Failed to fetch folders')
+            const body = await response.json().catch(() => null)
+            throw new Error(body?.error || 'Failed to fetch folders')
           }
 
           const data = await response.json()
@@ -92,7 +93,8 @@ export const useMediaBrowserStore = create<MediaBrowserState>()(
           )
 
           if (!response.ok) {
-            throw new Error('Failed to fetch files')
+            const body = await response.json().catch(() => null)
+            throw new Error(body?.error || 'Failed to fetch files')
           }
 
           const data = await response.json()

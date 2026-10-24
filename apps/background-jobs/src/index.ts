@@ -15,6 +15,7 @@ import jobsRoute from './routes/jobs'
 import mediaRoute from './routes/media'
 import apiRouter from './routes/api'
 import prisma from '@db/db'
+import { UserModel } from '@db/models/User'
 import { requireAuth } from './middleware/auth'
 import { requireAccessToken } from './middleware/accessTokenAuth'
 
@@ -65,6 +66,7 @@ import { rateLimiter, apiRateLimiter } from './middleware/rateLimiter'
 import { checkServicesStatus } from './websockets'
 import { suggestionCache } from '@search/services/suggestion'
 import { loadAllEmbeddingModels } from '@embedding-core/services/extractors'
+import { createJWTService } from '@shared/services/jwt'
 
 const app = express()
 app.set('trust proxy', 1)
@@ -75,6 +77,34 @@ export const io = new Server(server, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
+})
+
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token
+    if (typeof token !== 'string') {
+      next(new Error('Unauthorized'))
+      return
+    }
+
+    const jwt = createJWTService(env.SESSION_SECRET)
+    const decoded = jwt.verify(token)
+    if (typeof decoded.userId !== 'string' || decoded.userId.trim().length === 0) {
+      next(new Error('Unauthorized'))
+      return
+    }
+    const user = await UserModel.findUnique({ where: { id: decoded.userId } })
+
+    if (!user) {
+      next(new Error('Unauthorized'))
+      return
+    }
+
+    socket.data.userId = user.id
+    next()
+  } catch {
+    next(new Error('Unauthorized'))
+  }
 })
 
 app.use(cors())
@@ -157,7 +187,21 @@ server.listen(env.BACKGROUND_JOBS_PORT, async () => {
     }
   )
 
-  await loadAllEmbeddingModels()
+  // Loading the text, visual, and audio embedding models together creates a
+  // large transient memory spike. In the development Docker stack that can
+  // OOM-kill this process while its `tsx` watcher remains alive, leaving the
+  // container up but without its HTTP/WebSocket listener. Keep production's
+  // warm-up behavior, while development loads each model only when its first
+  // embedding job needs it. Set PRELOAD_EMBEDDING_MODELS=true to opt in.
+  const shouldPreloadEmbeddingModels =
+    process.env.PRELOAD_EMBEDDING_MODELS === 'true' || process.env.NODE_ENV !== 'development'
+
+  if (shouldPreloadEmbeddingModels) {
+    await loadAllEmbeddingModels()
+  } else {
+    logger.info('Deferring embedding model loading until the first embedding job')
+  }
+
   logger.debug(`Background jobs server running on port ${env.BACKGROUND_JOBS_PORT}`)
   if (process.env.NODE_ENV === 'development' || env.ENABLE_QUEUE_UI) {
     logger.warn(`Bull Board UI available at http://localhost:${env.BACKGROUND_JOBS_PORT}`)

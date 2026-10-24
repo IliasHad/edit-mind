@@ -1,6 +1,7 @@
 import compression from 'compression'
 import express from 'express'
 import morgan from 'morgan'
+import { createServer } from 'node:http'
 
 const DEVELOPMENT = process.env.NODE_ENV === 'development'
 const PORT = Number.parseInt(process.env.PORT || '3745', 10)
@@ -13,9 +14,13 @@ app.disable('x-powered-by')
 
 if (DEVELOPMENT) {
   console.log('Starting development server')
+  // Vite runs in middleware mode, so it does not create an HTTP server of its
+  // own. Give it this server so its `/socket.io` proxy can register the raw
+  // WebSocket `upgrade` handler as well as the HTTP polling middleware.
+  const server = createServer(app)
   const viteDevServer = await import('vite').then((vite) =>
     vite.createServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: { server } },
     })
   )
   app.use(viteDevServer.middlewares)
@@ -29,6 +34,9 @@ if (DEVELOPMENT) {
       }
       next(error)
     }
+  })
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is listening on 0.0.0.0:${PORT}`)
   })
 } else {
   console.log('Starting production server')
@@ -46,11 +54,23 @@ if (DEVELOPMENT) {
   app.use(morgan('tiny'))
   app.use(express.static('build/client', { maxAge: '1h' }))
 
-  const { app: requestHandler } = await import(BUILD_PATH)
+  const { app: requestHandler, wsProxy } = await import(BUILD_PATH)
 
   app.use(requestHandler)
-}
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is listening on 0.0.0.0:${PORT}`)
-})
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is listening on 0.0.0.0:${PORT}`)
+  })
+
+  // http-proxy-middleware needs the raw HTTP server's 'upgrade' event
+  // wired up manually to proxy the background-jobs WebSocket connection.
+  server.on('upgrade', (request, socket, head) => {
+    const pathname = new URL(request.url || '/', 'http://localhost').pathname
+    if (pathname !== '/socket.io' && !pathname.startsWith('/socket.io/')) {
+      socket.destroy()
+      return
+    }
+
+    wsProxy.upgrade(request, socket, head)
+  })
+}
