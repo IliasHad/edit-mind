@@ -30,11 +30,18 @@ class ObjectDetectionPlugin(AnalyzerPlugin):
         """Initialize the YOLO model."""
         yolo_cache_dir = os.environ.get('YOLO_CONFIG_DIR', '/ml-models/ultralytics')
         os.makedirs(yolo_cache_dir, exist_ok=True)
-        
+
         from ultralytics.utils import SETTINGS
         SETTINGS['weights_dir'] = yolo_cache_dir
-        
-        self.yolo_model = YOLO(self.model)
+
+        # SETTINGS['weights_dir'] alone doesn't consistently redirect where a
+        # bare model name (e.g. 'yolov8s.pt') is downloaded/looked up across
+        # ultralytics versions — pass the resolved absolute path explicitly so
+        # the weight file actually lands on (and is reused from) the
+        # persistent /ml-models volume instead of the container's ephemeral
+        # filesystem (which triggers a re-download on every restart).
+        model_path = os.path.join(yolo_cache_dir, self.model)
+        self.yolo_model = YOLO(model_path)
 
         self.yolo_model.to(self.config.get("device"))
         self.yolo_model.fuse()

@@ -52,20 +52,17 @@ class FrameProcessor:
                 return "unknown"
 
         def _open_cpu(video_path: str) -> av.container.InputContainer:
-            return av.open(
-                video_path,
-                options={
-                    "threads": "auto",
-                    "thread_type": "frame",
-                }
-            )
+            # Note: these are demuxer options — "threads" here does not reach
+            # the decoder (verified: codec_context.thread_count stays 0). Real
+            # decoder threading is controlled by stream.thread_type below.
+            return av.open(video_path)
 
         codec_name = _detect_codec(video_path)
         logger.info(f"Detected video codec: {codec_name}")
 
         self._used_cuda = False
 
-        if self.config.device == "cuda" and not force_cpu:
+        if self.config.device == "cuda" and self.config.use_gpu_frame_decode and not force_cpu:
             cuda_codec = CUDA_CODEC_MAP.get(codec_name)
             if cuda_codec:
                 try:
@@ -77,10 +74,20 @@ class FrameProcessor:
                             "vcodec": cuda_codec,
                         }
                     )
-                    self.metrics["video_open_time"] += time.time() - start_open
-                    self._used_cuda = True
-                    logger.info(f"Using CUDA acceleration: {cuda_codec}")
-                    return container
+                    # These are demuxer options, so they do not actually select
+                    # a decoder — without this check the log claimed hardware
+                    # decoding while libavcodec silently used the software one.
+                    selected = container.streams.video[0].codec_context.name
+                    if selected == cuda_codec:
+                        self.metrics["video_open_time"] += time.time() - start_open
+                        self._used_cuda = True
+                        logger.info(f"Using CUDA acceleration: {cuda_codec}")
+                        return container
+                    logger.warning(
+                        f"Requested {cuda_codec} but libavcodec selected '{selected}'; "
+                        f"hardware decoding is not active. Falling back to CPU."
+                    )
+                    container.close()
                 except Exception as e:
                     logger.warning(f"CUDA failed for {cuda_codec}: {e}. Falling back to CPU.")
             else:
@@ -108,7 +115,7 @@ class FrameProcessor:
         try:
             container = self._open_container(video_path)
             stream = container.streams.video[0]
-            stream.thread_type = "AUTO"
+            stream.thread_type = "NONE"
             stream.codec_context.skip_frame = "NONREF"
 
             fps = float(stream.average_rate) if stream.average_rate else 30.0
@@ -131,8 +138,15 @@ class FrameProcessor:
             sample_interval_sec = sample_interval / fps
             total_sampled_frames = (total_video_frames + sample_interval - 1) // sample_interval
 
-            # For short clips, seek overhead dominates 
-            use_sequential = video_duration_seconds < 120
+            # Sequential decoding walks every frame to keep 1 in sample_interval,
+            # so it only pays off when we're sampling densely enough that seeking
+            # per sample would cost more than decoding straight through.
+            #
+            # The old rule (duration < 120s) was off by two orders of magnitude
+            # for this footage: on a 102s 4K 10-bit HEVC clip, sequential decoded
+            # 5100 frames in 277s to yield 41 samples (6.77s/sample), while seek
+            # produced the same 40 samples in 3.9s (0.10s/sample) — 71x faster.
+            use_sequential = sample_interval <= 4
 
             logger.info(
                 f"Video: {total_video_frames} frames, fps={fps:.2f}, "
@@ -218,7 +232,7 @@ class FrameProcessor:
                                 container.close()
                                 container = self._open_container(video_path, force_cpu=True)
                                 stream = container.streams.video[0]
-                                stream.thread_type = "AUTO"
+                                stream.thread_type = "NONE"
                                 stream.codec_context.skip_frame = "NONREF"
                                 consecutive_failures = 0
                                 i = 0
@@ -290,7 +304,7 @@ class FrameProcessor:
                                 container.close()
                                 container = self._open_container(video_path, force_cpu=True)
                                 stream = container.streams.video[0]
-                                stream.thread_type = "AUTO"
+                                stream.thread_type = "NONE"
                                 stream.codec_context.skip_frame = "NONREF"
                                 consecutive_failures = 0
                                 i = 0
