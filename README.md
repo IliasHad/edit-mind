@@ -186,7 +186,7 @@ If you're using Safari, use [http://127.0.0.1:3745](http://127.0.0.1:3745)
 ### 6. Add Your First Videos
 
 1. Navigate to the web app at `http://localhost:3745`
-2. Login using `admin@example.com` and the password is `admin`
+2. Create an account
 3. Navigate to the web app at `http://localhost:3745/app/settings`
 4. Click **"Add Folder"**
 3. Select a folder from your `HOST_MEDIA_PATH` location
