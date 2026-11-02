@@ -71,7 +71,7 @@
     "playwright": "^1.59.1",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.4",
-    "vite": "^6.4.2",
+    "vite": "^6.4.5",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }
