@@ -450,8 +450,8 @@ importers:
         specifier: ^4.0.10
         version: 4.0.10
       exiftool-vendored:
-        specifier: ^31.3.0
-        version: 31.3.0
+        specifier: ^35.19.0
+        version: 35.19.0
       gopro-telemetry:
         specifier: ^1.2.11
         version: 1.2.11
@@ -1360,8 +1360,8 @@ packages:
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
 
-  '@photostructure/tz-lookup@11.3.0':
-    resolution: {integrity: sha512-rYGy7ETBHTnXrwbzm47e3LJPKJmzpY7zXnbZhdosNU0lTGWVqzxptSjK4qZkJ1G+Kwy4F6XStNR9ZqMsXAoASQ==}
+  '@photostructure/tz-lookup@11.7.0':
+    resolution: {integrity: sha512-QbKHXvleluMIlAHf2JiQTJNU5rLQBeQhLobyRqgXZ6NNGKqNikaRkjYviJ4nMU7Y75QE7bBYM8xjiFGjAukyhw==}
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
@@ -2054,8 +2054,8 @@ packages:
   '@types/lodash@4.17.24':
     resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
-  '@types/luxon@3.7.1':
-    resolution: {integrity: sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg==}
+  '@types/luxon@3.7.6':
+    resolution: {integrity: sha512-6KSjliQAXK8ZLgFQO4B7iE4Rpf/B3rItzCFuXezBY/XIAGxOdLd7vRNK9/StRPwiS/yJsVbB7HKpW46B8tcEuQ==}
 
   '@types/methods@1.1.4':
     resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
@@ -2304,8 +2304,8 @@ packages:
     resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
     engines: {node: '>= 0.8'}
 
-  batch-cluster@15.0.1:
-    resolution: {integrity: sha512-eUmh0ld1AUPKTEmdzwGF9QTSexXAyt9rA1F5zDfW1wUi3okA3Tal4NLdCeFI6aiKpBenQhR6NmK9bW9tBHTGPQ==}
+  batch-cluster@17.3.1:
+    resolution: {integrity: sha512-/aWEgZKXgvEseV3WEIRyjDoFka9FTrpt5+FYCxn+giUgveGBKxWjz3cl26V3aD+1kvOBP3nmANZZfcXDmKzcAA==}
     engines: {node: '>=20'}
 
   bcryptjs@2.4.3:
@@ -2823,17 +2823,17 @@ packages:
   exif-parser@0.1.12:
     resolution: {integrity: sha512-c2bQfLNbMzLPmzQuOr8fy0csy84WmwnER81W88DzTp9CYNPJ6yzOj2EZAh9pywYpqHnshVLHQJ8WzldAyfY+Iw==}
 
-  exiftool-vendored.exe@13.41.0:
-    resolution: {integrity: sha512-7XG0PjZCm8HVsVUQAD4b/eBtvYBuGkySf2qslqHlnSR6jU1xoD1AgEprb2bCPqwhw0Jn3xzZoo/ihDo4F6fMyA==}
+  exiftool-vendored.exe@13.57.0:
+    resolution: {integrity: sha512-9ENCWzUiFy6F/O4jSX50ygSGrTOtvoqJFWE0zAOl7VL/EFooLWNF0LkaNSox0ibbIsQz5rWSKi0TPlEbF4qBIw==}
     os: [win32]
 
-  exiftool-vendored.pl@13.41.0:
-    resolution: {integrity: sha512-JqqRuB8TggIOC983oTnOunB/baseGYw8XCkn7ylFGOmEv7oTQAK3uUTZV76vXE1X6c5H6IdHYt0abSgi8Kzc4g==}
+  exiftool-vendored.pl@13.57.0:
+    resolution: {integrity: sha512-7HYhrIygbfKD+E/sUF9L8YEs7qCEFLFWKoeevJllnD9jxVvZ09tfFsjbBPQ7SAgGwWSHW//SVULFHLgrO8JsBw==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored@31.3.0:
-    resolution: {integrity: sha512-JQeyRvh7cV81fm9eKej2btdVh2z2Ak/sx89c4OCykeQnhnI81hk9TTraBtborYA+WcLM20cwYMPmpaW/sMy5Qw==}
+  exiftool-vendored@35.19.0:
+    resolution: {integrity: sha512-c7/W5VA0f2XKllRgFSBOoTSRMlRVn13QT/TudOS3RN64VRfcj51vQQcRwtmdwYuRrzRf7lsh6gCQpmm3vr8Lww==}
     engines: {node: '>=20.0.0'}
 
   exit-hook@2.2.1:
@@ -5615,7 +5615,7 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
-  '@photostructure/tz-lookup@11.3.0': {}
+  '@photostructure/tz-lookup@11.7.0': {}
 
   '@pinojs/redact@0.4.0': {}
 
@@ -6199,7 +6199,7 @@ snapshots:
 
   '@types/lodash@4.17.24': {}
 
-  '@types/luxon@3.7.1': {}
+  '@types/luxon@3.7.6': {}
 
   '@types/methods@1.1.4': {}
 
@@ -6463,7 +6463,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.1.2
 
-  batch-cluster@15.0.1: {}
+  batch-cluster@17.3.1: {}
 
   bcryptjs@2.4.3: {}
 
@@ -6986,22 +6986,22 @@ snapshots:
 
   exif-parser@0.1.12: {}
 
-  exiftool-vendored.exe@13.41.0:
+  exiftool-vendored.exe@13.57.0:
     optional: true
 
-  exiftool-vendored.pl@13.41.0:
+  exiftool-vendored.pl@13.57.0:
     optional: true
 
-  exiftool-vendored@31.3.0:
+  exiftool-vendored@35.19.0:
     dependencies:
-      '@photostructure/tz-lookup': 11.3.0
-      '@types/luxon': 3.7.1
-      batch-cluster: 15.0.1
+      '@photostructure/tz-lookup': 11.7.0
+      '@types/luxon': 3.7.6
+      batch-cluster: 17.3.1
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.exe: 13.41.0
-      exiftool-vendored.pl: 13.41.0
+      exiftool-vendored.exe: 13.57.0
+      exiftool-vendored.pl: 13.57.0
 
   exit-hook@2.2.1: {}
 
